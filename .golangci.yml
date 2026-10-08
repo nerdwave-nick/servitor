@@ -1,0 +1,12 @@
+version: "2"
+linters:
+  settings:
+    errcheck:
+      exclude-functions:
+        # CLI output to stdout/stderr writers; failures there are not actionable.
+        - fmt.Fprint
+        - fmt.Fprintf
+        - fmt.Fprintln
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
