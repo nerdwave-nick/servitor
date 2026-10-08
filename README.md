@@ -21,37 +21,12 @@ set `SERVITOR_NO_GRIMDARK=1`). The servitor then speaks of *switches*, *states*,
 *files* and *metadata* like any heretic tool. The Omnissiah judges no one.
 Mostly.
 
-## The Lexicon
-
-Every command answers to both its sacred and its profane name, in either mode,
-so your scripts never break when your faith wavers.
-
-| Sacred (default)       | Profane (`--no-grimdark`) | Meaning                                            |
-|------------------------|---------------------------|----------------------------------------------------|
-| rite                   | switch                    | a named set of file changes                        |
-| aspect                 | state                     | one of the rite's declared states                  |
-| vessel                 | file                      | a target file                                      |
-| sanctum                | block                     | the managed region between the markers             |
-| ward                   | guard                     | identifier of a sanctum within its vessel          |
-| inscriptions           | metadata                  | `key\|value` pairs in the sanctum's header         |
-| Librarium              | config directory          | where rites are kept                               |
-| `invoke`               | `switch` (`profile`, `sw`)| perform an aspect                                  |
-| `augury`               | `meta`                    | read the inscriptions                              |
-| `census`               | `list` (`ls`)             | list rites and their aspects                       |
-| `inquisition`          | `verify` (`check`)        | purge heresy (validate)                            |
-| `cogitator`            | `tui` (`ui`)              | the interactive shrine                             |
-| heresy / impurity      | error / warning           |                                                    |
-| performed / dormant / corrupted / heretical | applied / not applied / inconsistent / invalid | |
-
-The scripture itself never changes with your mood: configuration keys, the
-markers in your files, JSON output and exit codes are identical in both modes.
-
 ## The Sanctum
 
 ```kdl
-// begin servitor managed -- mouse-autohide -- state|on reason|"gaming remnant"
+// begin servitor managed -- mouse-autohide -- state|off reason|"gaming remnant"
 cursor {
-    hide-after-inactive-ms 400
+    // hide-after-inactive-ms 400
 }
 // end servitor managed -- mouse-autohide
 ```
@@ -89,7 +64,7 @@ go install .              # or: go build -o ~/.local/bin/servitor .
 ### Completion Litanies
 
 Completion knows rites, aspects (the current one is marked), inscription
-runes (`--reason`, …) and their prescribed values, and augury keys.
+runes (`--<rune-key>`, …) and their prescribed values, and augury keys.
 
 ```sh
 # bash (requires the bash-completion package)
@@ -107,22 +82,22 @@ keyboard-driven shrine in the manner of lazygit: the rites on the left, the
 scripture of the chosen rite on the right (aspects, status, inscriptions,
 vessels with their sanctum state), and the Thought for the Day below.
 
-| Key | Rite | Plain |
-|-----|------|-------|
-| `↑/k` `↓/j` `g` `G` | choose a rite | move |
-| `enter` | invoke: choose an aspect (`1-9` for swift choice), `p` for an augury of the diff, then amend inscriptions | apply with state picker, preview and metadata |
-| `space` | cycle to the next aspect at once | next state |
-| `n` | consecrate a new rite (guided) | new switch wizard |
-| `e` | amend the rite (guided) | edit |
-| `c` | replicate the rite | clone |
-| `d` | excommunicate: `y` strike the definition, `p` also purge its sanctums | delete (optionally removing blocks) |
-| `o` | open the scripture in `$EDITOR` | edit raw file |
-| `i` | the verdict of the Inquisition | verify |
-| `/` | filter | filter |
-| `r` | re-read the Librarium | reload |
-| `t` | toggle the liturgy | toggle vocabulary |
-| `?` | lore | help |
-| `q` | retreat | quit |
+| Key | Rite |
+|-----|------|
+| `↑/k` `↓/j` `g` `G` | choose a rite |
+| `enter` | invoke: choose an aspect (`1-9` for swift choice), `p` for an augury of the diff, then amend inscriptions |
+| `space` | cycle to the next aspect at once |
+| `n` | consecrate a new rite (guided) |
+| `e` | amend the rite (guided) |
+| `c` | replicate the rite |
+| `d` | excommunicate: `y` strike the definition, `p` also purge its sanctums |
+| `o` | open the scripture in `$EDITOR` |
+| `i` | the verdict of the Inquisition |
+| `/` | filter |
+| `r` | re-read the Librarium |
+| `t` | toggle the liturgy |
+| `?` | lore |
+| `q` | retreat |
 
 The consecration wizard walks through three stations: **Rite** (name,
 purpose, aspects), **Vessels** (each with its path, ward, comment glyph, an
