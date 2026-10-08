@@ -1,0 +1,32 @@
+// +++ Rite of the Veiled Cursor +++
+//
+// Grants the machine spirit of niri the mercy of hiding the cursor when idle.
+//
+//   servitor invoke mouse-autohide-toggle on --reason "gaming remnant"
+//   servitor invoke mouse-autohide-toggle off
+//   servitor augury mouse-autohide-toggle
+{
+  "description": "Hide the mouse cursor after 400ms of inactivity",
+  "states": ["on", "off"],                 // the aspects of the rite
+  "files": [                                 // its vessels
+    {
+      "file": "~/.config/niri/util.kdl",
+      "guard": "mouse-autohide",             // the ward; default: the rite's name
+      "comment": "//",                       // default: divined from the extension
+      "create": true,                        // consecrate util.kdl if it does not exist
+      "values": [
+        {
+          "state": "on",
+          // the scripture may be one string or a list of lines
+          "value": ["cursor {", "    hide-after-inactive-ms 400", "}"],
+          "meta": {"mode": "auto-hide"}
+        },
+        {"state": "off", "value": "", "meta": {"mode": "always-visible", "reason": ""}},
+      ],
+      "meta": {                              // the inscriptions
+        "reason": {"optional": true, "description": "why the cursor's behaviour was changed"},
+        "mode": {"optional": false, "description": "the cursor's mode, for lesser scripts"},
+      },
+    },
+  ],
+}
