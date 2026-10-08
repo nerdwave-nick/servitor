@@ -1,0 +1,84 @@
+# +++ Thoughts for the Day +++
+
+# Litanies of the Servitor
+A file unwarded is a file defiled.
+Trust not the config touched by unsanctioned hands.
+The diff speaks only truth; the editor whispers lies.
+Suffer not the merge conflict to live.
+Even a dotfile may serve the Omnissiah.
+In the absence of a backup, faith must suffice.
+Comment your wards, lest your successors curse your name.
+Idle cursors breed heresy.
+Every newline is a prayer to the Machine God.
+Blessed is the scripture that parses on the first recital.
+A good rite performed twice changes nothing. Such is idempotence; such is grace.
+Question not the state. Consult the augury.
+A servitor does not ask why. It asks only which aspect.
+Only in rollback is there salvation.
+The Librarium forgets nothing that git remembers.
+Rename in haste; grep in penance.
+Only in SIGKILL does duty end.
+Sever not the Motive Force while a vessel is being written.
+
+# Echoes of the Imperial Creed
+In the grim darkness of the far future, there is only legacy code.
+The Emperor protects. The backup restores.
+Credentials are power. Guard them well.
+Lint the heretic. Test the mutant. Purge the unclean.
+A passing test proves nothing.
+There is no clean code, only degrees of legacy.
+Hotfixes beget regressions; regressions beget hotfixes.
+A small diff is a tidy diff.
+A green build needs no explanation; a red one allows none.
+Ruthless review is the kindness of the wise.
+If a task is worth doing, it is worth a servitor.
+The flesh is weak, but the shell script is weaker.
+The Omnissiah knows all. Lesser beings must consult the manual.
+"It works on my cogitator" is the first step on the road to disappointment.
+The difference between a feature and a bug is documentation.
+Blessed is the function too small for bugs.
+An open port is a fortress with its gates unbarred and unguarded.
+Even a function that returns nothing can still offer its side effects.
+Fear the nil pointer. Hate the race condition. Purge the deadlock.
+Death to the false positive!
+A goroutine without purpose will wander in dark places.
+The wise tech-priest learns from the deaths of other machines.
+Success is commemorated; failure merely logged.
+To mark a heresy "won't fix" is to blaspheme against the Emperor.
+Let the test environment burn, that production may endure.
+Abhor the global variable. Destroy the global variable.
+Heresy grows from changes no Magos has examined.
+Prayer cleanses the soul, but rebase cleanses the history.
+Better a slow build than a corrupt binary.
+The reward of tolerance is a vox-alarm in the dead of night.
+Branches must die so that main endures.
+Without semver there is only Chaos.
+Faith without tests is worthless.
+A suspicious mind validates its input.
+Excuses are the refuge of the untested.
+Fear the brownout. Hate the surge. Praise the Motive Force.
+Without the Motive Force, even the purest code is dead scripture.
+
+# Precepts of the forge
+Every unsaved buffer is a soul unshriven.
+A tab and a space shall not share an indentation.
+Write each commit message as if the Inquisition will read it. It will.
+sudo is a sacrament, not a habit.
+chmod 777 is the mark of the heretic.
+Blessed is the merge that fast-forwards.
+Force-push only with the Fabricator-General's sanction.
+The machine spirit remembers every unhandled error.
+Pray to the Omnissiah, but pin your versions.
+A TODO left unattended is a heresy deferred.
+Strike down the flaky test before its taint spreads.
+The trailing whitespace is small, but the Inquisition sees all.
+A reboot is not repentance.
+Prefer the dry run. The augury costs nothing.
+No vessel is too humble to be warded.
+Let no secret be committed, lest it be committed forever.
+The machine spirit speaks in error messages. Heed every word.
+Tolerate not the warning, for it is an error biding its time.
+The config you did not version is the config you will lose.
+A loop without end squanders the Motive Force.
+The battery backup is the Motive Force's mercy upon the unsaved.
+Route each cable with reverence, for the Motive Force flows within.

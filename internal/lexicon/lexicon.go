@@ -8,6 +8,7 @@
 package lexicon
 
 import (
+	_ "embed"
 	"os"
 	"strconv"
 	"strings"
@@ -123,30 +124,36 @@ func Detect(args []string) bool {
 	return !noGrim
 }
 
+// thoughtsFile holds one Thought for the Day per line. Blank lines and lines
+// starting with "#" are ignored.
+//
+//go:embed thoughts.txt
+var thoughtsFile string
+
 // Thoughts are the Thoughts for the Day shown by the cogitator.
-var Thoughts = []string{
-	"A file unwarded is a file defiled.",
-	"Trust not the hand-edited config.",
-	"The diff does not lie. The editor might.",
-	"Suffer not the merge conflict to live.",
-	"Even a dotfile may serve the Omnissiah.",
-	"In the absence of a backup, faith must suffice.",
-	"Comment your wards, lest your successors curse your name.",
-	"Idle cursors breed heresy.",
-	"Every newline is a prayer.",
-	"Blessed is the config that parses on the first attempt.",
-	"A rite performed twice changes nothing. Such is idempotence; such is grace.",
-	"Question not the state. Consult the augury.",
-	"A servitor does not ask why. It asks only which aspect.",
-	"Only in rollback is there true safety.",
-	"The Librarium forgets nothing that git remembers.",
-	"Rename in haste, grep at leisure.",
+var Thoughts = parseThoughts(thoughtsFile)
+
+// parseThoughts extracts the thoughts from the embedded file. An empty file
+// is a build defect, so it panics at startup rather than failing later.
+func parseThoughts(s string) []string {
+	var out []string
+	for line := range strings.Lines(s) {
+		line = strings.TrimSpace(line)
+		if line != "" && !strings.HasPrefix(line, "#") {
+			out = append(out, line)
+		}
+	}
+	if len(out) == 0 {
+		panic("lexicon: thoughts.txt holds no thoughts")
+	}
+	return out
 }
 
 // Thought returns the Thought for the Day with index n (any integer).
 func Thought(n int) string {
-	if n < 0 {
-		n = -n
+	i := n % len(Thoughts)
+	if i < 0 {
+		i += len(Thoughts)
 	}
-	return Thoughts[n%len(Thoughts)]
+	return Thoughts[i]
 }
