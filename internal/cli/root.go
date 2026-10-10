@@ -50,8 +50,8 @@ func (a *app) servitor(cmd *cobra.Command) *rituals.Servitor {
 }
 
 // runTUI awakens the cogitator; replaced in tests.
-var runTUI = func(dir string) error {
-	return tui.Run(tui.Options{Dir: dir})
+var runTUI = func(opt tui.Options) error {
+	return tui.Run(opt)
 }
 
 // isTerminal reports whether the cogitator can run; replaced in tests.
@@ -77,7 +77,7 @@ func NewRootCmd(args []string, stdout, stderr io.Writer) *cobra.Command {
 			if !isTerminal() {
 				return cmd.Help()
 			}
-			return runTUI(a.lib.Dir)
+			return a.cogitator(cmd)
 		},
 	}
 	root.SetOut(stdout) // before flavor: the completion command captures its writer
@@ -103,8 +103,14 @@ func (a *app) newTUICmd() *cobra.Command {
 		Use:   "cogitator",
 		Short: "Awaken the cogitator, the interactive shrine of rites",
 		Args:  cobra.NoArgs,
-		RunE:  func(*cobra.Command, []string) error { return runTUI(a.lib.Dir) },
+		RunE:  func(cmd *cobra.Command, _ []string) error { return a.cogitator(cmd) },
 	}
+}
+
+// cogitator awakens the cogitator upon the Librarium, swayed by the runes
+// spoken to the ritual cmd.
+func (a *app) cogitator(cmd *cobra.Command) error {
+	return runTUI(tui.Options{Dir: a.lib.Dir, Runes: runesOf(cmd)})
 }
 
 // unknownRitual rejects arguments to the servitor itself: whatever was

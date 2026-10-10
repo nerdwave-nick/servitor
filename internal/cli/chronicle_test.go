@@ -11,6 +11,8 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/nerdwave-nick/servitor/internal/librarium"
+	"github.com/nerdwave-nick/servitor/internal/rituals"
+	"github.com/nerdwave-nick/servitor/internal/tui"
 )
 
 // heededChronicle runs servitor with args ending in the "probe" ritual and
@@ -82,6 +84,39 @@ func TestChronicleRune_AliasStaysHidden(t *testing.T) {
 		}
 		if slices.Contains(got, "--log") {
 			t.Errorf("completion %v offers hidden alias --log: %v", args, got)
+		}
+	}
+}
+
+// TestChronicleRune_ReachesTheCogitator: the cogitator, awakened by its
+// ritual or by the bare servitor at a terminal, keeps the chronicle the
+// runes, the environment and the settings place, in that order.
+func TestChronicleRune_ReachesTheCogitator(t *testing.T) {
+	e := newEnv(t)
+	origRun, origTerm := runTUI, isTerminal
+	t.Cleanup(func() { runTUI, isTerminal = origRun, origTerm })
+	isTerminal = func() bool { return true }
+	var heeded string
+	runTUI = func(opt tui.Options) error {
+		heeded = rituals.Open(opt.Dir, opt.Runes).Orders().Chronicle
+		return nil
+	}
+	t.Setenv(librarium.EnvChronicle, "/env.jsonl")
+	cases := []struct {
+		args []string
+		want string
+	}{
+		{[]string{"cogitator", "--chronicle", "/rune.jsonl"}, "/rune.jsonl"},
+		{[]string{"--log", "/alias.jsonl", "cogitator"}, "/alias.jsonl"},
+		{[]string{"--chronicle", "/bare.jsonl"}, "/bare.jsonl"},
+		{[]string{"cogitator"}, "/env.jsonl"},
+		{nil, "/env.jsonl"},
+	}
+	for _, tc := range cases {
+		heeded = ""
+		e.mustRun(tc.args...)
+		if heeded != tc.want {
+			t.Errorf("servitor %v: the cogitator keeps the chronicle %q, want %q", tc.args, heeded, tc.want)
 		}
 	}
 }
