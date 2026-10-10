@@ -43,7 +43,7 @@ domain and the code; never add plain words or plain glosses to anything a user r
 | symlink step / target | tether / anchor | `tether`, `anchor` |
 | shell command step | incantation | `incantation` |
 | script file step | litany | `litany` |
-| script arguments | offerings | `offerings` (list; templated; aspect map; no shell parsing) |
+| script arguments | offerings | `offerings` (list; templated; aspect map; leading `~/` or lone `~` → home; no other shell parsing) |
 | shell | tongue | `tongue` (default bash) |
 | timeout | patience | `patience` |
 | rollback (per step) | reversion | `reversion` |

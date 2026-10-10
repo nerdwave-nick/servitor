@@ -3,10 +3,15 @@ What is laid before a litany for its scroll to work with
 A litany receives nothing it is not offered. Its "offerings" are a list of
 words handed to the scroll in the order written, each as one whole word: the
 servitor neither splits them at spaces, nor reads quotation marks, nor lets
-any tongue interpret them, nor expands a leading "~" or a $NAME. Only their
-placeholders are filled — {{aspect}}, {{former}}, {{rite.name}} and
-{{inscription.<key>}} — so an inscription full of spaces and quotation marks
-arrives at the scroll exactly as it was given.
+any tongue interpret them, nor expands a $NAME. Their placeholders are filled
+— {{aspect}}, {{former}}, {{rite.name}} and {{inscription.<key>}} — so an
+inscription full of spaces and quotation marks arrives at the scroll exactly
+as it was given.
+
+One mercy alone is granted, as to the path of a vessel: an offering that,
+once its placeholders are filled, begins with "~/" — or is "~" and nothing
+more — is offered from the home of the invoker. Any other "~" stays as
+written, and an offering is never reckoned from the rite's hall.
 
 Each offering may differ for every aspect as an aspect map; an aspect for
 which an offering holds nothing, and no "*" serves, is heresy. Without
@@ -20,7 +25,7 @@ Kindred passages: litany, placeholders, aspect-maps, inscriptions
 
 Exempla:
   {"litany": "scripts/change-theme",
-   "offerings": ["{{aspect}}", "{{inscription.reason}}"]}
+   "offerings": ["~/.config/nfluff/themes/{{aspect}}", "{{inscription.reason}}"]}
 
   {"litany": "scripts/screen-transition",
    "offerings": [{"night": "fade", "*": "wipe"}, "250"]}

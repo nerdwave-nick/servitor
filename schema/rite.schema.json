@@ -359,7 +359,7 @@
           "$ref": "#/$defs/commands"
         },
         "offerings": {
-          "description": "What is laid before the scroll, each word handed over exactly as written with only its placeholders filled; nothing is offered unbidden.",
+          "description": "What is laid before the scroll, each word handed over exactly as written with only its placeholders filled and a leading \"~/\" (or a lone \"~\") borne to the invoker's home; nothing is offered unbidden.",
           "type": "array",
           "items": {"$ref": "#/$defs/verses"}
         },

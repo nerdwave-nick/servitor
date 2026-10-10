@@ -141,16 +141,22 @@ func (r *Rite) Dir() string { return filepath.Dir(r.Path) }
 // ResolvePath expands a leading "~" and $VARS in p and resolves a relative
 // result against the rite's directory.
 func (r *Rite) ResolvePath(p string) string {
-	if p == "~" || strings.HasPrefix(p, "~/") {
-		if home, err := os.UserHomeDir(); err == nil {
-			p = home + p[1:]
-		}
-	}
-	p = os.ExpandEnv(p)
+	p = os.ExpandEnv(ExpandHome(p))
 	if !filepath.IsAbs(p) {
 		p = filepath.Join(r.Dir(), p)
 	}
 	return filepath.Clean(p)
+}
+
+// ExpandHome replaces a leading "~/", or a "~" standing alone, with the home
+// of the faithful; every other "~" is left as written.
+func ExpandHome(p string) string {
+	if p == "~" || strings.HasPrefix(p, "~/") {
+		if home, err := os.UserHomeDir(); err == nil {
+			return home + p[1:]
+		}
+	}
+	return p
 }
 
 // Locate returns where the value at the JSON pointer ptr (e.g.
