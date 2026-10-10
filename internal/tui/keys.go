@@ -26,6 +26,7 @@ var overviewBindings = []binding{
 	{"o", "open in $EDITOR", false},
 	{"i", "inquisition", false},
 	{"O", "words of the last invocation", false},
+	{"h", "read the chronicle", false},
 	{"/", "filter", false},
 	{"r", "reload the Librarium", false},
 	{"?", "expound the codex", true},

@@ -4,6 +4,8 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+
+	"github.com/nerdwave-nick/servitor/internal/tui"
 )
 
 // TestRootHelpAndVersion: the servitor's own lore is the index of the codex;
@@ -126,8 +128,8 @@ func TestRoot_StartsCogitatorOnlyOnTerminal(t *testing.T) {
 	var gotDir string
 	origRun, origTerm := runTUI, isTerminal
 	t.Cleanup(func() { runTUI, isTerminal = origRun, origTerm })
-	runTUI = func(dir string) error {
-		gotDir = dir
+	runTUI = func(opt tui.Options) error {
+		gotDir = opt.Dir
 		return nil
 	}
 

@@ -24,7 +24,11 @@ the one so named before, and a fresh chronicle begins. Thus the current and
 the previous chronicle endure, and older memory is forgotten. Halls missing
 above the chronicle are raised when the first line is written.
 
-Kindred passages: verdicts, verse, invoke, data-slate, librarium, inscriptions
+In the cogitator the key h unrolls the chronicle, current and rotated
+alike, newest first and filtered to the chosen rite; enter reads one entry
+whole.
+
+Kindred passages: verdicts, verse, invoke, data-slate, librarium, inscriptions, cogitator
 
 Exempla:
   {"at": "2026-10-10T13:30:00Z", "rite": "theme", "aspect": "porpl",
