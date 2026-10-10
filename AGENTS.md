@@ -10,6 +10,9 @@ domain and the code; never add plain words or plain glosses to anything a user r
 - The codex (`servitor expound`): one grimdark passage per topic in
   `internal/codex/passages/<topic>.txt`; tests fail when a ritual, rune, step or key
   lacks its passage, or when a passage speaks a plain word of the lookup below
+- JSON Schemas of rites and settings: `schema/*.schema.json` (embedded, recited by
+  `servitor expound --schema`); tests fail when their keys drift from `internal/librarium`,
+  when they judge a scripture otherwise than the librarium, or when they speak a plain word
 - Design decisions: `docs/adr/`
 - Planning history: lit project `feat/servitor`, map "Plan: rite format v2 (steps,
   elevation, aspect maps)"

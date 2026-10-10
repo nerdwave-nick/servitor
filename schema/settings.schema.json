@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/nerdwave-nick/servitor/main/schema/settings.schema.json",
+  "title": "Settings of the servitor, pattern Mark I",
+  "description": "The servitor's standing orders, kept as servitor.json in the Librarium. A rune outranks the environment, the environment outranks these orders, and these orders outrank the defaults. Recite 'servitor expound <key>' for the lore of any key.",
+  "type": "object",
+  "required": ["pattern"],
+  "additionalProperties": false,
+  "properties": {
+    "pattern": {
+      "description": "The Mark of the form in which these orders are written. This servitor reads only \"Mark I\"; orders of no pattern, or of another, are heresy and none of them is heeded.",
+      "const": "Mark I"
+    },
+    "tongue": {
+      "description": "The program in which incantations and litanies are spoken when neither their rite nor the step names one.",
+      "$ref": "#/$defs/word",
+      "default": "bash"
+    },
+    "chronicle": {
+      "description": "Where the chronicle of every invocation is kept; a path that does not begin at the root is reckoned from the Librarium. The rune --chronicle and SERVITOR_CHRONICLE outrank it; $XDG_STATE_HOME/servitor/chronicle.jsonl when unwritten.",
+      "$ref": "#/$defs/word"
+    },
+    "vox": {
+      "description": "Whether vox-casts reach the desktop: \"notify-send\" sends the tidings of every invocation there, \"off\" keeps the desktop silent (a terminal still hears them).",
+      "enum": ["notify-send", "off"],
+      "default": "notify-send"
+    },
+    "patience": {
+      "description": "How long an incantation or litany may labour before it is slain and deemed fallen, unless the step says otherwise: a span greater than nothing, such as \"500ms\", \"30s\" or \"2m\".",
+      "$ref": "#/$defs/patience",
+      "default": "30s"
+    },
+    "$schema": {
+      "description": "The schema these orders are written against, for the editors of the faithful. The servitor accepts it and heeds it not.",
+      "type": "string"
+    }
+  },
+  "$defs": {
+    "word": {
+      "description": "Words that may not be empty, for the servitor cannot heed what names nothing.",
+      "type": "string",
+      "pattern": "\\S"
+    },
+    "patience": {
+      "description": "A span greater than nothing, as the old cogitators reckon it: numerals each followed by \"ns\", \"us\", \"ms\", \"s\", \"m\" or \"h\".",
+      "type": "string",
+      "pattern": "^\\+?(([0-9]+(\\.[0-9]*)?|\\.[0-9]+)(ns|us|µs|μs|ms|s|m|h))+$",
+      "not": {"pattern": "^\\+?((0+(\\.0*)?|\\.0+)(ns|us|µs|μs|ms|s|m|h))+$"}
+    }
+  }
+}

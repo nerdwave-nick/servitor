@@ -9,8 +9,9 @@ import (
 )
 
 // Marshal writes r as indented Mark I scripture. Keys follow the order of
-// the codex, defaults that were never written stay unwritten, the alias
-// "force" is written as "zeal", and comments are not preserved.
+// the codex (save "$schema", which is kept and written first), defaults that
+// were never written stay unwritten, the alias "force" is written as "zeal",
+// and comments are not preserved.
 func Marshal(r *Rite) ([]byte, error) {
 	var buf bytes.Buffer
 	w := &writer{enc: jsontext.NewEncoder(&buf, jsontext.WithIndent("  "))}
@@ -80,6 +81,7 @@ func writeMap[T any](w *writer, m AspectMap[T], one func(T)) {
 
 func (w *writer) rite(r *Rite) {
 	w.begin()
+	w.optional(SchemaKey, r.Schema)
 	w.field("pattern", Pattern)
 	w.optional("purpose", r.Purpose)
 	w.str("aspects")

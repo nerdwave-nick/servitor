@@ -46,7 +46,7 @@ var settingsHeresies = []struct {
 	{"pattern no string", `{"pattern": 1}`, "numerals of the old tongue", `1}`},
 	{"pattern unknown mark", `{"pattern": "Mark II"}`, `forged to read only "Mark I"`, `"Mark II"`},
 	{"unknown key", `{"pattern": "Mark I", "shell": "zsh"}`,
-		`the key "shell" is not written in the codex for the settings; strike it, or write one of the keys the codex knows there: "pattern", "tongue", "chronicle", "vox", "patience"`, `"shell"`},
+		`the key "shell" is not written in the codex for the settings; strike it, or write one of the keys the codex knows there: "pattern", "tongue", "chronicle", "vox", "patience", "$schema"`, `"shell"`},
 	{"key twice", `{"pattern": "Mark I", "vox": "off", "vox": "off"}`, `the key "vox" is written twice`, `"vox": "off"}`},
 	{"patience unreadable", `{"pattern": "Mark I", "patience": "soon"}`, `"soon" is no measure of patience the servitor understands; the "patience" of the settings`, `"soon"`},
 	{"patience nothing", `{"pattern": "Mark I", "patience": "0s"}`, `"0s" is no measure of patience`, `"0s"`},

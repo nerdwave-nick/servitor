@@ -1,12 +1,14 @@
 package codex
 
 import (
+	"encoding/json"
 	"regexp"
 	"slices"
 	"strings"
 	"testing"
 
 	"github.com/nerdwave-nick/servitor/internal/librarium"
+	"github.com/nerdwave-nick/servitor/schema"
 )
 
 // keysOfTheLibrarium are every key a rite or the settings may hold and every
@@ -42,10 +44,14 @@ func TestEveryKeyAndStepHasAPassage(t *testing.T) {
 		if _, alias := librarium.Aliases[key]; alias {
 			continue
 		}
-		if p.Topic != key {
+		topic := key
+		if t, ok := keyTopics[key]; ok {
+			topic = t
+		}
+		if p.Topic != topic {
 			t.Errorf("the key %q recites the passage of %q", key, p.Topic)
 		}
-		if !slices.Contains(listed(), key) {
+		if !slices.Contains(listed(), topic) {
 			t.Errorf("the key %q is missing from the index of the codex", key)
 		}
 	}
@@ -55,6 +61,9 @@ func TestEveryKeyAndStepHasAPassage(t *testing.T) {
 		}
 	}
 	for _, k := range librarium.SettingsKeys {
+		if t, ok := keyTopics[k]; ok {
+			k = t
+		}
 		if !slices.Contains(chapter(t, SettingsChapter), k) {
 			t.Errorf("the settings key %q is missing from the chapter of settings", k)
 		}
@@ -93,6 +102,69 @@ func TestEveryListedNameHasAPassage(t *testing.T) {
 	if got := Topics(); len(got) != len(passages) {
 		t.Errorf("Topics lists %d names for %d passages: %v", len(got), len(passages), got)
 	}
+}
+
+// TestSchemaKey_IsExpoundedAsSchema: "$schema" is expounded under the name
+// of its rune, which every terminal can speak, and stands in the chapters
+// of the keys of a rite and of the settings as that.
+func TestSchemaKey_IsExpoundedAsSchema(t *testing.T) {
+	p, ok := Lookup(librarium.SchemaKey)
+	if !ok || p.Topic != "schema" {
+		t.Fatalf("%q recites %q (found %v), want schema", librarium.SchemaKey, p.Topic, ok)
+	}
+	for _, title := range []string{RunesChapter, RiteChapter, SettingsChapter} {
+		if !slices.Contains(chapter(t, title), "schema") {
+			t.Errorf("the chapter %q lacks schema", title)
+		}
+	}
+	if slices.Contains(listed(), librarium.SchemaKey) || slices.Contains(Topics(), librarium.SchemaKey) {
+		t.Errorf("the codex lists %q under its own name", librarium.SchemaKey)
+	}
+	for _, want := range []string{`"$schema"`, "--schema", schema.URL(schema.Rite), schema.URL(schema.Settings)} {
+		if !strings.Contains(p.Body, want) {
+			t.Errorf("the passage on the schema lacks %q", want)
+		}
+	}
+}
+
+// TestSchemas_SpeakNoPlainGloss: the lore the schemas lend the faithful's
+// editors is grimdark, like the codex.
+func TestSchemas_SpeakNoPlainGloss(t *testing.T) {
+	for _, name := range schema.Names {
+		data, _ := schema.For(name)
+		var tree any
+		if err := json.Unmarshal(data, &tree); err != nil {
+			t.Fatalf("schema %s: %v", name, err)
+		}
+		texts := lore(tree)
+		if len(texts) < 10 {
+			t.Fatalf("schema %s holds too little lore: %v", name, texts)
+		}
+		for _, text := range texts {
+			if w := plainWord(text); w != "" {
+				t.Errorf("schema %s speaks the plain word %q: %s", name, w, text)
+			}
+		}
+	}
+}
+
+// lore gathers every title and description beneath v.
+func lore(v any) []string {
+	var out []string
+	switch v := v.(type) {
+	case map[string]any:
+		for k, child := range v {
+			if s, ok := child.(string); ok && (k == "description" || k == "title") {
+				out = append(out, s)
+			}
+			out = append(out, lore(child)...)
+		}
+	case []any:
+		for _, child := range v {
+			out = append(out, lore(child)...)
+		}
+	}
+	return out
 }
 
 // TestHiddenNames_ReciteButAreNeverListed: the deliberate aliases lead to the

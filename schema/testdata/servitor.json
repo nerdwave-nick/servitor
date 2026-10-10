@@ -1,0 +1,9 @@
+// The standing orders of a servitor, every key written.
+{
+  "$schema": "https://raw.githubusercontent.com/nerdwave-nick/servitor/main/schema/settings.schema.json",
+  "pattern": "Mark I",
+  "tongue": "zsh",
+  "chronicle": "~/.local/state/servitor/chronicle.jsonl",
+  "vox": "off",
+  "patience": "45s",
+}

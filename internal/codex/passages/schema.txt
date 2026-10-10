@@ -1,0 +1,41 @@
+The form-codex of a rite and of the settings, for the editors of the faithful
+
+The servitor bears two schemas of pattern Mark I, written in JSON Schema, the
+common tongue of form that the machine spirits of many editors understand:
+one for the scripture of a rite, one for the settings in servitor.json. An
+editor that knows them offers every key as it is written, names the forms
+each key permits, recites the lore of each key beside it, and denounces a
+malformed key before the Inquisition ever convenes.
+
+A scripture names its schema under "$schema", by custom its first key. The
+servitor accepts "$schema" in every rite and in the settings and heeds it
+not: it changes nothing of an invocation, and the Inquisition asks only that
+it be written as a string. Should the servitor write a rite's scripture
+anew, its "$schema" is kept, first as before.
+
+The schemas are kept in the servitor's own repository and are named by their
+raw address:
+
+  https://raw.githubusercontent.com/nerdwave-nick/servitor/main/schema/rite.schema.json
+  https://raw.githubusercontent.com/nerdwave-nick/servitor/main/schema/settings.schema.json
+
+The rune --schema bids expound recite a schema itself rather than a passage:
+the schema of a rite when spoken alone or with "rite", the schema of the
+settings when spoken with "settings". What is recited is the very schema kept
+in the repository, letter for letter, to be kept beside the Librarium where
+no noosphere reaches.
+
+A schema knows the form of every key, but not the rite it stands in: it
+cannot tell whether an aspect map names only declared aspects and serves
+them all, whether a placeholder is known, or whether a tome stands where it
+is named. The Inquisition alone judges these.
+
+Kindred passages: expound, inquisition, rite, pattern, aspect-maps
+
+Exempla:
+  {"$schema": "https://raw.githubusercontent.com/nerdwave-nick/servitor/main/schema/rite.schema.json",
+   "pattern": "Mark I",
+   "aspects": ["on", "off"]}
+
+  servitor expound --schema > ~/.config/servitor/rite.schema.json
+  servitor expound --schema settings

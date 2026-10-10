@@ -7,9 +7,14 @@ import (
 	"github.com/tailscale/hujson"
 )
 
+// SchemaKey names the schema a scripture is written against, for the
+// faithful's editors; rites and settings accept it, and the servitor heeds
+// it not.
+const SchemaKey = "$schema"
+
 // Keys of the objects of a Mark I scripture, in the order of the codex.
 var (
-	RiteKeys        = []string{"pattern", "purpose", "aspects", "inscriptions", "auspex", "tongue", "liturgy"}
+	RiteKeys        = []string{"pattern", "purpose", "aspects", "inscriptions", "auspex", "tongue", "liturgy", SchemaKey}
 	InscriptionKeys = []string{"purpose", "mandatory", "decrees"}
 	AuspexKeys      = []string{"rite", "patience"}
 	TomeKeys        = []string{"tome", "illuminate"}
@@ -65,6 +70,9 @@ func (d *decoder) decodeRite(root *hujson.Value) *Rite {
 			"or digit and continue only with letters, digits, '.', '_' or '-'", r.Name)
 	}
 	fs, _ := d.object(root, "a rite", RiteKeys)
+	if m, ok := fs.get(SchemaKey); ok {
+		r.Schema, _ = d.str(m.val, `the "$schema" of a rite`)
+	}
 	if m, ok := fs.get("purpose"); ok {
 		r.Purpose, _ = d.str(m.val, `the "purpose" of a rite`)
 	}

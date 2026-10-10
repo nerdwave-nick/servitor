@@ -19,6 +19,11 @@ A topic the codex does not hold is denounced, and the topics that most
 resemble it are offered in its stead. Completion offers every topic of the
 index, each with its summing line.
 
+Spoken with the rune --schema, expound recites no passage but a schema of
+pattern Mark I, letter for letter as the repository keeps it: the schema of
+a rite's scripture, or with "settings" the schema of the settings. The
+passage schema tells their lore.
+
 Know the servitor in brief, as the codex teaches it: a rite, kept in the
 Librarium, knows a fixed set of aspects and a liturgy of steps performed in
 the order written — sanctums, transcriptions, tethers, incantations, litanies
@@ -33,9 +38,10 @@ the vessel's end when not yet kept:
 Every invocation is recorded in the chronicle; the augury, the census and
 the Inquisition tell how the rites stand.
 
-Kindred passages: invoke, rite, liturgy, cogitator, completion
+Kindred passages: invoke, rite, liturgy, cogitator, completion, schema
 
 Exempla:
   servitor expound
   servitor expound tether
   servitor expound inscriptions | less
+  servitor expound --schema settings
