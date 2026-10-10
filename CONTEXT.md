@@ -82,7 +82,8 @@ A step that recites a whole written scroll of commands. Key: `litany`.
 
 **Offerings**:
 What is laid before a litany for it to work with — each offering handed to the scroll
-exactly as written, placeholders filled. A litany receives nothing it is not offered.
+exactly as written, placeholders filled and a leading `~/` borne to the invoker's home.
+A litany receives nothing it is not offered.
 Key: `offerings`.
 
 **Vox-cast**:

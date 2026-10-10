@@ -4,29 +4,29 @@
 //
 //   servitor invoke mouse-autohide-toggle on --reason "gaming remnant"
 //   servitor invoke mouse-autohide-toggle off
-//   servitor augury mouse-autohide-toggle
+//   servitor augury mouse-autohide-toggle mode
 {
-  "description": "Hide the mouse cursor after 400ms of inactivity",
-  "states": ["on", "off"],                 // the aspects of the rite
-  "files": [                                 // its vessels
+  "$schema": "https://raw.githubusercontent.com/nerdwave-nick/servitor/main/schema/rite.schema.json",
+  "pattern": "Mark I",
+  "purpose": "Hide the cursor after 400ms of stillness",
+  "aspects": ["on", "off"],
+  "inscriptions": {
+    "reason": {"purpose": "why the cursor's bearing was changed"},
+    "mode": {"mandatory": true, "decrees": {"on": "auto-hide", "off": "always-visible"}},
+  },
+  "liturgy": [
     {
-      "file": "~/.config/niri/util.kdl",
-      "guard": "mouse-autohide",             // the ward; default: the rite's name
-      "comment": "//",                       // default: divined from the extension
-      "create": true,                        // consecrate util.kdl if it does not exist
-      "values": [
-        {
-          "state": "on",
-          // the scripture may be one string or a list of lines
-          "value": ["cursor {", "    hide-after-inactive-ms 400", "}"],
-          "meta": {"mode": "auto-hide"}
-        },
-        {"state": "off", "value": "", "meta": {"mode": "always-visible", "reason": ""}},
-      ],
-      "meta": {                              // the inscriptions
-        "reason": {"optional": true, "description": "why the cursor's behaviour was changed"},
-        "mode": {"optional": false, "description": "the cursor's mode, for lesser scripts"},
+      "sanctum": "~/.config/niri/util.kdl",
+      "ward": "mouse-autohide",   // default: the rite's name
+      "consecrate": true,         // bring util.kdl into being if it is missing
+      "scripture": {
+        "on": ["cursor {", "    hide-after-inactive-ms 400", "}"],
+        "off": "",
       },
     },
+    // bid niri read its scripture anew, and grant it five seconds to obey
+    {"incantation": "niri msg action load-config-file", "patience": "5s"},
+    // a hotkey has no terminal: let the desktop hear of the triumph
+    {"vox-cast": "success"},
   ],
 }

@@ -24,7 +24,8 @@ func (p *preflight) incantation(s *librarium.Incantation) performer {
 }
 
 // litany examines a litany: its scroll, which must stand once the steps
-// before it are performed, its offerings and its utterance.
+// before it are performed, its offerings, rendered and with a leading "~"
+// borne to the home of the faithful, and its utterance.
 func (p *preflight) litany(s *librarium.Litany) performer {
 	field := mapField(p, "litany", s.Scroll)
 	text, okWords := p.words("litany", s.Scroll)
@@ -32,7 +33,7 @@ func (p *preflight) litany(s *librarium.Litany) performer {
 	ok = ok && okWords
 	for i, o := range s.Offerings {
 		offering, okOffering := p.words(fmt.Sprintf("offerings/%d", i), o)
-		sp.Offerings = append(sp.Offerings, offering)
+		sp.Offerings = append(sp.Offerings, librarium.ExpandHome(offering))
 		ok = ok && okOffering
 	}
 	if !ok {

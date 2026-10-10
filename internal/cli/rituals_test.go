@@ -1,7 +1,9 @@
 package cli
 
 import (
+	"bytes"
 	"encoding/json/v2"
+	"os"
 	"regexp"
 	"strings"
 	"testing"
@@ -147,6 +149,21 @@ func TestInquisition_Vessels(t *testing.T) {
 	e.writeTarget("// +++ begin of sanctum mouse-autohide-toggle -- aspect|on +++\n")
 	if out, _, code := e.run("inquisition"); code != 1 || !strings.Contains(out, "never sealed") {
 		t.Fatalf("broken markers: code=%d out=%s", code, out)
+	}
+}
+
+// TestInquisition_TheExamplesArePure: the example Librarium shown to the
+// faithful passes the inquisition, its vessels spared, and the scroll its
+// theme rite recites stands ready to be executed.
+func TestInquisition_TheExamplesArePure(t *testing.T) {
+	t.Setenv("HOME", t.TempDir())
+	var out, errb bytes.Buffer
+	code := Execute([]string{"--librarium", "../../examples", "inquisition", "--spare-vessels"}, &out, &errb)
+	if code != 0 || out.String() != "" || !strings.Contains(errb.String(), "examined 2 rite(s)") {
+		t.Fatalf("code=%d\nstdout: %s\nstderr: %s", code, out.String(), errb.String())
+	}
+	if info, err := os.Stat("../../examples/rites/scripts/recite-hooks"); err != nil || info.Mode()&0o111 == 0 {
+		t.Fatalf("the scroll of the theme rite: %v %v", info, err)
 	}
 }
 

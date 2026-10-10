@@ -16,9 +16,10 @@ a litany then recites.
 
 A litany receives nothing it is not offered. Under "offerings" a list of
 words is laid before the scroll, each handed over exactly as written — never
-parsed by a tongue, never split, no "~" expanded — with only its placeholders
-filled; each may differ per aspect. Without offerings the scroll is recited
-bare, and learns the aspect from SERVITOR_ASPECT and its kin.
+parsed by a tongue, never split, no $NAME expanded — with only its
+placeholders filled and a leading "~/" borne to the invoker's home; each may
+differ per aspect. Without offerings the scroll is recited bare, and learns
+the aspect from SERVITOR_ASPECT and its kin.
 
 Like an incantation, the scroll is recited in the rite's hall with nothing
 upon its input, anointed with SERVITOR_ASPECT, SERVITOR_FORMER_ASPECT,

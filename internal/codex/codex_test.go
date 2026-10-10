@@ -2,6 +2,8 @@ package codex
 
 import (
 	"encoding/json"
+	"os"
+	"path/filepath"
 	"regexp"
 	"slices"
 	"strings"
@@ -222,6 +224,27 @@ func TestPassages_SpeakNoPlainGloss(t *testing.T) {
 	}
 	if w := plainWord(IndexText()); w != "" {
 		t.Errorf("the index speaks the plain word %q", w)
+	}
+}
+
+// TestScripturesOfTheFaithful_SpeakNoPlainGloss: the README and the example
+// Librarium the faithful read first are grimdark, like the codex.
+func TestScripturesOfTheFaithful_SpeakNoPlainGloss(t *testing.T) {
+	paths := []string{"../../README.md", "../../examples/rites/scripts/recite-hooks"}
+	rites, _ := filepath.Glob("../../examples/rites/*.json")
+	if len(rites) < 2 {
+		t.Fatalf("too few example rites: %v", rites)
+	}
+	for _, path := range append(paths, rites...) {
+		data, err := os.ReadFile(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for i, line := range strings.Split(string(data), "\n") {
+			if w := plainWord(line); w != "" {
+				t.Errorf("%s:%d speaks the plain word %q: %s", path, i+1, w, line)
+			}
+		}
 	}
 }
 

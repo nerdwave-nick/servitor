@@ -121,14 +121,14 @@ func TestLitany_RecitedByItsShebangWithExactlyItsOfferings(t *testing.T) {
 	scroll := write(t, fx.lib, "rites/scripts/recite", "#!/bin/bash\n"+recorder, 0o755)
 	args := filepath.Join(fx.data, "args")
 	r := fx.rite(t, `{"litany": "scripts/recite", "offerings": ["$DATA/args", "two words", "$HOME; rm -rf /",
-	  "~/themes/{{aspect}}", {"on": "lit", "*": "unlit"}, "it's \"quoted\"", ""]}`)
+	  "themes/{{aspect}}", {"on": "lit", "*": "unlit"}, "it's \"quoted\"", ""]}`)
 
 	out, seen := perform(t, r, Options{Aspect: "on"})
 
 	if out.Verdict != Triumph {
 		t.Fatalf("outcome %+v", out)
 	}
-	want := []string{"6", "two words", "$HOME; rm -rf /", "~/themes/on", "lit", `it's "quoted"`, ""}
+	want := []string{"6", "two words", "$HOME; rm -rf /", "themes/on", "lit", `it's "quoted"`, ""}
 	if got := strings.Split(read(t, args), "\n"); !slices.Equal(got[:len(got)-1], want) {
 		t.Fatalf("offered %q, want %q", got, want)
 	}
@@ -138,6 +138,35 @@ func TestLitany_RecitedByItsShebangWithExactlyItsOfferings(t *testing.T) {
 	}
 	if out.Deeds[0].Target != scroll {
 		t.Fatalf("deed names %+v", out.Deeds[0].Verse)
+	}
+}
+
+// TestLitany_OfferingsBearTheHomeOfTheFaithful: an offering that begins
+// with "~/", or is "~" alone, once its placeholders are rendered, is offered
+// from the home of the faithful, as a vessel's path is; no other "~" and no
+// $VARS are touched, and the foresight shows what will be offered.
+func TestLitany_OfferingsBearTheHomeOfTheFaithful(t *testing.T) {
+	fx := newFixture(t)
+	home := t.TempDir()
+	t.Setenv("HOME", home)
+	write(t, fx.lib, "rites/scripts/recite", "#!/bin/bash\n"+recorder, 0o755)
+	args := filepath.Join(fx.data, "args")
+	r := fx.rite(t, `{"litany": "scripts/recite", "offerings": ["$DATA/args",
+	  "~/.config/nfluff/themes/{{aspect}}", "~", "{{inscription.reason}}", "a~b", "x/~", "~faithful/x", "$HOME/x",
+	  "./~/x", " ~/x"]}`)
+
+	out, seen := perform(t, r, Options{Aspect: "on", Inscriptions: map[string]string{"reason": "~/why"}})
+
+	if out.Verdict != Triumph {
+		t.Fatalf("outcome %+v", out)
+	}
+	want := []string{home + "/.config/nfluff/themes/on", home, home + "/why", "a~b", "x/~", "~faithful/x", "$HOME/x",
+		"./~/x", " ~/x"}
+	if got := strings.Split(read(t, args), "\n"); !slices.Equal(got[1:len(got)-1], want) {
+		t.Fatalf("offered %q, want %q", got, want)
+	}
+	if s := seen[0].Speech; !slices.Equal(s.Offerings, append([]string{args}, want...)) {
+		t.Fatalf("foresaw the offerings %q", s.Offerings)
 	}
 }
 
