@@ -237,12 +237,16 @@ func (f *form) update(msg tea.Msg) (formResult, tea.Cmd) {
 			}
 		}
 	}
+	before := cur.value()
 	var cmd tea.Cmd
 	switch cur.kind {
 	case fieldText:
 		cur.input, cmd = cur.input.Update(msg)
 	case fieldArea:
 		cur.area, cmd = cur.area.Update(msg)
+	}
+	if cur.value() != before {
+		cur.err = "" // the lament fades once the field is amended
 	}
 	return formContinue, cmd
 }
