@@ -1,6 +1,7 @@
 package invocation
 
 import (
+	"context"
 	"maps"
 
 	"github.com/nerdwave-nick/servitor/internal/librarium"
@@ -113,7 +114,7 @@ type voxCast struct {
 	tidings Tidings
 }
 
-func (s voxCast) verse() Verse        { return s.v }
-func (s voxCast) foresee() Foresight  { return Foresight{Verse: s.v} }
-func (voxCast) perform() error        { return nil }
-func (voxCast) revert() (bool, error) { return false, nil }
+func (s voxCast) verse() Verse                { return s.v }
+func (s voxCast) foresee() Foresight          { return Foresight{Verse: s.v} }
+func (voxCast) perform(context.Context) error { return nil }
+func (voxCast) revert() (bool, error)         { return false, nil }

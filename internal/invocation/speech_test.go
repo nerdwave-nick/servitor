@@ -1,6 +1,7 @@
 package invocation
 
 import (
+	"context"
 	"errors"
 	"os"
 	"path/filepath"
@@ -430,5 +431,58 @@ func TestPrepare_ExecutableLitanyNeedsNoTongue(t *testing.T) {
 	out, _ := perform(t, r, Options{Aspect: "on"})
 	if out.Verdict != Triumph || out.Deeds[0].Output != "recited\n" {
 		t.Fatalf("outcome %+v", out)
+	}
+}
+
+func TestPerformContext_HaltSlaysTheSpokenStepAndRevertsTheRest(t *testing.T) {
+	fx := newFixture(t)
+	util := write(t, fx.data, "util.kdl", "input {}\n", 0o644)
+	r := fx.rite(t, `{"sanctum": "$DATA/util.kdl", "scripture": "x"},
+	  {"incantation": "sleep 30 & echo $! > $DATA/child; wait", "reversion": "echo unspoken >> $DATA/log"},
+	  {"incantation": "echo never >> $DATA/log"}`)
+	inv, err := Prepare(r, Options{Aspect: "on"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx, halt := context.WithCancel(context.Background())
+	defer halt()
+	childFile := filepath.Join(fx.data, "child")
+	go func() {
+		for b, _ := os.ReadFile(childFile); len(b) == 0; b, _ = os.ReadFile(childFile) {
+			time.Sleep(10 * time.Millisecond)
+		}
+		halt()
+	}()
+
+	start := time.Now()
+	out, err := inv.PerformContext(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if elapsed := time.Since(start); elapsed > 10*time.Second {
+		t.Fatalf("the halt was not heeded for %v", elapsed)
+	}
+	if out.Verdict != Reverted || out.Fell == nil || out.Fell.Number != 2 {
+		t.Fatalf("outcome %+v", out)
+	}
+	grimdark(t, out.Fell.Heresy.Error())
+	if !strings.Contains(out.Fell.Heresy.Error(), "halted") {
+		t.Errorf("the heresy %q does not tell of the halt", out.Fell.Heresy)
+	}
+	if want := []string{"unspoken"}; !slices.Equal(lines(t, filepath.Join(fx.data, "log")), want) {
+		t.Fatalf("log %q, want %q", lines(t, filepath.Join(fx.data, "log")), want)
+	}
+	if read(t, util) != "input {}\n" {
+		t.Fatal("the sanctum was not reverted")
+	}
+	child, _ := strconv.Atoi(strings.TrimSpace(read(t, childFile)))
+	deadline := time.Now().Add(5 * time.Second)
+	for !gone(child) {
+		if time.Now().After(deadline) {
+			_ = syscall.Kill(child, syscall.SIGKILL)
+			t.Fatal("a child of the halted step outlived it")
+		}
+		time.Sleep(10 * time.Millisecond)
 	}
 }

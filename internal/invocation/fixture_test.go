@@ -184,7 +184,7 @@ func sameTree(t *testing.T, before, after map[string]string) {
 }
 
 // plainGlosses are plain words no denunciation may speak.
-var plainGlosses = regexp.MustCompile(`(?i)\b(error|warning|switch|states?|metadata|config|invalid|required|description|file|field|value is|timeout|symlink|command line|directory|permission denied|no such)\b`)
+var plainGlosses = regexp.MustCompile(`(?i)\b(error|warning|switch|states?|metadata|config|invalid|required|description|file|field|value is|timeout|symlink|command line|directory|permission denied|no such|fail(ed|s|ure)?|status)\b`)
 
 func grimdark(t *testing.T, words string) {
 	t.Helper()

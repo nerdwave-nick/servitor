@@ -1,6 +1,7 @@
 package invocation
 
 import (
+	"context"
 	"fmt"
 	"os/exec"
 	"time"
@@ -158,7 +159,7 @@ func (s *speaker) voice(argv []string) voice {
 
 // perform speaks the step. Whether a litany may be executed is asked of the
 // machine anew, for the steps before it may have changed its scroll.
-func (s *speaker) perform() error {
+func (s *speaker) perform(ctx context.Context) error {
 	argv := s.speech.Argv
 	if s.litany {
 		sp := s.speech
@@ -168,7 +169,7 @@ func (s *speaker) perform() error {
 		argv = litanyArgv(sp)
 	}
 	var err error
-	s.said, err = s.voice(argv).speak()
+	s.said, err = s.voice(argv).speak(ctx)
 	return err
 }
 
@@ -179,9 +180,9 @@ func (s *speaker) revert() (bool, error) {
 		return false, nil
 	}
 	var err error
-	s.unsaid, err = s.voice([]string{s.speech.Tongue, "-c", s.speech.Reversion}).speak()
+	s.unsaid, err = s.voice([]string{s.speech.Tongue, "-c", s.speech.Reversion}).speak(context.Background())
 	if err != nil {
-		return true, fmt.Errorf("the reversion %w", err)
+		return true, fmt.Errorf("the reversion fell: %w", err)
 	}
 	return true, nil
 }
