@@ -54,7 +54,7 @@ func (m *model) updateOverview(msg tea.Msg) tea.Cmd {
 	case "h":
 		m.screen = newChronicleScreen(m, nameOf(r))
 	case "n":
-		return m.openWizard(draft{states: "on, off"})
+		return m.openWizard(newRiteDraft())
 	case "enter", "space", "e", "c", "d", "o":
 		return m.rowAction(k.String(), r)
 	}

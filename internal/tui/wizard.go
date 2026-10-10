@@ -7,238 +7,220 @@ import (
 
 	tea "charm.land/bubbletea/v2"
 
-	"github.com/nerdwave-nick/servitor/internal/config"
+	"github.com/nerdwave-nick/servitor/internal/librarium"
 )
 
-type wizardStep int
+// station is a stage of the consecration wizard: Rite → Liturgy → Seal.
+type station int
 
 const (
-	stepRite wizardStep = iota
-	stepVessels
-	stepVessel // editing one vessel: page 0 = settings, 1..n = one page per state
-	stepReview
+	stationRite station = iota
+	stationLiturgy
+	stationSeal
 )
 
-// wizard is the guided, full-screen flow for creating and editing switches.
+// pageKind is what the wizard's current form writes.
+type pageKind int
+
+const (
+	pageRite        pageKind = iota
+	pageInscription          // one inscription, index
+	pageEssence              // the essential fields of the step
+	pageFurther              // the further rites of the step
+	pageAspect               // the aspect-varying fields of the step for aspect index
+)
+
+// wizard is the guided, full-screen flow for consecrating, amending and
+// replicating rites of pattern Mark I.
 type wizard struct {
-	d       draft
-	step    wizardStep
-	form    *form
-	vcursor int    // selected vessel in the list
-	vidx    int    // vessel being edited, -1 for a new one
-	vpage   int    // page of the vessel editor
-	vwork   vessel // vessel being edited
-	review  *review
+	d        riteDraft
+	station  station
+	page     pageKind
+	index    int   // the inscription or aspect of the page
+	form     *form // nil while the liturgy itself is shown
+	cursor   int   // the chosen step of the liturgy
+	choosing bool  // the kind of a new step is being chosen
+	kind     int   // the kind chosen among librarium.Kinds
+	work     stepDraft
+	widx     int // the place of work in the liturgy; -1 for a new step
+	seal     *sealing
 }
 
-func (m *model) openWizard(d draft) tea.Cmd {
+func (m *model) openWizard(d riteDraft) tea.Cmd {
 	w := &wizard{d: d}
 	m.screen = w
-	return w.enterRite(m)
+	return w.ritePage(m)
+}
+
+// amend opens the consecration wizard upon the rite of the row, to amend
+// it (e) or to replicate it (c).
+func (m *model) amend(key string, r *row) tea.Cmd {
+	rite := r.rite()
+	if rite == nil {
+		return m.notify(toastErr, "The consecration wizard cannot read a heretical rite; purify it with o ($EDITOR) "+
+			"or excommunicate it with d.")
+	}
+	d := riteDraftFrom(rite)
+	if key == "c" {
+		d.origName, d.origPath, d.name = "", "", r.name+"-copy"
+	}
+	return m.openWizard(d)
 }
 
 func (w *wizard) fullscreen() bool { return true }
 
 func (w *wizard) bodyHeight(m *model) int { return max(5, m.bodyH-7) }
 
-func (w *wizard) enterRite(m *model) tea.Cmd {
-	w.step = stepRite
-	f := newForm(m.t)
-	f.addText("name", "Name of the rite", w.d.name, "mouse-autohide-toggle",
-		"Also the file name in the Librarium. Letters, digits, '.', '_', '-'.",
-		func(s string) error {
-			if !config.ValidName(s) {
-				return errors.New("a rite's name must be letters, digits, '.', '_' and '-'")
-			}
-			if _, exists := m.s.Librarium.Scriptures[s]; exists && s != w.d.origName {
-				return errors.New("a rite of this name is already recorded")
-			}
-			return nil
-		})
-	f.addText("description", "Purpose", w.d.description,
-		"Hide the mouse cursor after inactivity", "Optional. Shown in the census and in completions.", nil)
-	f.addText("states", "Aspects", w.d.states, "on, off",
-		"The aspects the rite may take, separated by commas.",
-		func(s string) error { _, err := parseStates(s); return err })
-	return w.setForm(m, f)
-}
-
-func (w *wizard) setForm(m *model, f *form) tea.Cmd {
+func (w *wizard) setForm(m *model, page pageKind, index int, f *form) tea.Cmd {
 	f.setWidth(min(80, m.width-8))
 	f.height = w.bodyHeight(m)
-	w.form = f
+	w.form, w.page, w.index = f, page, index
 	return f.start()
 }
 
 func (w *wizard) update(m *model, msg tea.Msg) (screen, tea.Cmd) {
-	switch w.step {
-	case stepVessels:
-		return w.updateVessels(m, msg)
-	case stepReview:
-		return w.updateReview(m, msg)
+	switch {
+	case w.station == stationSeal:
+		return w.updateSeal(m, msg)
+	case w.form == nil:
+		return w.updateLiturgy(m, msg)
 	}
 	res, cmd := w.form.update(msg)
-	if w.step == stepVessel && w.vpage == 0 {
-		// The default comment style follows the target file's extension.
-		prefix, suffix := config.DefaultComment(w.form.get("file"))
-		w.form.setPlaceholder("comment", prefix)
-		w.form.setPlaceholder("comment_end", suffix)
+	if w.page == pageEssence && w.work.kind == librarium.KindSanctum {
+		// The glyphs follow the vessel's extension unless spoken.
+		glyph, closing := librarium.DefaultGlyphs(w.form.get("sanctum"))
+		w.form.setPlaceholder("glyph", glyph)
+		w.form.setPlaceholder("closing-glyph", closing)
 	}
-	switch {
-	case res == formCancel && w.step == stepRite:
-		return nil, m.notify(toastInfo, "The consecration is abandoned.")
-	case res == formCancel:
-		return w, w.vesselBack(m)
-	case res == formSubmit && w.step == stepRite:
-		w.d.name, w.d.description, w.d.states = w.form.get("name"), w.form.get("description"), w.form.get("states")
-		w.step = stepVessels
-		if len(w.d.vessels) == 0 {
-			return w, w.editVessel(m, -1)
-		}
-		return w, nil
-	case res == formSubmit:
-		return w, w.vesselNext(m)
+	switch res {
+	case formCancel:
+		return w.back(m)
+	case formSubmit:
+		return w, w.onward(m)
 	}
 	return w, cmd
 }
 
-func (w *wizard) updateVessels(m *model, msg tea.Msg) (screen, tea.Cmd) {
-	k, ok := msg.(tea.KeyPressMsg)
-	if !ok {
+// back withdraws to the page before the current one.
+func (w *wizard) back(m *model) (screen, tea.Cmd) {
+	switch w.page {
+	case pageRite:
+		return nil, m.notify(toastInfo, "The consecration is abandoned.")
+	case pageInscription:
+		if w.index > 0 {
+			return w, w.inscriptionPage(m, w.index-1)
+		}
+		return w, w.ritePage(m)
+	case pageEssence:
+		w.form = nil
 		return w, nil
+	case pageFurther:
+		return w, w.essencePage(m)
 	}
-	n := len(w.d.vessels)
-	switch k.String() {
-	case "esc":
-		return w, w.enterRite(m)
-	case "up", "k":
-		w.vcursor = max(0, w.vcursor-1)
-	case "down", "j":
-		w.vcursor = min(n-1, w.vcursor+1)
-	case "a", "n":
-		return w, w.editVessel(m, -1)
-	case "enter", "e":
-		if n > 0 {
-			return w, w.editVessel(m, w.vcursor)
-		}
-	case "d", "x":
-		if n > 0 {
-			w.d.vessels = append(w.d.vessels[:w.vcursor], w.d.vessels[w.vcursor+1:]...)
-			w.vcursor = max(0, min(w.vcursor, len(w.d.vessels)-1))
-		}
-	case "K":
-		if w.vcursor > 0 {
-			v := w.d.vessels
-			v[w.vcursor], v[w.vcursor-1] = v[w.vcursor-1], v[w.vcursor]
-			w.vcursor--
-		}
-	case "J":
-		if w.vcursor < n-1 {
-			v := w.d.vessels
-			v[w.vcursor], v[w.vcursor+1] = v[w.vcursor+1], v[w.vcursor]
-			w.vcursor++
-		}
-	case "tab", "ctrl+s", "right", "l":
-		if n == 0 {
-			return w, m.notify(toastErr, "A rite without vessels is an empty prayer. Add one with a.")
-		}
-		w.step, w.review = stepReview, newReview(m, w.d)
+	switch {
+	case w.index > 0:
+		return w, w.aspectPage(m, w.index-1)
+	case w.work.further && hasFurther(w.work.kind):
+		return w, w.furtherPage(m)
 	}
-	return w, nil
+	return w, w.essencePage(m)
 }
 
-func (w *wizard) editVessel(m *model, idx int) tea.Cmd {
-	w.step, w.vidx, w.vpage = stepVessel, idx, 0
-	w.vwork = newVessel()
-	if idx >= 0 {
-		w.vwork = w.d.vessels[idx]
+// onward keeps what the current page holds and turns to the next.
+func (w *wizard) onward(m *model) tea.Cmd {
+	f := w.form
+	switch w.page {
+	case pageRite:
+		d := &w.d
+		d.name, d.purpose, d.aspects = strings.TrimSpace(f.get("name")), f.get("purpose"), f.get("aspects")
+		d.auspex, d.patience, d.tongue = f.get("auspex"), f.get("patience"), f.get("tongue")
+		keys, _ := parseKeys(f.get("inscriptions"))
+		d.declare(keys)
+		return w.afterInscription(m, -1)
+	case pageInscription:
+		in := &w.d.inscriptions[w.index]
+		in.purpose, in.mandatory = f.get("purpose"), f.get("mandatory") == "true"
+		in.decrees = map[string]string{}
+		for _, a := range append(w.d.aspectList(), librarium.Fallback) {
+			in.decrees[a] = strings.TrimSpace(f.get("decree:" + a))
+		}
+		return w.afterInscription(m, w.index)
+	case pageEssence:
+		w.keepEssence()
+		switch {
+		case w.work.kind == librarium.KindVoxCast:
+			return w.finishStep()
+		case w.work.further && hasFurther(w.work.kind):
+			return w.furtherPage(m)
+		}
+		return w.aspectPage(m, 0)
+	case pageFurther:
+		for _, k := range furtherKeys[w.work.kind] {
+			w.work.fixed[k] = strings.TrimSpace(f.get(k))
+		}
+		return w.aspectPage(m, 0)
 	}
-	return w.vesselPage(m)
+	if w.keepAspect() {
+		return w.finishStep()
+	}
+	return w.aspectPage(m, w.index+1)
 }
 
-// vesselPage builds the form of the current page of the vessel editor.
-func (w *wizard) vesselPage(m *model) tea.Cmd {
-	v := w.vwork
-	f := newForm(m.t)
-	if w.vpage == 0 {
-		cPrefix, cSuffix := config.DefaultComment(v.file)
-		f.addText("file", "Vessel (target file)", v.file, "~/.config/niri/util.kdl",
-			"~ and $VARS are expanded. Relative paths are resolved against the Librarium.",
-			func(s string) error {
-				if strings.TrimSpace(s) == "" {
-					return errors.New("a vessel must be named")
-				}
-				return nil
-			})
-		f.addText("guard", "Ward", v.guard, w.d.name,
-			"Identifies the sanctum within the vessel. Defaults to the rite's name.",
-			func(s string) error {
-				if strings.ContainsAny(s, " \t") {
-					return errors.New("a ward admits no whitespace")
-				}
-				return nil
-			})
-		f.addText("comment", "Comment glyph", v.comment, strings.TrimSpace(cPrefix),
-			"Leave empty to divine it from the extension.", nil)
-		f.addText("comment_end", "Closing glyph", v.commentEnd, cSuffix,
-			"Only for block comments such as */ or -->.", nil)
-		f.addToggle("create", "Consecrate the vessel if absent", v.create, "space toggles")
-		f.addText("inscriptions", "Inscriptions (metadata keys)", v.inscriptions, "reason, mode!",
-			"Comma separated; a trailing ! makes an inscription mandatory.",
-			func(s string) error { _, _, err := parseInscriptions(s); return err })
-		return w.setForm(m, f)
+// afterInscription turns to the inscription after i, or to the liturgy.
+func (w *wizard) afterInscription(m *model, i int) tea.Cmd {
+	if i+1 < len(w.d.inscriptions) {
+		return w.inscriptionPage(m, i+1)
 	}
-	states, _ := parseStates(w.d.states)
-	st := states[w.vpage-1]
-	f.addArea("value", fmt.Sprintf("Scripture for aspect %q", st), v.values[st],
-		"The lines the sanctum holds in this aspect. Empty is allowed.")
-	keys, required, _ := parseInscriptions(v.inscriptions)
-	for _, k := range keys {
-		label := k
-		if required[k] {
-			label += " *"
-		}
-		f.addText("meta:"+k, label, v.meta[st][k], "", v.descs[k], nil)
-	}
-	return w.setForm(m, f)
-}
-
-// vesselNext stores the current page and advances, finishing on the last page.
-func (w *wizard) vesselNext(m *model) tea.Cmd {
-	states, _ := parseStates(w.d.states)
-	if w.vpage == 0 {
-		v := &w.vwork
-		v.file, v.guard = strings.TrimSpace(w.form.get("file")), strings.TrimSpace(w.form.get("guard"))
-		v.comment, v.commentEnd = w.form.get("comment"), w.form.get("comment_end")
-		v.create, v.inscriptions = w.form.get("create") == "true", w.form.get("inscriptions")
-	} else {
-		st := states[w.vpage-1]
-		w.vwork.values[st] = w.form.get("value")
-		keys, _, _ := parseInscriptions(w.vwork.inscriptions)
-		w.vwork.meta[st] = map[string]string{}
-		for _, k := range keys {
-			w.vwork.meta[st][k] = w.form.get("meta:" + k)
-		}
-	}
-	if w.vpage < len(states) {
-		w.vpage++
-		return w.vesselPage(m)
-	}
-	if w.vidx < 0 {
-		w.d.vessels = append(w.d.vessels, w.vwork)
-		w.vcursor = len(w.d.vessels) - 1
-	} else {
-		w.d.vessels[w.vidx] = w.vwork
-	}
-	w.step = stepVessels
+	w.station, w.form = stationLiturgy, nil
+	w.cursor = max(0, min(w.cursor, len(w.d.steps)-1))
 	return nil
 }
 
-func (w *wizard) vesselBack(m *model) tea.Cmd {
-	if w.vpage == 0 {
-		w.step = stepVessels
-		return nil
+func (w *wizard) ritePage(m *model) tea.Cmd {
+	w.station = stationRite
+	d := w.d
+	f := newForm(m.t)
+	f.addText("name", "Name of the rite", d.name, "mouse-autohide-toggle",
+		"Also the name of its scripture in the Librarium. Letters, digits, '.', '_', '-'.",
+		func(s string) error {
+			s = strings.TrimSpace(s)
+			if !librarium.ValidName(s) {
+				return errors.New("a rite's name must be letters, digits, '.', '_' and '-'")
+			}
+			if _, exists := m.s.Librarium.Scriptures[s]; exists && s != d.origName {
+				return errors.New("a rite of this name is already recorded")
+			}
+			return nil
+		})
+	f.addText("purpose", "Purpose", d.purpose, "Hide the cursor of the machine",
+		"Optional. Told in the census, the cogitator and the completions.", nil)
+	f.addText("aspects", "Aspects", d.aspects, "on, off",
+		"The aspects the rite may bring the machine into, separated by commas.",
+		func(s string) error { _, err := parseAspects(s); return err })
+	f.addText("inscriptions", "Inscriptions", strings.Join(d.keys(), ", "), "reason, mode",
+		"Optional, separated by commas; each is spoken as a rune and illuminated as {{inscription.<name>}}.",
+		func(s string) error { _, err := parseKeys(s); return err })
+	f.addText("auspex", "Auspex", d.auspex, "makoctl mode | grep -q do-not-disturb && echo on || echo off",
+		"Optional. A command that speaks the aspect the machine stands in.", nil)
+	f.addText("patience", "Patience of the auspex", d.patience, "2s",
+		"How long the auspex may labour, such as 500ms or 5s.", validPatience)
+	f.addText("tongue", "Tongue", d.tongue, "bash",
+		"The program that speaks the rite's commands; unspoken, the tongue of the settings, or bash.", validWord)
+	return w.setForm(m, pageRite, 0, f)
+}
+
+func (w *wizard) inscriptionPage(m *model, i int) tea.Cmd {
+	in := w.d.inscriptions[i]
+	f := newForm(m.t)
+	f.addText("purpose", "Purpose", in.purpose, "why the rite was invoked",
+		"Optional. Told beside its rune in the completions.", nil)
+	f.addToggle("mandatory", "Mandatory", in.mandatory,
+		"An invocation lacking this inscription, with no decree for its aspect, is refused.")
+	for _, a := range w.d.aspectList() {
+		f.addText("decree:"+a, fmt.Sprintf("Decree for aspect %q", a), in.decrees[a], "",
+			"Inscribed when the rite is invoked into this aspect and no rune speaks otherwise; empty decrees nothing.", nil)
 	}
-	w.vpage--
-	return w.vesselPage(m)
+	f.addText("decree:*", "Decree for every other aspect (*)", in.decrees[librarium.Fallback], "",
+		"Serves every aspect without a decree of its own.", nil)
+	return w.setForm(m, pageInscription, i, f)
 }

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"charm.land/lipgloss/v2"
+	"github.com/nerdwave-nick/servitor/internal/librarium"
 )
 
 func (w *wizard) view(m *model) string {
@@ -16,15 +16,15 @@ func (w *wizard) view(m *model) string {
 	}
 	inner := width - 4
 	var body string
-	switch w.step {
-	case stepRite, stepVessel:
+	switch {
+	case w.station == stationSeal:
+		body = w.sealView(m, inner, height-5)
+	case w.form != nil:
 		body = w.formHeading(m) + "\n\n" + w.form.view()
-	case stepVessels:
-		body = w.vesselsView(m, inner)
-	case stepReview:
-		body = w.reviewView(m, inner, height-5)
+	default:
+		body = w.liturgyView(m, inner, height-5)
 	}
-	content := " " + w.steps(m) + "\n\n" + indentLines(body, " ")
+	content := " " + w.stations(m) + "\n\n" + indentLines(body, " ")
 	return t.panel(title, content, width, height, true)
 }
 
@@ -36,18 +36,17 @@ func indentLines(s, prefix string) string {
 	return strings.Join(lines, "\n")
 }
 
-// steps renders the breadcrumb of the wizard.
-func (w *wizard) steps(m *model) string {
+// stations renders the breadcrumb of the wizard.
+func (w *wizard) stations(m *model) string {
 	t := m.t
-	names := []string{"Rite", "Vessels", "Seal"}
-	active := map[wizardStep]int{stepRite: 0, stepVessels: 1, stepVessel: 1, stepReview: 2}[w.step]
+	names := []string{"Rite", "Liturgy", "Seal"}
 	parts := make([]string, len(names))
 	for i, n := range names {
 		label := fmt.Sprintf("%d %s", i+1, n)
 		switch {
-		case i == active:
+		case station(i) == w.station:
 			parts[i] = t.selected.Render(" " + label + " ")
-		case i < active:
+		case station(i) < w.station:
 			parts[i] = t.ok.Render("✔ " + n)
 		default:
 			parts[i] = t.dim.Render(label)
@@ -56,48 +55,54 @@ func (w *wizard) steps(m *model) string {
 	return strings.Join(parts, t.dim.Render("  ─  "))
 }
 
+// formHeading tells what the current page writes.
 func (w *wizard) formHeading(m *model) string {
 	t := m.t
-	if w.step == stepRite {
-		return t.text.Render("Speak the name, purpose and aspects of the rite.")
+	switch w.page {
+	case pageRite:
+		return t.text.Render("Speak the name, purpose and aspects of the rite, the inscriptions it bears and " +
+			"the auspex that reads it.")
+	case pageInscription:
+		return t.bold.Render(fmt.Sprintf("Inscription %q", w.d.inscriptions[w.index].key)) +
+			t.dim.Render(fmt.Sprintf("  ·  %d/%d", w.index+1, len(w.d.inscriptions)))
 	}
-	states, _ := parseStates(w.d.states)
-	which := "New vessel"
-	if w.vidx >= 0 {
-		which = "Vessel " + fmt.Sprint(w.vidx+1)
+	verse := "New verse"
+	if w.widx >= 0 {
+		verse = fmt.Sprintf("Verse %d", w.widx+1)
 	}
-	page := "settings"
-	if w.vpage > 0 {
-		page = "aspect " + t.accent.Render(states[w.vpage-1])
+	k := w.work.kind
+	aspects := w.d.aspectList()
+	pages := 1
+	if k != librarium.KindVoxCast {
+		pages += len(aspects)
 	}
-	return t.bold.Render(which) + t.dim.Render(fmt.Sprintf("  ·  %s  ·  %d/%d", page, w.vpage+1, len(states)+1))
-}
-
-func (w *wizard) vesselsView(m *model, width int) string {
-	t := m.t
-	lines := []string{t.text.Render("The vessels whose sanctums this rite keeps:"), ""}
-	if len(w.d.vessels) == 0 {
-		lines = append(lines, t.dim.Render("  No vessels yet. Press a to add one."))
+	if w.work.further && hasFurther(k) {
+		pages++
 	}
-	for i, v := range w.d.vessels {
-		s := v.summary(t, "ward", w.d.name, width-2)
-		if i == w.vcursor {
-			lines = append(lines, t.accent.Render("▸ ")+lipgloss.NewStyle().MaxWidth(width-2).Render(s))
-		} else {
-			lines = append(lines, "  "+lipgloss.NewStyle().MaxWidth(width-2).Render(s))
-		}
+	page, at := "essence", 1
+	switch w.page {
+	case pageFurther:
+		page, at = "further rites", 2
+	case pageAspect:
+		page, at = "aspect "+t.accent.Render(aspects[w.index]), pages-len(aspects)+w.index+1
 	}
-	return strings.Join(lines, "\n")
+	head := t.bold.Render(verse) + t.dim.Render("  ·  ") + t.accent.Render(kindGlyph(k)+" "+k.Key()) +
+		t.dim.Render("  ·  ") + t.dim.Render(page) + t.dim.Render(fmt.Sprintf("  ·  %d/%d", at, pages))
+	if w.page == pageEssence && (k == librarium.KindIncantation || k == librarium.KindLitany) {
+		head += "\n" + t.dim.Render("Its "+w.varying()[0][1]+" is spoken on the pages of the aspects that follow.")
+	}
+	return head
 }
 
 func (w *wizard) hints(m *model) [][2]string {
-	switch w.step {
-	case stepVessels:
-		return [][2]string{{"a", "add vessel"}, {"enter", "amend"}, {"d", "cast out"},
-			{"J/K", "reorder"}, {"tab", "onward to the seal"}, {"esc", "back"}}
-	case stepReview:
-		return [][2]string{{"enter", "seal into the Librarium"}, {"j/k", "scroll"}, {"esc", "back"}}
+	switch {
+	case w.station == stationSeal:
+		return [][2]string{{"enter", "seal into the Librarium"}, {"j/k g/G", "scroll"}, {"esc", "back"}}
+	case w.form != nil:
+		return [][2]string{{"tab", "next field"}, {"enter", "onward"}, {"ctrl+s", "seal page"}, {"esc", "back"}}
+	case w.choosing:
+		return [][2]string{{"j/k", "choose"}, {"1-6", "swift choice"}, {"enter", "take it"}, {"esc", "withdraw"}}
 	}
-	return [][2]string{{"tab", "next field"}, {"enter", "onward"},
-		{"ctrl+s", "seal page"}, {"esc", "back"}}
+	return [][2]string{{"a", "add a step"}, {"enter", "amend"}, {"d", "cast out"},
+		{"J/K", "reorder"}, {"tab", "onward to the seal"}, {"esc", "back"}}
 }

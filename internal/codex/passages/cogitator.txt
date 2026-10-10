@@ -34,6 +34,22 @@ cogitator reads the chronicle that the rune --chronicle, the environment or
 the settings place, as every ritual does; it never amends or strikes an
 entry.
 
+The consecration wizard, awakened by n, e and c, leads a rite through three
+stations. At the Rite the faithful speak its name, purpose and aspects, the
+inscriptions it bears — each with its purpose, whether it is mandatory, and
+its decrees per aspect — and the auspex that reads it. At the Liturgy, a adds
+a step once its kind is chosen among all six, enter amends the chosen step, d
+casts it out, and J and K move it down and up. Each step is written on pages:
+first its essence, then one page per aspect for the values that may differ
+between aspects, where the choice "same for every aspect" writes a value once,
+under "*", for every aspect that speaks none of its own. Patience, seal,
+tongue, zeal, reversion and offerings rest under the further rites, unveiled
+only when needed. At the Seal the rite stands as the scripture it will become,
+judged by the Inquisition: heresy forbids the sealing, and the comments of an
+amended scripture are foretold to be lost, for the servitor writes it anew.
+Once sealed, the scripture is read back and must yield the very rite the
+wizard holds.
+
 Know that the cogitator lends no terminal to the words a rite speaks. As in
 every invocation, an incantation or litany is given nothing to hear and its
 output is captured, never shown as it is spoken; the cogitator holds the

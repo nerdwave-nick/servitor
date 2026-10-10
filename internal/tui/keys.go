@@ -72,6 +72,7 @@ func helpText(m *model) string {
 		b.WriteString(m.t.key.Render(padRight(bd.keys, 9)) + " " + m.t.text.Render(bd.text) + "\n")
 	}
 	b.WriteString("\n" + m.t.dim.Render("In forms: tab/↑↓ move between fields · enter next · ctrl+s seal · esc go back"))
+	b.WriteString("\n" + m.t.dim.Render("In the liturgy of the wizard: a add a step · J/K reorder · tab onward to the seal"))
 	return b.String()
 }
 
