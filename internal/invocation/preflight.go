@@ -140,13 +140,17 @@ func (p *preflight) scripture(field string, m librarium.AspectMap[librarium.Scri
 // recognises a vessel it wrote itself. Scripture that cannot be rendered is
 // left out; a null scripture is not scripture.
 func (p *preflight) known(m librarium.AspectMap[librarium.Scripture]) []string {
+	sets := []map[string]string{p.opts.Inscriptions}
+	if p.opts.Recorded != nil {
+		sets = append(sets, p.opts.Recorded)
+	}
 	var out []string
 	for _, aspect := range p.rite.Aspects {
 		sc, ok := m.For(aspect)
 		if !ok || sc.Null {
 			continue
 		}
-		for _, ins := range []map[string]string{p.opts.Inscriptions, p.opts.Recorded} {
+		for _, ins := range sets {
 			v := values(p.rite, Options{Aspect: aspect}, ins)
 			if text, ok := renderQuietly(p.rite, sc, v); ok {
 				out = append(out, text)

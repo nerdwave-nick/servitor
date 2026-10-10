@@ -199,3 +199,11 @@ func TestPrepare_RefusesAnUndeclaredAspect(t *testing.T) {
 		t.Fatalf("heresy at %+v", hs[0])
 	}
 }
+
+func TestSanctum_RefusesBondsInEndlessCircles(t *testing.T) {
+	fx := newFixture(t)
+	link(t, "b.kdl", filepath.Join(fx.data, "util.kdl"))
+	link(t, "util.kdl", filepath.Join(fx.data, "b.kdl"))
+	hs := refused(t, fx.rite(t, mouseSanctum), Options{Aspect: "on"}, "endless circles")
+	grimdark(t, hs[0].Message)
+}

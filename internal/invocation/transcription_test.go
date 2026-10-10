@@ -71,6 +71,7 @@ func TestTranscription_ReplacesOnlyItsOwnVessels(t *testing.T) {
 		"foreign scripture with force":       {"hand-written", visage + `, "force": true}`, Options{Aspect: "off"}, ""},
 		"recorded inscriptions":              {"why old", reasoned, Options{Aspect: "on", Inscriptions: map[string]string{"reason": "new"}, Recorded: map[string]string{"reason": "old"}}, ""},
 		"inscriptions never recorded":        {"why old", reasoned, Options{Aspect: "on", Inscriptions: map[string]string{"reason": "new"}}, "zeal"},
+		"inscriptions left empty":            {"why ", reasoned, Options{Aspect: "on", Inscriptions: map[string]string{"reason": "new"}}, "zeal"},
 		"scripture of this very invocation":  {"why new", reasoned, Options{Aspect: "off", Inscriptions: map[string]string{"reason": "new"}}, ""},
 		"scripture of an aspect from a tome": {"tome on\n", tomed, Options{Aspect: "off"}, ""},
 	}
