@@ -1,0 +1,32 @@
+# +++ Vox-casts of triumph +++
+# One template per line; blank lines and lines starting with "#" are ignored.
+The rite {{rite.name}} is complete. {{aspect}} reigns. Praise the Omnissiah!
+Triumph! The machine spirit accepts {{aspect}}.
+All verses of {{rite.name}} are sung; the aspect {{aspect}} is made manifest.
+The Omnissiah is pleased. {{rite.name}} now bears the aspect {{aspect}}.
+The cogs are anointed, the hymns are ended: {{aspect}} endures.
+Glory to the Machine God! {{rite.name}} stands in {{aspect}}.
+The tech-priests rejoice; {{rite.name}} is performed into {{aspect}}.
+From the weakness of the flesh, {{aspect}} delivers us. The rite is done.
+The liturgy of {{rite.name}} is fulfilled without blemish.
+Binharic hymns resound: {{aspect}} is attained.
+The machine spirit purrs in contentment. {{aspect}} is upon us.
+Ave Omnissiah. The rite {{rite.name}} ends in triumph.
+{{aspect}} has been invoked, and the Motive Force is satisfied.
+The sacred incense settles. {{rite.name}} rests in {{aspect}}.
+No heresy was found; {{aspect}} is consecrated in every vessel.
+The servitor has laboured well: {{rite.name}} is {{aspect}}.
+The Fabricator-General would approve. {{aspect}} is achieved.
+Every rune turned, every litany spoken: {{aspect}} prevails.
+The noosphere sings of {{rite.name}}, now clad in {{aspect}}.
+Let the data-stacks record: {{rite.name}} was performed into {{aspect}} in perfect faith.
+The Omnissiah's will is done. {{aspect}} is the aspect of the hour.
+Triumph is sealed in the sacred archives: {{rite.name}} is {{aspect}}.
+The machine is whole, the rite complete, the aspect {{aspect}}.
+Praise be! {{rite.name}} obeyed the liturgy to its final verse.
+The cogitator's lamps glow green: {{aspect}} is achieved.
+Knowledge is power; guard it well. {{rite.name}} now stands as {{aspect}}.
+The flesh is weak, but {{rite.name}} is strong in {{aspect}}.
+Rejoice, adept: {{aspect}} has been bestowed upon the machine.
+The rite {{rite.name}} closes in perfect harmony with the Machine God.
+Sanctified and sealed: {{aspect}} is now the will of {{rite.name}}.

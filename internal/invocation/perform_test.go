@@ -135,7 +135,7 @@ func TestPerformAll_RevertsFromTheFallenStepBackToTheFirst(t *testing.T) {
 		performers[i] = s
 	}
 
-	out := performAll(performers)
+	out := performAll(performers, nil)
 
 	if out.Fell == nil || out.Fell.Number != 4 || out.Fell.Heresy == nil {
 		t.Fatalf("fell %+v", out.Fell)
@@ -171,7 +171,7 @@ func TestPerformAll_RevertsFromTheFallenStepBackToTheFirst(t *testing.T) {
 
 func TestPerformAll_Triumphs(t *testing.T) {
 	var log []string
-	out := performAll([]performer{&deed{n: 1, log: &log, changes: true}, &deed{n: 2, log: &log}})
+	out := performAll([]performer{&deed{n: 1, log: &log, changes: true}, &deed{n: 2, log: &log}}, nil)
 	if out.Fell != nil || len(out.Reversions) != 0 || len(log) != 2 || out.Verdict != Triumph || len(out.Deeds) != 2 {
 		t.Fatalf("outcome %+v, log %v", out, log)
 	}
