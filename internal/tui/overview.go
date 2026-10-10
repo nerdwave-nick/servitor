@@ -52,7 +52,7 @@ func (m *model) updateOverview(msg tea.Msg) tea.Cmd {
 	case "O":
 		return m.showWords()
 	case "n":
-		return m.openWizard(draft{states: "on, off"})
+		return m.openWizard(newRiteDraft())
 	case "enter", "space", "e", "c", "d", "o":
 		return m.rowAction(k.String(), r)
 	}

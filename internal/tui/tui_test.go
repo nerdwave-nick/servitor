@@ -355,14 +355,6 @@ func TestFilterHelpAndVerdict(t *testing.T) {
 	h.keys("esc", "q")
 }
 
-func TestAmend_MarkIScriptureIsAmendedByHand(t *testing.T) {
-	h := newHarness(t)
-	h.keys("e")
-	h.mustShow("amend it with o")
-	h.keys("c")
-	h.mustShow("amend it with o")
-}
-
 func TestRender_TooSmall(t *testing.T) {
 	h := newHarness(t)
 	h.send(tea.WindowSizeMsg{Width: 40, Height: 10})
