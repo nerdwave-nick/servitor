@@ -85,6 +85,7 @@ func Prepare(r *librarium.Rite, opts Options) (*Invocation, error) {
 		return inv, inv.heresies
 	}
 	p := &preflight{rite: r, opts: opts, world: newShadow(), values: values(r, opts, opts.Inscriptions)}
+	p.heresies = unmet(r, opts.Aspect, opts.Inscriptions)
 	for i, s := range r.Liturgy {
 		p.index = i
 		if step := p.prepare(s); step != nil {
