@@ -15,6 +15,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/nerdwave-nick/servitor/internal/config"
+	"github.com/nerdwave-nick/servitor/internal/librarium"
 	"github.com/nerdwave-nick/servitor/internal/tui"
 )
 
@@ -38,6 +39,7 @@ func (e *ExitError) Unwrap() error { return e.Err }
 
 type app struct {
 	configDir string
+	chronicle string // --chronicle and its hidden alias --log; read through runesOf
 	set       *config.Set
 	switchCmd *cobra.Command // parent of the per-rite subcommands
 }
@@ -81,6 +83,7 @@ func NewRootCmd(args []string, stdout, stderr io.Writer) *cobra.Command {
 	root.PersistentFlags().StringVarP(&a.configDir, "librarium", "l", a.configDir,
 		"path to the Librarium where rites are kept (env "+EnvLibrarium+")")
 	_ = root.MarkPersistentFlagDirname("librarium")
+	chronicleRunes(root, &a.chronicle)
 	root.SetFlagErrorFunc(func(cmd *cobra.Command, err error) error {
 		return fmt.Errorf("%s\nConsult '%s --help' for the proper liturgy", runeError(err), cmd.CommandPath())
 	})
@@ -195,4 +198,24 @@ func version() string {
 		return info.Main.Version
 	}
 	return "dev"
+}
+
+// chronicleRunes registers --chronicle and its hidden alias --log for every
+// ritual under root.
+func chronicleRunes(root *cobra.Command, v *string) {
+	const usage = "path of the chronicle in which every invocation is recorded (env " + librarium.EnvChronicle + ")"
+	root.PersistentFlags().StringVar(v, "chronicle", "", usage)
+	root.PersistentFlags().StringVar(v, "log", "", usage)
+	_ = root.PersistentFlags().MarkHidden("log")
+	_ = root.MarkPersistentFlagFilename("chronicle")
+}
+
+// runesOf returns the runes spoken to the ritual cmd that sway the settings,
+// to be resolved by (*librarium.Settings).Resolve.
+func runesOf(cmd *cobra.Command) librarium.Runes {
+	var r librarium.Runes
+	if f := cmd.Root().PersistentFlags().Lookup("chronicle"); f != nil {
+		r.Chronicle = f.Value.String()
+	}
+	return r
 }
