@@ -1,14 +1,11 @@
 package tui
 
 import (
-	"errors"
-	"os"
+	"fmt"
 	"strconv"
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
-
-	"github.com/nerdwave-nick/servitor/internal/engine"
 )
 
 // textScreen is a scrollable read-only modal.
@@ -61,7 +58,8 @@ func (s *textScreen) hints(m *model) [][2]string {
 	return [][2]string{{"j/k", "scroll the scroll"}, {"esc", "withdraw"}}
 }
 
-// deleteScreen confirms deleting a definition, optionally purging blocks.
+// deleteScreen confirms the excommunication of a rite, optionally purging
+// its sanctums.
 type deleteScreen struct{ r row }
 
 func newDeleteScreen(r *row) *deleteScreen { return &deleteScreen{r: *r} }
@@ -79,7 +77,7 @@ func (s *deleteScreen) update(m *model, msg tea.Msg) (screen, tea.Cmd) {
 	case "y":
 		return nil, m.remove(s.r, false)
 	case "p":
-		if s.r.sw != nil {
+		if s.r.rite() != nil {
 			return nil, m.remove(s.r, true)
 		}
 	}
@@ -87,21 +85,15 @@ func (s *deleteScreen) update(m *model, msg tea.Msg) (screen, tea.Cmd) {
 }
 
 func (m *model) remove(r row, purge bool) tea.Cmd {
-	if purge {
-		if _, err := engine.Purge(r.sw, engine.Options{}); err != nil {
-			return m.notify(toastErr, "The purge falters: "+err.Error())
-		}
-	}
-	for _, p := range r.paths {
-		if err := os.Remove(p); err != nil && !errors.Is(err, os.ErrNotExist) {
-			m.reload("")
-			return m.notify(toastErr, err.Error())
-		}
-	}
+	ex, err := m.s.Excommunicate(r.name, purge)
 	m.reload("")
+	if err != nil {
+		return m.notify(toastErr, "The excommunication falters: "+err.Error())
+	}
 	msg := "The rite " + r.name + " is excommunicated. Its sanctums remain."
 	if purge {
-		msg = "The rite " + r.name + " is excommunicated and its sanctums purged. Exterminatus complete."
+		msg = fmt.Sprintf("The rite %s is excommunicated and its sanctums purged from %d vessel(s). "+
+			"Exterminatus complete.", r.name, len(ex.Purged))
 	}
 	return m.notify(toastOK, msg)
 }
@@ -113,8 +105,9 @@ func (s *deleteScreen) view(m *model) string {
 		"",
 		t.key.Render("y") + "  " + t.text.Render("strike it from the Librarium (sanctums remain in their vessels)"),
 	}
-	if s.r.sw != nil {
-		lines = append(lines, t.key.Render("p")+"  "+t.text.Render("purge its sanctums from every vessel, then strike it"))
+	if s.r.rite() != nil {
+		lines = append(lines, t.key.Render("p")+"  "+t.text.Render("purge its sanctums from every vessel, then strike it"),
+			"   "+t.dim.Render("(transcribed vessels and tethers stand untouched)"))
 	}
 	lines = append(lines, t.key.Render("n")+"  "+t.text.Render("show mercy"))
 	for _, p := range s.r.paths {
@@ -124,5 +117,8 @@ func (s *deleteScreen) view(m *model) string {
 }
 
 func (s *deleteScreen) hints(m *model) [][2]string {
+	if s.r.rite() == nil {
+		return [][2]string{{"y", "excommunicate"}, {"n", "mercy"}}
+	}
 	return [][2]string{{"y", "excommunicate"}, {"p", "purge"}, {"n", "mercy"}}
 }

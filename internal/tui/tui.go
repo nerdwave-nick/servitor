@@ -3,7 +3,6 @@ package tui
 
 import (
 	"io"
-	"slices"
 	"strings"
 	"time"
 
@@ -11,15 +10,16 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 
-	"github.com/nerdwave-nick/servitor/internal/config"
-	"github.com/nerdwave-nick/servitor/internal/engine"
 	"github.com/nerdwave-nick/servitor/internal/lexicon"
+	"github.com/nerdwave-nick/servitor/internal/librarium"
+	"github.com/nerdwave-nick/servitor/internal/rituals"
 )
 
 // Options configure the TUI.
 type Options struct {
 	Dir    string
-	Input  io.Reader // defaults to the terminal
+	Runes  librarium.Runes // the servitor's runes that sway the settings
+	Input  io.Reader       // defaults to the terminal
 	Output io.Writer
 }
 
@@ -32,18 +32,23 @@ func Run(opt Options) error {
 	if opt.Output != nil {
 		popts = append(popts, tea.WithOutput(opt.Output))
 	}
-	_, err := tea.NewProgram(newModel(opt.Dir), popts...).Run()
+	m := newModel(opt.Dir, opt.Runes)
+	p := tea.NewProgram(m, popts...)
+	m.send = p.Send
+	_, err := p.Run()
 	return err
 }
 
 // row is one entry of the overview list.
 type row struct {
-	name   string
-	sw     *config.Switch // nil when the definition is broken
-	status engine.Status
-	diags  config.Diagnostics // errors of a broken definition
-	paths  []string           // definition files
+	name     string
+	reading  rituals.Reading    // its augury; Rite is nil when it is heretical
+	heresies librarium.Findings // the heresies of a heretical rite
+	paths    []string           // its scriptures
 }
+
+// rite is the rite of the row, or nil when it is heretical.
+func (r *row) rite() *librarium.Rite { return r.reading.Rite }
 
 type toastKind int
 
@@ -76,8 +81,11 @@ type screen interface {
 
 type model struct {
 	dir     string
+	runes   librarium.Runes
 	t       *theme
-	set     *config.Set
+	s       *rituals.Servitor // the Librarium as last read
+	send    func(tea.Msg)     // delivers what a running invocation tells
+	last    *rituals.Result   // the last invocation performed, for its words
 	all     []row
 	rows    []row // all rows matching the filter
 	cursor  int
@@ -91,10 +99,10 @@ type model struct {
 	screen  screen
 }
 
-func newModel(dir string) *model {
+func newModel(dir string, runes librarium.Runes) *model {
 	f := textinput.New()
 	f.Prompt = "/ "
-	m := &model{dir: dir, t: newTheme(), filter: f,
+	m := &model{dir: dir, runes: runes, t: newTheme(), filter: f, send: func(tea.Msg) {},
 		thought: int(time.Now().UnixNano() % int64(len(lexicon.Thoughts))), width: 100, height: 30}
 	m.reload("")
 	return m
@@ -109,22 +117,19 @@ func (m *model) reload(selected string) {
 			selected = r.name
 		}
 	}
-	m.set = config.Load(m.dir)
+	m.s = rituals.Open(m.dir, m.runes)
+	lib := m.s.Librarium
 	m.all = m.all[:0]
-	for _, name := range m.set.Names() {
-		sw := m.set.Switches[name]
-		m.all = append(m.all, row{name: name, sw: sw, status: engine.ReadStatus(sw), paths: m.set.Files[name]})
-	}
-	for name := range m.set.Broken {
-		r := row{name: name, paths: m.set.Files[name]}
-		for _, d := range m.set.Diags {
-			if d.Switch == name {
-				r.diags = append(r.diags, d)
+	for _, name := range lib.Names() {
+		reading, _ := m.s.Augur(name, false)
+		r := row{name: name, reading: reading, paths: lib.Scriptures[name]}
+		for _, f := range lib.Findings {
+			if f.Rite == name && f.Severity == librarium.Heresy {
+				r.heresies = append(r.heresies, f)
 			}
 		}
 		m.all = append(m.all, r)
 	}
-	slices.SortFunc(m.all, func(a, b row) int { return strings.Compare(a.name, b.name) })
 	m.applyFilter(selected)
 }
 
@@ -172,8 +177,10 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, m.notify(msg.toast.kind, msg.toast.text)
 		}
 		return m, nil
+	case invokedMsg:
+		return m, m.invoked(msg)
 	case tea.KeyPressMsg:
-		if msg.String() == "ctrl+c" {
+		if msg.String() == "ctrl+c" && !m.isRunning() {
 			return m, tea.Quit
 		}
 	}
