@@ -1,32 +1,36 @@
 # +++ Vox-casts of triumph +++
 # One template per line; blank lines and lines starting with "#" are ignored.
-The rite {{rite.name}} is complete. {{aspect}} reigns. Praise the Omnissiah!
-Triumph! The machine spirit accepts {{aspect}}.
-All verses of {{rite.name}} are sung; the aspect {{aspect}} is made manifest.
-The Omnissiah is pleased. {{rite.name}} now bears the aspect {{aspect}}.
-The cogs are anointed, the hymns are ended: {{aspect}} endures.
-Glory to the Machine God! {{rite.name}} stands in {{aspect}}.
-The tech-priests rejoice; {{rite.name}} is performed into {{aspect}}.
-From the weakness of the flesh, {{aspect}} delivers us. The rite is done.
-The liturgy of {{rite.name}} is fulfilled without blemish.
-Binharic hymns resound: {{aspect}} is attained.
-The machine spirit purrs in contentment. {{aspect}} is upon us.
-Ave Omnissiah. The rite {{rite.name}} ends in triumph.
-{{aspect}} has been invoked, and the Motive Force is satisfied.
-The sacred incense settles. {{rite.name}} rests in {{aspect}}.
-No heresy was found; {{aspect}} is consecrated in every vessel.
-The servitor has laboured well: {{rite.name}} is {{aspect}}.
-The Fabricator-General would approve. {{aspect}} is achieved.
-Every rune turned, every litany spoken: {{aspect}} prevails.
-The noosphere sings of {{rite.name}}, now clad in {{aspect}}.
-Let the data-stacks record: {{rite.name}} was performed into {{aspect}} in perfect faith.
-The Omnissiah's will is done. {{aspect}} is the aspect of the hour.
-Triumph is sealed in the sacred archives: {{rite.name}} is {{aspect}}.
-The machine is whole, the rite complete, the aspect {{aspect}}.
-Praise be! {{rite.name}} obeyed the liturgy to its final verse.
-The cogitator's lamps glow green: {{aspect}} is achieved.
-Knowledge is power; guard it well. {{rite.name}} now stands as {{aspect}}.
-The flesh is weak, but {{rite.name}} is strong in {{aspect}}.
-Rejoice, adept: {{aspect}} has been bestowed upon the machine.
-The rite {{rite.name}} closes in perfect harmony with the Machine God.
-Sanctified and sealed: {{aspect}} is now the will of {{rite.name}}.
+# The header already names the rite and its turning; each line speaks of
+# the aspect attained, written "the aspect {{aspect}}" (the herald renders
+# it «aspect»). Keep each line short: one sentence, or two.
+The Omnissiah is pleased: the rite now bears the aspect {{aspect}}.
+Binharic hymns resound: the aspect {{aspect}} is attained.
+Triumph! The machine spirit accepts the aspect {{aspect}}.
+All verses are sung; the aspect {{aspect}} is made manifest.
+The cogs are anointed, the hymns ended: the aspect {{aspect}} endures.
+Glory to the Machine God! The aspect {{aspect}} holds sway.
+The tech-priests rejoice; the machine wears the aspect {{aspect}}.
+From the weakness of the flesh, the aspect {{aspect}} delivers us.
+Ave Omnissiah. The liturgy ends in the aspect {{aspect}}.
+The machine spirit purrs beneath the aspect {{aspect}}.
+The sacred incense settles over the aspect {{aspect}}.
+No heresy was found; the aspect {{aspect}} is consecrated.
+The servitor has laboured well: the aspect {{aspect}} reigns.
+The Fabricator-General would approve of the aspect {{aspect}}.
+Every rune turned, every litany sung: the aspect {{aspect}} prevails.
+The noosphere sings of the aspect {{aspect}}.
+Let the data-stacks record the aspect {{aspect}}, won in faith.
+The Omnissiah's will is done: the aspect {{aspect}} rules the hour.
+Triumph is sealed in the sacred archives: the aspect {{aspect}}.
+The machine is whole and the rite complete in the aspect {{aspect}}.
+Praise be! The last verse is sung, and the aspect {{aspect}} stands.
+The cogitator's lamps glow green for the aspect {{aspect}}.
+Knowledge is power; the aspect {{aspect}} is now guarded well.
+The flesh is weak, but the aspect {{aspect}} is strong.
+Rejoice, adept: the aspect {{aspect}} is bestowed upon the machine.
+Sanctified and sealed: the aspect {{aspect}} is the machine's will.
+The machine spirit is appeased; it bears the aspect {{aspect}}.
+Hail the Omnissiah! The aspect {{aspect}} is woven into the machine.
+The servo-skulls bear the tidings: the aspect {{aspect}} is upon us.
+The litanies fall silent in reverence; the aspect {{aspect}} abides.
+The Machine God smiles upon the aspect {{aspect}}.

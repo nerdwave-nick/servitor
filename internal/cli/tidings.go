@@ -12,9 +12,10 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/rituals"
 )
 
-// verseName names a verse as "verse 2 · tether <target>".
+// verseName names a verse as "verse 2 · tether <target>", the home of the
+// faithful spoken as "~".
 func verseName(v invocation.Verse) string {
-	return strings.TrimSpace(fmt.Sprintf("verse %d · %s %s", v.Number, v.Kind.Key(), v.Target))
+	return strings.TrimSpace(fmt.Sprintf("verse %d · %s %s", v.Number, v.Kind.Key(), homeward(v.Target)))
 }
 
 // former names the aspect a rite stood in before, or, when none could be
@@ -27,17 +28,6 @@ func former(res rituals.Result) string {
 		return "(" + string(augury.Dormant) + ")"
 	}
 	return "(" + string(res.Former) + ")"
-}
-
-// printSummary tells what a triumphant invocation did.
-func printSummary(w io.Writer, res rituals.Result) {
-	fmt.Fprintf(w, "+++ The rite %s is performed: %s → %s +++\n", res.Rite.Name, former(res), res.Options.Aspect)
-	for _, d := range res.Outcome.Deeds {
-		if d.Kind.Key() != "vox-cast" {
-			fmt.Fprintln(w, "  "+verseName(d.Verse))
-		}
-	}
-	fmt.Fprintln(w, "The Omnissiah is pleased.")
 }
 
 // printForesight tells what an invocation would do.

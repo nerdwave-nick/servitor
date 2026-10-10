@@ -13,11 +13,12 @@ import (
 
 func TestInvokeAndAugury_UserScenario(t *testing.T) {
 	e := newEnv(t)
+	e.home()
 	out := e.mustRun("invoke", "mouse-autohide-toggle", "on", "--reason", "gaming remnant")
-	for _, want := range []string{"+++ The rite mouse-autohide-toggle is performed: (dormant) → on +++",
-		"verse 1", "sanctum", e.target, "The Omnissiah is pleased."} {
+	for _, want := range []string{"+++ mouse-autohide-toggle · (dormant) → on +++\n",
+		"\n  ✔ verse 1 · sanctum ~/util.kdl\n", "\n✠ "} {
 		if !strings.Contains(out, want) {
-			t.Fatalf("summary lacks %q:\n%s", want, out)
+			t.Fatalf("the report lacks %q:\n%s", want, out)
 		}
 	}
 	if !strings.Contains(e.targetContent(), "// +++ begin of sanctum mouse-autohide-toggle -- aspect|on +++\ncursor {") {
@@ -117,16 +118,6 @@ func TestInvoke_Silence(t *testing.T) {
 		if out := e.mustRun("invoke", "mouse-autohide-toggle", "on", flag); out != "" {
 			t.Fatalf("%s should suppress the summary, got %q", flag, out)
 		}
-	}
-}
-
-func TestInvoke_TheTerminalHearsTheVoxInsteadOfTheDesktop(t *testing.T) {
-	e := newEnv(t)
-	var tty bytes.Buffer
-	e.terminal(&tty)
-	e.mustRun("invoke", "mouse-autohide-toggle", "on", "-s")
-	if !strings.Contains(tty.String(), "+++ mouse-autohide-toggle → on +++") || e.notified() != "" {
-		t.Fatalf("terminal %q, desktop %q", tty.String(), e.notified())
 	}
 }
 

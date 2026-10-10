@@ -1,34 +1,35 @@
 # +++ Vox-casts of the fall +++
 # One template per line; blank lines and lines starting with "#" are ignored.
-# Each speaks the {{heresy}}; {{step.kind}} and {{step.target}} name the fallen
-# step. The herald adds how the reversion went.
+# Each ends in ": {{heresy}}"; {{step.kind}} and {{step.target}} name the
+# fallen step, and an aspect is written "the aspect {{aspect}}". The herald
+# adds how the reversion went.
 Heresy! The {{step.kind}} upon {{step.target}} has fallen: {{heresy}}
-The machine spirit rejects {{rite.name}}. The {{step.kind}} at {{step.target}} faltered: {{heresy}}
-Woe! The rite {{rite.name}} is broken at the {{step.kind}} of {{step.target}}: {{heresy}}
-The Omnissiah turns away. {{heresy}}
-Sound the klaxons: the {{step.kind}} upon {{step.target}} has fallen. {{heresy}}
+The machine spirit rejects the {{step.kind}}: {{heresy}}
+Woe! The liturgy is broken at the {{step.kind}}: {{heresy}}
+The Omnissiah turns away: {{heresy}}
+Sound the klaxons, for the {{step.kind}} has fallen: {{heresy}}
 The machine spirit is angered by {{step.target}}: {{heresy}}
-A blight upon the liturgy! {{heresy}}
-The tech-priests weep: the {{step.kind}} at {{step.target}} could not be performed. {{heresy}}
-Scrapcode in the machine! The {{step.kind}} upon {{step.target}} fell: {{heresy}}
-The rite {{rite.name}} was denied {{aspect}}. {{heresy}}
+A blight upon the liturgy: {{heresy}}
+The tech-priests weep; the {{step.kind}} is undone: {{heresy}}
+Scrapcode in the machine! The {{step.kind}} fell: {{heresy}}
+The rite was denied the aspect {{aspect}}: {{heresy}}
 The cogitator's lamps burn red: {{heresy}}
 Heresy strikes the {{step.kind}} of {{step.target}}: {{heresy}}
-The Motive Force falters at {{step.target}}. {{heresy}}
-Anathema! {{rite.name}} cannot become {{aspect}}: {{heresy}}
-The servitor has stumbled upon the {{step.kind}} of {{step.target}}. {{heresy}}
-The hymns fall silent. {{heresy}}
+The machine's vigour falters at {{step.target}}: {{heresy}}
+Anathema! The aspect {{aspect}} is withheld: {{heresy}}
+The servitor has stumbled upon the {{step.kind}}: {{heresy}}
+The hymns fall silent, and the vox speaks only this: {{heresy}}
 Corruption at {{step.target}}: {{heresy}}
-The noosphere screams; the {{step.kind}} upon {{step.target}} is lost. {{heresy}}
-By the Omnissiah, the {{step.kind}} at {{step.target}} has betrayed the rite: {{heresy}}
-The machine refuses {{aspect}}. Let the heresy be known: {{heresy}}
-The incense chokes; {{rite.name}} has fallen at the {{step.kind}} of {{step.target}}. {{heresy}}
-A curse upon {{step.target}}! {{heresy}}
-The logic engines recoil from the {{step.kind}} of {{step.target}}: {{heresy}}
+The noosphere screams; the {{step.kind}} is lost: {{heresy}}
+By the Omnissiah, the {{step.kind}} has betrayed the rite: {{heresy}}
+The machine refuses the aspect {{aspect}}. Let it be known: {{heresy}}
+The incense chokes; the rite fell at the {{step.kind}}: {{heresy}}
+A curse upon {{step.target}}: {{heresy}}
+The logic engines recoil from the {{step.kind}}: {{heresy}}
 Rust and ruin! The rite {{rite.name}} falls: {{heresy}}
-Penitence is due; the {{step.kind}} upon {{step.target}} was not accepted. {{heresy}}
-The Machine God withholds His blessing from {{rite.name}}: {{heresy}}
-Sparks and smoke at {{step.target}}. {{heresy}}
-A tech-heresy has befallen the {{step.kind}} at {{step.target}}: {{heresy}}
-The liturgy breaks; the {{step.kind}} of {{step.target}} denies the aspect {{aspect}}: {{heresy}}
-Mourn, adept: {{rite.name}} could not be performed into {{aspect}}. {{heresy}}
+Penitence is due; the {{step.kind}} was not accepted: {{heresy}}
+The Machine God withholds His blessing: {{heresy}}
+Sparks and smoke at {{step.target}}: {{heresy}}
+A tech-heresy has befallen the {{step.kind}}: {{heresy}}
+The liturgy breaks; the aspect {{aspect}} is denied: {{heresy}}
+Mourn, adept: the aspect {{aspect}} is beyond reach: {{heresy}}

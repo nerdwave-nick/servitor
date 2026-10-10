@@ -1,9 +1,7 @@
 package vox
 
 import (
-	"bytes"
 	"fmt"
-	"io"
 	"os"
 	"path/filepath"
 	"slices"
@@ -97,15 +95,15 @@ func failure() invocation.Proclamation {
 	return invocation.Proclamation{Tidings: invocation.Failure, Values: values(2, 2, "incantation", "exit 3", "woe"), Outcome: &out}
 }
 
-func withoutTerminal(c Config) *Herald {
-	c.Terminal = func() io.Writer { return nil }
+// quiet raises a herald that always draws the first template.
+func quiet(c Config) *Herald {
 	c.Pick = first
 	return New(c)
 }
 
 func TestHerald_DesktopFirstPrintsTheIdThenReplacesIt(t *testing.T) {
 	s := newStub(t)
-	h := withoutTerminal(Config{Vox: librarium.VoxNotifySend})
+	h := quiet(Config{Vox: librarium.VoxNotifySend})
 
 	h.Proclaim(progress(1, 2))
 	h.Proclaim(progress(2, 2))
@@ -151,7 +149,7 @@ func TestHerald_DesktopFirstPrintsTheIdThenReplacesIt(t *testing.T) {
 
 func TestHerald_FailureIsCritical(t *testing.T) {
 	s := newStub(t)
-	h := withoutTerminal(Config{})
+	h := quiet(Config{})
 	h.Proclaim(failure())
 	calls := s.calls(t)
 	if len(calls) != 1 {
@@ -167,7 +165,7 @@ func TestHerald_FailureIsCritical(t *testing.T) {
 
 func TestHerald_CloseLetsALingeringProgressExpire(t *testing.T) {
 	s := newStub(t)
-	h := withoutTerminal(Config{})
+	h := quiet(Config{})
 	h.Proclaim(progress(1, 2))
 	if err := h.Close(); err != nil {
 		t.Fatal(err)
@@ -187,41 +185,26 @@ func TestHerald_CloseLetsALingeringProgressExpire(t *testing.T) {
 	}
 }
 
-func TestHerald_TerminalHearsInsteadOfTheDesktop(t *testing.T) {
-	for _, vox := range []string{librarium.VoxNotifySend, librarium.VoxOff} {
-		t.Run(vox, func(t *testing.T) {
-			s := newStub(t)
-			var tty bytes.Buffer
-			h := New(Config{Vox: vox, Pick: first, Terminal: func() io.Writer { return &tty }})
-			h.Proclaim(progress(1, 2))
-			h.Proclaim(failure())
-			if err := h.Close(); err != nil {
-				t.Fatal(err)
-			}
-			if calls := s.calls(t); len(calls) != 0 {
-				t.Fatalf("notify-send was called with a terminal: %q", calls)
-			}
-			lines := strings.Split(strings.TrimSuffix(tty.String(), "\n"), "\n")
-			if len(lines) != 2 {
-				t.Fatalf("the terminal heard %q", tty.String())
-			}
-			p := Compose(progress(1, 2), first)
-			if !strings.Contains(lines[0], p.Summary) || !strings.Contains(lines[0], "step 1 / 2") ||
-				!strings.Contains(lines[0], strings.Split(p.Body, "\n")[0]) {
-				t.Errorf("progress printed as %q", lines[0])
-			}
-			if !strings.Contains(lines[1], "woe") || !strings.Contains(lines[1], "undone") {
-				t.Errorf("failure printed as %q", lines[1])
-			}
-		})
+func TestHerald_SendShowsAMessageComposedBefore(t *testing.T) {
+	s := newStub(t)
+	h := quiet(Config{})
+	m := Compose(success(), first)
+	h.Send(m)
+	calls := s.calls(t)
+	if len(calls) != 1 || !slices.Equal(calls[0][len(calls[0])-2:], []string{m.Summary, m.Body}) {
+		t.Fatalf("calls %q", calls)
+	}
+	if u, _ := flag(calls[0], "-u"); u != "normal" {
+		t.Errorf("the triumph is spoken with urgency %q", u)
 	}
 }
 
 func TestHerald_VoxOffSilencesTheDesktop(t *testing.T) {
 	s := newStub(t)
-	h := withoutTerminal(Config{Vox: librarium.VoxOff})
+	h := quiet(Config{Vox: librarium.VoxOff})
 	h.Proclaim(progress(1, 2))
 	h.Proclaim(failure())
+	h.Send(Compose(success(), first))
 	if err := h.Close(); err != nil {
 		t.Fatal(err)
 	}
@@ -232,7 +215,7 @@ func TestHerald_VoxOffSilencesTheDesktop(t *testing.T) {
 
 func TestHerald_MissingNotifySendIsSilent(t *testing.T) {
 	t.Setenv("PATH", t.TempDir())
-	h := withoutTerminal(Config{})
+	h := quiet(Config{})
 	h.Proclaim(progress(1, 2))
 	h.Proclaim(failure())
 	if err := h.Close(); err != nil {
@@ -243,7 +226,7 @@ func TestHerald_MissingNotifySendIsSilent(t *testing.T) {
 func TestHerald_AFallenNotifySendIsSilentAndReplacesNothing(t *testing.T) {
 	s := newStub(t)
 	s.fall(t)
-	h := withoutTerminal(Config{})
+	h := quiet(Config{})
 	h.Proclaim(progress(1, 2))
 	h.Proclaim(success())
 	calls := s.calls(t)
@@ -257,7 +240,7 @@ func TestHerald_AFallenNotifySendIsSilentAndReplacesNothing(t *testing.T) {
 
 func TestHerald_FollowsTheIdTheDesktopAnswers(t *testing.T) {
 	s := newStub(t)
-	h := withoutTerminal(Config{})
+	h := quiet(Config{})
 	h.Proclaim(progress(1, 2))
 	s.answer(t, "77\n")
 	h.Proclaim(progress(2, 2))

@@ -13,12 +13,7 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/invocation"
 	"github.com/nerdwave-nick/servitor/internal/librarium"
 	"github.com/nerdwave-nick/servitor/internal/rituals"
-	"github.com/nerdwave-nick/servitor/internal/vox"
 )
-
-// controllingTerminal finds the terminal the herald prints to; replaced in
-// tests.
-var controllingTerminal = vox.ControllingTerminal
 
 func (a *app) newInvokeCmd() *cobra.Command {
 	var foresee, silence bool
@@ -114,16 +109,16 @@ func (a *app) invoke(cmd *cobra.Command, r *librarium.Rite, aspect string, fores
 	}
 	s := a.servitor(cmd)
 	p := rituals.Petition{Rite: r.Name, Aspect: aspect, Runes: runes, Foresee: foresee}
-	var herald *vox.Herald
+	var told *narration
 	if !foresee {
-		herald = vox.New(vox.Config{Vox: s.Orders().Vox, Terminal: controllingTerminal})
-		p.Herald = herald
+		told = newNarration(cmd.OutOrStdout(), s.Orders().Vox, silence)
+		p.Herald, p.Commence = told, told.commence
 	}
 	ctx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt, syscall.SIGTERM)
 	res, err := s.Invoke(ctx, p)
 	stop()
-	if herald != nil {
-		_ = herald.Close()
+	if told != nil {
+		told.end(res.Outcome)
 	}
 	for _, l := range res.Laments {
 		fmt.Fprintln(cmd.ErrOrStderr(), "servitor ✠ "+l.Error())
@@ -141,8 +136,6 @@ func (a *app) invoke(cmd *cobra.Command, r *librarium.Rite, aspect string, fores
 		return nil
 	case res.Outcome.Verdict != invocation.Triumph:
 		return &ExitError{Code: 1, Err: fallen(r.Name, *res.Outcome)}
-	case !silence:
-		printSummary(cmd.OutOrStdout(), res)
 	}
 	return nil
 }

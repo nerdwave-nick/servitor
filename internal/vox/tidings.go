@@ -1,9 +1,9 @@
 // Package vox is the herald of invocations: it turns the proclamations of
 // an invocation (see invocation.Herald) into vox-casts drawn from embedded
-// grimdark templates, and sends them where the user will hear them —
-// printed on the controlling terminal when there is one, otherwise as one
-// desktop notification through notify-send, replaced in place by every
-// later vox-cast of the same invocation.
+// grimdark templates, and sends those of an invocation roused without a
+// terminal to the desktop as one notification through notify-send,
+// replaced in place by every later vox-cast of the same invocation. On a
+// terminal the servitor tells the composed vox-casts itself.
 package vox
 
 import (
@@ -19,7 +19,8 @@ import (
 type Message struct {
 	Tidings invocation.Tidings
 	Summary string // the rite and the aspect invoked
-	Body    string // the tidings themselves; lines are joined by "\n"
+	Flavour string // the template drawn, illuminated
+	Body    string // the flavour and what follows it; lines are joined by "\n"
 	Percent int    // progress only: the share of real steps performed
 }
 
@@ -60,11 +61,12 @@ var voxScope = placeholder.Scope{Mode: placeholder.VoxCastMode}
 
 // awakening is the progress told before any real step was performed, when
 // there is no step before to describe.
-const awakening = "The machine spirit stirs; the liturgy of {{rite.name}} begins."
+const awakening = "The machine spirit stirs; the liturgy begins."
 
 // Compose draws a template for p's tidings with pick (which returns an
-// index below n) and illuminates it. Progress ends in "step x / n";
-// failure ends in how the reversion went.
+// index below n) and illuminates it, the aspect written «aspect». The body
+// of progress ends in "step x / n", that of failure in how the reversion
+// went.
 func Compose(p invocation.Proclamation, pick func(n int) int) Message {
 	list := templates[p.Tidings]
 	tmpl := list[pick(len(list))]
@@ -72,8 +74,10 @@ func Compose(p invocation.Proclamation, pick func(n int) int) Message {
 	if p.Tidings == invocation.Progress && tid.Step == 0 {
 		tmpl = awakening
 	}
-	body := illuminate(tmpl, p.Values)
-	m := Message{Tidings: p.Tidings, Summary: p.Values.Rite + " → " + p.Values.Aspect}
+	v := p.Values
+	v.Aspect = "«" + v.Aspect + "»"
+	body := illuminate(tmpl, v)
+	m := Message{Tidings: p.Tidings, Summary: p.Values.Rite + " → " + p.Values.Aspect, Flavour: body}
 	switch p.Tidings {
 	case invocation.Progress:
 		m.Percent = 100

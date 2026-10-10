@@ -33,7 +33,7 @@ func TestInvoke_PickForeseeInscribeAndWatchTheRiteRun(t *testing.T) {
 	h.mustShow("Invocation of mouse → on", "step 0 / 2")
 
 	h.next() // the progress vox-cast before any real step
-	h.mustShow("The machine spirit stirs; the liturgy of mouse begins.", "step 0 / 2")
+	h.mustShow("The machine spirit stirs; the liturgy begins.", "step 0 / 2")
 	h.next() // the sanctum begins
 	h.mustShow("step 1 / 2", "verse 2 · sanctum")
 	h.next() // the incantation begins

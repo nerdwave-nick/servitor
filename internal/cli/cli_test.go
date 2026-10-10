@@ -2,7 +2,6 @@ package cli
 
 import (
 	"bytes"
-	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -47,15 +46,16 @@ func newEnv(t *testing.T) *env {
 		t.Fatal(err)
 	}
 	t.Setenv("PATH", e.bin+string(os.PathListSeparator)+os.Getenv("PATH"))
-	e.terminal(nil)
+	e.terminal(-1)
 	return e
 }
 
-// terminal makes w the controlling terminal of the servitor; nil means none.
-func (e *env) terminal(w io.Writer) {
+// terminal lends the servitor a controlling terminal of cols columns (0:
+// of unknown width); a negative cols means none.
+func (e *env) terminal(cols int) {
 	orig := controllingTerminal
 	e.t.Cleanup(func() { controllingTerminal = orig })
-	controllingTerminal = func() io.Writer { return w }
+	controllingTerminal = func() (int, bool) { return max(0, cols), cols >= 0 }
 }
 
 // notified returns the arguments of every notify-send call, one per line.
