@@ -95,7 +95,7 @@ func (a *app) newRiteCmd(r *librarium.Rite, foresee, silence *bool) *cobra.Comma
 		if in.Mandatory {
 			usage += " (mandatory, unless the aspect decrees it)"
 		}
-		cmd.Flags().String(in.Key, "", usage)
+		cmd.Flags().Var(wordRune(new(string), "", "word"), in.Key, usage)
 		_ = cmd.RegisterFlagCompletionFunc(in.Key, func(*cobra.Command, []string, string) ([]cobra.Completion, cobra.ShellCompDirective) {
 			return decreeCompletions(in), cobra.ShellCompDirectiveNoFileComp
 		})

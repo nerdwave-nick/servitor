@@ -27,7 +27,7 @@ func flavor(root *cobra.Command) {
 			c.Short = "Recite the codex"
 			c.Hidden = true
 		case "completion":
-			c.Short = "Engrave completion litanies into your shell"
+			c.Short = "Engrave completion litanies into your terminal"
 			for _, sub := range c.Commands() {
 				sub.Short = "Engrave the completion litany for " + sub.Name()
 				_ = sub.Flags().MarkHidden("no-descriptions") // its name is no word of the liturgy

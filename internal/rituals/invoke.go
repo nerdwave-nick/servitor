@@ -29,7 +29,10 @@ type Result struct {
 	// Options are those the invocation was prepared with: the aspect, the
 	// former aspect read by augury, the inscriptions resolved, those on the
 	// data-slate, and the orders.
-	Options   invocation.Options
+	Options invocation.Options
+	// Former is how the rite stood before: when Options.Former is empty it
+	// tells whether the rite lay dormant or its aspect could not be read.
+	Former    augury.Standing
 	Foresight []invocation.Foresight // what every step that passed the pre-flight would do
 	Outcome   *invocation.Outcome    // nil when foreseen or refused
 	// Laments are what went amiss around the invocation without undoing it:
@@ -57,6 +60,7 @@ func (s *Servitor) Invoke(ctx context.Context, p Petition) (Result, error) {
 	env, orders := s.env(), s.Orders()
 	former, lament := augury.Augur(r, augury.Options{Target: p.Aspect, ForgoAuspex: p.Foresee, Orders: orders, Env: env})
 	res.lament(lament)
+	res.Former = former.Standing
 	res.Options = invocation.Options{Aspect: p.Aspect, Former: former.Aspect, Inscriptions: inscriptions,
 		Recorded: former.Inscriptions, Orders: orders, Herald: p.Herald}
 	inv, err := invocation.Prepare(r, res.Options)

@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/nerdwave-nick/servitor/internal/augury"
 	"github.com/nerdwave-nick/servitor/internal/invocation"
 	"github.com/nerdwave-nick/servitor/internal/rituals"
 )
@@ -16,17 +17,21 @@ func verseName(v invocation.Verse) string {
 	return strings.TrimSpace(fmt.Sprintf("verse %d · %s %s", v.Number, v.Kind.Key(), v.Target))
 }
 
-// former names the aspect a rite stood in before, or its dormancy.
-func former(aspect string) string {
-	if aspect == "" {
-		return "(dormant)"
+// former names the aspect a rite stood in before, or, when none could be
+// read, how it stood: dormant, corrupted and the like.
+func former(res rituals.Result) string {
+	switch {
+	case res.Options.Former != "":
+		return res.Options.Former
+	case res.Former == "":
+		return "(" + string(augury.Dormant) + ")"
 	}
-	return aspect
+	return "(" + string(res.Former) + ")"
 }
 
 // printSummary tells what a triumphant invocation did.
 func printSummary(w io.Writer, res rituals.Result) {
-	fmt.Fprintf(w, "+++ The rite %s is performed: %s → %s +++\n", res.Rite.Name, former(res.Options.Former), res.Options.Aspect)
+	fmt.Fprintf(w, "+++ The rite %s is performed: %s → %s +++\n", res.Rite.Name, former(res), res.Options.Aspect)
 	for _, d := range res.Outcome.Deeds {
 		if d.Kind.Key() != "vox-cast" {
 			fmt.Fprintln(w, "  "+verseName(d.Verse))
@@ -37,7 +42,7 @@ func printSummary(w io.Writer, res rituals.Result) {
 
 // printForesight tells what an invocation would do.
 func printForesight(w io.Writer, res rituals.Result) {
-	fmt.Fprintf(w, "+++ Foreseen: the rite %s, %s → %s +++\n", res.Rite.Name, former(res.Options.Former), res.Options.Aspect)
+	fmt.Fprintf(w, "+++ Foreseen: the rite %s, %s → %s +++\n", res.Rite.Name, former(res), res.Options.Aspect)
 	for _, f := range res.Foresight {
 		fmt.Fprintln(w, verseName(f.Verse))
 		switch {

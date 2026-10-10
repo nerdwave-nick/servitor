@@ -37,7 +37,7 @@ func (a *app) newAuguryCmd() *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().StringVar(&is, "is", "", "exit 0 if the rite stands in this aspect, 1 otherwise")
+	cmd.Flags().Var(wordRune(&is, "", "aspect"), "is", "exit 0 if the rite stands in this aspect, 1 otherwise")
 	_ = cmd.RegisterFlagCompletionFunc("is", func(_ *cobra.Command, args []string, _ string) ([]cobra.Completion, cobra.ShellCompDirective) {
 		if len(args) > 0 {
 			if r := a.lib.Rites[args[0]]; r != nil {

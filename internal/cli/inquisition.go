@@ -75,6 +75,15 @@ func (a *app) verdict(names []string, found librarium.Findings) string {
 	if heresies > 0 {
 		verdict = "Purge the heretical, then summon the Inquisition anew."
 	}
-	return fmt.Sprintf("+++ The Inquisition examined %d rite(s) in %s: %d heres(y/ies), %d impurit(y/ies). %s +++",
-		n, a.lib.Dir, heresies, impurities, verdict)
+	return fmt.Sprintf("+++ The Inquisition examined %s in %s: %s, %s. %s +++",
+		count(n, "rite", "rites"), a.lib.Dir, count(heresies, "heresy", "heresies"),
+		count(impurities, "impurity", "impurities"), verdict)
+}
+
+// count speaks n with the word for one or for many.
+func count(n int, one, many string) string {
+	if n == 1 {
+		return "1 " + one
+	}
+	return fmt.Sprintf("%d %s", n, many)
 }

@@ -98,7 +98,7 @@ func TestCensus(t *testing.T) {
 func TestInquisition(t *testing.T) {
 	e := newEnv(t)
 	out, errOut, code := e.run("inquisition")
-	if code != 0 || out != "" || !strings.Contains(errOut, "+++ The Inquisition examined 1 rite(s)") {
+	if code != 0 || out != "" || !strings.Contains(errOut, "+++ The Inquisition examined 1 rite in") {
 		t.Fatalf("clean inquisition: code=%d out=%q err=%q", code, out, errOut)
 	}
 	e.addRite("rites/mouse-autohide-toggle.jsonc", mouseJSON)
@@ -159,7 +159,7 @@ func TestInquisition_TheExamplesArePure(t *testing.T) {
 	t.Setenv("HOME", t.TempDir())
 	var out, errb bytes.Buffer
 	code := Execute([]string{"--librarium", "../../examples", "inquisition", "--spare-vessels"}, &out, &errb)
-	if code != 0 || out.String() != "" || !strings.Contains(errb.String(), "examined 2 rite(s)") {
+	if code != 0 || out.String() != "" || !strings.Contains(errb.String(), "examined 2 rites in") {
 		t.Fatalf("code=%d\nstdout: %s\nstderr: %s", code, out.String(), errb.String())
 	}
 	if info, err := os.Stat("../../examples/rites/scripts/recite-hooks"); err != nil || info.Mode()&0o111 == 0 {

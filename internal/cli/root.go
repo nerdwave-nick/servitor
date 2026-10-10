@@ -68,7 +68,7 @@ func NewRootCmd(args []string, stdout, stderr io.Writer) *cobra.Command {
 
 	root := &cobra.Command{
 		Use:           "servitor",
-		Short:         "A thrall of the Adeptus Mechanicus that performs rites upon your config files",
+		Short:         "A thrall of the Adeptus Mechanicus that performs rites upon the machine",
 		Version:       version(),
 		Args:          unknownRitual,
 		SilenceUsage:  true,
@@ -83,8 +83,8 @@ func NewRootCmd(args []string, stdout, stderr io.Writer) *cobra.Command {
 	root.SetOut(stdout) // before flavor: the completion command captures its writer
 	root.SetErr(stderr)
 	root.SetVersionTemplate("servitor, pattern {{.Version}} — blessed be the Omnissiah\n")
-	root.PersistentFlags().StringVarP(&a.configDir, "librarium", "l", a.configDir,
-		"path to the Librarium where rites are kept (env "+EnvLibrarium+")")
+	root.PersistentFlags().VarP(wordRune(&a.configDir, a.configDir, "hall"), "librarium", "l",
+		"the Librarium, where rites and settings are kept (env "+EnvLibrarium+")")
 	_ = root.MarkPersistentFlagDirname("librarium")
 	chronicleRunes(root, &a.chronicle)
 	root.SetFlagErrorFunc(func(cmd *cobra.Command, err error) error {
@@ -102,7 +102,7 @@ func (a *app) newTUICmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "cogitator",
 		Short: "Awaken the cogitator, the interactive shrine of rites",
-		Args:  cobra.NoArgs,
+		Args:  unknownRitual,
 		RunE:  func(cmd *cobra.Command, _ []string) error { return a.cogitator(cmd) },
 	}
 }
@@ -229,9 +229,9 @@ func version() string {
 // chronicleRunes registers --chronicle and its hidden alias --log for every
 // ritual under root.
 func chronicleRunes(root *cobra.Command, v *string) {
-	const usage = "path of the chronicle in which every invocation is recorded (env " + librarium.EnvChronicle + ")"
-	root.PersistentFlags().StringVar(v, "chronicle", "", usage)
-	root.PersistentFlags().StringVar(v, "log", "", usage)
+	const usage = "the chronicle, in which every invocation is recorded (env " + librarium.EnvChronicle + ")"
+	root.PersistentFlags().Var(wordRune(v, "", "scroll"), "chronicle", usage)
+	root.PersistentFlags().Var(wordRune(v, "", "scroll"), "log", usage)
 	_ = root.PersistentFlags().MarkHidden("log")
 	_ = root.MarkPersistentFlagFilename("chronicle")
 }
