@@ -96,8 +96,12 @@ func (e *examiner) tongueOf(tongue string) string {
 // tongue denounces the tongue of the step at index i when this machine
 // does not speak it.
 func (e *examiner) tongue(i int, tongue string) {
+	ptr := field(i, "tongue")
+	if tongue == "" && e.rite.Tongue != "" {
+		ptr = "/tongue" // the rite's own tongue speaks for the step
+	}
 	if t := e.tongueOf(tongue); !speakable(t) {
-		e.note(librarium.Impurity, field(i, "tongue"), "the tongue %q of verse %d is spoken nowhere on this "+
+		e.note(librarium.Impurity, ptr, "the tongue %q of verse %d is spoken nowhere on this "+
 			"machine: no program of that name lies along its PATH, so the step could never be uttered — name "+
 			"another \"tongue\" for the step, the rite or the settings", t, i+1)
 	}

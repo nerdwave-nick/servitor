@@ -163,6 +163,9 @@ func TestInquire_TheMachineTheLiturgiesActUpon(t *testing.T) {
 	if n := len(denounced(fs, "missing", librarium.Impurity)); n != 1 {
 		t.Errorf("a consecrating sanctum was denounced: %d", n)
 	}
+	if got := denounced(fs, "tongues", librarium.Impurity, "verse 2"); len(got) == 1 && got[0].Line != 1 {
+		t.Errorf("the rite's tongue is denounced where the rite names it, not at %d:%d", got[0].Line, got[0].Column)
+	}
 	if n := len(denounced(fs, "tongues", librarium.Impurity)); n != 3 {
 		t.Errorf("tongues: %d", n)
 	}
