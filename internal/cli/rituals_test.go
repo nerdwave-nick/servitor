@@ -149,3 +149,44 @@ func TestInquisition_Vessels(t *testing.T) {
 		t.Fatalf("broken markers: code=%d out=%s", code, out)
 	}
 }
+
+// elderJSON is a rite in the elder form that knew no pattern: its vessels
+// are "files", its aspects "states".
+const elderJSON = `// +++ an elder rite +++
+{
+  "description": "Hide the cursor after inactivity",
+  "states": ["on", "off"],
+  "files": [{"file": "$TARGET", "values": [{"state": "on", "value": "hide"}, {"state": "off", "value": ""}]}],
+}`
+
+func TestInquisition_ElderScriptureIsHeresy(t *testing.T) {
+	e := newEnv(t)
+	e.addRite("rites/elder.json", elderJSON)
+	out, _, code := e.run("inquisition", "elder")
+	lines := strings.Split(strings.TrimSpace(out), "\n")
+	if code != 1 || len(lines) != 1 {
+		t.Fatalf("one heresy and nothing else expected: code=%d out:\n%s", code, out)
+	}
+	for _, want := range []string{
+		"elder.json:2:1: heresy: ", `bears no "pattern"`, `"files"`, `"states"`, "elder",
+		"nothing of it will be converted", `"Mark I"`, `"liturgy"`,
+	} {
+		if !strings.Contains(out, want) {
+			t.Errorf("denunciation missing %q:\n%s", want, out)
+		}
+	}
+	if out, _, _ := e.run("inquisition", "elder", "--binharic"); !strings.Contains(out, `"judgement": "heresy"`) ||
+		!strings.Contains(out, "nothing of it will be converted") {
+		t.Errorf("binharic denunciation: %s", out)
+	}
+	before := e.targetContent()
+	if _, errOut, code := e.run("invoke", "elder", "on"); code == 0 || !strings.Contains(errOut, "tainted by heresy") {
+		t.Fatalf("an elder rite must not be invoked: code=%d err=%s", code, errOut)
+	}
+	if e.targetContent() != before || len(e.chronicleLines()) != 0 {
+		t.Fatal("an elder rite touched its vessel or the chronicle")
+	}
+	if out := e.mustRun("census", "--binharic"); !strings.Contains(out, `"standing": "heretical"`) {
+		t.Fatalf("census: %s", out)
+	}
+}

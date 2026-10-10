@@ -12,7 +12,6 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"github.com/tailscale/hujson"
 
-	"github.com/nerdwave-nick/servitor/internal/lexicon"
 	"github.com/nerdwave-nick/servitor/internal/librarium"
 	"github.com/nerdwave-nick/servitor/internal/rituals"
 )
@@ -142,9 +141,9 @@ func (w *wizard) sealView(m *model, width, height int) string {
 		lines = append(lines, t.ok.Render("✔ The rite is pure. Press enter to seal it into the Librarium."))
 	}
 	for _, f := range s.found {
-		sev, st := lexicon.Impurity, t.warn
+		sev, st := f.Severity.String(), t.warn
 		if f.Severity == librarium.Heresy {
-			sev, st = lexicon.Heresy, t.danger
+			st = t.danger
 		}
 		head := fmt.Sprintf("%s %d:%d ", sev, f.Line, f.Column)
 		for i, l := range wrap([]string{st.Render(head) + t.text.Render(f.Message)}, width-6) {

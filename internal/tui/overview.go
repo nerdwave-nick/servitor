@@ -10,7 +10,6 @@ import (
 	"charm.land/lipgloss/v2"
 
 	"github.com/nerdwave-nick/servitor/internal/augury"
-	"github.com/nerdwave-nick/servitor/internal/lexicon"
 	"github.com/nerdwave-nick/servitor/internal/librarium"
 )
 
@@ -155,9 +154,9 @@ func (m *model) verdict() string {
 	}
 	var b strings.Builder
 	for _, f := range found {
-		sev, st := lexicon.Impurity, t.warn
+		sev, st := f.Severity.String(), t.warn
 		if f.Severity == librarium.Heresy {
-			sev, st = lexicon.Heresy, t.danger
+			st = t.danger
 		}
 		loc := fmt.Sprintf("%s:%d:%d", shortPath(f.Scripture), f.Line, f.Column)
 		b.WriteString(st.Render(sev) + " " + t.dim.Render(loc) + "\n  " + t.text.Render(f.Message) + "\n")

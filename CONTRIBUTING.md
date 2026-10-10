@@ -92,9 +92,9 @@ itself.
 
 | Scope         | Covers                                              | Code                          |
 |---------------|-----------------------------------------------------|-------------------------------|
-| `librarium`   | loading and validating rite definitions             | `internal/config`             |
-| `sanctum`     | wards, inscriptions, marker parsing and rendering   | `internal/block`              |
-| `invoke`      | applying aspects, purging sanctums                  | `internal/engine`, `invoke`   |
+| `librarium`   | loading and validating rite definitions             | `internal/librarium`          |
+| `sanctum`     | wards, inscriptions, marker parsing and rendering   | `internal/sanctum`            |
+| `invoke`      | applying aspects, purging sanctums                  | `internal/invocation`, `invoke` |
 | `augury`      | reading inscriptions back                           | `augury` command              |
 | `census`      | listing rites                                       | `census` command              |
 | `inquisition` | verification and diagnostics                        | `inquisition` command         |

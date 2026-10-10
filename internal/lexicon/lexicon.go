@@ -1,25 +1,9 @@
-// Package lexicon holds the one vocabulary of servitor, the liturgy of the
-// Adeptus Mechanicus: the words shared by the rituals and the cogitator, and
-// the Thoughts for the Day.
+// Package lexicon holds the Thoughts for the Day of the cogitator.
 package lexicon
 
 import (
 	_ "embed"
 	"strings"
-)
-
-// Standings of a rite, as named by the census and the cogitator.
-const (
-	Performed = "performed"
-	Dormant   = "dormant"
-	Corrupted = "corrupted"
-	Heretical = "heretical"
-)
-
-// Severities of the Inquisition's findings.
-const (
-	Heresy   = "heresy"
-	Impurity = "impurity"
 )
 
 // thoughtsFile holds one Thought for the Day per line. Blank lines and lines
