@@ -13,7 +13,8 @@
 //
 // Steps of every kind join the same ordered loop through the performer
 // interface. Incantations and litanies are spoken by real processes (see
-// speak.go); vox-casts are not yet sent.
+// speak.go); vox-casts and failures are proclaimed to the Options' Herald
+// (see herald.go).
 package invocation
 
 import (
@@ -39,6 +40,9 @@ type Options struct {
 	// the tongue and patience their step and rite do not name. Zero orders
 	// speak bash with librarium.DefaultPatience.
 	Orders librarium.Orders
+	// Herald hears the vox-casts and the failure of the performance; nil
+	// hears nothing.
+	Herald Herald
 }
 
 // Verse names one step of the liturgy: its place, its kind and what its own
@@ -65,6 +69,7 @@ type performer interface {
 // Invocation is a rite made ready to be performed into one aspect.
 type Invocation struct {
 	rite      *librarium.Rite
+	opts      Options
 	steps     []performer
 	foresight []Foresight
 	heresies  Heresies
@@ -75,7 +80,7 @@ type Invocation struct {
 // can always be foreseen; when the error (of type Heresies) is not nil it
 // cannot be performed. r must not be heretical.
 func Prepare(r *librarium.Rite, opts Options) (*Invocation, error) {
-	inv := &Invocation{rite: r}
+	inv := &Invocation{rite: r, opts: opts}
 	if !r.HasAspect(opts.Aspect) {
 		inv.heresies = Heresies{{Finding: librarium.Finding{
 			Severity: librarium.Heresy, Scripture: r.Path, Rite: r.Name, Position: r.Locate("/aspects"),
@@ -127,7 +132,8 @@ func (inv *Invocation) Perform() (Outcome, error) {
 		return Outcome{}, ErrPerformed
 	}
 	inv.performed = true
-	return performAll(inv.steps), nil
+	c := newCrier(inv.opts.Herald, values(inv.rite, inv.opts, inv.opts.Inscriptions), inv.steps)
+	return performAll(inv.steps, c), nil
 }
 
 // utterer is a performer whose commands utter words worth keeping.
@@ -142,13 +148,16 @@ func uttered(step performer) (said, unsaid string) {
 	return "", ""
 }
 
-func performAll(steps []performer) Outcome {
+// performAll performs steps in order, telling c (which may be nil) of
+// every step performed and of the fall.
+func performAll(steps []performer, c *crier) Outcome {
 	out := Outcome{Verdict: Triumph}
 	for k, step := range steps {
 		err := step.perform()
 		said, _ := uttered(step)
 		out.Deeds = append(out.Deeds, Deed{Verse: step.verse(), Output: said, Heresy: err})
 		if err == nil {
+			c.performed(step)
 			continue
 		}
 		out.Fell = &Fall{Verse: step.verse(), Heresy: err, Output: said}
@@ -164,6 +173,7 @@ func performAll(steps []performer) Outcome {
 				out.Verdict = Faltered
 			}
 		}
+		c.fell(step, out)
 		break
 	}
 	return out

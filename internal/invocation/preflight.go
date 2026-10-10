@@ -34,7 +34,7 @@ func (p *preflight) prepare(s librarium.Step) performer {
 	case *librarium.Litany:
 		return p.litany(s)
 	case *librarium.VoxCast:
-		return silentVox{v: p.verse(s.Kind(), s.Tidings)}
+		return voxCast{v: p.verse(s.Kind(), s.Tidings), tidings: Tidings(s.Tidings)}
 	}
 	return nil
 }
@@ -182,11 +182,3 @@ func renderQuietly(r *librarium.Rite, sc librarium.Scripture, v placeholder.Valu
 	text, err := scope.Render(string(data), v)
 	return text, err == nil
 }
-
-// silentVox stands for a vox-cast until the servitor learns to send them.
-type silentVox struct{ v Verse }
-
-func (s silentVox) verse() Verse        { return s.v }
-func (s silentVox) foresee() Foresight  { return Foresight{Verse: s.v} }
-func (silentVox) perform() error        { return nil }
-func (silentVox) revert() (bool, error) { return false, nil }
