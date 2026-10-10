@@ -141,6 +141,27 @@ func TestParse_PatternHeresyStandsAlone(t *testing.T) {
 	}
 }
 
+func TestParse_ElderScriptureIsNamedAsSuch(t *testing.T) {
+	cases := []struct {
+		data, want string
+		elder      bool
+	}{
+		{`{"states": ["on"], "files": []}`, `its "states" and "files" are the words of the elder scripture`, true},
+		{`{"files": []}`, `its "files" are the words of the elder scripture`, true},
+		{`{"aspects": ["on"], "liturgy": []}`, "", false},
+	}
+	for _, c := range cases {
+		_, fs := Parse("v0", "/lib/rites/v0.json", []byte(c.data))
+		if len(fs) != 1 || !strings.Contains(fs[0].Message, `bears no "pattern"`) {
+			t.Fatalf("%s: findings %v", c.data, fs)
+		}
+		msg := fs[0].Message
+		if got := strings.Contains(msg, "nothing of it will be converted"); got != c.elder || !strings.Contains(msg, c.want) {
+			t.Errorf("%s: elder=%v, want %v containing %q:\n%s", c.data, got, c.elder, c.want, msg)
+		}
+	}
+}
+
 func TestParse_ValidScriptureIsPure(t *testing.T) {
 	cases := map[string]string{
 		"escaped braces":   mark(``, `{"incantation": "echo {{{{aspect}}"}`),

@@ -1,8 +1,10 @@
 package librarium
 
 import (
+	"fmt"
 	"regexp"
 	"slices"
+	"strings"
 
 	"github.com/tailscale/hujson"
 )
@@ -126,8 +128,30 @@ func (d *decoder) decodePattern(root *hujson.Value, obj *hujson.Object) bool {
 	d.heresy(root, "the scripture bears no \"pattern\"; every scripture of the Librarium must declare the "+
 		"Mark of its form, and "+
 		"this servitor reads only \"pattern\": %q — scripture of no pattern is heresy, and the servitor "+
-		"will not guess at its meaning", Pattern)
+		"will not guess at its meaning%s", Pattern, elderLament(obj))
 	return false
+}
+
+// elderKeys are the keys by which a rite of the elder form, which knew no
+// pattern, is recognised.
+var elderKeys = []string{"states", "files"}
+
+// elderLament names the elder form when obj bears its keys, so that its
+// keeper knows why the rite no longer speaks; it is empty otherwise.
+func elderLament(obj *hujson.Object) string {
+	var found []string
+	for i := range obj.Members {
+		if name := obj.Members[i].Name.Value.(hujson.Literal).String(); slices.Contains(elderKeys, name) {
+			found = append(found, fmt.Sprintf("%q", name))
+		}
+	}
+	if len(found) == 0 {
+		return ""
+	}
+	return fmt.Sprintf("; its %s are the words of the elder scripture that knew no Mark, a form this "+
+		"servitor has abjured: not one of its vessels will be read or rewritten, and nothing of it will be "+
+		"converted — rewrite the rite by hand in pattern %q, its vessels bound as steps of a \"liturgy\", "+
+		"or strike it from the Librarium", strings.Join(found, " and "), Pattern)
 }
 
 func (d *decoder) decodeAspects(v *hujson.Value) {
