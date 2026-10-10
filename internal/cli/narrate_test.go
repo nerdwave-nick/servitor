@@ -10,7 +10,7 @@ import (
 )
 
 // visageJSON is a rite like the visage of the machine: a long incantation, a
-// tether, a progress vox-cast, another incantation and a triumph.
+// tether, a progress vox-cast, a litany beside the rite and a triumph.
 const visageJSON = `{
   "pattern": "Mark I",
   "aspects": ["default", "porpl"],
@@ -18,7 +18,7 @@ const visageJSON = `{
     {"incantation": "echo the screen is veiled in a transition of two hundred milliseconds or more || true"},
     {"tether": "$HALL/current-theme", "anchor": "$HALL/themes/{{aspect}}"},
     {"vox-cast": "progress"},
-    {"incantation": "true"},
+    {"litany": "scripts/hooks", "offerings": ["~/themes/{{aspect}}"]},
     {"vox-cast": "success"}
   ]
 }`
@@ -38,6 +38,9 @@ func (e *env) addTheme() {
 		e.t.Fatal(err)
 	}
 	e.addRite("rites/theme.json", strings.ReplaceAll(visageJSON, "$HALL", hall))
+	if err := os.Chmod(e.addRite("rites/scripts/hooks", "#!/bin/sh\ntest -d \"$1\"\n"), 0o755); err != nil {
+		e.t.Fatal(err)
+	}
 }
 
 // speaksAspect reports whether line speaks of the aspect «aspect».
@@ -100,7 +103,7 @@ func TestInvoke_OnATerminalEveryVerseAndVoxCastIsToldInItsPlace(t *testing.T) {
 			width = 80
 		}
 		want := []string{"+++ theme · (dormant) → porpl +++", "  ✔ verse 1 · incantation echo the screen is veiled",
-			"  ✔ verse 2 · tether ~/current-theme", "  ⋯ ", "  ✔ verse 4 · incantation true", "✠ "}
+			"  ✔ verse 2 · tether ~/current-theme", "  ⋯ ", "  ✔ verse 4 · litany scripts/hooks", "✠ "}
 		for i, w := range want {
 			if !strings.HasPrefix(got[i], w) {
 				t.Errorf("%d columns, line %d is %q, want it to begin %q", cols, i, got[i], w)
@@ -123,6 +126,7 @@ func TestInvoke_OnATerminalEveryVerseAndVoxCastIsToldInItsPlace(t *testing.T) {
 
 func TestInvoke_SilenceOnATerminalLeavesOnlyTheVoxCasts(t *testing.T) {
 	e := newEnv(t)
+	e.home()
 	e.addTheme()
 	e.terminal(0)
 
@@ -168,7 +172,7 @@ func TestInvoke_WithoutATerminalTheDesktopHearsAndTheReportFollows(t *testing.T)
 	got := lines(e.mustRun("invoke", "theme", "porpl"))
 
 	if len(got) != 5 || got[0] != "+++ theme · (dormant) → porpl +++" || got[2] != "  ✔ verse 2 · tether ~/current-theme" ||
-		got[3] != "  ✔ verse 4 · incantation true" || !strings.HasPrefix(got[4], "✠ ") {
+		got[3] != "  ✔ verse 4 · litany scripts/hooks" || !strings.HasPrefix(got[4], "✠ ") {
 		t.Fatalf("stdout:\n%s", strings.Join(got, "\n"))
 	}
 	notified := e.notified()

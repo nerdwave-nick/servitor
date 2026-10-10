@@ -4,18 +4,25 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"path/filepath"
 	"strconv"
 	"strings"
 
 	"github.com/nerdwave-nick/servitor/internal/augury"
 	"github.com/nerdwave-nick/servitor/internal/invocation"
+	"github.com/nerdwave-nick/servitor/internal/librarium"
 	"github.com/nerdwave-nick/servitor/internal/rituals"
 )
 
-// verseName names a verse as "verse 2 · tether <target>", the home of the
-// faithful spoken as "~".
-func verseName(v invocation.Verse) string {
-	return strings.TrimSpace(fmt.Sprintf("verse %d · %s %s", v.Number, v.Kind.Key(), homeward(v.Target)))
+// verseName names a verse of r as "verse 2 · tether <target>": the home of
+// the faithful is spoken as "~", and a litany's scroll beside the rite as
+// it is written.
+func verseName(r *librarium.Rite, v invocation.Verse) string {
+	target := homeward(v.Target)
+	if hall := r.Dir() + string(filepath.Separator); v.Kind == librarium.KindLitany && strings.HasPrefix(v.Target, hall) {
+		target = strings.TrimPrefix(v.Target, hall)
+	}
+	return strings.TrimSpace(fmt.Sprintf("verse %d · %s %s", v.Number, v.Kind.Key(), target))
 }
 
 // former names the aspect a rite stood in before, or, when none could be
@@ -34,7 +41,7 @@ func former(res rituals.Result) string {
 func printForesight(w io.Writer, res rituals.Result) {
 	fmt.Fprintf(w, "+++ Foreseen: the rite %s, %s → %s +++\n", res.Rite.Name, former(res), res.Options.Aspect)
 	for _, f := range res.Foresight {
-		fmt.Fprintln(w, verseName(f.Verse))
+		fmt.Fprintln(w, verseName(res.Rite, f.Verse))
 		switch {
 		case f.Vessel != nil:
 			foreseeVessel(w, *f.Vessel)
@@ -118,18 +125,18 @@ func forbidden(rite, aspect string, hs invocation.Heresies) error {
 
 // fallen is the lament of an invocation whose step fell: why, its last
 // words, and how every reversion went.
-func fallen(rite string, out invocation.Outcome) error {
+func fallen(r *librarium.Rite, out invocation.Outcome) error {
 	var b strings.Builder
 	f := out.Fell
-	fmt.Fprintf(&b, "the rite %q fell at %s: %v", rite, verseName(f.Verse), f.Heresy)
+	fmt.Fprintf(&b, "the rite %q fell at %s: %v", r.Name, verseName(r, f.Verse), f.Heresy)
 	words(&b, "its last words", f.Output)
-	for _, r := range out.Reversions {
-		if r.Heresy == nil {
-			fmt.Fprintf(&b, "\n  %s is undone", verseName(r.Verse))
+	for _, rv := range out.Reversions {
+		if rv.Heresy == nil {
+			fmt.Fprintf(&b, "\n  %s is undone", verseName(r, rv.Verse))
 		} else {
-			fmt.Fprintf(&b, "\n  %s could not be undone: %v", verseName(r.Verse), r.Heresy)
+			fmt.Fprintf(&b, "\n  %s could not be undone: %v", verseName(r, rv.Verse), rv.Heresy)
 		}
-		words(&b, "the words of its reversion", r.Output)
+		words(&b, "the words of its reversion", rv.Output)
 	}
 	if out.Verdict == invocation.Faltered {
 		b.WriteString("\nThe reversion faltered; the rite lies corrupted. Summon the Inquisition, and mend by hand what remains.")

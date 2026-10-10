@@ -130,7 +130,7 @@ func (n *narration) header() {
 // verse tells v on one line, its target cut short to fit the width.
 func (n *narration) verse(v invocation.Verse) {
 	v.Target = strings.Join(strings.Fields(v.Target), " ")
-	fmt.Fprintln(n.w, fit("  ✔ "+verseName(v), n.width))
+	fmt.Fprintln(n.w, fit("  ✔ "+verseName(n.res.Rite, v), n.width))
 }
 
 // fit cuts line to width characters, ending it in "…" when it was longer.

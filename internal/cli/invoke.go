@@ -135,7 +135,7 @@ func (a *app) invoke(cmd *cobra.Command, r *librarium.Rite, aspect string, fores
 	case foresee:
 		return nil
 	case res.Outcome.Verdict != invocation.Triumph:
-		return &ExitError{Code: 1, Err: fallen(r.Name, *res.Outcome)}
+		return &ExitError{Code: 1, Err: fallen(r, *res.Outcome)}
 	}
 	return nil
 }
