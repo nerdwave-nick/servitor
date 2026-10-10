@@ -72,7 +72,7 @@ func foreseeVessel(w io.Writer, c invocation.VesselChange) {
 }
 
 func foreseeTether(w io.Writer, c invocation.TetherChange) {
-	from, to := c.From, c.To
+	from, to := homeward(c.From), homeward(c.To)
 	if from == "" {
 		from = "nothing"
 	}

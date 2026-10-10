@@ -198,4 +198,9 @@ func TestInvoke_TheHomeIsSpokenAsTildeWhereVersesAreNamed(t *testing.T) {
 	if !slices.Contains(lines(out), "verse 1 · sanctum ~/util.kdl") {
 		t.Fatalf("foreseen:\n%s", out)
 	}
+	e.addTheme()
+	out = e.mustRun("invoke", "theme", "porpl", "--foresee")
+	if !slices.Contains(lines(out), "  the tether is bound to ~/themes/porpl (it led to nothing)") {
+		t.Fatalf("foreseen:\n%s", out)
+	}
 }
