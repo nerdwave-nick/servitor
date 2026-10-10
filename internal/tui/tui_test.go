@@ -10,7 +10,6 @@ import (
 	"github.com/charmbracelet/x/ansi"
 
 	"github.com/nerdwave-nick/servitor/internal/engine"
-	"github.com/nerdwave-nick/servitor/internal/lexicon"
 )
 
 // harness drives the model with key presses and renders after every step,
@@ -22,14 +21,14 @@ type harness struct {
 	dataDir string
 }
 
-func newHarness(t *testing.T, grim bool) *harness {
+func newHarness(t *testing.T) *harness {
 	t.Helper()
 	h := &harness{t: t, dir: t.TempDir(), dataDir: t.TempDir()}
 	h.writeRite("mouse", strings.ReplaceAll(sampleRite, "/tmp/x.kdl", filepath.Join(h.dataDir, "x.kdl")))
 	if err := os.WriteFile(filepath.Join(h.dataDir, "x.kdl"), []byte("input {}\n"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	h.m = newModel(h.dir, lexicon.Get(grim))
+	h.m = newModel(h.dir)
 	h.send(tea.WindowSizeMsg{Width: 120, Height: 36})
 	return h
 }
@@ -140,7 +139,7 @@ func (h *harness) state(name string) string {
 }
 
 func TestOverview_ShowsRitesAndDetails(t *testing.T) {
-	h := newHarness(t, true)
+	h := newHarness(t)
 	h.writeRite("broken", `{"states": [}`)
 	h.keys("r")
 	h.mustShow("SERVITOR", "COGITATOR", "Rites (2)", "mouse", "dormant", "heretical", "Thought for the day")
@@ -152,8 +151,8 @@ func TestOverview_ShowsRitesAndDetails(t *testing.T) {
 	h.mustShow("This rite is heretical")
 }
 
-func TestOverview_CycleAndToggleVocabulary(t *testing.T) {
-	h := newHarness(t, true)
+func TestOverview_Cycle(t *testing.T) {
+	h := newHarness(t)
 	h.keys("space")
 	if got := h.state("mouse"); got != "on" {
 		t.Fatalf("cycle from dormant: %q", got)
@@ -163,23 +162,40 @@ func TestOverview_CycleAndToggleVocabulary(t *testing.T) {
 	if got := h.state("mouse"); got != "off" {
 		t.Fatalf("cycle from on: %q", got)
 	}
+}
+
+// TestOverview_TKeyIsSilent: the cogitator knows one liturgy; t neither
+// changes the screen nor appears in the catalogue of keys.
+func TestOverview_TKeyIsSilent(t *testing.T) {
+	h := newHarness(t)
+	before := h.screen()
 	h.keys("t")
-	h.mustShow("Switches (1)", "TUI", "Plain vocabulary enabled")
-	if strings.Contains(h.screen(), "Thought for the day") {
-		t.Fatal("plain mode must not show the thought for the day")
+	if after := h.screen(); after != before {
+		t.Fatalf("t changed the cogitator:\n%s", after)
+	}
+	h.mustShow("Rites (1)", "COGITATOR", "Thought for the day")
+	h.keys("?")
+	h.mustShow("Catalogue of Sacred Keys")
+	for _, line := range strings.Split(h.screen(), "\n") {
+		if f := strings.Fields(strings.Trim(line, " │|")); len(f) > 0 && f[0] == "t" {
+			t.Fatalf("catalogue still names t: %q", line)
+		}
+	}
+	if strings.Contains(h.screen(), "toggle") {
+		t.Fatalf("catalogue still offers a vocabulary toggle:\n%s", h.screen())
 	}
 }
 
 func TestInvoke_PickStateFillMetaAndPreview(t *testing.T) {
-	h := newHarness(t, false)
+	h := newHarness(t)
 	h.keys("enter")
-	h.mustShow("Apply mouse", "Choose the state to apply")
+	h.mustShow("Invoke mouse", "Choose the aspect to invoke")
 	h.keys("p")
-	h.mustShow("Preview of on", "+ // begin servitor managed -- cursor -- state|on mode|hide")
+	h.mustShow("Augury of aspect on", "+ // begin servitor managed -- cursor -- state|on mode|hide")
 	h.keys("esc")
-	h.mustShow("Choose the state to apply")
+	h.mustShow("Choose the aspect to invoke")
 	h.keys("1")
-	h.mustShow("Metadata for state", "mode *", "reason")
+	h.mustShow("Inscriptions for aspect", "mode *", "reason")
 	h.keys("tab")
 	h.typeText("gaming remnant")
 	h.keys("enter")
@@ -190,18 +206,18 @@ func TestInvoke_PickStateFillMetaAndPreview(t *testing.T) {
 	if st.Meta["reason"] != "gaming remnant" || st.Meta["mode"] != "hide" {
 		t.Fatalf("meta = %v", st.Meta)
 	}
-	h.mustShow("mouse: unset → on")
+	h.mustShow("Rite mouse performed: dormant → on")
 }
 
 func TestInvoke_RequiredMetaClearedShowsError(t *testing.T) {
-	h := newHarness(t, false)
+	h := newHarness(t)
 	h.keys("enter", "1")
 	h.keys("ctrl+u", "enter", "enter")
-	h.mustShow("Failed:", `"mode" is required`)
+	h.mustShow("The rite falters:", `"mode" is required`)
 }
 
 func TestWizard_CreateRite(t *testing.T) {
-	h := newHarness(t, true)
+	h := newHarness(t)
 	target := filepath.Join(h.dataDir, "new.conf")
 	h.keys("n")
 	h.mustShow("Consecration of a new rite", "Name of the rite")
@@ -252,58 +268,58 @@ func TestWizard_CreateRite(t *testing.T) {
 }
 
 func TestWizard_EditRenameAndValidation(t *testing.T) {
-	h := newHarness(t, false)
+	h := newHarness(t)
 	h.keys("e")
-	h.mustShow("Edit mouse", "Name, description and states")
+	h.mustShow("Amendment of the rite mouse", "Speak the name, purpose and aspects")
 	for range len("mouse") {
 		h.keys("backspace")
 	}
 	h.typeText("cursor")
 	h.keys("enter", "enter", "enter")
-	h.mustShow("Files managed by this switch", "x.kdl")
+	h.mustShow("The vessels whose sanctums this rite keeps", "x.kdl")
 	h.keys("enter") // edit the vessel
-	h.mustShow("File 1", "settings")
+	h.mustShow("Vessel 1", "settings")
 	h.keys("esc")
 	h.keys("tab")
-	h.mustShow("Valid. Press enter to save.", "rites/cursor.json")
+	h.mustShow("The rite is pure. Press enter to seal it", "rites/cursor.json")
 	h.keys("enter")
-	h.mustShow("cursor saved.")
+	h.mustShow("The rite cursor is amended.")
 	if _, err := os.Stat(filepath.Join(h.dir, "rites", "mouse.json")); !os.IsNotExist(err) {
 		t.Fatal("old definition not removed after rename")
 	}
 	if h.m.set.Switches["cursor"] == nil {
-		t.Fatal("renamed switch not loaded")
+		t.Fatal("renamed rite not loaded")
 	}
 }
 
 func TestWizard_ReviewBlocksInvalidDefinition(t *testing.T) {
-	h := newHarness(t, false)
+	h := newHarness(t)
 	h.writeRite("other", `{"states":["a"],"files":[{"file":"/other.conf","guard":"cursor","values":[{"state":"a","value":""}]}]}`)
 	h.keys("r", "c") // clone the selected rite ("mouse" sorts before "other")
-	h.mustShow("New switch", "mouse-copy")
+	h.mustShow("Consecration of a new rite", "mouse-copy")
 	h.keys("enter", "enter", "enter", "tab")
-	h.mustShow("The definition has errors", `guard "cursor"`)
+	h.mustShow("Heresy detected", `guard "cursor"`)
 	h.keys("enter")
-	h.mustShow("Fix the errors before saving.")
+	h.mustShow("Heresy remains. The rite cannot be sealed.")
 	if _, err := os.Stat(filepath.Join(h.dir, "rites", "mouse-copy.json")); !os.IsNotExist(err) {
 		t.Fatal("invalid definition was saved")
 	}
 	h.keys("esc", "d") // remove the only vessel, then try to continue
 	h.keys("tab")
-	h.mustShow("Add at least one file")
+	h.mustShow("A rite without vessels is an empty prayer")
 	h.keys("esc", "esc")
-	h.mustShow("Discarded.")
+	h.mustShow("The consecration is abandoned.")
 }
 
 func TestDelete_DefinitionAndPurge(t *testing.T) {
-	h := newHarness(t, false)
+	h := newHarness(t)
 	h.keys("space") // apply "on"
 	h.keys("d")
-	h.mustShow("Delete mouse?", "remove its managed blocks")
+	h.mustShow("Excommunicate the rite mouse?", "purge its sanctums from every vessel")
 	h.keys("n")
-	h.mustShow("Cancelled.")
+	h.mustShow("Mercy is shown. The rite endures.")
 	h.keys("d", "p")
-	h.mustShow("mouse deleted and its blocks removed.", "No switches yet.")
+	h.mustShow("The rite mouse is excommunicated and its sanctums purged.", "The Librarium is empty.")
 	data, _ := os.ReadFile(filepath.Join(h.dataDir, "x.kdl"))
 	if string(data) != "input {}\n" {
 		t.Fatalf("block not purged: %q", data)
@@ -311,7 +327,7 @@ func TestDelete_DefinitionAndPurge(t *testing.T) {
 }
 
 func TestFilterHelpAndVerdict(t *testing.T) {
-	h := newHarness(t, true)
+	h := newHarness(t)
 	h.writeRite("theme", strings.ReplaceAll(sampleRite, `"guard": "cursor"`, `"guard": "theme"`))
 	h.keys("r", "/")
 	h.typeText("the")
@@ -326,7 +342,7 @@ func TestFilterHelpAndVerdict(t *testing.T) {
 }
 
 func TestRender_TooSmall(t *testing.T) {
-	h := newHarness(t, false)
+	h := newHarness(t)
 	h.send(tea.WindowSizeMsg{Width: 40, Height: 10})
-	h.mustShow("Terminal too small")
+	h.mustShow("The cogitator demands a larger viewscreen")
 }

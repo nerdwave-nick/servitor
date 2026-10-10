@@ -114,9 +114,9 @@ func (s *invokeScreen) overrides() map[string]string {
 	return out
 }
 
-// preview shows the dry-run diff of the chosen state.
+// preview shows the foreseen diff of the chosen aspect.
 func (s *invokeScreen) preview(m *model) screen {
-	l, t := m.lex, m.t
+	t := m.t
 	res, err := engine.Apply(s.sw, s.state(), s.overrides(), engine.Options{DryRun: true})
 	var b strings.Builder
 	if err != nil {
@@ -126,7 +126,7 @@ func (s *invokeScreen) preview(m *model) screen {
 		b.WriteString(t.bold.Render(shortPath(c.Path)) + "\n")
 		diff := engine.DiffLines(c.Before, c.After)
 		if len(diff) == 0 {
-			b.WriteString(t.dim.Render(l.P("  undisturbed", "  unchanged")) + "\n")
+			b.WriteString(t.dim.Render("  undisturbed") + "\n")
 		}
 		for _, line := range diff {
 			st := t.ok
@@ -136,24 +136,24 @@ func (s *invokeScreen) preview(m *model) screen {
 			b.WriteString(st.Render("  "+line) + "\n")
 		}
 	}
-	ts := newTextScreen(l.P("Augury of aspect ", "Preview of ")+s.state(), strings.TrimRight(b.String(), "\n"))
+	ts := newTextScreen("Augury of aspect "+s.state(), strings.TrimRight(b.String(), "\n"))
 	ts.back = s
 	return ts
 }
 
 func (s *invokeScreen) view(m *model) string {
-	t, l := m.t, m.lex
-	title := l.P("Invoke ", "Apply ") + s.sw.Name
+	t := m.t
+	title := "Invoke " + s.sw.Name
 	if s.form != nil {
-		head := t.text.Render(l.P("Inscriptions for aspect ", "Metadata for state ")) + t.accent.Bold(true).Render(s.state())
+		head := t.text.Render("Inscriptions for aspect ") + t.accent.Bold(true).Render(s.state())
 		return t.modal(title, head+"\n\n"+s.form.view(), m.width-4)
 	}
-	lines := []string{t.text.Render(l.P("Choose the aspect to invoke:", "Choose the state to apply:")), ""}
+	lines := []string{t.text.Render("Choose the aspect to invoke:"), ""}
 	for i, st := range s.sw.States {
 		num := t.dim.Render(strconv.Itoa(i+1) + " ")
 		label := st
 		if st == s.current {
-			label += t.dim.Render(l.P("  (current aspect)", "  (current)"))
+			label += t.dim.Render("  (current aspect)")
 		}
 		if i == s.cursor {
 			lines = append(lines, t.accent.Render("▸ ")+num+t.selected.Render(" "+st+" ")+strings.TrimPrefix(label, st))
@@ -165,11 +165,10 @@ func (s *invokeScreen) view(m *model) string {
 }
 
 func (s *invokeScreen) hints(m *model) [][2]string {
-	l := m.lex
 	if s.form != nil {
-		return [][2]string{{"enter", l.P("perform the rite", "apply")}, {"tab", l.P("next inscription", "next field")},
-			{"ctrl+p", l.P("augury", "preview")}, {"esc", l.P("back", "back")}}
+		return [][2]string{{"enter", "perform the rite"}, {"tab", "next inscription"},
+			{"ctrl+p", "augury"}, {"esc", "back"}}
 	}
-	return [][2]string{{"enter", l.P("choose", "choose")}, {"1-9", l.P("swift choice", "quick pick")},
-		{"p", l.P("augury (preview)", "preview")}, {"esc", l.P("withdraw", "cancel")}}
+	return [][2]string{{"enter", "choose"}, {"1-9", "swift choice"},
+		{"p", "augury (preview)"}, {"esc", "withdraw"}}
 }

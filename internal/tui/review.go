@@ -67,17 +67,17 @@ func (w *wizard) updateReview(m *model, msg tea.Msg) (screen, tea.Cmd) {
 		r.offset = max(0, r.offset-1)
 	case "enter", "ctrl+s":
 		if r.errs {
-			return w, m.notify(toastErr, m.lex.P("Heresy remains. The rite cannot be sealed.", "Fix the errors before saving."))
+			return w, m.notify(toastErr, "Heresy remains. The rite cannot be sealed.")
 		}
 		if err := w.save(m); err != nil {
 			return w, m.notify(toastErr, err.Error())
 		}
 		m.reload(w.d.name)
-		verb := m.lex.P("consecrated", "created")
+		verb := "consecrated"
 		if w.d.origName != "" {
-			verb = m.lex.P("amended", "saved")
+			verb = "amended"
 		}
-		return nil, m.notify(toastOK, m.lex.P("The rite "+w.d.name+" is "+verb+". Glory to the Omnissiah.", w.d.name+" "+verb+"."))
+		return nil, m.notify(toastOK, "The rite "+w.d.name+" is "+verb+". Glory to the Omnissiah.")
 	}
 	return w, nil
 }
@@ -107,13 +107,13 @@ func (w *wizard) save(m *model) error {
 }
 
 func (w *wizard) reviewView(m *model, width, height int) string {
-	t, l, r := m.t, m.lex, w.review
+	t, r := m.t, w.review
 	var head []string
 	switch {
 	case r.errs:
-		head = append(head, t.danger.Render(l.P("✠ Heresy detected. Return and purify the rite:", "✖ The definition has errors:")))
+		head = append(head, t.danger.Render("✠ Heresy detected. Return and purify the rite:"))
 	default:
-		head = append(head, t.ok.Render(l.P("✔ The rite is pure. Press enter to seal it into the Librarium.", "✔ Valid. Press enter to save.")))
+		head = append(head, t.ok.Render("✔ The rite is pure. Press enter to seal it into the Librarium."))
 	}
 	for _, d := range r.diags {
 		st := t.warn
@@ -123,8 +123,7 @@ func (w *wizard) reviewView(m *model, width, height int) string {
 		head = append(head, st.Render("  "+truncate(formatLoc(d)+": "+d.Message, width-4)))
 	}
 	if r.lost {
-		head = append(head, t.warn.Render(l.P("  Beware: comments in the original scripture will not survive the amendment.",
-			"  Note: comments in the original file will be lost.")))
+		head = append(head, t.warn.Render("  Beware: comments in the original scripture will not survive the amendment."))
 	}
 	head = append(head, t.dim.Render("  → "+truncateLeft(shortPath(r.path), width-6)), "")
 	lines := strings.Split(strings.TrimRight(string(r.data), "\n"), "\n")

@@ -58,7 +58,7 @@ func (s *textScreen) view(m *model) string {
 }
 
 func (s *textScreen) hints(m *model) [][2]string {
-	return [][2]string{{"j/k", m.lex.P("scroll the scroll", "scroll")}, {"esc", m.lex.P("withdraw", "close")}}
+	return [][2]string{{"j/k", "scroll the scroll"}, {"esc", "withdraw"}}
 }
 
 // deleteScreen confirms deleting a definition, optionally purging blocks.
@@ -73,10 +73,9 @@ func (s *deleteScreen) update(m *model, msg tea.Msg) (screen, tea.Cmd) {
 	if !ok {
 		return s, nil
 	}
-	l := m.lex
 	switch k.String() {
 	case "esc", "n", "q":
-		return nil, m.notify(toastInfo, l.P("Mercy is shown. The rite endures.", "Cancelled."))
+		return nil, m.notify(toastInfo, "Mercy is shown. The rite endures.")
 	case "y":
 		return nil, m.remove(s.r, false)
 	case "p":
@@ -88,10 +87,9 @@ func (s *deleteScreen) update(m *model, msg tea.Msg) (screen, tea.Cmd) {
 }
 
 func (m *model) remove(r row, purge bool) tea.Cmd {
-	l := m.lex
 	if purge {
 		if _, err := engine.Purge(r.sw, engine.Options{}); err != nil {
-			return m.notify(toastErr, l.P("The purge falters: ", "Purge failed: ")+err.Error())
+			return m.notify(toastErr, "The purge falters: "+err.Error())
 		}
 	}
 	for _, p := range r.paths {
@@ -101,30 +99,30 @@ func (m *model) remove(r row, purge bool) tea.Cmd {
 		}
 	}
 	m.reload("")
-	msg := l.P("The rite "+r.name+" is excommunicated. Its sanctums remain.", r.name+" deleted; managed blocks were kept.")
+	msg := "The rite " + r.name + " is excommunicated. Its sanctums remain."
 	if purge {
-		msg = l.P("The rite "+r.name+" is excommunicated and its sanctums purged. Exterminatus complete.", r.name+" deleted and its blocks removed.")
+		msg = "The rite " + r.name + " is excommunicated and its sanctums purged. Exterminatus complete."
 	}
 	return m.notify(toastOK, msg)
 }
 
 func (s *deleteScreen) view(m *model) string {
-	t, l := m.t, m.lex
+	t := m.t
 	lines := []string{
-		t.bold.Render(l.P("Excommunicate the rite ", "Delete ") + s.r.name + "?"),
+		t.bold.Render("Excommunicate the rite " + s.r.name + "?"),
 		"",
-		t.key.Render("y") + "  " + t.text.Render(l.P("strike it from the Librarium (sanctums remain in their vessels)", "delete the definition, keep the managed blocks")),
+		t.key.Render("y") + "  " + t.text.Render("strike it from the Librarium (sanctums remain in their vessels)"),
 	}
 	if s.r.sw != nil {
-		lines = append(lines, t.key.Render("p")+"  "+t.text.Render(l.P("purge its sanctums from every vessel, then strike it", "remove its managed blocks from all files, then delete it")))
+		lines = append(lines, t.key.Render("p")+"  "+t.text.Render("purge its sanctums from every vessel, then strike it"))
 	}
-	lines = append(lines, t.key.Render("n")+"  "+t.text.Render(l.P("show mercy", "cancel")))
+	lines = append(lines, t.key.Render("n")+"  "+t.text.Render("show mercy"))
 	for _, p := range s.r.paths {
 		lines = append(lines, "", t.dim.Render(shortPath(p)))
 	}
-	return m.t.modal(l.P("Excommunication", "Delete"), strings.Join(lines, "\n"), m.width-4)
+	return m.t.modal("Excommunication", strings.Join(lines, "\n"), m.width-4)
 }
 
 func (s *deleteScreen) hints(m *model) [][2]string {
-	return [][2]string{{"y", m.lex.P("excommunicate", "delete")}, {"p", m.lex.P("purge", "purge")}, {"n", m.lex.P("mercy", "cancel")}}
+	return [][2]string{{"y", "excommunicate"}, {"p", "purge"}, {"n", "mercy"}}
 }

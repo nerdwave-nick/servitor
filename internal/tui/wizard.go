@@ -42,24 +42,23 @@ func (w *wizard) fullscreen() bool { return true }
 func (w *wizard) bodyHeight(m *model) int { return max(5, m.bodyH-7) }
 
 func (w *wizard) enterRite(m *model) tea.Cmd {
-	l := m.lex
 	w.step = stepRite
 	f := newForm(m.t)
-	f.addText("name", l.P("Name of the rite", "Name"), w.d.name, "mouse-autohide-toggle",
-		l.P("Also the file name in the Librarium. Letters, digits, '.', '_', '-'.", "Also the file name. Letters, digits, '.', '_', '-'."),
+	f.addText("name", "Name of the rite", w.d.name, "mouse-autohide-toggle",
+		"Also the file name in the Librarium. Letters, digits, '.', '_', '-'.",
 		func(s string) error {
 			if !config.ValidName(s) {
-				return errors.New(l.P("a rite's name must be letters, digits, '.', '_' and '-'", "use letters, digits, '.', '_' and '-'"))
+				return errors.New("a rite's name must be letters, digits, '.', '_' and '-'")
 			}
 			if _, exists := m.set.Files[s]; exists && s != w.d.origName {
-				return errors.New(l.P("a rite of this name is already recorded", "a switch with this name already exists"))
+				return errors.New("a rite of this name is already recorded")
 			}
 			return nil
 		})
-	f.addText("description", l.P("Purpose", "Description"), w.d.description,
-		"Hide the mouse cursor after inactivity", l.P("Optional. Shown in the census and in completions.", "Optional. Shown in lists and completions."), nil)
-	f.addText("states", l.P("Aspects", "States"), w.d.states, "on, off",
-		l.P("The aspects the rite may take, separated by commas.", "Comma separated list of states."),
+	f.addText("description", "Purpose", w.d.description,
+		"Hide the mouse cursor after inactivity", "Optional. Shown in the census and in completions.", nil)
+	f.addText("states", "Aspects", w.d.states, "on, off",
+		"The aspects the rite may take, separated by commas.",
 		func(s string) error { _, err := parseStates(s); return err })
 	return w.setForm(m, f)
 }
@@ -87,7 +86,7 @@ func (w *wizard) update(m *model, msg tea.Msg) (screen, tea.Cmd) {
 	}
 	switch {
 	case res == formCancel && w.step == stepRite:
-		return nil, m.notify(toastInfo, m.lex.P("The consecration is abandoned.", "Discarded."))
+		return nil, m.notify(toastInfo, "The consecration is abandoned.")
 	case res == formCancel:
 		return w, w.vesselBack(m)
 	case res == formSubmit && w.step == stepRite:
@@ -141,7 +140,7 @@ func (w *wizard) updateVessels(m *model, msg tea.Msg) (screen, tea.Cmd) {
 		}
 	case "tab", "ctrl+s", "right", "l":
 		if n == 0 {
-			return w, m.notify(toastErr, m.lex.P("A rite without vessels is an empty prayer. Add one with a.", "Add at least one file with a."))
+			return w, m.notify(toastErr, "A rite without vessels is an empty prayer. Add one with a.")
 		}
 		w.step, w.review = stepReview, newReview(m, w.d)
 	}
@@ -159,40 +158,40 @@ func (w *wizard) editVessel(m *model, idx int) tea.Cmd {
 
 // vesselPage builds the form of the current page of the vessel editor.
 func (w *wizard) vesselPage(m *model) tea.Cmd {
-	l, v := m.lex, w.vwork
+	v := w.vwork
 	f := newForm(m.t)
 	if w.vpage == 0 {
 		cPrefix, cSuffix := config.DefaultComment(v.file)
-		f.addText("file", l.P("Vessel (target file)", "Target file"), v.file, "~/.config/niri/util.kdl",
-			l.P("~ and $VARS are expanded. Relative paths are resolved against the Librarium.", "~ and $VARS are expanded; relative paths are resolved against the config directory."),
+		f.addText("file", "Vessel (target file)", v.file, "~/.config/niri/util.kdl",
+			"~ and $VARS are expanded. Relative paths are resolved against the Librarium.",
 			func(s string) error {
 				if strings.TrimSpace(s) == "" {
-					return errors.New(l.P("a vessel must be named", "required"))
+					return errors.New("a vessel must be named")
 				}
 				return nil
 			})
-		f.addText("guard", l.P("Ward", "Guard"), v.guard, w.d.name,
-			l.P("Identifies the sanctum within the vessel. Defaults to the rite's name.", "Identifies the block in the file. Defaults to the switch name."),
+		f.addText("guard", "Ward", v.guard, w.d.name,
+			"Identifies the sanctum within the vessel. Defaults to the rite's name.",
 			func(s string) error {
 				if strings.ContainsAny(s, " \t") {
-					return errors.New(l.P("a ward admits no whitespace", "no whitespace allowed"))
+					return errors.New("a ward admits no whitespace")
 				}
 				return nil
 			})
-		f.addText("comment", l.P("Comment glyph", "Comment prefix"), v.comment, strings.TrimSpace(cPrefix),
-			l.P("Leave empty to divine it from the extension.", "Leave empty to infer it from the file extension."), nil)
-		f.addText("comment_end", l.P("Closing glyph", "Comment suffix"), v.commentEnd, cSuffix,
-			l.P("Only for block comments such as */ or -->.", "Only for block comments such as */ or -->."), nil)
-		f.addToggle("create", l.P("Consecrate the vessel if absent", "Create the file if missing"), v.create, l.P("space toggles", "space toggles"))
-		f.addText("inscriptions", l.P("Inscriptions (metadata keys)", "Metadata keys"), v.inscriptions, "reason, mode!",
-			l.P("Comma separated; a trailing ! makes an inscription mandatory.", "Comma separated; a trailing ! marks a required key."),
+		f.addText("comment", "Comment glyph", v.comment, strings.TrimSpace(cPrefix),
+			"Leave empty to divine it from the extension.", nil)
+		f.addText("comment_end", "Closing glyph", v.commentEnd, cSuffix,
+			"Only for block comments such as */ or -->.", nil)
+		f.addToggle("create", "Consecrate the vessel if absent", v.create, "space toggles")
+		f.addText("inscriptions", "Inscriptions (metadata keys)", v.inscriptions, "reason, mode!",
+			"Comma separated; a trailing ! makes an inscription mandatory.",
 			func(s string) error { _, _, err := parseInscriptions(s); return err })
 		return w.setForm(m, f)
 	}
 	states, _ := parseStates(w.d.states)
 	st := states[w.vpage-1]
-	f.addArea("value", fmt.Sprintf(l.P("Scripture for aspect %q", "Content for state %q"), st), v.values[st],
-		l.P("The lines the sanctum holds in this aspect. Empty is allowed.", "The managed block content in this state. May be empty."))
+	f.addArea("value", fmt.Sprintf("Scripture for aspect %q", st), v.values[st],
+		"The lines the sanctum holds in this aspect. Empty is allowed.")
 	keys, required, _ := parseInscriptions(v.inscriptions)
 	for _, k := range keys {
 		label := k

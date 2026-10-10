@@ -19,7 +19,6 @@ import (
 // Options configure the TUI.
 type Options struct {
 	Dir    string
-	Lex    *lexicon.Lexicon
 	Input  io.Reader // defaults to the terminal
 	Output io.Writer
 }
@@ -33,7 +32,7 @@ func Run(opt Options) error {
 	if opt.Output != nil {
 		popts = append(popts, tea.WithOutput(opt.Output))
 	}
-	_, err := tea.NewProgram(newModel(opt.Dir, opt.Lex), popts...).Run()
+	_, err := tea.NewProgram(newModel(opt.Dir), popts...).Run()
 	return err
 }
 
@@ -77,7 +76,6 @@ type screen interface {
 
 type model struct {
 	dir     string
-	lex     *lexicon.Lexicon
 	t       *theme
 	set     *config.Set
 	all     []row
@@ -93,10 +91,10 @@ type model struct {
 	screen  screen
 }
 
-func newModel(dir string, lex *lexicon.Lexicon) *model {
+func newModel(dir string) *model {
 	f := textinput.New()
 	f.Prompt = "/ "
-	m := &model{dir: dir, lex: lex, t: newTheme(lex.Grimdark), filter: f,
+	m := &model{dir: dir, t: newTheme(), filter: f,
 		thought: int(time.Now().UnixNano() % int64(len(lexicon.Thoughts))), width: 100, height: 30}
 	m.reload("")
 	return m
@@ -190,14 +188,14 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (m *model) View() tea.View {
 	v := tea.NewView(m.render())
 	v.AltScreen = true
-	v.WindowTitle = m.lex.P("servitor ⚙ cogitator", "servitor")
+	v.WindowTitle = "servitor ⚙ cogitator"
 	return v
 }
 
 func (m *model) render() string {
 	if m.width < 50 || m.height < 12 {
 		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center,
-			m.t.warn.Render(m.lex.P("The cogitator demands a larger viewscreen (50×12).", "Terminal too small (need 50×12).")))
+			m.t.warn.Render("The cogitator demands a larger viewscreen (50×12)."))
 	}
 	header := m.header()
 	footer := m.footer()
@@ -221,9 +219,9 @@ func (m *model) render() string {
 }
 
 func (m *model) header() string {
-	t, l := m.t, m.lex
-	left := t.barAccent.Render(" "+t.glyphLogo+" SERVITOR ") + t.bar.Render(l.P("▸ COGITATOR ", "▸ TUI "))
-	label := lexicon.Title(l.ConfigDir) + ": "
+	t := m.t
+	left := t.barAccent.Render(" "+t.glyphLogo+" SERVITOR ") + t.bar.Render("▸ COGITATOR ")
+	label := "Librarium: "
 	path := truncateLeft(shortPath(m.dir), m.width-lipgloss.Width(left)-lipgloss.Width(label)-3)
 	right := t.bar.Render(" " + label + path + " ")
 	gap := max(0, m.width-lipgloss.Width(left)-lipgloss.Width(right))
@@ -245,9 +243,7 @@ func (m *model) footer() string {
 		status = ""
 	}
 	lines := []string{fit(status, m.width), fit(m.keyHints(), m.width)}
-	if m.lex.Grimdark {
-		lines = append(lines, fit(t.dim.Render("+++ Thought for the day: "+lexicon.Thought(m.thought)+" +++"), m.width))
-	}
+	lines = append(lines, fit(t.dim.Render("+++ Thought for the day: "+lexicon.Thought(m.thought)+" +++"), m.width))
 	return strings.Join(lines, "\n")
 }
 

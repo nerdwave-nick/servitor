@@ -13,13 +13,11 @@ import (
 )
 
 func (a *app) newVerifyCmd() *cobra.Command {
-	var asJSON, noFiles bool
-	l := a.lex
+	var asJSON, spareVessels bool
 	cmd := &cobra.Command{
-		Use:     l.Cmd.Verify + " [" + l.Switch + "...]",
-		Aliases: aliases(l, "inquisition", "verify", "check", "validate"),
-		Short:   l.P("Summon the Inquisition to purge heresy from rites and vessels", "Check switch definitions and managed files for errors"),
-		Long:    verifyLongHelp(l),
+		Use:   "inquisition [rite...]",
+		Short: "Summon the Inquisition to purge heresy from rites and vessels",
+		Long:  verifyLongHelp,
 		ValidArgsFunction: func(_ *cobra.Command, args []string, _ string) ([]cobra.Completion, cobra.ShellCompDirective) {
 			var out []cobra.Completion
 			for _, c := range a.switchCompletions() {
@@ -35,16 +33,16 @@ func (a *app) newVerifyCmd() *cobra.Command {
 					return a.unknownSwitch(n)
 				}
 			}
-			diags := a.verify(args, !noFiles)
+			diags := a.verify(args, !spareVessels)
 			if asJSON {
 				if err := writeJSON(cmd.OutOrStdout(), diags); err != nil {
 					return err
 				}
 			} else {
 				for _, d := range diags {
-					fmt.Fprintln(cmd.OutOrStdout(), formatDiag(l, d))
+					fmt.Fprintln(cmd.OutOrStdout(), formatDiag(d))
 				}
-				fmt.Fprintln(cmd.ErrOrStderr(), verifySummary(l, a.set, args, diags))
+				fmt.Fprintln(cmd.ErrOrStderr(), verifySummary(a.set, args, diags))
 			}
 			if diags.HasErrors() {
 				return &ExitError{Code: 1}
@@ -52,8 +50,8 @@ func (a *app) newVerifyCmd() *cobra.Command {
 			return nil
 		},
 	}
-	cmd.Flags().BoolVar(&asJSON, "json", false, l.P("record the verdict as JSON", "print diagnostics as JSON"))
-	cmd.Flags().BoolVar(&noFiles, "no-files", false, l.P("judge only the rites, not their vessels", "only check the configuration, not the target files"))
+	binharicRunes(cmd, &asJSON, "record the verdict in binharic")
+	cmd.Flags().BoolVar(&spareVessels, "spare-vessels", false, "judge only the rites, not their vessels")
 	return cmd
 }
 
@@ -68,7 +66,7 @@ func (a *app) verify(names []string, checkFiles bool) config.Diagnostics {
 	if checkFiles {
 		for _, name := range a.set.Names() {
 			if want(name) {
-				diags = append(diags, engine.CheckTargets(a.lex, a.set.Switches[name])...)
+				diags = append(diags, engine.CheckTargets(a.set.Switches[name])...)
 			}
 		}
 	}
@@ -76,17 +74,17 @@ func (a *app) verify(names []string, checkFiles bool) config.Diagnostics {
 	return diags
 }
 
-// formatDiag renders a diagnostic with the severity in the active vocabulary.
-func formatDiag(l *lexicon.Lexicon, d config.Diagnostic) string {
+// formatDiag renders a diagnostic as a heresy or an impurity.
+func formatDiag(d config.Diagnostic) string {
 	if d.Severity == config.SevError {
-		d.Severity = config.Severity(l.Error)
+		d.Severity = lexicon.Heresy
 	} else {
-		d.Severity = config.Severity(l.Warning)
+		d.Severity = lexicon.Impurity
 	}
 	return d.String()
 }
 
-func verifySummary(l *lexicon.Lexicon, set *config.Set, names []string, diags config.Diagnostics) string {
+func verifySummary(set *config.Set, names []string, diags config.Diagnostics) string {
 	errs, warns := 0, 0
 	for _, d := range diags {
 		if d.Severity == config.SevError {
@@ -98,9 +96,6 @@ func verifySummary(l *lexicon.Lexicon, set *config.Set, names []string, diags co
 	n := len(names)
 	if n == 0 {
 		n = len(set.Switches) + len(set.Broken)
-	}
-	if !l.Grimdark {
-		return fmt.Sprintf("checked %d switch(es) in %s: %d error(s), %d warning(s)", n, set.Dir, errs, warns)
 	}
 	verdict := "The Emperor protects."
 	if errs > 0 {

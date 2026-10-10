@@ -3,50 +3,45 @@ package tui
 import (
 	"os"
 	"strings"
-
-	"github.com/nerdwave-nick/servitor/internal/lexicon"
 )
 
 var userHome = os.UserHomeDir
 
 // binding documents one key of the overview.
 type binding struct {
-	keys        string
-	grim, plain string
-	footer      bool // shown in the footer hint line
+	keys   string
+	text   string
+	footer bool // shown in the footer hint line
 }
 
 var overviewBindings = []binding{
-	{"↑/k ↓/j", "choose a rite", "move", false},
-	{"g G", "first / last rite", "first / last", false},
-	{"enter", "invoke", "apply", true},
-	{"space", "cycle aspect", "next state", true},
-	{"n", "consecrate", "new", true},
-	{"e", "amend", "edit", true},
-	{"c", "replicate", "clone", false},
-	{"d", "excommunicate", "delete", true},
-	{"o", "open in $EDITOR", "open in $EDITOR", false},
-	{"i", "inquisition", "verify", false},
-	{"/", "filter", "filter", false},
-	{"r", "reload the Librarium", "reload", false},
-	{"t", "toggle the liturgy (grimdark)", "toggle vocabulary (grimdark)", false},
-	{"?", "lore", "help", true},
-	{"q", "retreat", "quit", true},
+	{"↑/k ↓/j", "choose a rite", false},
+	{"g G", "first / last rite", false},
+	{"enter", "invoke", true},
+	{"space", "cycle aspect", true},
+	{"n", "consecrate", true},
+	{"e", "amend", true},
+	{"c", "replicate", false},
+	{"d", "excommunicate", true},
+	{"o", "open in $EDITOR", false},
+	{"i", "inquisition", false},
+	{"/", "filter", false},
+	{"r", "reload the Librarium", false},
+	{"?", "lore", true},
+	{"q", "retreat", true},
 }
-
-func (b binding) text(l *lexicon.Lexicon) string { return l.P(b.grim, b.plain) }
 
 func (m *model) keyHints() string {
 	if m.screen != nil {
 		return m.hint(screenHints(m))
 	}
 	if m.typing {
-		return m.hint([][2]string{{"enter", m.lex.P("seal the filter", "apply filter")}, {"esc", m.lex.P("abandon", "clear")}})
+		return m.hint([][2]string{{"enter", "seal the filter"}, {"esc", "abandon"}})
 	}
 	var pairs [][2]string
 	for _, b := range overviewBindings {
 		if b.footer {
-			pairs = append(pairs, [2]string{strings.Fields(b.keys)[0], b.text(m.lex)})
+			pairs = append(pairs, [2]string{strings.Fields(b.keys)[0], b.text})
 		}
 	}
 	return m.hint(pairs)
@@ -65,18 +60,16 @@ func screenHints(m *model) [][2]string {
 	if h, ok := m.screen.(interface{ hints(*model) [][2]string }); ok {
 		return h.hints(m)
 	}
-	return [][2]string{{"esc", m.lex.P("withdraw", "close")}}
+	return [][2]string{{"esc", "withdraw"}}
 }
 
 // helpText renders the full key catalogue for the help overlay.
 func helpText(m *model) string {
 	var b strings.Builder
 	for _, bd := range overviewBindings {
-		b.WriteString(m.t.key.Render(padRight(bd.keys, 9)) + " " + m.t.text.Render(bd.text(m.lex)) + "\n")
+		b.WriteString(m.t.key.Render(padRight(bd.keys, 9)) + " " + m.t.text.Render(bd.text) + "\n")
 	}
-	b.WriteString("\n" + m.t.dim.Render(m.lex.P(
-		"In forms: tab/↑↓ move between fields · enter next · ctrl+s seal · esc go back",
-		"In forms: tab/↑↓ move between fields · enter next · ctrl+s save · esc back")))
+	b.WriteString("\n" + m.t.dim.Render("In forms: tab/↑↓ move between fields · enter next · ctrl+s seal · esc go back"))
 	return b.String()
 }
 
