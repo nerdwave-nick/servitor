@@ -1,0 +1,31 @@
+How long a command may labour before it is deemed to have fallen
+
+Patience is the span of time the servitor grants a command before it loses
+faith in it. It is written as a span the machine understands: a number with
+its measure, such as "500ms", "5s", "2m" or "1h30m"; it must be greater than
+nothing.
+
+An incantation or litany labours under the patience of its step, else the
+patience of the settings, else 30s; its reversion is granted the same. When
+the patience runs out, the servitor slays the command together with every
+process it summoned, and the step falls — whereupon the invocation is
+reverted. An auspex has a patience of its own, written in its long form
+{"rite": …, "patience": …}, and 2s when none is written; an auspex that runs
+out of patience simply gives no omen.
+
+Patience written in the settings serves every incantation and litany of the
+Librarium that names none; it never sways the auspex. A patience the
+servitor cannot read is heresy.
+
+Kindred passages: incantation, litany, auspex, reversion, tongue
+
+Exempla:
+  // on a step
+  {"litany": "scripts/rebuild-cache", "patience": "2m"}
+
+  // on an auspex
+  "auspex": {"rite": "test -e /run/user/1000/veiled && echo on || echo off",
+             "patience": "500ms"}
+
+  // in servitor.json
+  {"pattern": "Mark I", "patience": "10s"}

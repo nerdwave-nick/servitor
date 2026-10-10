@@ -1,0 +1,30 @@
+The words that tell a reader why a rite or an inscription exists
+
+A "purpose" may be written for a rite and for each of its inscriptions. It
+is free words for the eyes of the faithful; the servitor never illuminates
+it, so placeholders written there are kept exactly as written and are not
+denounced. A purpose is never required, yet a rite without one is a mystery
+to everyone who meets it later, the scribe included.
+
+The purpose of a rite is spoken wherever the rite is named to a reader: in
+the census and its binharic answer (key "purpose"), in the detail panel of
+the cogitator, beside the rite's name when completion offers it, and as the
+short lore of the rite's own ritual beneath "servitor invoke". A rite
+without purpose is offered with its aspects instead.
+
+The purpose of an inscription is spoken beside its rune on the rite's own
+page of lore and when completion offers the inscription's key to an augury,
+so the faithful know what word to inscribe.
+
+Kindred passages: rite, inscriptions, census, cogitator
+
+Exemplum:
+  {
+    "pattern": "Mark I",
+    "purpose": "The visage of the machine",
+    "aspects": ["default", "finii", "porpl"],
+    "inscriptions": {
+      "reason": {"purpose": "why the rite was invoked"}
+    },
+    "liturgy": [{"incantation": "nfluff apply {{aspect}}"}]
+  }

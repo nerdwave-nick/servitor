@@ -1,0 +1,36 @@
+The program in which incantations and litanies are spoken
+
+The tongue is the language the servitor speaks its commands in: the program
+to which an incantation's words, a reversion and the auspex are handed as
+"<tongue> -c <words>", and through which a litany's scroll is recited when
+the scroll cannot be executed by its own shebang. Unless commanded otherwise
+the servitor speaks bash.
+
+A tongue is named by one word alone: the name or path of a single program,
+sought along the machine's PATH. No words may follow it — "bash -e" names a
+program that does not exist. Should you need such words, speak them inside
+the incantation itself ("set -e; …").
+
+The tongue may be named in three places, and the nearest prevails: on the
+step (incantations and litanies), on the rite (for every step of its liturgy
+and for its auspex), and in the settings (for every rite of the Librarium).
+Where none is named, bash is spoken.
+
+Before anything is performed, the pre-flight seeks every tongue the
+invocation will speak; a tongue spoken nowhere on this machine refuses the
+invocation, and the inquisition notes it as an impurity. A litany that is
+recited by its own shebang needs no tongue, unless it carries a reversion.
+
+Kindred passages: incantation, litany, reversion, auspex, patience
+
+Exempla:
+  // on a step
+  {"incantation": "print -P '%F{red}{{aspect}}%f'", "tongue": "zsh"}
+
+  // on a rite, for its whole liturgy and its auspex
+  {"pattern": "Mark I", "aspects": ["on", "off"], "tongue": "dash",
+   "auspex": "test -e /run/user/1000/veiled && echo on || echo off",
+   "liturgy": [{"incantation": "touch /run/user/1000/veiled"}]}
+
+  // in servitor.json, for the whole Librarium
+  {"pattern": "Mark I", "tongue": "/usr/bin/fish"}

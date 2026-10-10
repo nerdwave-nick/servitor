@@ -1,0 +1,30 @@
+The rights of reading, writing and execution a vessel is to bear
+
+Every scripture-file of the machine bears a seal: the rights it grants its
+owner, its kin and all others to read it, write it and execute it, written
+as the old cogitators write them — three or four octal numerals, such as
+"0644" or "0755". The key "seal" belongs to the transcription and decrees the
+seal its vessel shall bear.
+
+Without a seal, a vessel the transcription brings into being bears 0644, and
+a vessel that already stands keeps the seal it bore. With a seal, the vessel
+takes it whether it is newly made or already stood. A seal is one value for
+every aspect, written as a string; anything but three or four octal numerals
+is heresy. Seals are never illuminated.
+
+Sanctums bear no "seal": they keep the seal of the vessel they dwell in, and
+a vessel a sanctum consecrates bears 0644.
+
+Should the invocation fall, the reversion restores the former seal along
+with the former scripture.
+
+Kindred passages: transcription, vessel, consecrate
+
+Exempla:
+  {"transcription": "~/.local/bin/visage-hook",
+   "scripture": {"tome": "hooks/visage-hook"},
+   "seal": "0755"}
+
+  {"transcription": "~/.config/app/secrets.env",
+   "scripture": {"on": "TOKEN={{inscription.token}}", "off": null},
+   "seal": "0600"}

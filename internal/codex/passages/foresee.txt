@@ -1,0 +1,26 @@
+Divine what an invocation would do, without performing any of it
+
+The rune --foresee (shorthand -f) is given to the ritual invoke. The
+servitor then performs the whole pre-flight — illuminating every placeholder,
+reading every tome, weighing every vessel, tether and tongue, resolving every
+inscription — and reveals, verse by verse, what the invocation would do:
+the changes to each vessel as a comparison of its lines, a seal that would
+change, a vessel that would be consecrated or struck from the machine, each
+tether that would be bound, rebound or unbound, and each incantation and
+litany as it would be spoken, with its tongue, its patience and its
+reversion. Should the pre-flight find heresy, the heresies are recited
+instead, exactly as a true invocation would recite them.
+
+Nothing is performed. No vessel or tether is touched, no command is spoken,
+not even the rite's auspex is awakened; no vox-cast is sent, the data-slate
+is not written and the chronicle is not added to. The former aspect shown is
+read from the omens of the steps and the data-slate alone.
+
+Foresee before every invocation you are not certain of, and before invoking
+a rite whose scripture was newly amended.
+
+Kindred passages: invoke, pre-flight, silence, auspex, chronicle
+
+Exempla:
+  servitor invoke theme porpl --foresee
+  servitor invoke mouse-autohide-toggle on -f --reason "gaming remnant"

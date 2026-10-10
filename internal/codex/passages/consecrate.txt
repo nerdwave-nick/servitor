@@ -1,0 +1,28 @@
+Leave for a sanctum to bring its missing vessel into being
+
+A sanctum is meant to dwell within a vessel kept by other hands, and so by
+default it refuses to conjure one: when the vessel named by the sanctum does
+not stand, the pre-flight halts the invocation with heresy and nothing is
+performed. Write "consecrate": true upon the sanctum, and a missing vessel is
+instead brought into being, holding nothing but the sanctum itself.
+
+A consecrated vessel bears the seal 0644. The hall that is to hold it must
+already stand: consecration brings forth vessels, never halls.
+
+Should the invocation fall after the vessel was consecrated, the reversion
+strikes the vessel again, so the machine is as it was found.
+
+The inquisition, when it examines the machine, notes as impurity a vessel
+that is missing although its sanctum may not consecrate it, for every
+invocation of that rite would be refused. With "consecrate": true, the
+absent vessel is forgiven.
+
+Transcriptions need no consecration: they write whole vessels and bring
+them into being as a matter of course. "consecrate" belongs to the sanctum
+alone, and holds one truth for every aspect.
+
+Kindred passages: sanctum, vessel, pre-flight, inquisition
+
+Exempla:
+  {"sanctum": "~/.config/niri/overrides.kdl", "consecrate": true,
+   "scripture": {"on": "prefer-no-csd", "off": ""}}

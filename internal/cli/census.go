@@ -16,7 +16,6 @@ func (a *app) newCensusCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "census",
 		Short: "Take a census of all rites and how they stand",
-		Long:  censusLongHelp,
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			entries, laments := a.servitor(cmd).Census(false)

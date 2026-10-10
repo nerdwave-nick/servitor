@@ -1,0 +1,55 @@
+A step that speaks one line of words in the rite's tongue
+
+An incantation is the plainest of the servitor's prayers: one line of words,
+spoken in a tongue exactly as a supplicant would speak it at a cogitator's
+prompt. The step's own key holds those words, and they may differ for every
+aspect as an aspect map, or serve all aspects through placeholders such as
+{{aspect}}. The words are handed whole to the tongue — the servitor awakens
+"<tongue> -c <words>" — so every pipe, conjunction and quotation of the
+tongue is yours to command.
+
+The words are spoken in the hall where the rite's scripture is kept, with
+nothing offered upon their input. Their environment is the servitor's own,
+anointed with SERVITOR_ASPECT (the aspect invoked), SERVITOR_FORMER_ASPECT
+(the aspect before it, empty when unknown), SERVITOR_RITE and one
+SERVITOR_INSCRIPTION_<KEY> for every inscription the rite declares (the key
+in capitals, every "-" and "." made "_"). Prefer these names to
+{{inscription.<key>}} within the words: a placeholder is pasted into the
+words before the tongue hears them, so a quotation mark, a "$" or a ";" in an
+inscription would be read by the tongue as its own command, while a name of
+the environment is read as a value and nothing more.
+
+An incantation that ends with the death-mark 0 triumphs; any other death-mark
+makes it fall, and the invocation is reverted. A failure you mean to tolerate
+is written into the words themselves ("cmd || true"); the servitor knows no
+other leave. The step labours under its patience (30s unless the settings or
+the step say otherwise); when it runs out, the servitor slays the step
+together with every process it summoned, and the step falls.
+
+What the words utter is captured, never printed: the lament of a fallen step
+shows its last words. Children sent into the background by a triumphant
+incantation live on, but the servitor listens to them only a moment longer —
+send their words elsewhere ("cmd >/dev/null 2>&1 &"), lest one that keeps
+speaking into the silenced channel be struck down. Interactive words are
+unsupported: no terminal is lent to them, neither in the cogitator nor when
+the servitor is roused from a hotkey, and their input is empty.
+
+An incantation yields no omen. Should the invocation fall, its "reversion" is
+spoken in the same tongue to undo what it did.
+
+Kindred passages: tongue, patience, reversion, litany, placeholders,
+inscriptions
+
+Exempla:
+  {"incantation": "niri msg action do-screen-transition"}
+
+  {"incantation": {"on": "makoctl mode -a do-not-disturb",
+                   "off": "makoctl mode -r do-not-disturb"},
+   "reversion": {"on": "makoctl mode -r do-not-disturb",
+                 "off": "makoctl mode -a do-not-disturb"}}
+
+  // the inscription is read from the environment, never pasted into the words
+  {"incantation": "echo \"$SERVITOR_INSCRIPTION_REASON\" >> ~/.cache/remnants",
+   "patience": "5s"}
+
+  {"incantation": "swaybg -i ~/walls/{{aspect}}.png >/dev/null 2>&1 &"}

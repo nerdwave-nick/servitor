@@ -1,0 +1,43 @@
+Summon the Inquisition to denounce heresy in rites and vessels
+
+The Inquisition examines every rite of the Librarium — or only the rites
+named to it — together with the settings and the machine their liturgies act
+upon, and denounces all it finds. Each denunciation bears its place as
+scripture:line:column, so that the faithful may go straight to the offending
+word, and a verbose account of the sin and its penance. Nothing is changed by
+the Inquisition.
+
+Heresies must be purged, for a heretical rite cannot be invoked: malformed
+scripture, unknown keys, a missing or foreign pattern, aspects empty,
+repeated or unworthily named, aspect maps naming aspects never declared, an
+aspect left without a value and without "*", unknown placeholders and
+inscriptions never declared, missing tomes, a null scripture in a sanctum, a
+vox-cast that is neither "progress" nor "success", a ward claimed twice in one
+vessel, a rite recorded in two scriptures, heretical settings, and sanctums
+whose markers are broken.
+
+Impurities are noted but forgiven: tongues spoken nowhere on this machine,
+vessels missing without "consecrate", anchors missing for some aspect,
+mandatory inscriptions without a decree for some aspect, a "success"
+vox-cast that is not the last step, tainted sanctums and desecrated rites.
+
+To weigh the vessels, anchors and desecration, the Inquisition reads the
+omens of every rite and awakens its auspex. The rune --spare-vessels spares
+the machine this scrutiny and judges the scriptures alone.
+
+Spoken plainly, every finding stands on a line of its own and the sum of the
+Inquisition follows. With --binharic the findings are a list for other
+machines, each bearing scripture, line, column, rite (absent for the settings
+and the Librarium itself), judgement ("heresy" or "impurity") and
+denunciation.
+
+The Inquisition exits 1 when any heresy was found, and 0 when only
+impurities, or nothing at all, were found.
+
+Kindred passages: heresy, spare-vessels, binharic, standing, census, pattern
+
+Exempla:
+  servitor inquisition
+  servitor inquisition theme mouse-autohide-toggle --spare-vessels
+  servitor inquisition --binharic |
+    jq -r '.[] | select(.judgement == "heresy") | .denunciation'

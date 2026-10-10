@@ -1,0 +1,26 @@
+Filling the placeholders within a tome's scripture
+
+Inline scripture is always illuminated. A tome is not: by default it is set
+down exactly as it is written, its {{…}} marks untouched, for a tome may be
+scripture of a tongue that uses such marks for its own ends. Write
+"illuminate": true beside the tome to have its placeholders filled like any
+inline scripture: {{aspect}}, {{former}}, {{rite.name}} and
+{{inscription.<key>}}.
+
+An illuminated tome is examined like the rite itself: an unknown
+placeholder, an inscription the rite never declared, or a mark never closed
+is heresy, reported at the tome's own line and column, and the invocation is
+refused. Write {{{{ to set down a literal {{ in an illuminated tome.
+
+"illuminate" is a truth, false unless written, and belongs only within a
+tome object.
+
+Kindred passages: tome, scripture, placeholders, inscriptions
+
+Exempla:
+  {"sanctum": "~/.config/mako/config",
+   "scripture": {"tome": "mako/visage.ini", "illuminate": true}}
+
+  The tome mako/visage.ini may then speak:
+    background-color={{inscription.hue}}
+    # visage: {{aspect}}, before it {{former}}

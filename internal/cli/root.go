@@ -69,8 +69,6 @@ func NewRootCmd(args []string, stdout, stderr io.Writer) *cobra.Command {
 	root := &cobra.Command{
 		Use:           "servitor",
 		Short:         "A thrall of the Adeptus Mechanicus that performs rites upon your config files",
-		Long:          rootLong,
-		Example:       rootExample,
 		Version:       version(),
 		Args:          unknownRitual,
 		SilenceUsage:  true,
@@ -90,9 +88,12 @@ func NewRootCmd(args []string, stdout, stderr io.Writer) *cobra.Command {
 	_ = root.MarkPersistentFlagDirname("librarium")
 	chronicleRunes(root, &a.chronicle)
 	root.SetFlagErrorFunc(func(cmd *cobra.Command, err error) error {
-		return fmt.Errorf("%s\nConsult '%s --help' for the proper liturgy", runeError(err), cmd.CommandPath())
+		return fmt.Errorf("%s\n%s", runeError(err), liturgyHint(cmd))
 	})
-	root.AddCommand(a.newInvokeCmd(), a.newAuguryCmd(), a.newCensusCmd(), a.newInquisitionCmd(), a.newTUICmd())
+	root.AddCommand(a.newInvokeCmd(), a.newAuguryCmd(), a.newCensusCmd(), a.newInquisitionCmd(), a.newTUICmd(),
+		a.newExpoundCmd())
+	root.SetHelpCommand(newHelpCmd())
+	root.SetHelpFunc(a.lore(root.HelpFunc()))
 	flavor(root)
 	return root
 }
@@ -101,11 +102,8 @@ func (a *app) newTUICmd() *cobra.Command {
 	return &cobra.Command{
 		Use:   "cogitator",
 		Short: "Awaken the cogitator, the interactive shrine of rites",
-		Long: `Awaken the cogitator: survey every rite of the Librarium, invoke aspects,
-consecrate new rites, amend or excommunicate old ones. Press ? within for the
-full catalogue of keys. Also awakened by invoking servitor without a ritual.`,
-		Args: cobra.NoArgs,
-		RunE: func(*cobra.Command, []string) error { return runTUI(a.lib.Dir) },
+		Args:  cobra.NoArgs,
+		RunE:  func(*cobra.Command, []string) error { return runTUI(a.lib.Dir) },
 	}
 }
 

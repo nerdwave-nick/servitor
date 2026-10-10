@@ -1,0 +1,41 @@
+The record of every invocation, and the rune and key that place it
+
+The chronicle is the servitor's memory of its deeds. Every invocation that
+was performed — whether it ended in triumph, was reverted, or faltered, and
+whether it ran its course or was halted from the terminal — adds one line of
+binharic to the chronicle: when it happened, the rite, the aspect invoked and
+the former aspect, the inscriptions it carried, its verdict, and for a fallen
+invocation the verse it fell at, the heresy that felled it and the verdict of
+every reversion. An invocation the pre-flight forbade, or one merely
+foreseen, performed nothing and is not chronicled.
+
+The chronicle is kept at the first of these that speaks: the universal rune
+--chronicle, given to any ritual; then the environment's SERVITOR_CHRONICLE;
+then the key "chronicle" of the settings; then
+$XDG_STATE_HOME/servitor/chronicle.jsonl (or ~/.local/state/servitor/ when
+$XDG_STATE_HOME is not set). A leading "~" and the $NAMES of the environment
+are expanded; a relative path given by rune or environment is reckoned from
+the hall the servitor was summoned in, and one given in the settings from
+the Librarium.
+
+The chronicle is not suffered to grow without end: when a line would carry
+it past one mebibyte, the chronicle is renamed with the suffix .1, replacing
+the one so named before, and a fresh chronicle begins. Thus the current and
+the previous chronicle endure, and older memory is forgotten. Halls missing
+above the chronicle are raised when the first line is written.
+
+Kindred passages: verdicts, verse, invoke, data-slate, librarium, inscriptions
+
+Exempla:
+  {"at": "2026-10-10T13:30:00Z", "rite": "theme", "aspect": "porpl",
+   "former": "default", "inscriptions": {"reason": "rain"},
+   "verdict": "reverted",
+   "fell_at": {"verse": 3, "incantation": "source hooks"},
+   "heresy": "it ended bearing the death-mark 1, …",
+   "reversions": [{"verse": 2, "verdict": "triumph"}]}
+
+  servitor invoke theme porpl --chronicle ~/chronicles/theme.jsonl
+
+  {"pattern": "Mark I", "chronicle": "~/.local/state/rites.jsonl"}
+
+  tail -n 3 ~/.local/state/servitor/chronicle.jsonl | jq -r .verdict

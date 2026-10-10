@@ -23,7 +23,6 @@ func (a *app) newInquisitionCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "inquisition [rite...]",
 		Short: "Summon the Inquisition to purge heresy from rites, settings and vessels",
-		Long:  inquisitionLongHelp,
 		ValidArgsFunction: func(_ *cobra.Command, args []string, _ string) ([]cobra.Completion, cobra.ShellCompDirective) {
 			return a.riteCompletions(args...), cobra.ShellCompDirectiveNoFileComp
 		},

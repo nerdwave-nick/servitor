@@ -1,0 +1,36 @@
+The examination of every step before an invocation touches the machine
+
+Before a single step is performed, the servitor examines the whole liturgy
+against a shadow of the machine, changing nothing. This is the pre-flight,
+and every invocation passes through it.
+
+In the pre-flight the servitor resolves the inscriptions — runes first, then
+the decrees of the aspect — and denounces a mandatory inscription left
+without value. It renders every placeholder of every step for the aspect
+invoked, and reads every tome afresh. It checks that each vessel may be
+written: that the halls above it stand, that a sanctum's vessel exists or may
+be consecrated, that a transcription replaces only scripture of the rite's
+own aspects unless with zeal, and that a tether rebinds only a tether. It
+seeks every tongue along the machine's PATH, and the scroll of every litany.
+
+Each step is planned upon the shadow as the steps before it left it, so a
+litany may recite a scroll that a transcription earlier in the same liturgy
+brings into being, and a sanctum may follow a tether bound a verse before.
+
+Should any heresy be found, the invocation is refused whole: every heresy is
+spoken, nothing is performed, and neither the data-slate nor the chronicle is
+touched. Only when the pre-flight is pure does the liturgy begin; whatever
+falls thereafter falls in the performance, and is reverted.
+
+To foresee is to halt after the pre-flight and reveal what it planned: each
+vessel's changes, each tether's rebinding, each command as it would be
+spoken — without awakening even the auspex.
+
+Kindred passages: invoke, foresee, heresy, inscriptions, placeholders
+
+Exempla:
+  servitor invoke theme porpl --foresee
+
+  servitor ✠ the pre-flight forbids the invocation of "theme" into "porpl";
+  nothing was touched:
+    …

@@ -1,0 +1,26 @@
+What is laid before a litany for its scroll to work with
+
+A litany receives nothing it is not offered. Its "offerings" are a list of
+words handed to the scroll in the order written, each as one whole word: the
+servitor neither splits them at spaces, nor reads quotation marks, nor lets
+any tongue interpret them, nor expands a leading "~" or a $NAME. Only their
+placeholders are filled — {{aspect}}, {{former}}, {{rite.name}} and
+{{inscription.<key>}} — so an inscription full of spaces and quotation marks
+arrives at the scroll exactly as it was given.
+
+Each offering may differ for every aspect as an aspect map; an aspect for
+which an offering holds nothing, and no "*" serves, is heresy. Without
+offerings the scroll is recited bare, and must learn what it needs from the
+environment (SERVITOR_ASPECT and its kin).
+
+Offerings belong to litanies alone. An incantation's words are handed whole
+to its tongue instead, and need no offerings.
+
+Kindred passages: litany, placeholders, aspect-maps, inscriptions
+
+Exempla:
+  {"litany": "scripts/change-theme",
+   "offerings": ["{{aspect}}", "{{inscription.reason}}"]}
+
+  {"litany": "scripts/screen-transition",
+   "offerings": [{"night": "fade", "*": "wipe"}, "250"]}

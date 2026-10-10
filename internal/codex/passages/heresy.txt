@@ -1,0 +1,41 @@
+The failings the inquisition denounces: heresies and impurities
+
+Whatever is wrong with a rite, its settings or the machine it acts upon is
+denounced as one of two judgements. A heresy must be purged: a rite in heresy
+cannot be invoked, and its pre-flight refuses to begin. An impurity is noted
+and forgiven: the rite may still be invoked, but the servitor bids the scribe
+take heed.
+
+Heresies of the scripture: malformed JSONC; unknown keys; a missing or
+foreign pattern; aspects empty, repeated or unworthily named; aspect-map keys
+that name no declared aspect, and an aspect left without value and without
+"*"; unknown placeholders and undeclared inscriptions; tomes that cannot be
+found; a sanctum whose scripture is null; a vox-cast that is neither
+"progress" nor "success"; a ward claimed twice within one vessel; two
+scriptures recorded for one rite; heretical settings; and a vessel whose
+sanctum markers are broken, which no invocation could rewrite.
+
+Impurities: a tongue spoken nowhere on this machine; a vessel missing whose
+sanctum may not consecrate it; an anchor that stands nowhere for some aspect;
+a mandatory inscription without a decree for some aspect; a "success"
+vox-cast that is not the last step; a tainted sanctum; a desecrated rite.
+
+Every judgement carries its place — scripture:line:column — and a verbose
+denunciation of what is amiss and how it may be purged. The inquisition
+speaks them all and exits 1 when any heresy was found, 0 when only
+impurities or nothing at all were. In binharic each judgement is one object
+of "scripture", "line", "column", "rite" (absent for the settings and the
+Librarium itself), "judgement" (heresy or impurity) and "denunciation".
+
+A heresy found in the pre-flight of an invocation halts it before any step
+is performed; heresies spoken there are the same the inquisition would speak.
+
+Kindred passages: inquisition, pre-flight, standing, spare-vessels, binharic
+
+Exempla:
+  servitor inquisition
+  servitor inquisition theme --binharic
+
+  {"scripture": "/home/me/.config/servitor/rites/theme.json", "line": 7,
+   "column": 5, "rite": "theme", "judgement": "heresy",
+   "denunciation": "…"}

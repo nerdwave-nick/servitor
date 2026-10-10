@@ -1,0 +1,28 @@
+The word each aspect inscribes when the invocation gives none
+
+An inscription's "decrees" name, per aspect, the word inscribed when an
+invocation gives no rune for it. They are written as an aspect map: a single
+word serves every aspect, or an object names one word per aspect, with "*"
+serving every aspect not named. Unlike the aspect maps of the steps, decrees
+may leave aspects without a word; such an invocation is simply uninscribed,
+unless the inscription is mandatory.
+
+A rune given to the invocation outranks the decree; a rune given the empty
+word clears it. Decrees are never illuminated: placeholders written in them
+are kept as written.
+
+Completion offers the decreed words when the rune of the inscription is
+written, each with the aspects that decree it, and the inquisition notes as
+an impurity a mandatory inscription that some aspect does not decree.
+
+Kindred passages: inscriptions, mandatory, aspect-maps, invoke
+
+Exempla:
+  "inscriptions": {
+    "mode": {"decrees": {"on": "auto-hide", "off": "always-visible"}},
+    "origin": {"decrees": "the hotkey"},
+    "reason": {"decrees": {"porpl": "a royal mood", "*": ""}}
+  }
+
+  servitor invoke mouse-autohide-toggle on                  # mode=auto-hide
+  servitor invoke mouse-autohide-toggle on --mode sentinel  # the rune outranks

@@ -27,7 +27,7 @@ var overviewBindings = []binding{
 	{"i", "inquisition", false},
 	{"/", "filter", false},
 	{"r", "reload the Librarium", false},
-	{"?", "lore", true},
+	{"?", "expound the codex", true},
 	{"q", "retreat", true},
 }
 

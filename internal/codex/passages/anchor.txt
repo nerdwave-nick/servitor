@@ -1,0 +1,31 @@
+Where a tether leads: the far end of the binding for each aspect
+
+The anchor is the place a tether's name leads to. It is written under
+"anchor" beside the tether, either one place for every aspect or an aspect
+map naming the anchor of each aspect, with "*" serving the rest. Written
+null for an aspect, the anchor decrees that the name shall be unbound when
+that aspect is invoked.
+
+The anchor may speak placeholders, so one anchor may serve every aspect:
+"~/.config/nfluff/themes/{{aspect}}". A leading "~" and $NAMES are expanded,
+and an anchor not rooted at "/" is reckoned from the rites/ hall of the
+Librarium; the tether is bound to the full path so reckoned. Inscriptions
+may appear in an anchor; the augury then renders it with the inscriptions
+the data-slate keeps.
+
+The anchor need not stand for the tether to be bound, yet the inquisition
+notes as impurity an anchor that stands nowhere for some aspect, for a name
+leading into the void serves no one.
+
+The anchor is the tether's omen: the augury reads where the name leads, and
+the aspect whose rendered anchor matches it is the aspect the tether bears
+witness to. An unbound name is the omen of the aspect whose anchor is null.
+
+Kindred passages: tether, aspect-maps, placeholders, omens, zeal
+
+Exempla:
+  {"tether": "~/.local/share/nfluff/current-theme",
+   "anchor": "~/.config/nfluff/themes/{{aspect}}"}
+
+  {"tether": "~/.config/mpv/shaders",
+   "anchor": {"crisp": "~/.local/share/shaders/crisp", "*": null}}

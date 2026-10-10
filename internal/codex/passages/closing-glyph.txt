@@ -1,0 +1,26 @@
+The mark that seals a sanctum's markers where remarks must be closed
+
+Some tongues enclose their remarks between an opening and a closing mark —
+CSS within "/*" and "*/", HTML and XML within "<!--" and "-->". For such a
+vessel the closing glyph follows the final "+++" of each marker, so that the
+remark is sealed and the vessel's machine-spirit does not swallow the
+scripture after it:
+
+  /* +++ begin of sanctum palette -- aspect|dark +++ */
+  /* +++ end of sanctum palette +++ */
+
+When neither "glyph" nor "closing-glyph" is written, the closing glyph is
+divined from the vessel's extension together with the glyph: "*/" for .css,
+"-->" for .html, .xml, .svg and .md, and none for every other tongue. When
+"closing-glyph" alone is written, the glyph is still divined; when "glyph" is
+written alone, there is no closing glyph at all.
+
+A closing glyph must be a single line, and the ward may not contain it, for
+it would end the marker in the ward's midst. It is never illuminated.
+
+Kindred passages: glyph, sanctum, ward, vessel
+
+Exempla:
+  {"sanctum": "~/.local/share/startpage/index.htm",
+   "glyph": "<!--", "closing-glyph": "-->",
+   "scripture": {"dark": "<body class=\"night\">", "light": "<body>"}}

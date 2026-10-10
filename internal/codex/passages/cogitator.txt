@@ -1,0 +1,36 @@
+Awaken the cogitator, the interactive shrine of rites
+
+The cogitator is the servitor's shrine for those who would rather behold than
+type. It is awakened by the ritual servitor cogitator, or by the servitor
+alone when it stands at a terminal; without a terminal the servitor recites
+the index of the codex instead.
+
+On its left the cogitator lists every rite of the Librarium with the glyph
+of its standing and the aspect it stands in; on its right it reveals the
+chosen rite: its purpose, its aspects with the current one marked, its
+inscriptions and where its scripture is recorded. Heretical rites are shown
+too, with the heresy that taints them.
+
+From the shrine the faithful choose a rite (j and k, or the arrows; g and G
+for the first and last), invoke it with enter, cycle it to its next aspect
+with space, consecrate a new rite with n, amend one with e, replicate one
+with c, excommunicate one with d, open its scripture in $EDITOR with o,
+summon the Inquisition with i, filter the rites with /, re-read the Librarium
+with r, and retreat with q. The key ? opens the codex itself: above it stands
+the cogitator's own catalogue of keys, below it the index of every passage;
+enter recites the chosen passage, as servitor expound would.
+
+Know that the cogitator lends no terminal to the words a rite speaks. As in
+every invocation, an incantation or litany is given nothing to hear and its
+output is captured, never shown as it is spoken; the cogitator holds the
+screen and every keystroke for itself. A command that seeks the terminal on
+its own — a pager, an editor, a prompt for a password — would contend with
+the cogitator for screen and keys, and is struck down when its patience runs
+out. Interactive commands are not supported within the cogitator: invoke such
+rites from a terminal, or write their commands so that they ask nothing.
+
+Kindred passages: invoke, inquisition, expound, standing, librarium
+
+Exempla:
+  servitor
+  servitor cogitator --librarium ~/dotfiles/servitor

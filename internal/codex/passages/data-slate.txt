@@ -1,0 +1,39 @@
+The servitor's record of each rite's last invocation
+
+For every rite it has invoked, the servitor keeps a data-slate: a small
+scripture-file of binharic at
+
+  $XDG_STATE_HOME/servitor/data-slates/<rite>.json
+
+(beneath ~/.local/state when $XDG_STATE_HOME is unset). It is written by the
+servitor alone, after each invocation it performs — never by a step of the
+liturgy, never by hand — and it holds three things:
+
+  aspect         the aspect the invocation left the rite in: the aspect
+                 invoked after a triumph, the former aspect after a fall
+  inscriptions   the inscriptions of that aspect, from runes and decrees
+  last_rite      the verdict of the invocation and its hour, "at"
+
+The data-slate is the servitor's memory, not its eyes. It names the aspect
+only when no omen can be read — a rite whose liturgy holds only incantations
+and litanies, and no auspex. Where omens speak and agree on an aspect the
+data-slate did not record, the rite is desecrated, and the augury names the
+remembered aspect as "former". The inscriptions an augury speaks are those
+of the data-slate; a rite never invoked through the servitor has none.
+
+An invocation refused in its pre-flight, or only foreseen, leaves the
+data-slate untouched. A data-slate garbled beyond reading is denounced;
+strike it, and the next invocation inscribes it anew. Inscriptions are kept
+on the data-slate alone: the scripture of a rite is never rewritten by an
+invocation.
+
+Kindred passages: verdicts, inscriptions, standing, augury, chronicle
+
+Exempla:
+  servitor invoke mouse-autohide-toggle on --reason "gaming remnant"
+  cat ~/.local/state/servitor/data-slates/mouse-autohide-toggle.json
+
+  {"aspect": "on", "inscriptions": {"reason": "gaming remnant"},
+   "last_rite": {"verdict": "triumph", "at": "2026-10-10T13:30:00Z"}}
+
+  servitor augury mouse-autohide-toggle reason

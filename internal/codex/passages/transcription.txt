@@ -1,0 +1,44 @@
+A step that writes a whole vessel anew, or strikes it, for each aspect
+
+Where a sanctum keeps one warded region, a transcription claims the entire
+vessel. Its own key names the vessel; its "scripture" is what the whole
+vessel shall hold in each aspect, as an aspect map of inline words, a list
+of lines or a tome. Written null for an aspect, the scripture decrees that
+the vessel shall not be at all: invoking that aspect strikes the vessel from
+the machine, and a vessel already absent is left absent.
+
+Because the transcription overwrites everything, it guards the work of other
+hands. A vessel that already stands is replaced (or struck) only when its
+scripture is the scripture of one of the rite's aspects — that is, when the
+servitor recognises it as its own work, one final newline forgiven. Any
+other vessel halts the pre-flight, for the servitor keeps no copy of what it
+casts down, unless the step burns with "zeal": true. A hall standing where
+the vessel should be never gives way.
+
+A vessel the transcription brings into being bears the seal 0644 unless
+"seal" decrees another; a vessel that stands keeps its seal, or takes the
+"seal" written. The hall that is to hold the vessel must already stand; the
+servitor never raises halls. The vessel's path may speak placeholders; "~"
+and $NAMES are expanded, and a path not rooted at "/" is reckoned from the
+rites/ hall of the Librarium. A vessel that is a tether is followed, and the
+scripture-file at its far end is transcribed. Every write is whole and
+sudden, so no reader ever beholds half a vessel.
+
+The transcription yields an omen: the aspect whose rendered scripture the
+vessel holds now, or the aspect of null scripture when the vessel is absent.
+A vessel that matches no aspect yields no omen.
+
+Should the invocation fall, the reversion restores the vessel exactly as it
+was found — its former scripture and seal — or strikes it again if it did
+not stand before.
+
+Kindred passages: scripture, seal, zeal, tome, illuminate, vessel, omens
+
+Exempla:
+  {"transcription": "~/.config/foot/theme.ini",
+   "scripture": {"dark": {"tome": "foot/dark.ini"},
+                 "light": {"tome": "foot/light.ini"}}}
+
+  {"transcription": "~/.config/autostart/gamemode.desktop",
+   "scripture": {"on": ["[Desktop Entry]", "Exec=gamemoded"], "off": null},
+   "seal": "0600"}

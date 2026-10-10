@@ -105,7 +105,7 @@ func TestCompletion_LibrariumRune(t *testing.T) {
 func TestCompletion_Rituals(t *testing.T) {
 	e := newEnv(t)
 	got, _ := e.complete("")
-	want := []string{"augury", "census", "cogitator", "completion", "inquisition", "invoke"}
+	want := []string{"augury", "census", "cogitator", "completion", "expound", "inquisition", "invoke"}
 	if !slices.Equal(got, want) {
 		t.Fatalf("rituals = %v, want %v", got, want)
 	}

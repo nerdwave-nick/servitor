@@ -1,0 +1,39 @@
+How an invocation ended: triumph, reverted or faltered
+
+When the liturgy is done, the servitor passes judgement upon the invocation,
+and that verdict is inscribed on the rite's data-slate and in the chronicle.
+Three verdicts are known to the codex:
+
+  triumph    every step was performed; the rite stands in the aspect invoked
+  reverted   a step fell, and every step already performed was undone; the
+             machine stands as it stood before
+  faltered   a step fell, and at least one reversion fell too; the machine
+             stands half in one aspect and half in another
+
+A reverted or faltered invocation ends with the servitor's lament — the step
+that fell, its last words, and how each reversion went — and the invoke
+ritual exits 1. A faltered verdict leaves the rite corrupted until it is
+invoked anew, for no single aspect can be trusted to stand.
+
+The verdict is kept with its hour as "last_rite": {"verdict", "at"}, the
+hour in UTC to the second. The augury and the census speak it for every
+rite; it is null for a rite never invoked through the servitor. The
+chronicle keeps the verdict of every invocation, with "fell_at" and
+"reversions" for those that fell.
+
+An invocation refused in its pre-flight performed nothing and earns no
+verdict: neither its data-slate nor the chronicle is touched. The same holds
+for an invocation only foreseen. An invocation halted by its master's
+interrupt is reverted like any other that fell, and judged accordingly.
+
+Kindred passages: chronicle, data-slate, reversion, invoke, standing
+
+Exempla:
+  servitor augury theme | jq -r .last_rite.verdict
+
+  {"last_rite": {"verdict": "reverted", "at": "2026-10-10T13:30:00Z"}}
+
+  {"at": "2026-10-10T13:30:00Z", "rite": "theme", "aspect": "porpl",
+   "former": "default", "inscriptions": {}, "verdict": "faltered",
+   "fell_at": {"verse": 3, "incantation": "make-it-so"},
+   "heresy": "…", "reversions": [{"verse": 2, "verdict": "faltered"}]}

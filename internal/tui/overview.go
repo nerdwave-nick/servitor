@@ -47,7 +47,7 @@ func (m *model) updateOverview(msg tea.Msg) tea.Cmd {
 		m.reload("")
 		return m.notify(toastInfo, "The Librarium has been re-read.")
 	case "?":
-		m.screen = newTextScreen("Catalogue of Sacred Keys", helpText(m))
+		m.screen = newCodexScreen()
 	case "i":
 		m.screen = newTextScreen("Verdict of the Inquisition", m.verdict())
 	case "n":

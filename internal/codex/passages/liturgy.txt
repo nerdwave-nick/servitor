@@ -1,0 +1,34 @@
+The ordered steps a rite performs, one after another as written
+
+The "liturgy" of a rite is a list of steps, and every step is one object
+named by its own key: "sanctum", "transcription", "tether", "incantation",
+"litany" or "vox-cast". An object bearing none of these keys, or more than
+one, is heresy, and so is any key the step's kind does not know.
+
+At invocation the pre-flight first examines every step without touching
+anything; only then are the steps performed, in the order written, never in
+parallel and never reordered. Should one fall, the steps already performed
+are reverted in reverse order, the fallen one included, and the machine
+returns to its former aspect.
+
+Each step is named by its verse, its place in the liturgy counted from one;
+the foresight, the omens of an augury, the chronicle and the laments of the
+servitor speak of "verse 2 · tether …". Vox-casts count among the verses but
+not among the real steps of the "step x / n" that progress vox-casts tell.
+
+Sanctums, transcriptions and tethers yield omens of the aspect the machine
+stands in; incantations, litanies and vox-casts yield none.
+
+Kindred passages: sanctum, transcription, tether, incantation, litany,
+vox-cast, verse, pre-flight, reversion
+
+Exemplum:
+  "liturgy": [
+    {"vox-cast": "progress"},
+    {"tether": "~/.local/share/nfluff/current-theme",
+     "anchor": "~/.config/nfluff/themes/{{aspect}}"},
+    {"litany": "scripts/change-theme",
+     "offerings": ["~/.config/nfluff/themes/{{aspect}}"]},
+    {"incantation": "makoctl reload", "reversion": "makoctl reload"},
+    {"vox-cast": "success"}
+  ]

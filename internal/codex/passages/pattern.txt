@@ -1,0 +1,32 @@
+The Mark of the form in which a scripture is written
+
+Every scripture of the Librarium — each rite in rites/ and the settings in
+servitor.json — must declare at its head the Mark of the form it is written
+in. The key is "pattern", and its value is the word "Mark" followed by
+numerals of the old tongue: "Mark I", "Mark II", "Mark IV" and so forth. This
+servitor was forged to read pattern "Mark I", and that Mark alone.
+
+The pattern is examined before anything else. A scripture that bears no
+pattern, a pattern that is no Mark at all, or a Mark this servitor does not
+know is heresy — and it is then the only heresy denounced, for the servitor
+will not guess at the meaning of a form it was never taught, nor heap
+complaints about unknown keys upon scripture of another age. Such a rite
+stands heretical; such settings are not heeded, and the servitor keeps to its
+defaults.
+
+There is no conversion of elder scripture, and no form is read implicitly:
+whoever keeps rites written for an earlier servitor must rewrite them in
+pattern Mark I by hand, and the inquisition will denounce every one that is
+left unrewritten.
+
+Kindred passages: rite, librarium, inquisition, heresy
+
+Exempla:
+  {
+    "pattern": "Mark I",
+    "aspects": ["on", "off"],
+    "liturgy": [{"incantation": "makoctl mode -t do-not-disturb"}]
+  }
+
+  // servitor.json, the settings beside the rites
+  {"pattern": "Mark I", "tongue": "bash", "patience": "30s"}

@@ -1,0 +1,21 @@
+Whether vox-casts reach the desktop, written in the settings
+
+The vox is the servitor's channel to the desktop. In the settings,
+servitor.json beside the rites of the Librarium, "vox" decides whether the
+vox-casts of an invocation roused without a terminal are sent there:
+
+  "notify-send"  every vox-cast becomes one desktop missive through the
+                 program notify-send, replaced in place by the next
+                 (this is the default)
+  "off"          the desktop hears nothing
+
+The vox governs the desktop alone: an invocation spoken at a terminal still
+prints its vox-casts there, whatever the vox commands. Should notify-send be
+missing from the machine, the servitor stays silent rather than fail. Any
+other value is heresy, denounced by the inquisition with its place.
+
+Kindred passages: vox-cast, invoke, librarium
+
+Exempla:
+  // servitor.json
+  {"pattern": "Mark I", "vox": "off"}

@@ -1,0 +1,41 @@
+Recite a passage of the codex, the servitor's book of instruction
+
+The codex holds the lore of the servitor: for every ritual, rune, step and
+key — and for the deeper mysteries of omens, standing, verdicts and the rest
+— one verbose passage, as written in the codex, each bearing at least one
+example. Expounding recites it.
+
+Spoken alone, servitor expound recites the index of the codex: its chapters
+of rituals, runes, steps of the liturgy, keys of a rite's scripture, keys of
+the settings and further lore, each topic with the single line that sums it
+up. Spoken with a topic, it recites that one passage. A topic is named as the
+faithful would write it in scripture or upon the command line, runes without
+their dashes: servitor expound tether, servitor expound foresee. The passage
+of a ritual is followed by its invocation and its runes, as the servitor
+itself knows them, and the passage of invoke also names every rite of the
+Librarium.
+
+A topic the codex does not hold is denounced, and the topics that most
+resemble it are offered in its stead. Completion offers every topic of the
+index, each with its summing line.
+
+Know the servitor in brief, as the codex teaches it: a rite, kept in the
+Librarium, knows a fixed set of aspects and a liturgy of steps performed in
+the order written — sanctums, transcriptions, tethers, incantations, litanies
+and vox-casts. Should a step fall, every deed already done is reverted. A
+sanctum rewrites only its warded region of a vessel, and appends itself to
+the vessel's end when not yet kept:
+
+  // +++ begin of sanctum cursor -- aspect|on +++
+  <scripture kept by the servitor>
+  // +++ end of sanctum cursor +++
+
+Every invocation is recorded in the chronicle; the augury, the census and
+the Inquisition tell how the rites stand.
+
+Kindred passages: invoke, rite, liturgy, cogitator, completion
+
+Exempla:
+  servitor expound
+  servitor expound tether
+  servitor expound inscriptions | less

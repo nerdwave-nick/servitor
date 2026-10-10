@@ -1,0 +1,39 @@
+What each step of a rite reveals of the aspect the machine stands in
+
+The servitor does not trust its memory alone. To know which aspect a rite
+stands in, it reads the machine itself, and every step that can be observed
+yields an omen — the aspect that step bears witness to.
+
+  sanctum         the aspect recorded in its begin marker
+  tether          the aspect whose anchor the bound name leads to; a name
+                  unbound bears witness to an aspect whose anchor is null
+  transcription   the aspect whose scripture its vessel holds; a vessel
+                  absent bears witness to an aspect whose scripture is null
+  auspex          the aspect the rite's own scanning command proclaims
+
+Incantations, litanies and vox-casts leave nothing behind to be read, and so
+give no omen; neither does a vessel that cannot be read, nor a step whose
+observation fits several aspects at once. The auspex gives none when it
+exceeds its patience, when it ends bearing a death-mark, or when it speaks
+anything but a declared aspect.
+
+To compare, the servitor renders each observed field for every aspect, with
+the inscriptions its data-slate recorded for that aspect, or else that
+aspect's decrees; so inscriptions may dwell in an anchor and still be read.
+
+From the omens the standing is judged: all agreeing name the aspect, any
+disagreement corrupts the rite, and where no omen speaks the data-slate is
+heeded. The augury lists every omen in written order, the auspex last, each
+named by its verse and its own key. The litanies of completion never awaken
+the auspex, and neither does foreseeing.
+
+Kindred passages: standing, auspex, augury, data-slate, verse
+
+Exempla:
+  servitor augury theme
+
+  "omens": [
+    {"verse": 1, "sanctum": "~/.config/niri/util.kdl", "aspect": "porpl"},
+    {"verse": 2, "tether": "~/.local/share/nfluff/current-theme",
+     "aspect": "porpl"},
+    {"auspex": true, "aspect": "porpl"}]

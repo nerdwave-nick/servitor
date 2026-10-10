@@ -1,0 +1,26 @@
+Take a census of every rite of the Librarium and how each stands
+
+The census reads every rite kept in the Librarium and names, for each, the
+aspect it stands in, its standing — performed, dormant, corrupted, tainted,
+desecrated or heretical — its aspects, its last rite with verdict and hour,
+and its purpose. A rite that stands corrupted or tainted and was also
+desecrated is named with both. The census reads the omens of every rite and
+awakens each auspex, but performs nothing.
+
+Spoken plainly, the census is a table with the columns RITE, ASPECT,
+STANDING, ASPECTS, LAST RITE and PURPOSE; a "·" marks what is not known. A
+Librarium without rites is told so, with the counsel to consecrate one.
+
+With --binharic, the census is a list for other machines, and every rite
+bears the keys rite, aspect, standing, aspects, purpose, desecrated,
+last_rite and recorded_in — the last naming the scripture the rite was read
+from. A rite whose data-slate cannot be read is still counted; the lament is
+spoken apart from the census.
+
+Kindred passages: augury, standing, binharic, librarium, inquisition
+
+Exempla:
+  servitor census
+  servitor census --binharic |
+    jq -r '.[] | select(.standing != "performed") | .rite'
+  servitor --librarium ~/dotfiles/servitor census

@@ -1,0 +1,33 @@
+Scripture drawn from another scripture-file rather than written inline
+
+A tome lets a sanctum or transcription draw its scripture from a separate
+scripture-file, so that long or intricate scripture need not be pressed into
+a JSON string. It is written as an object in place of the scripture:
+
+  {"tome": "<path>", "illuminate": true}
+
+"tome" names the scripture-file; "illuminate" (false unless written)
+decrees whether its placeholders are filled. The path may itself speak
+placeholders — {{aspect}} chooses one tome per aspect — and a path not
+rooted at "/" is reckoned from the rites/ hall of the Librarium, where the
+rite's own scripture is kept; "~" and $NAMES are expanded.
+
+The tome is read afresh in every pre-flight, so amending the tome amends the
+next invocation without touching the rite. A tome that cannot be opened is
+heresy in the pre-flight, and nothing is performed; the inquisition opens
+every tome as well and denounces the missing. A tome is set down verbatim
+unless illuminated; an illuminated tome with an unknown placeholder is
+heresy located at its own line and column.
+
+The augury reads tomes too, to judge which aspect a vessel holds; changing a
+tome after an invocation makes the vessel no longer match its aspect.
+
+Kindred passages: scripture, illuminate, placeholders, sanctum, transcription
+
+Exempla:
+  {"transcription": "~/.config/alacritty/colors.toml",
+   "scripture": {"tome": "colors/{{aspect}}.toml"}}
+
+  {"sanctum": "~/.config/niri/config.kdl",
+   "scripture": {"on": {"tome": "niri/gaming.kdl", "illuminate": true},
+                 "off": ""}}
