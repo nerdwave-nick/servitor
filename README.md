@@ -12,7 +12,7 @@ aspect*.
 servitor                                                     # awaken the cogitator (TUI)
 servitor invoke mouse-autohide-toggle on --reason "gaming remnant"
 servitor invoke mouse-autohide-toggle off
-servitor augury mouse-autohide-toggle                        # {"state": "off", ...}
+servitor augury mouse-autohide-toggle                        # {"rite": …, "aspect": "off", …}
 servitor augury mouse-autohide-toggle --is on || echo "the cursor walks unveiled"
 ```
 
@@ -43,7 +43,7 @@ scripts' business. That is what the augury is for:
 
 ```sh
 servitor invoke mouse-autohide-toggle on -s && notify-send "The rite is performed"
-[ "$(servitor augury mouse-autohide-toggle state)" = on ] && notify-send "The cursor is veiled"
+[ "$(servitor augury mouse-autohide-toggle aspect)" = on ] && notify-send "The cursor is veiled"
 ```
 
 ## Installation
@@ -148,11 +148,10 @@ See [`examples/rites/mouse-autohide-toggle.json`](examples/rites/mouse-autohide-
 | Ritual | Purpose |
 |---|---|
 | `servitor invoke <rite> <aspect> [--<key> v] [-f] [-s]` | Perform an aspect. `-f/--foresee` divines the diff without touching a vessel; `-s/--silence` performs in reverent silence. `servitor invoke <rite> --help` reveals its aspects, vessels and runes. |
-| `servitor augury <rite>` | The inscriptions as JSON, `state` first. |
-| `servitor augury <rite> <key>` | One inscription (an empty line when uninscribed). |
+| `servitor augury <rite>` | The aspect, standing, inscriptions, last rite and omens as JSON. |
+| `servitor augury <rite> <key>` | One value: `aspect`, `standing`, `desecrated`, `former` or an inscription (an empty line when uninscribed). Errors exit 2. |
 | `servitor augury <rite> --is <aspect>` | Exit 0 if the rite stands in that aspect, 1 if not. |
-| `servitor augury <rite> --per-file` | Every vessel's sanctum as JSON (presence, inscriptions, taint). |
-| `servitor census [--binharic]` | All rites and the aspects they stand in. |
+| `servitor census [--binharic]` | All rites, the aspects they stand in, their standing and last rite. |
 | `servitor inquisition [rite…] [--binharic] [--spare-vessels]` | Purge heresy from rites and vessels. |
 | `servitor cogitator` | The interactive shrine (also the default). |
 | `servitor completion bash\|zsh\|fish` | Engrave completion litanies. |
