@@ -17,6 +17,17 @@ type Herald interface {
 	Proclaim(Proclamation)
 }
 
+// Watcher is a herald that also watches every real step — every step that
+// is no vox-cast — as it is begun, for a vessel of the servitor that shows
+// the invocation while it is performed. A step never begun, once the
+// invocation is halted, is not seen.
+type Watcher interface {
+	Herald
+	// Begin is told before the step of verse v is performed: it is the
+	// step-th real step (counted from one) of the liturgy's steps.
+	Begin(v Verse, step, steps int)
+}
+
 // Tidings name what a proclamation tells.
 type Tidings string
 
@@ -83,6 +94,19 @@ func (c *crier) performed(step performer) {
 		return
 	}
 	c.proclaim(vox.tidings, c.done, c.last, "", nil)
+}
+
+// begin tells a watching herald that step is begun; vox-casts are not
+// steps it watches.
+func (c *crier) begin(step performer) {
+	if c == nil {
+		return
+	}
+	w, watching := c.herald.(Watcher)
+	if _, vox := step.(voxCast); vox || !watching {
+		return
+	}
+	w.Begin(step.verse(), c.done+1, c.steps)
 }
 
 // fell proclaims the failure of step with the outcome of its reversions.

@@ -165,3 +165,19 @@ func Upsert(text string, m Marker, aspect, content string) (string, error) {
 	out = append(out, lines[s.EndLine+1:]...)
 	return strings.Join(out, "\n"), nil
 }
+
+// Remove strikes the sanctum of m, markers and all, from text, with the blank
+// line Upsert placed before it; text without the sanctum stays as it is.
+func Remove(text string, m Marker) (string, error) {
+	s, found, err := Find(text, m)
+	if err != nil || !found {
+		return text, err
+	}
+	lines := strings.Split(text, "\n")
+	start, tail := s.BeginLine, lines[s.EndLine+1:]
+	atEnd := len(tail) == 0 || (len(tail) == 1 && tail[0] == "")
+	if start > 0 && strings.TrimSpace(lines[start-1]) == "" && (atEnd || strings.TrimSpace(tail[0]) == "") {
+		start--
+	}
+	return strings.Join(append(append([]string{}, lines[:start]...), tail...), "\n"), nil
+}

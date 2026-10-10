@@ -5,43 +5,96 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	tea "charm.land/bubbletea/v2"
 	"github.com/charmbracelet/x/ansi"
 
-	"github.com/nerdwave-nick/servitor/internal/engine"
+	"github.com/nerdwave-nick/servitor/internal/augury"
+	"github.com/nerdwave-nick/servitor/internal/librarium"
 )
 
 // harness drives the model with key presses and renders after every step,
-// so any panic in update or view fails the test.
+// so any panic in update or view fails the test. What an invocation sends
+// from its own goroutine waits in the inbox until next or await delivers it.
 type harness struct {
 	t       *testing.T
 	m       *model
 	dir     string
 	dataDir string
+	stub    string // where the notify-send stub records its calls
+	inbox   chan tea.Msg
 }
+
+// markRite is a rite of pattern Mark I: a progress vox-cast, a sanctum, an
+// incantation that utters words and leaves the aspect for the auspex, and a
+// success vox-cast. $DATA is the place of its vessels.
+const markRite = `{
+  "pattern": "Mark I",
+  "purpose": "Hide the cursor",
+  "aspects": ["on", "off"],
+  "inscriptions": {
+    "reason": {"purpose": "why"},
+    "mode": {"mandatory": true, "decrees": {"on": "hide", "off": "show"}}
+  },
+  "auspex": "cat $DATA/mode",
+  "liturgy": [
+    {"vox-cast": "progress"},
+    {"sanctum": "$DATA/x.kdl", "ward": "cursor", "scripture": {"on": "a\nb", "off": ""}},
+    {"incantation": "echo chanting {{aspect}}; echo {{aspect}} > $DATA/mode", "reversion": "rm -f $DATA/mode"},
+    {"vox-cast": "success"}
+  ]
+}`
 
 func newHarness(t *testing.T) *harness {
 	t.Helper()
-	h := &harness{t: t, dir: t.TempDir(), dataDir: t.TempDir()}
-	h.writeRite("mouse", strings.ReplaceAll(sampleRite, "/tmp/x.kdl", filepath.Join(h.dataDir, "x.kdl")))
-	if err := os.WriteFile(filepath.Join(h.dataDir, "x.kdl"), []byte("input {}\n"), 0o644); err != nil {
+	h := &harness{t: t, dir: t.TempDir(), dataDir: t.TempDir(), inbox: make(chan tea.Msg, 64)}
+	t.Setenv("XDG_STATE_HOME", t.TempDir())
+	t.Setenv(librarium.EnvChronicle, "")
+	stubs := t.TempDir()
+	h.stub = filepath.Join(stubs, "heard")
+	stub := "#!/bin/sh\necho \"$@\" >> " + h.stub + "\necho 7\n"
+	if err := os.WriteFile(filepath.Join(stubs, "notify-send"), []byte(stub), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	h.m = newModel(h.dir)
+	t.Setenv("PATH", stubs+string(os.PathListSeparator)+os.Getenv("PATH"))
+	h.writeRite("mouse", markRite)
+	h.writeData("x.kdl", "input {}\n")
+	h.m = newModel(h.dir, librarium.Runes{})
+	h.m.send = func(msg tea.Msg) { h.inbox <- msg }
 	h.send(tea.WindowSizeMsg{Width: 120, Height: 36})
 	return h
 }
 
-func (h *harness) writeRite(name, body string) {
+// writeRite writes the scripture of the rite name; $DATA is the vessels' place.
+func (h *harness) writeRite(name, body string) string {
 	h.t.Helper()
-	p := filepath.Join(h.dir, "rites", name+".json")
+	return write(h.t, filepath.Join(h.dir, "rites", name+".json"), strings.ReplaceAll(body, "$DATA", h.dataDir))
+}
+
+func (h *harness) writeData(rel, content string) string {
+	h.t.Helper()
+	return write(h.t, filepath.Join(h.dataDir, rel), content)
+}
+
+func (h *harness) readData(rel string) string {
+	h.t.Helper()
+	data, err := os.ReadFile(filepath.Join(h.dataDir, rel))
+	if err != nil {
+		h.t.Fatal(err)
+	}
+	return string(data)
+}
+
+func write(t *testing.T, p, content string) string {
+	t.Helper()
 	if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
-		h.t.Fatal(err)
+		t.Fatal(err)
 	}
-	if err := os.WriteFile(p, []byte(body), 0o644); err != nil {
-		h.t.Fatal(err)
+	if err := os.WriteFile(p, []byte(content), 0o644); err != nil {
+		t.Fatal(err)
 	}
+	return p
 }
 
 func keyMsg(k string) tea.KeyPressMsg {
@@ -60,6 +113,10 @@ func keyMsg(k string) tea.KeyPressMsg {
 		return tea.KeyPressMsg{Code: tea.KeyDown}
 	case "backspace":
 		return tea.KeyPressMsg{Code: tea.KeyBackspace}
+	case "ctrl+c":
+		return tea.KeyPressMsg{Code: 'c', Mod: tea.ModCtrl}
+	case "ctrl+p":
+		return tea.KeyPressMsg{Code: 'p', Mod: tea.ModCtrl}
 	case "ctrl+s":
 		return tea.KeyPressMsg{Code: 's', Mod: tea.ModCtrl}
 	case "ctrl+u":
@@ -96,8 +153,31 @@ func runQuick(cmd tea.Cmd) (tea.Msg, bool) {
 	select {
 	case msg := <-done:
 		return msg, true
-	default:
+	case <-time.After(20 * time.Millisecond):
 		return nil, false
+	}
+}
+
+// next delivers the next message of the running invocation.
+func (h *harness) next() tea.Msg {
+	h.t.Helper()
+	select {
+	case msg := <-h.inbox:
+		h.send(msg)
+		return msg
+	case <-time.After(10 * time.Second):
+		h.t.Fatalf("the invocation sent nothing:\n%s", h.screen())
+	}
+	return nil
+}
+
+// await delivers the invocation's messages until it has ended.
+func (h *harness) await() {
+	h.t.Helper()
+	for {
+		if _, ended := h.next().(invokedMsg); ended {
+			return
+		}
 	}
 }
 
@@ -127,41 +207,82 @@ func (h *harness) mustShow(substrs ...string) {
 	}
 }
 
-func (h *harness) state(name string) string {
+func (h *harness) mustNotShow(substrs ...string) {
+	h.t.Helper()
+	out := h.screen()
+	for _, s := range substrs {
+		if strings.Contains(out, s) {
+			h.t.Fatalf("screen shows %q:\n%s", s, out)
+		}
+	}
+}
+
+// reading is the augury of the rite name, read anew.
+func (h *harness) reading(name string) augury.Augury {
 	h.t.Helper()
 	h.m.reload("")
 	for _, r := range h.m.all {
-		if r.name == name && r.sw != nil {
-			return engine.ReadStatus(r.sw).State()
+		if r.name == name {
+			return r.reading.Augury
 		}
 	}
-	return ""
+	h.t.Fatalf("no rite %q", name)
+	return augury.Augury{}
+}
+
+// desktopSilent fails when notify-send was called: the cogitator shows its
+// vox-casts itself.
+func (h *harness) desktopSilent() {
+	h.t.Helper()
+	if data, err := os.ReadFile(h.stub); err == nil {
+		h.t.Fatalf("notify-send was called: %q", data)
+	}
 }
 
 func TestOverview_ShowsRitesAndDetails(t *testing.T) {
 	h := newHarness(t)
-	h.writeRite("broken", `{"states": [}`)
+	h.writeRite("broken", `{"pattern": "Mark I", "aspects": [}`)
 	h.keys("r")
 	h.mustShow("SERVITOR", "COGITATOR", "Rites (2)", "mouse", "dormant", "heretical", "Thought for the day")
 	h.keys("j")
-	h.mustShow("Hide the cursor", "ASPECTS", "VESSELS", "ward cursor", "INSCRIPTIONS")
+	h.mustShow("Hide the cursor", "ASPECTS", "◇ on", "◇ off", "STANDING", "dormant",
+		"LAST RITE", "never invoked", "INSCRIPTIONS", "mode=—", "reason=—", "LITURGY",
+		"· 1 ✉ progress", "· 2 § "+shortPath(filepath.Join(h.dataDir, "x.kdl")),
+		"· 3 » echo chanting {{aspect}}", "· 4 ✉ success", "AUSPEX", "· silent",
+		"RECORDED IN", "rites/mouse.json")
 	h.keys("k")
-	h.mustShow("tainted by heresy", "syntax error")
-	h.keys("e")
+	h.mustShow("tainted by heresy", "1:", "break the holy form")
+	h.keys("enter")
 	h.mustShow("This rite is heretical")
+}
+
+func TestDetail_ShowsTheOmensOfEveryStep(t *testing.T) {
+	h := newHarness(t)
+	h.keys("space")
+	h.await()
+	h.mustShow("◆ on", "◇ off", "performed", "LAST RITE", "✔ triumph", "mode=hide",
+		"✔ 2 § ", "· 3 » echo chanting {{aspect}}", "AUSPEX", "✔ on")
+
+	// other hands rewrite the sanctum's marker: the omens disagree
+	h.writeData("x.kdl", strings.Replace(h.readData("x.kdl"), "aspect|on", "aspect|off", 1))
+	h.keys("r")
+	h.mustShow("corrupted", "✖ 2 § ", "(off)", "✖ on")
 }
 
 func TestOverview_Cycle(t *testing.T) {
 	h := newHarness(t)
 	h.keys("space")
-	if got := h.state("mouse"); got != "on" {
-		t.Fatalf("cycle from dormant: %q", got)
+	h.await()
+	if a := h.reading("mouse"); a.Aspect != "on" || a.Standing != augury.Performed {
+		t.Fatalf("cycle from dormant: %+v", a)
 	}
-	h.mustShow("Rite mouse performed", "→ on")
+	h.mustShow("The rite mouse is performed: dormant → on")
 	h.keys("space")
-	if got := h.state("mouse"); got != "off" {
-		t.Fatalf("cycle from on: %q", got)
+	h.await()
+	if a := h.reading("mouse"); a.Aspect != "off" || a.Inscriptions["mode"] != "show" {
+		t.Fatalf("cycle from on: %+v", a)
 	}
+	h.desktopSilent()
 }
 
 // TestOverview_TKeyIsSilent: the cogitator knows one liturgy; t neither
@@ -186,159 +307,60 @@ func TestOverview_TKeyIsSilent(t *testing.T) {
 	}
 }
 
-func TestInvoke_PickStateFillMetaAndPreview(t *testing.T) {
+func TestDelete_StrikeAndPurge(t *testing.T) {
 	h := newHarness(t)
-	h.keys("enter")
-	h.mustShow("Invoke mouse", "Choose the aspect to invoke")
-	h.keys("p")
-	h.mustShow("Augury of aspect on", "+ // begin servitor managed -- cursor -- state|on mode|hide")
-	h.keys("esc")
-	h.mustShow("Choose the aspect to invoke")
-	h.keys("1")
-	h.mustShow("Inscriptions for aspect", "mode *", "reason")
-	h.keys("tab")
-	h.typeText("gaming remnant")
-	h.keys("enter")
-	if got := h.state("mouse"); got != "on" {
-		t.Fatalf("state after invoke: %q", got)
+	h.writeRite("broken", `{"pattern": "Mark I", "aspects": [}`)
+	h.writeData("whole.conf", "kept\n")
+	h.keys("r", "j", "space") // invoke mouse into "on"
+	h.await()
+	if !strings.Contains(h.readData("x.kdl"), "begin of sanctum cursor") {
+		t.Fatalf("the sanctum was not written:\n%s", h.readData("x.kdl"))
 	}
-	st := engine.ReadStatus(h.m.set.Switches["mouse"])
-	if st.Meta["reason"] != "gaming remnant" || st.Meta["mode"] != "hide" {
-		t.Fatalf("meta = %v", st.Meta)
-	}
-	h.mustShow("Rite mouse performed: dormant → on")
-}
-
-func TestInvoke_RequiredMetaClearedShowsError(t *testing.T) {
-	h := newHarness(t)
-	h.keys("enter", "1")
-	h.keys("ctrl+u", "enter", "enter")
-	h.mustShow("The rite falters:", `"mode" is required`)
-}
-
-func TestWizard_CreateRite(t *testing.T) {
-	h := newHarness(t)
-	target := filepath.Join(h.dataDir, "new.conf")
-	h.keys("n")
-	h.mustShow("Consecration of a new rite", "Name of the rite")
-	h.keys("enter")
-	h.mustShow("a rite's name must be")
-	h.typeText("theme")
-	h.keys("tab")
-	h.typeText("Colour scheme")
-	h.keys("tab")
-	for range len("on, off") {
-		h.keys("backspace")
-	}
-	h.typeText("dark, light")
-	h.keys("enter") // to the first vessel page
-	h.mustShow("New vessel", "Vessel (target file)")
-	h.typeText(filepath.Join(h.dataDir, "x.lua"))
-	if ph := h.m.screen.(*wizard).form.fields[2].input.Placeholder; ph != "--" {
-		t.Fatalf("comment placeholder for .lua = %q", ph)
-	}
-	h.keys("ctrl+u")
-	h.typeText(target)
-	h.keys("tab", "tab", "tab", "tab", "space", "tab") // guard, comment, comment_end, create (on), inscriptions
-	h.typeText("reason")
-	h.keys("enter")
-	h.mustShow(`Scripture for aspect "dark"`)
-	h.typeText("scheme = dark")
-	h.keys("ctrl+s")
-	h.mustShow(`Scripture for aspect "light"`)
-	h.typeText("scheme = light")
-	h.keys("tab")
-	h.typeText("sunny")
-	h.keys("enter")
-	h.mustShow(target, "reason")
-	h.keys("tab")
-	h.mustShow("The rite is pure", `"scheme = light"`)
-	h.keys("enter")
-	h.mustShow("The rite theme is consecrated")
-	if _, err := os.Stat(filepath.Join(h.dir, "rites", "theme.json")); err != nil {
-		t.Fatal(err)
-	}
-	sw := h.m.set.Switches["theme"]
-	if sw == nil || !sw.Files[0].Create || sw.Files[0].Values[1].Meta["reason"] != "sunny" {
-		t.Fatalf("saved rite = %+v", sw)
-	}
-	if _, err := engine.Apply(sw, "light", nil, engine.Options{}); err != nil {
-		t.Fatal(err)
-	}
-}
-
-func TestWizard_EditRenameAndValidation(t *testing.T) {
-	h := newHarness(t)
-	h.keys("e")
-	h.mustShow("Amendment of the rite mouse", "Speak the name, purpose and aspects")
-	for range len("mouse") {
-		h.keys("backspace")
-	}
-	h.typeText("cursor")
-	h.keys("enter", "enter", "enter")
-	h.mustShow("The vessels whose sanctums this rite keeps", "x.kdl")
-	h.keys("enter") // edit the vessel
-	h.mustShow("Vessel 1", "settings")
-	h.keys("esc")
-	h.keys("tab")
-	h.mustShow("The rite is pure. Press enter to seal it", "rites/cursor.json")
-	h.keys("enter")
-	h.mustShow("The rite cursor is amended.")
-	if _, err := os.Stat(filepath.Join(h.dir, "rites", "mouse.json")); !os.IsNotExist(err) {
-		t.Fatal("old definition not removed after rename")
-	}
-	if h.m.set.Switches["cursor"] == nil {
-		t.Fatal("renamed rite not loaded")
-	}
-}
-
-func TestWizard_ReviewBlocksInvalidDefinition(t *testing.T) {
-	h := newHarness(t)
-	h.writeRite("other", `{"states":["a"],"files":[{"file":"/other.conf","guard":"cursor","values":[{"state":"a","value":""}]}]}`)
-	h.keys("r", "c") // clone the selected rite ("mouse" sorts before "other")
-	h.mustShow("Consecration of a new rite", "mouse-copy")
-	h.keys("enter", "enter", "enter", "tab")
-	h.mustShow("Heresy detected", `guard "cursor"`)
-	h.keys("enter")
-	h.mustShow("Heresy remains. The rite cannot be sealed.")
-	if _, err := os.Stat(filepath.Join(h.dir, "rites", "mouse-copy.json")); !os.IsNotExist(err) {
-		t.Fatal("invalid definition was saved")
-	}
-	h.keys("esc", "d") // remove the only vessel, then try to continue
-	h.keys("tab")
-	h.mustShow("A rite without vessels is an empty prayer")
-	h.keys("esc", "esc")
-	h.mustShow("The consecration is abandoned.")
-}
-
-func TestDelete_DefinitionAndPurge(t *testing.T) {
-	h := newHarness(t)
-	h.keys("space") // apply "on"
 	h.keys("d")
-	h.mustShow("Excommunicate the rite mouse?", "purge its sanctums from every vessel")
+	h.mustShow("Excommunicate the rite mouse?", "purge its sanctums from every vessel",
+		"transcribed vessels and tethers")
 	h.keys("n")
 	h.mustShow("Mercy is shown. The rite endures.")
 	h.keys("d", "p")
-	h.mustShow("The rite mouse is excommunicated and its sanctums purged.", "The Librarium is empty.")
-	data, _ := os.ReadFile(filepath.Join(h.dataDir, "x.kdl"))
-	if string(data) != "input {}\n" {
-		t.Fatalf("block not purged: %q", data)
+	h.mustShow("The rite mouse is excommunicated and its sanctums purged from 1 vessel", "Rites (1)")
+	if got := h.readData("x.kdl"); got != "input {}\n" {
+		t.Fatalf("the sanctum was not purged: %q", got)
 	}
+	if _, err := os.Stat(filepath.Join(h.dir, "rites", "mouse.json")); !os.IsNotExist(err) {
+		t.Fatal("the scripture still stands")
+	}
+
+	h.keys("d")
+	h.mustShow("Excommunicate the rite broken?")
+	h.mustNotShow("purge its sanctums")
+	h.keys("p")
+	h.mustShow("Excommunicate the rite broken?")
+	h.keys("y")
+	h.mustShow("The rite broken is excommunicated. Its sanctums remain.", "The Librarium is empty.")
 }
 
 func TestFilterHelpAndVerdict(t *testing.T) {
 	h := newHarness(t)
-	h.writeRite("theme", strings.ReplaceAll(sampleRite, `"guard": "cursor"`, `"guard": "theme"`))
+	h.writeRite("theme", strings.ReplaceAll(markRite, `"ward": "cursor"`, `"ward": "theme"`))
+	h.writeRite("lost", strings.ReplaceAll(markRite, "x.kdl", "absent.kdl"))
 	h.keys("r", "/")
 	h.typeText("the")
 	h.mustShow("Rites (1)")
 	h.keys("enter", "esc")
-	h.mustShow("Rites (2)")
+	h.mustShow("Rites (3)")
 	h.keys("?")
-	h.mustShow("Catalogue of Sacred Keys", "excommunicate", "ctrl+s seal")
+	h.mustShow("Catalogue of Sacred Keys", "excommunicate", "words of the last invocation")
 	h.keys("esc", "i")
-	h.mustShow("Verdict of the Inquisition")
+	h.mustShow("Verdict of the Inquisition", "impurity", "lost.json", "no vessel stands at")
 	h.keys("esc", "q")
+}
+
+func TestAmend_MarkIScriptureIsAmendedByHand(t *testing.T) {
+	h := newHarness(t)
+	h.keys("e")
+	h.mustShow("amend it with o")
+	h.keys("c")
+	h.mustShow("amend it with o")
 }
 
 func TestRender_TooSmall(t *testing.T) {

@@ -50,7 +50,7 @@ func (w *wizard) enterRite(m *model) tea.Cmd {
 			if !config.ValidName(s) {
 				return errors.New("a rite's name must be letters, digits, '.', '_' and '-'")
 			}
-			if _, exists := m.set.Files[s]; exists && s != w.d.origName {
+			if _, exists := m.s.Librarium.Scriptures[s]; exists && s != w.d.origName {
 				return errors.New("a rite of this name is already recorded")
 			}
 			return nil

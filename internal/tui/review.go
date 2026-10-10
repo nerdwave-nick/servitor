@@ -97,7 +97,7 @@ func (w *wizard) save(m *model) error {
 		return err
 	}
 	if w.d.origName != "" && w.d.origName != w.d.name {
-		for _, p := range m.set.Files[w.d.origName] {
+		for _, p := range m.s.Librarium.Scriptures[w.d.origName] {
 			if err := os.Remove(p); err != nil && !errors.Is(err, os.ErrNotExist) {
 				return err
 			}

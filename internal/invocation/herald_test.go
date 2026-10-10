@@ -1,6 +1,8 @@
 package invocation
 
 import (
+	"fmt"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -109,5 +111,41 @@ func TestHerald_NilHearsNothingAndHindersNothing(t *testing.T) {
 	out, _ := perform(t, r, Options{Aspect: "on"})
 	if out.Verdict != Reverted || len(out.Deeds) != 3 {
 		t.Fatalf("outcome %+v", out)
+	}
+}
+
+// watcher is a hearer that also watches every real step begin.
+type watcher struct {
+	hearer
+	begun []string
+}
+
+func (w *watcher) Begin(v Verse, step, steps int) {
+	w.begun = append(w.begun, fmt.Sprintf("%d %s %d/%d", v.Number, v.Kind.Key(), step, steps))
+}
+
+func TestWatcher_SeesEveryRealStepBegin(t *testing.T) {
+	fx := newFixture(t)
+	write(t, fx.data, "util.kdl", "", 0o644)
+	r := fx.rite(t, `{"vox-cast": "progress"},
+	  {"sanctum": "$DATA/util.kdl", "scripture": "1"},
+	  {"vox-cast": "progress"},
+	  {"incantation": "true"},
+	  {"incantation": "exit 3"},
+	  {"incantation": "true"},
+	  {"vox-cast": "success"}`)
+	w := &watcher{}
+
+	out, _ := perform(t, r, Options{Aspect: "on", Herald: w})
+
+	if out.Verdict != Reverted {
+		t.Fatalf("verdict %q", out.Verdict)
+	}
+	want := []string{"2 sanctum 1/4", "4 incantation 2/4", "5 incantation 3/4"}
+	if !slices.Equal(w.begun, want) {
+		t.Fatalf("saw begun %q, want %q", w.begun, want)
+	}
+	if len(w.heard) != 3 || w.heard[1].Tidings != Progress || w.heard[2].Tidings != Failure {
+		t.Fatalf("the watcher heard %+v", w.heard)
 	}
 }

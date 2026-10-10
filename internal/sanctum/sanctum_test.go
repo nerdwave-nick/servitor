@@ -132,3 +132,39 @@ func TestIsMarkerLine(t *testing.T) {
 		}
 	}
 }
+
+func TestRemove_UndoesWhatUpsertAppended(t *testing.T) {
+	for _, orig := range []string{"input {}\n", "", "a\nb"} {
+		added, err := Upsert(orig, mouse, "on", "x")
+		if err != nil {
+			t.Fatal(err)
+		}
+		got, err := Remove(added, mouse)
+		if err != nil {
+			t.Fatal(err)
+		}
+		want := orig
+		if want != "" && !strings.HasSuffix(want, "\n") {
+			want += "\n"
+		}
+		if got != want {
+			t.Errorf("Remove(Upsert(%q)) = %q, want %q", orig, got, want)
+		}
+	}
+}
+
+func TestRemove_StrikesOnlyItsOwnSanctum(t *testing.T) {
+	other := Render(Marker{Glyph: "//", Ward: "other"}, "", "off", "y")
+	own := Render(mouse, "  ", "on", "x")
+	in := "a\n\n" + own + "\nb\n" + other + "\n"
+	got, err := Remove(in, mouse)
+	if err != nil || got != "a\n\nb\n"+other+"\n" {
+		t.Fatalf("got %q err %v", got, err)
+	}
+	if same, err := Remove("plain", mouse); err != nil || same != "plain" {
+		t.Fatalf("a vessel without the sanctum must stay as it is: %q %v", same, err)
+	}
+	if _, err := Remove("// +++ begin of sanctum mouse -- aspect|on +++\n", mouse); err == nil {
+		t.Fatal("a sanctum never sealed must be denounced")
+	}
+}

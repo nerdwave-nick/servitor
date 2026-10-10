@@ -1,7 +1,6 @@
 package tui
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -10,9 +9,9 @@ import (
 	tea "charm.land/bubbletea/v2"
 	"charm.land/lipgloss/v2"
 
-	"github.com/nerdwave-nick/servitor/internal/config"
-	"github.com/nerdwave-nick/servitor/internal/engine"
+	"github.com/nerdwave-nick/servitor/internal/augury"
 	"github.com/nerdwave-nick/servitor/internal/lexicon"
+	"github.com/nerdwave-nick/servitor/internal/librarium"
 )
 
 func (m *model) updateOverview(msg tea.Msg) tea.Cmd {
@@ -50,6 +49,8 @@ func (m *model) updateOverview(msg tea.Msg) tea.Cmd {
 		m.screen = newCodexScreen()
 	case "i":
 		m.screen = newTextScreen("Verdict of the Inquisition", m.verdict())
+	case "O":
+		return m.showWords()
 	case "n":
 		return m.openWizard(draft{states: "on, off"})
 	case "enter", "space", "e", "c", "d", "o":
@@ -63,26 +64,23 @@ func (m *model) rowAction(key string, r *row) tea.Cmd {
 	if r == nil {
 		return m.notify(toastInfo, "No rite is chosen. Consecrate one with n.")
 	}
-	if r.sw == nil && key != "d" && key != "o" {
-		return m.notify(toastErr, "This rite is heretical. Purify it with o ($EDITOR) or excommunicate it with d.")
-	}
 	switch key {
-	case "enter":
-		m.screen = newInvokeScreen(m, r.sw)
-	case "space":
-		return m.cycle(r)
-	case "e":
-		return m.openWizard(draftFrom(r.sw))
-	case "c":
-		d := draftFrom(r.sw)
-		d.origName, d.origPath, d.name = "", "", r.name+"-copy"
-		return m.openWizard(d)
 	case "d":
 		m.screen = newDeleteScreen(r)
+		return nil
 	case "o":
 		return m.openEditor(r)
+	case "e", "c":
+		return m.amend(key, r)
 	}
-	return nil
+	if r.rite() == nil {
+		return m.notify(toastErr, "This rite is heretical. Purify it with o ($EDITOR) or excommunicate it with d.")
+	}
+	if key == "enter" {
+		m.screen = newInvokeScreen(r)
+		return nil
+	}
+	return m.cycle(r)
 }
 
 func (m *model) updateFilter(k tea.KeyPressMsg) tea.Cmd {
@@ -111,37 +109,16 @@ func nameOf(r *row) string {
 	return r.name
 }
 
-// cycle applies the aspect after the current one with configured metadata.
+// cycle invokes the aspect after the current one, inscribed by its decrees.
 func (m *model) cycle(r *row) tea.Cmd {
-	next := r.sw.States[0]
-	if cur := r.status.State(); cur != "" {
-		for i, s := range r.sw.States {
-			if s == cur {
-				next = r.sw.States[(i+1)%len(r.sw.States)]
-			}
+	aspects := r.rite().Aspects
+	next := aspects[0]
+	for i, a := range aspects {
+		if a == r.reading.Aspect {
+			next = aspects[(i+1)%len(aspects)]
 		}
 	}
-	return m.perform(r.sw, next, nil)
-}
-
-// perform applies a state and reloads with a toast describing the outcome.
-func (m *model) perform(sw *config.Switch, state string, overrides map[string]string) tea.Cmd {
-	res, err := engine.Apply(sw, state, overrides, engine.Options{})
-	if err != nil {
-		return m.notify(toastErr, "The rite falters: "+err.Error())
-	}
-	prev := res.Previous
-	if prev == "" {
-		prev = "dormant"
-	}
-	changed := 0
-	for _, c := range res.Changes {
-		if c.Changed() {
-			changed++
-		}
-	}
-	m.reload(sw.Name)
-	return m.notify(toastOK, fmt.Sprintf("Rite %s performed: %s → %s · %d vessel(s) sanctified. The Omnissiah is pleased.", sw.Name, prev, state, changed))
+	return m.invoke(r.rite(), next, nil)
 }
 
 func (m *model) openEditor(r *row) tea.Cmd {
@@ -167,28 +144,21 @@ func (m *model) openEditor(r *row) tea.Cmd {
 	})
 }
 
-// verdict renders all diagnostics of the configuration and target files.
+// verdict renders the Inquisition's findings upon the whole Librarium.
 func (m *model) verdict() string {
 	t := m.t
-	diags := append(config.Diagnostics{}, m.set.Diags...)
-	for _, name := range m.set.Names() {
-		diags = append(diags, engine.CheckTargets(m.set.Switches[name])...)
-	}
-	diags.Sort()
-	if len(diags) == 0 {
+	found, _ := m.s.Inquire(nil, false)
+	if len(found) == 0 {
 		return t.ok.Render("No heresy was found. The Emperor protects.")
 	}
 	var b strings.Builder
-	for _, d := range diags {
+	for _, f := range found {
 		sev, st := lexicon.Impurity, t.warn
-		if d.Severity == config.SevError {
+		if f.Severity == librarium.Heresy {
 			sev, st = lexicon.Heresy, t.danger
 		}
-		loc := shortPath(d.File)
-		if d.Line > 0 {
-			loc += fmt.Sprintf(":%d:%d", d.Line, d.Col)
-		}
-		b.WriteString(st.Render(sev) + " " + t.dim.Render(loc) + "\n  " + t.text.Render(d.Message) + "\n")
+		loc := fmt.Sprintf("%s:%d:%d", shortPath(f.Scripture), f.Line, f.Column)
+		b.WriteString(st.Render(sev) + " " + t.dim.Render(loc) + "\n  " + t.text.Render(f.Message) + "\n")
 	}
 	return strings.TrimRight(b.String(), "\n")
 }
@@ -224,7 +194,10 @@ func (m *model) listView(w, h int) string {
 	start := max(0, min(m.cursor-h/2, len(m.rows)-h))
 	for i := start; i < min(len(m.rows), start+h); i++ {
 		r := m.rows[i]
-		glyph, state := m.statusGlyph(r)
+		glyph, state := m.standingGlyph(r.reading.Standing)
+		if r.reading.Aspect != "" {
+			state = t.accent.Render(r.reading.Aspect)
+		}
 		name := truncate(r.name, w-lipgloss.Width(state)-5)
 		gap := max(1, w-3-lipgloss.Width(name)-lipgloss.Width(state))
 		line := " " + glyph + " " + name + strings.Repeat(" ", gap) + state
@@ -236,17 +209,16 @@ func (m *model) listView(w, h int) string {
 	return strings.Join(lines, "\n")
 }
 
-// statusGlyph returns the colored status glyph and state label of a row.
-func (m *model) statusGlyph(r row) (string, string) {
+// standingGlyph returns the colored glyph and name of a standing.
+func (m *model) standingGlyph(s augury.Standing) (string, string) {
 	t := m.t
-	switch {
-	case r.sw == nil:
-		return t.danger.Render(t.glyphBroken), t.danger.Render(lexicon.Heretical)
-	case r.status.Err == nil:
-		return t.ok.Render(t.glyphApplied), t.accent.Render(r.status.State())
-	case errors.Is(r.status.Err, engine.ErrNotApplied):
-		return t.dim.Render(t.glyphDormant), t.dim.Render(lexicon.Dormant)
-	default:
-		return t.warn.Render(t.glyphCorrupt), t.warn.Render(lexicon.Corrupted)
+	switch s {
+	case augury.Performed:
+		return t.ok.Render(t.glyphApplied), t.ok.Render(string(s))
+	case augury.Dormant:
+		return t.dim.Render(t.glyphDormant), t.dim.Render(string(s))
+	case augury.Heretical:
+		return t.danger.Render(t.glyphBroken), t.danger.Render(string(s))
 	}
+	return t.warn.Render(t.glyphCorrupt), t.warn.Render(string(s))
 }
