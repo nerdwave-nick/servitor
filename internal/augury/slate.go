@@ -56,7 +56,8 @@ func ReadSlate(env librarium.Environment, rite string) (*Slate, error) {
 	}
 	var s Slate
 	if err := json.Unmarshal(data, &s); err != nil {
-		return nil, fmt.Errorf("the data-slate %s is garbled beyond the servitor's reading: %v", p, err)
+		return nil, fmt.Errorf("the data-slate %s is garbled beyond the servitor's reading; strike it, and the "+
+			"next invocation will inscribe it anew", p)
 	}
 	return &s, nil
 }

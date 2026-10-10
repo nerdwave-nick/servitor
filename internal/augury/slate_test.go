@@ -4,6 +4,7 @@ import (
 	"maps"
 	"os"
 	"path/filepath"
+	"regexp"
 	"testing"
 	"time"
 
@@ -86,8 +87,12 @@ func TestReadSlate_DenouncesAGarbledSlate(t *testing.T) {
 	if err := os.WriteFile(p, []byte("{not binharic"), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	if s, err := ReadSlate(env, "theme"); err == nil {
-		t.Errorf("a garbled slate was read: %+v", s)
+	s, err := ReadSlate(env, "theme")
+	if err == nil {
+		t.Fatalf("a garbled slate was read: %+v", s)
+	}
+	if plain := regexp.MustCompile(`(?i)\b(invalid|error|character|looking|unexpected)\b`).FindString(err.Error()); plain != "" {
+		t.Errorf("%q speaks the plain word %q", err, plain)
 	}
 }
 
