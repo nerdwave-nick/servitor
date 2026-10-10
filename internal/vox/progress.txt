@@ -1,0 +1,34 @@
+# +++ Vox-casts of progress +++
+# One template per line; blank lines and lines starting with "#" are ignored.
+# Each describes the real step performed last ({{step.kind}}, {{step.target}});
+# the herald adds "step x / n" itself.
+The {{step.kind}} upon {{step.target}} is fulfilled. The Omnissiah watches.
+Verse fulfilled: the {{step.kind}} at {{step.target}} bends to the will of the Machine God.
+{{step.target}} is sanctified by {{step.kind}}. The liturgy continues.
+The machine spirit of {{step.target}} accepts the {{step.kind}}.
+Incense burns; the {{step.kind}} upon {{step.target}} is complete.
+A {{step.kind}} is performed upon {{step.target}}. Praise the Omnissiah.
+The servitor reports: {{step.kind}} rendered unto {{step.target}}.
+The binharic chant concludes; {{step.target}} now bears the {{step.kind}} of {{aspect}}.
+The {{step.kind}} is spoken. {{step.target}} obeys.
+The cogs turn: {{step.kind}} upon {{step.target}} is done, and {{aspect}} draws nearer.
+The tech-priests nod; the {{step.kind}} at {{step.target}} holds true.
+Blessed be the {{step.kind}} that touched {{step.target}}.
+One more verse of {{rite.name}} is sung: {{step.kind}} upon {{step.target}}.
+The noosphere hums. {{step.target}} has received its {{step.kind}}.
+Sacred unguents are applied; the {{step.kind}} of {{step.target}} is sealed.
+The {{step.kind}} rings true through {{step.target}}. Onward, in the name of the Machine God.
+{{step.target}} is drawn into the aspect {{aspect}} by {{step.kind}}.
+The servo-skull records: {{step.kind}} performed upon {{step.target}}.
+The rite {{rite.name}} advances; its {{step.kind}} upon {{step.target}} is accepted.
+Hymns of maintenance echo; the {{step.kind}} at {{step.target}} is complete.
+The cogitator notes a pious deed: {{step.kind}} upon {{step.target}}.
+With reverence, the {{step.kind}} at {{step.target}} has been made whole.
+The Motive Force flows through {{step.target}}; the {{step.kind}} is done.
+The {{step.kind}} is consummated. {{step.target}} remembers its new purpose.
+Rejoice: the {{step.kind}} upon {{step.target}} has not angered the machine spirit.
+The liturgy of {{rite.name}} proceeds past the {{step.kind}} of {{step.target}}.
+Mechadendrites withdraw from {{step.target}}; the {{step.kind}} holds.
+The {{step.kind}} upon {{step.target}} is inscribed into the data-stacks.
+Another rune is turned: {{step.kind}} at {{step.target}}, done in the Omnissiah's sight.
+The sacred {{step.kind}} has passed through {{step.target}} unscathed.
