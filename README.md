@@ -16,11 +16,6 @@ servitor augury mouse-autohide-toggle                        # {"state": "off", 
 servitor augury mouse-autohide-toggle --is on || echo "the cursor walks unveiled"
 ```
 
-Those whose spirits are too weak for the liturgy may pass `--no-grimdark` (or
-set `SERVITOR_NO_GRIMDARK=1`). The servitor then speaks of *switches*, *states*,
-*files* and *metadata* like any heretic tool. The Omnissiah judges no one.
-Mostly.
-
 ## The Sanctum
 
 ```kdl
@@ -47,7 +42,7 @@ There are no entry or exit commands. What happens after a rite is your
 scripts' business. That is what the augury is for:
 
 ```sh
-servitor invoke mouse-autohide-toggle on -q && notify-send "The rite is performed"
+servitor invoke mouse-autohide-toggle on -s && notify-send "The rite is performed"
 [ "$(servitor augury mouse-autohide-toggle state)" = on ] && notify-send "The cursor is veiled"
 ```
 
@@ -95,7 +90,6 @@ vessels with their sanctum state), and the Thought for the Day below.
 | `i` | the verdict of the Inquisition |
 | `/` | filter |
 | `r` | re-read the Librarium |
-| `t` | toggle the liturgy |
 | `?` | lore |
 | `q` | retreat |
 
@@ -110,7 +104,7 @@ page and `esc` steps back.
 ## The Librarium
 
 Rites dwell in `$XDG_CONFIG_HOME/servitor` (`~/.config/servitor`). Point
-elsewhere with `--config <dir>` / `-c <dir>` or `SERVITOR_CONFIG`; the rune
+elsewhere with `--librarium <dir>` / `-l <dir>` or `SERVITOR_LIBRARIUM`; the rune
 outranks the environment.
 
 Each rite is one file: `<config>/rites/<name>.json` (or `.jsonc`; `switches/`
@@ -153,13 +147,13 @@ See [`examples/rites/mouse-autohide-toggle.json`](examples/rites/mouse-autohide-
 
 | Ritual | Purpose |
 |---|---|
-| `servitor invoke <rite> <aspect> [--<key> v] [-n] [-q]` | Perform an aspect. `-n/--dry-run` divines the diff without touching a vessel; `-q` performs in reverent silence. `servitor invoke <rite> --help` reveals its aspects, vessels and runes. |
+| `servitor invoke <rite> <aspect> [--<key> v] [-f] [-s]` | Perform an aspect. `-f/--foresee` divines the diff without touching a vessel; `-s/--silence` performs in reverent silence. `servitor invoke <rite> --help` reveals its aspects, vessels and runes. |
 | `servitor augury <rite>` | The inscriptions as JSON, `state` first. |
 | `servitor augury <rite> <key>` | One inscription (an empty line when uninscribed). |
 | `servitor augury <rite> --is <aspect>` | Exit 0 if the rite stands in that aspect, 1 if not. |
 | `servitor augury <rite> --per-file` | Every vessel's sanctum as JSON (presence, inscriptions, taint). |
-| `servitor census [--json]` | All rites and the aspects they stand in. |
-| `servitor inquisition [rite…] [--json] [--no-files]` | Purge heresy from rites and vessels. |
+| `servitor census [--binharic]` | All rites and the aspects they stand in. |
+| `servitor inquisition [rite…] [--binharic] [--spare-vessels]` | Purge heresy from rites and vessels. |
 | `servitor cogitator` | The interactive shrine (also the default). |
 | `servitor completion bash\|zsh\|fish` | Engrave completion litanies. |
 
@@ -173,8 +167,8 @@ any is found. Impurities are noted but forgiven. It purges:
 
 * malformed JSON, unknown or mistyped fields
 * missing, duplicated or undeclared aspects; aspects without scripture
-* undeclared, malformed or reserved inscriptions (`state`, `help`, `config`,
-  `dry-run`, `quiet`, `version`)
+* undeclared, malformed or reserved inscriptions (`state`, `help`, `librarium`,
+  `foresee`, `silence`, `version`)
 * rites whose names clash (`rites/x.json` beside `switches/x.jsonc`) and wards
   claimed twice in the same vessel
 * vessels: missing (unless `create`), sanctums with broken or duplicated wards

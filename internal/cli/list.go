@@ -24,50 +24,53 @@ type listEntry struct {
 
 func (a *app) newListCmd() *cobra.Command {
 	var asJSON bool
-	l := a.lex
 	cmd := &cobra.Command{
-		Use:     l.Cmd.List,
-		Aliases: aliases(l, "census", "list", "ls"),
-		Short:   l.P("Take a census of all rites and the aspects they stand in", "List configured switches and their current state"),
-		Args:    cobra.NoArgs,
+		Use:   "census",
+		Short: "Take a census of all rites and the aspects they stand in",
+		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			entries := a.listEntries()
 			if asJSON {
 				return writeJSON(cmd.OutOrStdout(), entries)
 			}
 			if len(entries) == 0 {
-				fmt.Fprintln(cmd.ErrOrStderr(), l.P(
-					fmt.Sprintf("The Librarium at %s holds no rites. Consecrate one in the cogitator (servitor).", a.set.Dir),
-					fmt.Sprintf("no switches found in %s (create one in the TUI: servitor)", a.set.Dir)))
+				fmt.Fprintf(cmd.ErrOrStderr(), "The Librarium at %s holds no rites. Consecrate one in the cogitator (servitor).\n", a.set.Dir)
 				return nil
 			}
 			tw := tabwriter.NewWriter(cmd.OutOrStdout(), 0, 4, 2, ' ', 0)
-			fmt.Fprintln(tw, strings.ToUpper(strings.Join([]string{l.Switch, l.State, l.States, l.Description}, "\t")))
+			fmt.Fprintln(tw, "RITE\tASPECT\tASPECTS\tPURPOSE")
 			for _, e := range entries {
 				state := e.State
 				if state == "" {
-					state = "(" + statusLabel(l, e.Status) + ")"
+					state = "(" + statusLabel(e.Status) + ")"
 				}
 				fmt.Fprintf(tw, "%s\t%s\t%s\t%s\n", e.Name, state, strings.Join(e.States, "|"), e.Description)
 			}
 			return tw.Flush()
 		},
 	}
-	cmd.Flags().BoolVar(&asJSON, "json", false, l.P("render the census as JSON for lesser machines", "print as JSON"))
+	binharicRunes(cmd, &asJSON, "render the census in binharic for lesser machines")
 	return cmd
 }
 
-func statusLabel(l *lexicon.Lexicon, status string) string {
+func statusLabel(status string) string {
 	switch status {
 	case "applied":
-		return l.Applied
+		return lexicon.Performed
 	case "not-applied":
-		return l.NotApplied
+		return lexicon.Dormant
 	case "inconsistent":
-		return l.Inconsistent
+		return lexicon.Corrupted
 	default:
-		return l.Broken
+		return lexicon.Heretical
 	}
+}
+
+// binharicRunes registers --binharic and its hidden alias --json on cmd.
+func binharicRunes(cmd *cobra.Command, v *bool, usage string) {
+	cmd.Flags().BoolVar(v, "binharic", false, usage)
+	cmd.Flags().BoolVar(v, "json", false, usage)
+	_ = cmd.Flags().MarkHidden("json")
 }
 
 func (a *app) listEntries() []listEntry {
@@ -88,7 +91,7 @@ func (a *app) listEntries() []listEntry {
 	}
 	for name := range a.set.Broken {
 		entries = append(entries, listEntry{Name: name, Status: "invalid",
-			Description: a.lex.P("tainted by heresy, summon the Inquisition", "configuration errors, run 'servitor verify'")})
+			Description: "tainted by heresy, summon the Inquisition"})
 	}
 	sort.Slice(entries, func(i, j int) bool { return entries[i].Name < entries[j].Name })
 	return entries

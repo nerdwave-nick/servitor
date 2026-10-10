@@ -2,6 +2,7 @@
 package cli
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -14,12 +15,11 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/nerdwave-nick/servitor/internal/config"
-	"github.com/nerdwave-nick/servitor/internal/lexicon"
 	"github.com/nerdwave-nick/servitor/internal/tui"
 )
 
-// EnvConfig is the environment variable overriding the config directory.
-const EnvConfig = "SERVITOR_CONFIG"
+// EnvLibrarium is the environment variable naming the Librarium.
+const EnvLibrarium = "SERVITOR_LIBRARIUM"
 
 // ExitError carries a specific process exit code. A nil Err exits silently.
 type ExitError struct {
@@ -38,154 +38,123 @@ func (e *ExitError) Unwrap() error { return e.Err }
 
 type app struct {
 	configDir string
-	noGrim    bool
 	set       *config.Set
-	lex       *lexicon.Lexicon
-	switchCmd *cobra.Command // parent of the per-switch subcommands
+	switchCmd *cobra.Command // parent of the per-rite subcommands
 }
 
-// runTUI starts the interactive interface; replaced in tests.
-var runTUI = func(dir string, lex *lexicon.Lexicon) error {
-	return tui.Run(tui.Options{Dir: dir, Lex: lex})
+// runTUI awakens the cogitator; replaced in tests.
+var runTUI = func(dir string) error {
+	return tui.Run(tui.Options{Dir: dir})
 }
 
-// isTerminal reports whether the TUI can run; replaced in tests.
+// isTerminal reports whether the cogitator can run; replaced in tests.
 var isTerminal = func() bool {
 	return term.IsTerminal(os.Stdin.Fd()) && term.IsTerminal(os.Stdout.Fd())
 }
 
 // NewRootCmd builds the command tree. args are the command line arguments
-// (without the program name); they are inspected up front so that switches
-// from a --config directory become subcommands and the vocabulary is known.
+// (without the program name); they are inspected up front so that the rites
+// of a --librarium directory become subcommands.
 func NewRootCmd(args []string, stdout, stderr io.Writer) *cobra.Command {
-	a := &app{configDir: resolveConfigDir(args), lex: lexicon.Get(lexicon.Detect(args))}
+	a := &app{configDir: resolveConfigDir(args)}
 	a.set = config.Load(a.configDir)
-	l := a.lex
 
 	root := &cobra.Command{
-		Use: "servitor",
-		Short: l.P("A thrall of the Adeptus Mechanicus that performs rites upon your config files",
-			"Switch managed blocks in files between configured states"),
-		Long:          rootLong(l),
-		Example:       rootExample(l),
+		Use:           "servitor",
+		Short:         "A thrall of the Adeptus Mechanicus that performs rites upon your config files",
+		Long:          rootLong,
+		Example:       rootExample,
 		Version:       version(),
-		Args:          cobra.NoArgs,
+		Args:          unknownRitual,
 		SilenceUsage:  true,
 		SilenceErrors: true,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			if !isTerminal() {
 				return cmd.Help()
 			}
-			return runTUI(a.set.Dir, a.lex)
+			return runTUI(a.set.Dir)
 		},
 	}
 	root.SetOut(stdout) // before flavor: the completion command captures its writer
 	root.SetErr(stderr)
-	root.SetVersionTemplate(l.P("servitor, pattern {{.Version}} — blessed be the Omnissiah\n", "servitor version {{.Version}}\n"))
-	root.PersistentFlags().StringVarP(&a.configDir, "config", "c", a.configDir,
-		l.P("path to the Librarium where rites are kept", "configuration directory")+" (env "+EnvConfig+")")
-	_ = root.MarkPersistentFlagDirname("config")
-	root.PersistentFlags().BoolVar(&a.noGrim, lexicon.FlagNoGrimdark, !l.Grimdark,
-		l.P("forsake the liturgy and speak like a heretic adept (env "+lexicon.EnvNoGrimdark+")",
-			"use plain vocabulary instead of the Warhammer 40k theme (env "+lexicon.EnvNoGrimdark+")"))
+	root.SetVersionTemplate("servitor, pattern {{.Version}} — blessed be the Omnissiah\n")
+	root.PersistentFlags().StringVarP(&a.configDir, "librarium", "l", a.configDir,
+		"path to the Librarium where rites are kept (env "+EnvLibrarium+")")
+	_ = root.MarkPersistentFlagDirname("librarium")
 	root.SetFlagErrorFunc(func(cmd *cobra.Command, err error) error {
-		return fmt.Errorf("%w\n%s", err, l.P("Consult '"+cmd.CommandPath()+" --help' for the proper liturgy",
-			"Run '"+cmd.CommandPath()+" --help' for usage"))
+		return fmt.Errorf("%s\nConsult '%s --help' for the proper liturgy", runeError(err), cmd.CommandPath())
 	})
 	root.AddCommand(a.newSwitchCmd(), a.newMetaCmd(), a.newListCmd(), a.newVerifyCmd(), a.newTUICmd())
-	a.flavor(root)
+	flavor(root)
 	return root
 }
 
 func (a *app) newTUICmd() *cobra.Command {
-	l := a.lex
 	return &cobra.Command{
-		Use:     l.Cmd.TUI,
-		Aliases: aliases(l, "cogitator", "tui", "ui"),
-		Short:   l.P("Awaken the cogitator, the interactive shrine of rites", "Open the interactive TUI"),
-		Long: l.P(`Awaken the cogitator: survey every rite of the Librarium, invoke aspects,
+		Use:   "cogitator",
+		Short: "Awaken the cogitator, the interactive shrine of rites",
+		Long: `Awaken the cogitator: survey every rite of the Librarium, invoke aspects,
 consecrate new rites, amend or excommunicate old ones. Press ? within for the
-full catalogue of keys. Also awakened by invoking servitor without a command.`,
-			`Open the interactive TUI: an overview of all switches with their state, and
-guided menus to apply, create, edit and delete them. Press ? inside for all
-key bindings. Also started by running servitor without a command.`),
+full catalogue of keys. Also awakened by invoking servitor without a ritual.`,
 		Args: cobra.NoArgs,
-		RunE: func(*cobra.Command, []string) error { return runTUI(a.set.Dir, a.lex) },
+		RunE: func(*cobra.Command, []string) error { return runTUI(a.set.Dir) },
 	}
 }
 
-// aliases returns all names of a command except the primary one, which is
-// the first name in grimdark mode and the second one otherwise.
-func aliases(l *lexicon.Lexicon, names ...string) []string {
-	primary := names[0]
-	if !l.Grimdark {
-		primary = names[1]
+// unknownRitual rejects arguments to the servitor itself: whatever was
+// spoken is no ritual it knows.
+func unknownRitual(cmd *cobra.Command, args []string) error {
+	if len(args) == 0 {
+		return nil
 	}
-	var out []string
-	for _, n := range names {
-		if n != primary {
-			out = append(out, n)
-		}
+	msg := fmt.Sprintf("unknown ritual %q for %q", args[0], cmd.CommandPath())
+	if s := cmd.SuggestionsFor(args[0]); len(s) > 0 {
+		msg += "\n\nPerhaps you sought:\n\t" + strings.Join(s, "\n\t")
 	}
-	return out
+	return errors.New(msg)
 }
 
-// flavor applies the vocabulary to cobra's built-in texts.
-func (a *app) flavor(root *cobra.Command) {
-	l := a.lex
-	root.SetUsageTemplate(flavorUsage(l, root.UsageTemplate()))
-	root.InitDefaultHelpCmd()
-	root.InitDefaultCompletionCmd()
-	root.InitDefaultVersionFlag()
-	if f := root.Flags().Lookup("version"); f != nil {
-		f.Usage = l.P("reveal the pattern of this servitor", "version for servitor")
-	}
-	for _, c := range root.Commands() {
-		switch c.Name() {
-		case "help":
-			c.Short = l.P("Consult the lore of any ritual", c.Short)
-		case "completion":
-			c.Short = l.P("Engrave completion litanies into your shell", c.Short)
-			for _, sub := range c.Commands() {
-				sub.Short = l.P("Engrave the completion litany for "+sub.Name(), sub.Short)
-			}
-		}
-	}
-	var walk func(*cobra.Command)
-	walk = func(c *cobra.Command) {
-		c.InitDefaultHelpFlag()
-		if f := c.Flags().Lookup("help"); f != nil {
-			f.Usage = l.P("reveal the lore of "+c.Name(), "help for "+c.Name())
-		}
-		for _, sub := range c.Commands() {
-			walk(sub)
-		}
-	}
-	walk(root)
+// runeError speaks the complaints of the rune parser in the liturgy.
+func runeError(err error) string {
+	return strings.NewReplacer(
+		"unknown shorthand flag", "unknown rune",
+		"unknown flag", "unknown rune",
+		"flag needs an argument", "the rune demands a value",
+		"bad flag syntax", "malformed rune",
+		"invalid argument", "unworthy value",
+		`" flag:`, `" rune:`,
+	).Replace(err.Error())
 }
 
 // Execute runs the CLI and returns the process exit code.
 func Execute(args []string, stdout, stderr io.Writer) int {
-	root := NewRootCmd(args, stdout, stderr)
+	var completion bytes.Buffer
+	out := stdout
+	if isCompletionRequest(args) {
+		out = &completion
+	}
+	root := NewRootCmd(args, out, stderr)
 	root.SetArgs(args)
 	err := root.Execute()
+	if out == &completion {
+		writeCompletion(stdout, completion.String(), concealsHelp(root, args))
+	}
 	if err == nil {
 		return 0
 	}
-	prefix := lexicon.Get(lexicon.Detect(args)).P("servitor ✠ ", "servitor: ")
 	var ee *ExitError
 	if errors.As(err, &ee) {
 		if ee.Err != nil {
-			fmt.Fprintln(stderr, prefix+ee.Err.Error())
+			fmt.Fprintln(stderr, "servitor ✠ "+ee.Err.Error())
 		}
 		return ee.Code
 	}
-	fmt.Fprintln(stderr, prefix+err.Error())
+	fmt.Fprintln(stderr, "servitor ✠ "+err.Error())
 	return 1
 }
 
-// resolveConfigDir finds the config directory from the last --config/-c in
-// args (matching pflag semantics), then $SERVITOR_CONFIG, then the XDG default.
+// resolveConfigDir finds the Librarium from the last --librarium/-l in args
+// (matching pflag semantics), then $SERVITOR_LIBRARIUM, then the XDG default.
 func resolveConfigDir(args []string) string {
 	dir := ""
 	for i := 0; i < len(args); i++ {
@@ -193,19 +162,19 @@ func resolveConfigDir(args []string) string {
 		switch {
 		case arg == "--":
 			i = len(args)
-		case arg == "--config" || arg == "-c":
+		case arg == "--librarium" || arg == "-l":
 			if i+1 < len(args) {
 				i++
 				dir = args[i]
 			}
-		case strings.HasPrefix(arg, "--config="):
-			dir = strings.TrimPrefix(arg, "--config=")
-		case strings.HasPrefix(arg, "-c") && !strings.HasPrefix(arg, "--") && len(arg) > 2:
+		case strings.HasPrefix(arg, "--librarium="):
+			dir = strings.TrimPrefix(arg, "--librarium=")
+		case strings.HasPrefix(arg, "-l") && !strings.HasPrefix(arg, "--") && len(arg) > 2:
 			dir = strings.TrimPrefix(arg[2:], "=")
 		}
 	}
 	if dir == "" {
-		dir = os.Getenv(EnvConfig)
+		dir = os.Getenv(EnvLibrarium)
 	}
 	if dir == "" {
 		return config.DefaultDir()

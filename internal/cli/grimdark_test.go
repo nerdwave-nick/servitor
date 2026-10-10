@@ -1,129 +1,148 @@
 package cli
 
 import (
+	"regexp"
 	"strings"
 	"testing"
-
-	"github.com/nerdwave-nick/servitor/internal/lexicon"
 )
 
-func grimEnv(t *testing.T) *env {
-	t.Helper()
+func TestRootHelpAndVersion(t *testing.T) {
 	e := newEnv(t)
-	e.grim = true
-	return e
-}
-
-func TestGrimdark_IsTheDefaultVocabulary(t *testing.T) {
-	e := grimEnv(t)
 	help := e.mustRun("--help")
 	for _, want := range []string{
-		"+++ SERVITOR", "Sanctioned Rituals:", "Runes:", "Exempla:",
-		"invoke", "augury", "census", "inquisition", "cogitator", "--no-grimdark",
-		"reveal the lore of servitor",
+		"+++ SERVITOR", "begin servitor managed", "Sanctioned Rituals:", "Runes:", "Exempla:",
+		"invoke", "augury", "census", "inquisition", "cogitator", "completion",
+		"-l, --librarium", "SERVITOR_LIBRARIUM",
 	} {
 		if !strings.Contains(help, want) {
-			t.Errorf("grimdark help missing %q", want)
+			t.Errorf("root help missing %q", want)
 		}
 	}
-	if sub := e.mustRun("census", "--help"); !strings.Contains(sub, "Universal Runes:") || !strings.Contains(sub, "Also Known As:") {
-		t.Errorf("subcommand help not flavored:\n%s", sub)
+	for _, unwanted := range []string{"no-grimdark", "NO_GRIMDARK", "--config", "SERVITOR_CONFIG", "Available Commands:"} {
+		if strings.Contains(help, unwanted) {
+			t.Errorf("root help still speaks of %q", unwanted)
+		}
+	}
+	if sub := e.mustRun("census", "--help"); !strings.Contains(sub, "Universal Runes:") || !strings.Contains(sub, "--binharic") {
+		t.Errorf("census help not flavored:\n%s", sub)
 	}
 	if out := e.mustRun("--version"); !strings.Contains(out, "blessed be the Omnissiah") {
 		t.Fatalf("version: %q", out)
 	}
 }
 
-func TestGrimdark_PlainModeViaFlagAndEnv(t *testing.T) {
-	e := grimEnv(t)
-	plainHelp := e.mustRun("--no-grimdark", "--help")
-	if strings.Contains(plainHelp, "Sanctioned Rituals") || !strings.Contains(plainHelp, "Available Commands:") {
-		t.Fatal("--no-grimdark did not select plain vocabulary")
+// TestHelpAliases_WorkButStayHidden: help, -h and --help reveal the lore but
+// are named neither in listings nor in completion.
+func TestHelpAliases_WorkButStayHidden(t *testing.T) {
+	e := newEnv(t)
+	root := e.mustRun("--help")
+	if got := e.mustRun("-h"); got != root {
+		t.Error("-h must match --help")
 	}
-	t.Setenv(lexicon.EnvNoGrimdark, "1")
-	if got := e.mustRun("--help"); got != plainHelp {
-		t.Fatal("SERVITOR_NO_GRIMDARK=1 should match --no-grimdark")
+	if got := e.mustRun("help"); got != root {
+		t.Error("help must match --help")
 	}
-	if got := e.mustRun("--no-grimdark=false", "--help"); !strings.Contains(got, "Sanctioned Rituals") {
-		t.Fatal("--no-grimdark=false must override the environment")
+	census := e.mustRun("census", "--help")
+	if got := e.mustRun("help", "census"); got != census {
+		t.Error("help census must match census --help")
+	}
+	listedHelp := regexp.MustCompile(`(?m)^\s+help\s`)
+	helpRune := regexp.MustCompile(`(?m)^\s+(-h, )?--help\b`)
+	for _, args := range [][]string{{"--help"}, {"census", "--help"}, {"invoke", "--help"},
+		{"invoke", "mouse-autohide-toggle", "--help"}, {"completion", "--help"}} {
+		out := e.mustRun(args...)
+		if listedHelp.MatchString(out) || helpRune.MatchString(out) {
+			t.Errorf("%v lists a help alias:\n%s", args, out)
+		}
+	}
+	for _, args := range [][]string{{""}, {"h"}, {"-"}, {"--"}, {"census", "-"}, {"inquisition", "--"},
+		{"invoke", "mouse-autohide-toggle", "on", "--"}, {"augury", "mouse-autohide-toggle", "--"}} {
+		got, _ := e.complete(args...)
+		for _, c := range got {
+			if c == "help" || c == "-h" || c == "--help" || c == "--json" {
+				t.Errorf("completion %v offers hidden alias %q: %v", args, c, got)
+			}
+		}
 	}
 }
 
-func TestGrimdark_CommandNamesWorkInBothModes(t *testing.T) {
-	e := grimEnv(t)
-	out := e.mustRun("invoke", "mouse-autohide-toggle", "on", "--reason", "for the Emperor")
-	if !strings.Contains(out, "+++ Rite mouse-autohide-toggle performed: (dormant) → on +++") ||
-		!strings.Contains(out, "sanctified") || !strings.Contains(out, "The Omnissiah is pleased.") {
-		t.Fatalf("grimdark summary:\n%s", out)
+// TestPlainNames_AreUnknown: the forsaken plain rituals and runes are no
+// longer understood.
+func TestPlainNames_AreUnknown(t *testing.T) {
+	e := newEnv(t)
+	for _, name := range []string{"switch", "profile", "sw", "meta", "list", "ls", "verify", "check", "validate", "tui", "ui"} {
+		_, errOut, code := e.run(name, "mouse-autohide-toggle", "on")
+		if code == 0 || !strings.Contains(errOut, `servitor ✠ unknown ritual "`+name+`"`) {
+			t.Errorf("%s: code=%d stderr=%q", name, code, errOut)
+		}
 	}
-	e.mustRun("switch", "mouse-autohide-toggle", "off", "-q")
-	if got := e.mustRun("augury", "mouse-autohide-toggle", "state"); got != "off\n" {
-		t.Fatalf("augury = %q", got)
+	runes := [][]string{
+		{"--no-grimdark", "census"},
+		{"census", "--no-grimdark"},
+		{"--config", e.cfgDir, "census"},
+		{"inquisition", "--no-files"},
+		{"invoke", "mouse-autohide-toggle", "on", "--dry-run"},
+		{"invoke", "mouse-autohide-toggle", "on", "--quiet"},
 	}
-	e.grim = false
-	if got := e.mustRun("augury", "mouse-autohide-toggle", "state"); got != "off\n" {
-		t.Fatalf("grimdark name in plain mode = %q", got)
+	for _, args := range runes {
+		_, errOut, code := e.run(args...)
+		if code == 0 || !strings.Contains(errOut, "unknown rune: ") || strings.Contains(errOut, "unknown flag") {
+			t.Errorf("%v: code=%d stderr=%q", args, code, errOut)
+		}
 	}
-	if got := e.mustRun("census"); !strings.Contains(got, "SWITCH") {
-		t.Fatalf("census alias in plain mode:\n%s", got)
+	for _, args := range [][]string{{"invoke", "mouse-autohide-toggle", "on", "-n"}, {"invoke", "mouse-autohide-toggle", "on", "-q"}, {"-c", "x", "census"}} {
+		if _, errOut, code := e.run(args...); code == 0 || !strings.Contains(errOut, "unknown rune") {
+			t.Errorf("%v: code=%d stderr=%q", args, code, errOut)
+		}
+	}
+	if e.targetContent() != "input {}\n" {
+		t.Fatal("vessel modified by forsaken runes")
+	}
+	got, _ := e.complete("")
+	for _, c := range got {
+		if strings.Contains(" switch profile sw meta list ls verify check validate tui ui ", " "+c+" ") {
+			t.Errorf("completion offers plain ritual %q", c)
+		}
 	}
 }
 
-func TestGrimdark_Messages(t *testing.T) {
-	e := grimEnv(t)
+func TestPlainVocabulary_EnvironmentIsIgnored(t *testing.T) {
+	e := newEnv(t)
+	want := e.mustRun("--help")
+	t.Setenv("SERVITOR_NO_GRIMDARK", "1")
+	if got := e.mustRun("--help"); got != want {
+		t.Fatal("SERVITOR_NO_GRIMDARK must change nothing")
+	}
 	if got := e.mustRun("census"); !strings.Contains(got, "RITE") || !strings.Contains(got, "(dormant)") {
 		t.Fatalf("census:\n%s", got)
 	}
-	_, errOut, code := e.run("invoke", "mouse-autohide-toggle", "maybe")
-	if code == 0 || !strings.Contains(errOut, `servitor ✠ the rite "mouse-autohide-toggle" knows no aspect "maybe"`) {
-		t.Fatalf("unknown aspect: %q", errOut)
-	}
-	_, errOut, _ = e.run("augury", "mouse-autohide-toggle")
-	if !strings.Contains(errOut, "lies dormant") {
-		t.Fatalf("dormant augury: %q", errOut)
-	}
-	_, errOut, _ = e.run("invoke", "mouse-autohide", "on")
-	if !strings.Contains(errOut, "no rite named") || !strings.Contains(errOut, "Perhaps you sought:") {
-		t.Fatalf("unknown rite: %q", errOut)
-	}
-	e.addSwitch("rites/heretic.json", `{"states": ["x"], "files": [{"file": "/x", "values": []}]}`)
-	out, errOut, code := e.run("inquisition")
-	if code != 1 || !strings.Contains(out, ": heresy: ") || !strings.Contains(errOut, "+++ The Inquisition examined 2 rite(s)") {
-		t.Fatalf("inquisition: code=%d out=%q err=%q", code, out, errOut)
-	}
-	out = e.mustRun("invoke", "mouse-autohide-toggle", "on", "--dry-run")
-	if !strings.Contains(out, "The augury foresees changes to") {
-		t.Fatalf("dry run: %s", out)
-	}
 }
 
-func TestRoot_StartsTUIOnlyOnTerminal(t *testing.T) {
-	e := grimEnv(t)
+func TestRoot_StartsCogitatorOnlyOnTerminal(t *testing.T) {
+	e := newEnv(t)
 	var gotDir string
-	var gotGrim bool
 	origRun, origTerm := runTUI, isTerminal
 	t.Cleanup(func() { runTUI, isTerminal = origRun, origTerm })
-	runTUI = func(dir string, lex *lexicon.Lexicon) error {
-		gotDir, gotGrim = dir, lex.Grimdark
+	runTUI = func(dir string) error {
+		gotDir = dir
 		return nil
 	}
 
 	isTerminal = func() bool { return false }
 	if out := e.mustRun(); !strings.Contains(out, "Sanctioned Rituals") || gotDir != "" {
-		t.Fatal("without a terminal servitor must print help, not start the TUI")
+		t.Fatal("without a terminal servitor must print help, not awaken the cogitator")
 	}
 	isTerminal = func() bool { return true }
 	e.mustRun()
-	if gotDir != e.cfgDir || !gotGrim {
-		t.Fatalf("TUI not started with config dir: %q grim=%v", gotDir, gotGrim)
+	if gotDir != e.cfgDir {
+		t.Fatalf("cogitator not awakened with the Librarium: %q", gotDir)
 	}
 	gotDir = ""
-	e.grim = false
-	e.mustRun("tui")
-	if gotDir != e.cfgDir || gotGrim {
-		t.Fatalf("tui command: %q grim=%v", gotDir, gotGrim)
+	e.mustRun("cogitator")
+	if gotDir != e.cfgDir {
+		t.Fatalf("cogitator ritual: %q", gotDir)
 	}
-	if _, errOut, code := e.run("bogus"); code == 0 || !strings.Contains(errOut, "unknown command") {
-		t.Fatalf("unknown command: %d %q", code, errOut)
+	if _, errOut, code := e.run("bogus"); code == 0 || !strings.Contains(errOut, `unknown ritual "bogus"`) {
+		t.Fatalf("unknown ritual: %d %q", code, errOut)
 	}
 }

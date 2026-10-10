@@ -8,26 +8,18 @@ import (
 	"charm.land/lipgloss/v2"
 )
 
-// palette holds the colors of one vocabulary.
+// palette holds the colors of the cogitator.
 type palette struct {
 	accent, text, dim, border, ok, warn, danger, barBg, barFg, selBg color.Color
 }
 
-var (
-	// Crimson, brass and bone: the colors of the forge.
-	grimPalette = palette{
-		accent: lipgloss.Color("#D4A62A"), text: lipgloss.Color("#E8DCC4"), dim: lipgloss.Color("#8C7F68"),
-		border: lipgloss.Color("#5E4630"), ok: lipgloss.Color("#9BC53D"), warn: lipgloss.Color("#E8913A"),
-		danger: lipgloss.Color("#E5484D"), barBg: lipgloss.Color("#5A0F0E"), barFg: lipgloss.Color("#F2E6C9"),
-		selBg: lipgloss.Color("#3A1A12"),
-	}
-	plainPalette = palette{
-		accent: lipgloss.Color("#7AA2F7"), text: lipgloss.Color("#C0CAF5"), dim: lipgloss.Color("#737AA2"),
-		border: lipgloss.Color("#3B4261"), ok: lipgloss.Color("#9ECE6A"), warn: lipgloss.Color("#E0AF68"),
-		danger: lipgloss.Color("#F7768E"), barBg: lipgloss.Color("#24283B"), barFg: lipgloss.Color("#C0CAF5"),
-		selBg: lipgloss.Color("#2E3550"),
-	}
-)
+// forgePalette is crimson, brass and bone: the colors of the forge.
+var forgePalette = palette{
+	accent: lipgloss.Color("#D4A62A"), text: lipgloss.Color("#E8DCC4"), dim: lipgloss.Color("#8C7F68"),
+	border: lipgloss.Color("#5E4630"), ok: lipgloss.Color("#9BC53D"), warn: lipgloss.Color("#E8913A"),
+	danger: lipgloss.Color("#E5484D"), barBg: lipgloss.Color("#5A0F0E"), barFg: lipgloss.Color("#F2E6C9"),
+	selBg: lipgloss.Color("#3A1A12"),
+}
 
 // theme holds the derived styles and glyphs.
 type theme struct {
@@ -40,11 +32,8 @@ type theme struct {
 	glyphCurrent, glyphOther, glyphLogo                                string
 }
 
-func newTheme(grim bool) *theme {
-	p := plainPalette
-	if grim {
-		p = grimPalette
-	}
+func newTheme() *theme {
+	p := forgePalette
 	s := lipgloss.NewStyle
 	t := &theme{
 		p:         p,
@@ -61,11 +50,8 @@ func newTheme(grim bool) *theme {
 		selected:  s().Background(p.selBg).Foreground(p.text).Bold(true),
 		label:     s().Foreground(p.accent).Bold(true),
 
-		glyphApplied: "●", glyphDormant: "○", glyphCorrupt: "◐", glyphBroken: "✖",
-		glyphCursor: "▌", glyphCurrent: "◆", glyphOther: "◇", glyphLogo: "◈",
-	}
-	if grim {
-		t.glyphBroken, t.glyphLogo = "✠", "⚙"
+		glyphApplied: "●", glyphDormant: "○", glyphCorrupt: "◐", glyphBroken: "✠",
+		glyphCursor: "▌", glyphCurrent: "◆", glyphOther: "◇", glyphLogo: "⚙",
 	}
 	return t
 }

@@ -23,7 +23,6 @@ func (m *model) updateOverview(msg tea.Msg) tea.Cmd {
 	if m.typing {
 		return m.updateFilter(k)
 	}
-	l := m.lex
 	r := m.current()
 	switch k.String() {
 	case "q":
@@ -46,15 +45,11 @@ func (m *model) updateOverview(msg tea.Msg) tea.Cmd {
 		}
 	case "r":
 		m.reload("")
-		return m.notify(toastInfo, l.P("The Librarium has been re-read.", "Reloaded."))
-	case "t":
-		m.lex = l.Toggle()
-		m.t = newTheme(m.lex.Grimdark)
-		return m.notify(toastInfo, m.lex.P("The liturgy is restored. Praise the Omnissiah.", "Plain vocabulary enabled."))
+		return m.notify(toastInfo, "The Librarium has been re-read.")
 	case "?":
-		m.screen = newTextScreen(l.P("Catalogue of Sacred Keys", "Key bindings"), helpText(m))
-	case "i", "v":
-		m.screen = newTextScreen(l.P("Verdict of the Inquisition", "Verification"), m.verdict())
+		m.screen = newTextScreen("Catalogue of Sacred Keys", helpText(m))
+	case "i":
+		m.screen = newTextScreen("Verdict of the Inquisition", m.verdict())
 	case "n":
 		return m.openWizard(draft{states: "on, off"})
 	case "enter", "space", "e", "c", "d", "o":
@@ -65,13 +60,11 @@ func (m *model) updateOverview(msg tea.Msg) tea.Cmd {
 
 // rowAction runs an action that needs a selected rite.
 func (m *model) rowAction(key string, r *row) tea.Cmd {
-	l := m.lex
 	if r == nil {
-		return m.notify(toastInfo, l.P("No rite is chosen. Consecrate one with n.", "Nothing selected. Create a switch with n."))
+		return m.notify(toastInfo, "No rite is chosen. Consecrate one with n.")
 	}
 	if r.sw == nil && key != "d" && key != "o" {
-		return m.notify(toastErr, l.P("This rite is heretical. Purify it with o ($EDITOR) or excommunicate it with d.",
-			"This switch is invalid. Fix it with o ($EDITOR) or delete it with d."))
+		return m.notify(toastErr, "This rite is heretical. Purify it with o ($EDITOR) or excommunicate it with d.")
 	}
 	switch key {
 	case "enter":
@@ -133,14 +126,13 @@ func (m *model) cycle(r *row) tea.Cmd {
 
 // perform applies a state and reloads with a toast describing the outcome.
 func (m *model) perform(sw *config.Switch, state string, overrides map[string]string) tea.Cmd {
-	l := m.lex
 	res, err := engine.Apply(sw, state, overrides, engine.Options{})
 	if err != nil {
-		return m.notify(toastErr, l.P("The rite falters: ", "Failed: ")+err.Error())
+		return m.notify(toastErr, "The rite falters: "+err.Error())
 	}
 	prev := res.Previous
 	if prev == "" {
-		prev = l.P("dormant", "unset")
+		prev = "dormant"
 	}
 	changed := 0
 	for _, c := range res.Changes {
@@ -149,9 +141,7 @@ func (m *model) perform(sw *config.Switch, state string, overrides map[string]st
 		}
 	}
 	m.reload(sw.Name)
-	return m.notify(toastOK, l.P(
-		fmt.Sprintf("Rite %s performed: %s → %s · %d vessel(s) sanctified. The Omnissiah is pleased.", sw.Name, prev, state, changed),
-		fmt.Sprintf("%s: %s → %s · %d file(s) updated", sw.Name, prev, state, changed)))
+	return m.notify(toastOK, fmt.Sprintf("Rite %s performed: %s → %s · %d vessel(s) sanctified. The Omnissiah is pleased.", sw.Name, prev, state, changed))
 }
 
 func (m *model) openEditor(r *row) tea.Cmd {
@@ -169,7 +159,7 @@ func (m *model) openEditor(r *row) tea.Cmd {
 	cmd := exec.Command(parts[0], append(parts[1:], r.paths[0])...)
 	name := r.name
 	return tea.ExecProcess(cmd, func(err error) tea.Msg {
-		t := &toast{kind: toastInfo, text: m.lex.P("The scripture has been amended by hand.", "Edited in $EDITOR.")}
+		t := &toast{kind: toastInfo, text: "The scripture has been amended by hand."}
 		if err != nil {
 			t = &toast{kind: toastErr, text: err.Error()}
 		}
@@ -179,20 +169,20 @@ func (m *model) openEditor(r *row) tea.Cmd {
 
 // verdict renders all diagnostics of the configuration and target files.
 func (m *model) verdict() string {
-	l, t := m.lex, m.t
+	t := m.t
 	diags := append(config.Diagnostics{}, m.set.Diags...)
 	for _, name := range m.set.Names() {
-		diags = append(diags, engine.CheckTargets(l, m.set.Switches[name])...)
+		diags = append(diags, engine.CheckTargets(m.set.Switches[name])...)
 	}
 	diags.Sort()
 	if len(diags) == 0 {
-		return t.ok.Render(l.P("No heresy was found. The Emperor protects.", "No problems found."))
+		return t.ok.Render("No heresy was found. The Emperor protects.")
 	}
 	var b strings.Builder
 	for _, d := range diags {
-		sev, st := l.Warning, t.warn
+		sev, st := lexicon.Impurity, t.warn
 		if d.Severity == config.SevError {
-			sev, st = l.Error, t.danger
+			sev, st = lexicon.Heresy, t.danger
 		}
 		loc := shortPath(d.File)
 		if d.Line > 0 {
@@ -206,12 +196,12 @@ func (m *model) verdict() string {
 func (m *model) overview(h int) string {
 	listW := min(42, max(28, m.width/3))
 	detailW := m.width - listW
-	title := fmt.Sprintf("%s (%d)", lexicon.Title(m.lex.Switches), len(m.rows))
+	title := fmt.Sprintf("%s (%d)", "Rites", len(m.rows))
 	if m.typing || m.filter.Value() != "" {
 		title += " " + m.filter.Value()
 	}
 	list := m.t.panel(title, m.listView(listW-2, h-2), listW, h, true)
-	dTitle := m.lex.P("Scripture", "Details")
+	dTitle := "Scripture"
 	if r := m.current(); r != nil {
 		dTitle = r.name
 	}
@@ -220,15 +210,15 @@ func (m *model) overview(h int) string {
 }
 
 func (m *model) listView(w, h int) string {
-	t, l := m.t, m.lex
+	t := m.t
 	var lines []string
 	if m.typing {
 		lines = append(lines, " "+m.filter.View())
 		h--
 	}
 	if len(m.rows) == 0 {
-		lines = append(lines, "", t.dim.Render(" "+l.P("The Librarium is empty.", "No switches yet.")),
-			t.dim.Render(" "+l.P("Press n to consecrate a rite.", "Press n to create one.")))
+		lines = append(lines, "", t.dim.Render(" "+"The Librarium is empty."),
+			t.dim.Render(" "+"Press n to consecrate a rite."))
 		return strings.Join(lines, "\n")
 	}
 	start := max(0, min(m.cursor-h/2, len(m.rows)-h))
@@ -248,15 +238,15 @@ func (m *model) listView(w, h int) string {
 
 // statusGlyph returns the colored status glyph and state label of a row.
 func (m *model) statusGlyph(r row) (string, string) {
-	t, l := m.t, m.lex
+	t := m.t
 	switch {
 	case r.sw == nil:
-		return t.danger.Render(t.glyphBroken), t.danger.Render(l.Broken)
+		return t.danger.Render(t.glyphBroken), t.danger.Render(lexicon.Heretical)
 	case r.status.Err == nil:
 		return t.ok.Render(t.glyphApplied), t.accent.Render(r.status.State())
 	case errors.Is(r.status.Err, engine.ErrNotApplied):
-		return t.dim.Render(t.glyphDormant), t.dim.Render(l.NotApplied)
+		return t.dim.Render(t.glyphDormant), t.dim.Render(lexicon.Dormant)
 	default:
-		return t.warn.Render(t.glyphCorrupt), t.warn.Render(l.Inconsistent)
+		return t.warn.Render(t.glyphCorrupt), t.warn.Render(lexicon.Corrupted)
 	}
 }

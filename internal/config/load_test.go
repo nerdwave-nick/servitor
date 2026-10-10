@@ -159,6 +159,17 @@ func TestLoad_SemanticErrors(t *testing.T) {
 	}
 }
 
+// TestLoad_RuneNamesAreReserved: an inscription may not share its name with
+// a rune of the invoke ritual, lest it shadow that rune.
+func TestLoad_RuneNamesAreReserved(t *testing.T) {
+	for _, key := range []string{"help", "librarium", "foresee", "silence", "version"} {
+		dir := t.TempDir()
+		writeSwitch(t, dir, "rites/s.json", `{"states": ["on"], "files": [{"file": "/tmp/x.kdl",
+  "meta": {"`+key+`": {}}, "values": [{"state": "on", "value": ""}]}]}`)
+		findDiag(t, Load(dir), `metadata key "`+key+`" is reserved`)
+	}
+}
+
 func TestLoad_EmptyStatesAndFiles(t *testing.T) {
 	dir := t.TempDir()
 	writeSwitch(t, dir, "switches/s.json", `{}`)

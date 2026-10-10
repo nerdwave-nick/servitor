@@ -13,7 +13,7 @@ import (
 
 // ReservedKeys cannot be declared as metadata keys: "state" is managed
 // automatically and the others collide with built-in command flags.
-var ReservedKeys = []string{block.StateKey, "help", "config", "dry-run", "quiet", "version"}
+var ReservedKeys = []string{block.StateKey, "help", "librarium", "foresee", "silence", "version"}
 
 // validate checks a decoded switch for semantic errors.
 func validate(src *source, sw *Switch) Diagnostics {

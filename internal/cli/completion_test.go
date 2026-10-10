@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"bytes"
 	"slices"
 	"strings"
 	"testing"
@@ -28,22 +29,22 @@ func TestCompletion_Callbacks(t *testing.T) {
 	e := newEnv(t)
 	e.addSwitch("switches/theme.json", `{"description": "Color theme", "states": ["dark", "light", "auto"],
 	  "files": [{"file": "$TARGET", "values": [{"state": "dark", "value": "d"}, {"state": "light", "value": "l"}, {"state": "auto", "value": "a"}]}]}`)
-	e.mustRun("switch", "mouse-autohide-toggle", "off")
+	e.mustRun("invoke", "mouse-autohide-toggle", "off")
 
 	cases := []struct {
 		args []string
 		want []string
 	}{
-		{[]string{"switch", ""}, []string{"mouse-autohide-toggle", "theme"}},
-		{[]string{"profile", "th"}, []string{"theme"}},
-		{[]string{"switch", "theme", ""}, []string{"dark", "light", "auto"}},
-		{[]string{"switch", "mouse-autohide-toggle", ""}, []string{"on", "off"}},
-		{[]string{"switch", "mouse-autohide-toggle", "on", "--example-key", ""}, []string{"example-value", "other-value"}},
-		{[]string{"switch", "unknown", ""}, nil},
-		{[]string{"meta", ""}, []string{"mouse-autohide-toggle", "theme"}},
-		{[]string{"meta", "mouse-autohide-toggle", ""}, []string{"state", "example-key", "reason"}},
-		{[]string{"meta", "theme", "--is", ""}, []string{"dark", "light", "auto"}},
-		{[]string{"verify", "theme", ""}, []string{"mouse-autohide-toggle"}},
+		{[]string{"invoke", ""}, []string{"mouse-autohide-toggle", "theme"}},
+		{[]string{"invoke", "th"}, []string{"theme"}},
+		{[]string{"invoke", "theme", ""}, []string{"dark", "light", "auto"}},
+		{[]string{"invoke", "mouse-autohide-toggle", ""}, []string{"on", "off"}},
+		{[]string{"invoke", "mouse-autohide-toggle", "on", "--example-key", ""}, []string{"example-value", "other-value"}},
+		{[]string{"invoke", "unknown", ""}, nil},
+		{[]string{"augury", ""}, []string{"mouse-autohide-toggle", "theme"}},
+		{[]string{"augury", "mouse-autohide-toggle", ""}, []string{"state", "example-key", "reason"}},
+		{[]string{"augury", "theme", "--is", ""}, []string{"dark", "light", "auto"}},
+		{[]string{"inquisition", "theme", ""}, []string{"mouse-autohide-toggle"}},
 	}
 	for _, c := range cases {
 		got, dir := e.complete(c.args...)
@@ -53,36 +54,71 @@ func TestCompletion_Callbacks(t *testing.T) {
 	}
 }
 
-func TestCompletion_MetaKeyFlags(t *testing.T) {
+func TestCompletion_Runes(t *testing.T) {
 	e := newEnv(t)
-	got, _ := e.complete("switch", "mouse-autohide-toggle", "on", "--")
-	for _, want := range []string{"--reason", "--example-key", "--dry-run", "--quiet"} {
-		if !slices.Contains(got, want) {
-			t.Errorf("flag completion missing %s: %v", want, got)
+	cases := map[string][]string{
+		"invoke mouse-autohide-toggle on --": {"--reason", "--example-key", "--foresee", "--silence"},
+		"census --":                          {"--binharic"},
+		"inquisition --":                     {"--binharic", "--spare-vessels"},
+		"--":                                 {"--version"},
+	}
+	for line, want := range cases {
+		got, _ := e.complete(strings.Fields(line)...)
+		for _, w := range want {
+			if !slices.Contains(got, w) {
+				t.Errorf("complete %q missing %s: %v", line, w, got)
+			}
 		}
+		for _, forsaken := range []string{"--dry-run", "--quiet", "--config", "--no-grimdark", "--json", "--no-files", "--help"} {
+			if slices.Contains(got, forsaken) {
+				t.Errorf("complete %q offers %s: %v", line, forsaken, got)
+			}
+		}
+	}
+}
+
+func TestCompletion_LibrariumRune(t *testing.T) {
+	newEnv(t)
+	var out, errb bytes.Buffer
+	if code := Execute([]string{"__complete", "-"}, &out, &errb); code != 0 {
+		t.Fatalf("code=%d err=%s", code, errb.String())
+	}
+	for _, want := range []string{"--librarium\t", "-l\t"} {
+		if !strings.Contains(out.String(), want) {
+			t.Errorf("root rune completion missing %q:\n%s", want, out.String())
+		}
+	}
+}
+
+func TestCompletion_Rituals(t *testing.T) {
+	e := newEnv(t)
+	got, _ := e.complete("")
+	want := []string{"augury", "census", "cogitator", "completion", "inquisition", "invoke"}
+	if !slices.Equal(got, want) {
+		t.Fatalf("rituals = %v, want %v", got, want)
 	}
 }
 
 func TestCompletion_DescriptionsAndCurrentState(t *testing.T) {
 	e := newEnv(t)
-	e.mustRun("switch", "mouse-autohide-toggle", "on")
-	out := e.mustRun("__complete", "switch", "mouse-autohide-toggle", "")
-	if !strings.Contains(out, "on\tcurrent\n") {
+	e.mustRun("invoke", "mouse-autohide-toggle", "on")
+	out := e.mustRun("__complete", "invoke", "mouse-autohide-toggle", "")
+	if !strings.Contains(out, "on\tcurrent aspect\n") {
 		t.Fatalf("current state not marked:\n%s", out)
 	}
-	out = e.mustRun("__complete", "meta", "")
+	out = e.mustRun("__complete", "augury", "")
 	if !strings.Contains(out, "mouse-autohide-toggle\tHide the cursor after inactivity") {
-		t.Fatalf("switch description missing:\n%s", out)
+		t.Fatalf("rite purpose missing:\n%s", out)
 	}
 }
 
-func TestCompletion_ConfigFlagIsHonoured(t *testing.T) {
+func TestCompletion_LibrariumRuneIsHonoured(t *testing.T) {
 	e := newEnv(t)
 	other := newEnv(t)
 	other.addSwitch("switches/only-here.json", `{"states": ["x"], "files": [{"file": "$TARGET", "values": [{"state": "x", "value": ""}]}]}`)
-	got, _ := e.complete("--config", other.cfgDir, "switch", "")
+	got, _ := e.complete("--librarium", other.cfgDir, "invoke", "")
 	if !slices.Contains(got, "only-here") {
-		t.Fatalf("--config not used during completion: %v", got)
+		t.Fatalf("--librarium not used during completion: %v", got)
 	}
 }
 
