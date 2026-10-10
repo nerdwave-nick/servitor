@@ -43,6 +43,10 @@ type Rite struct {
 	Name string // the rite's name: its scripture's file name without extension
 	Path string // where the scripture was read from; "" when never read
 
+	// Schema is the "$schema" the scripture bears for the faithful's
+	// editors. The servitor heeds it not, but keeps it when writing.
+	Schema string
+
 	Purpose      string
 	Aspects      []string
 	Inscriptions []Inscription // in the order written

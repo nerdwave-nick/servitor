@@ -15,7 +15,7 @@ import (
 const SettingsName = "servitor.json"
 
 // SettingsKeys are the keys of the settings, in the order of the codex.
-var SettingsKeys = []string{"pattern", "tongue", "chronicle", "vox", "patience"}
+var SettingsKeys = []string{"pattern", "tongue", "chronicle", "vox", "patience", SchemaKey}
 
 // The vox of the settings: whether tidings reach the desktop.
 const (
@@ -86,6 +86,10 @@ func (d *decoder) decodeSettings(root *hujson.Value, s *Settings) {
 		return
 	}
 	fs, _ := d.object(root, "the settings", SettingsKeys)
+	if m, ok := fs.get(SchemaKey); ok {
+		// Only the faithful's editors heed the schema.
+		_, _ = d.str(m.val, `the "$schema" of the settings`)
+	}
 	if m, ok := fs.get("tongue"); ok {
 		if t, ok := d.word(m.val, `the "tongue" of the settings`); ok {
 			s.Tongue = t

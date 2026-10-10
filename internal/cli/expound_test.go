@@ -2,6 +2,8 @@ package cli
 
 import (
 	"io"
+	"os"
+	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
@@ -207,5 +209,43 @@ func TestCodex_EveryRitualAndRuneHasAPassage(t *testing.T) {
 		if slices.Contains(rituals, alias) || slices.Contains(runes, alias) {
 			t.Errorf("the hidden %q is offered", alias)
 		}
+	}
+}
+
+// TestExpound_SchemaRecitesTheSchemaAsWritten: expound --schema recites the
+// schema of a rite or of the settings exactly as the repository keeps it.
+func TestExpound_SchemaRecitesTheSchemaAsWritten(t *testing.T) {
+	e := newEnv(t)
+	for _, c := range []struct {
+		args []string
+		file string
+	}{
+		{[]string{"expound", "--schema"}, "rite.schema.json"},
+		{[]string{"expound", "--schema", "rite"}, "rite.schema.json"},
+		{[]string{"expound", "rite", "--schema"}, "rite.schema.json"},
+		{[]string{"expound", "--schema", "settings"}, "settings.schema.json"},
+	} {
+		want, err := os.ReadFile(filepath.Join("..", "..", "schema", c.file))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got := e.mustRun(c.args...); got != string(want) {
+			t.Errorf("%v does not recite %s as written:\n%s", c.args, c.file, got)
+		}
+	}
+	out, errOut, code := e.run("expound", "--schema", "tether")
+	if code != 1 || out != "" {
+		t.Fatalf("expound --schema tether: code %d, stdout %q", code, out)
+	}
+	for _, want := range []string{`no schema of "tether"`, `"rite"`, `"settings"`} {
+		if !strings.Contains(errOut, want) {
+			t.Errorf("stderr lacks %q:\n%s", want, errOut)
+		}
+	}
+	if got, directive := e.complete("expound", "--schema", ""); !slices.Equal(got, []string{"rite", "settings"}) || directive != noFileComp {
+		t.Errorf("expound --schema completes %v (%s)", got, directive)
+	}
+	if got := e.mustRun("expound", "schema"); !strings.Contains(got, "+++ schema · as written in the codex +++") {
+		t.Errorf("expound schema:\n%s", got)
 	}
 }

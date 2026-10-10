@@ -53,8 +53,12 @@ var (
 	Rituals = []string{"invoke", "augury", "census", "inquisition", "cogitator", "expound", "completion"}
 	// Runes are the servitor's own runes (without their dashes), in the
 	// order of the codex. A rite's inscription runes are its own.
-	Runes = []string{"librarium", "chronicle", "foresee", "silence", "is", "binharic", "spare-vessels", "version"}
+	Runes = []string{"librarium", "chronicle", "foresee", "silence", "is", "binharic", "spare-vessels", "schema", "version"}
 )
+
+// keyTopics names the passage of a key whose own name terminals would
+// mangle: "$schema" is expounded as schema, the name of its rune.
+var keyTopics = map[string]string{librarium.SchemaKey: "schema"}
 
 // hidden maps every deliberate alias to the topic it stands for.
 var hidden = func() map[string]string {
@@ -86,8 +90,16 @@ func Lookup(name string) (Passage, bool) {
 	if topic, ok := hidden[name]; ok {
 		name = topic
 	}
-	p, ok := passages[name]
+	p, ok := passages[topicOf(name)]
 	return p, ok
+}
+
+// topicOf is the topic that expounds the key or topic name.
+func topicOf(name string) string {
+	if topic, ok := keyTopics[name]; ok {
+		return topic
+	}
+	return name
 }
 
 // Chapter is one chapter of the index.
@@ -116,9 +128,9 @@ func Index() []Chapter {
 	for _, n := range named {
 		ch := Chapter{Title: n[0].(string)}
 		for _, name := range n[1].([]string) {
-			if p, ok := passages[name]; ok {
+			if p, ok := passages[topicOf(name)]; ok {
 				ch.Passages = append(ch.Passages, p)
-				seen[name] = true
+				seen[p.Topic] = true
 			}
 		}
 		chapters = append(chapters, ch)

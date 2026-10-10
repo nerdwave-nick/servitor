@@ -5,29 +5,78 @@ import (
 	"fmt"
 	"io"
 	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/spf13/cobra"
 
 	"github.com/nerdwave-nick/servitor/internal/codex"
+	"github.com/nerdwave-nick/servitor/schema"
 )
 
 func (a *app) newExpoundCmd() *cobra.Command {
+	var forms bool
 	cmd := &cobra.Command{
-		Use:               "expound [topic]",
-		Short:             "Recite a passage of the codex: the lore of every ritual, rune, step and key",
-		Args:              oneTopic,
-		ValidArgsFunction: completeTopics,
+		Use:   "expound [topic]",
+		Short: "Recite a passage of the codex: the lore of every ritual, rune, step and key",
+		Args:  oneTopic,
+		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]cobra.Completion, cobra.ShellCompDirective) {
+			if forms {
+				return completeSchemas(args, toComplete)
+			}
+			return completeTopics(cmd, args, toComplete)
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if len(args) == 0 {
+			switch {
+			case forms:
+				return reciteSchema(cmd.OutOrStdout(), args)
+			case len(args) == 0:
 				return recite(cmd.OutOrStdout(), codex.IndexText())
 			}
 			return expound(cmd, args[0])
 		},
 	}
-	// The runes of the codex itself are spoken here (the codex of the
-	// scripture's form, --schema, is yet to be written).
+	cmd.Flags().BoolVar(&forms, "schema", false,
+		"recite the schema of a rite's scripture, or with \"settings\" the schema of the settings")
 	return cmd
+}
+
+// reciteSchema recites the schema named by args — a rite's when none is
+// named — exactly as the repository keeps it.
+func reciteSchema(w io.Writer, args []string) error {
+	name := schema.Rite
+	if len(args) > 0 {
+		name = args[0]
+	}
+	data, ok := schema.For(name)
+	if !ok {
+		msg := fmt.Sprintf("the codex holds no schema of %q; it bears only the schemas of %s", name, quoted(schema.Names))
+		return errors.New(msg + "\n\nRecite 'servitor expound schema' for their lore.")
+	}
+	_, err := w.Write(data)
+	return err
+}
+
+// completeSchemas offers the names of the schemas.
+func completeSchemas(args []string, toComplete string) ([]cobra.Completion, cobra.ShellCompDirective) {
+	if len(args) > 0 {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+	var out []cobra.Completion
+	for _, name := range schema.Names {
+		if strings.HasPrefix(name, toComplete) {
+			out = append(out, name)
+		}
+	}
+	return out, cobra.ShellCompDirectiveNoFileComp
+}
+
+func quoted(names []string) string {
+	q := make([]string, len(names))
+	for i, n := range names {
+		q[i] = strconv.Quote(n)
+	}
+	return strings.Join(q, " and ")
 }
 
 // newHelpCmd is the hidden help ritual: it recites the codex like expound,
