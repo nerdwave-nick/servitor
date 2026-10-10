@@ -149,3 +149,41 @@ func TestWatcher_SeesEveryRealStepBegin(t *testing.T) {
 		t.Fatalf("the watcher heard %+v", w.heard)
 	}
 }
+
+// witness is a hearer that also sees every real step performed, keeping
+// what it saw and heard in one order.
+type witness struct {
+	hearer
+	seen []string
+}
+
+func (w *witness) Proclaim(p Proclamation) {
+	w.hearer.Proclaim(p)
+	w.seen = append(w.seen, string(p.Tidings))
+}
+
+func (w *witness) Performed(v Verse, step, steps int) {
+	w.seen = append(w.seen, fmt.Sprintf("%d %s %d/%d", v.Number, v.Kind.Key(), step, steps))
+}
+
+func TestWitness_SeesEveryRealStepPerformedBeforeTheVoxCastsAfterIt(t *testing.T) {
+	fx := newFixture(t)
+	write(t, fx.data, "util.kdl", "", 0o644)
+	r := fx.rite(t, `{"vox-cast": "progress"},
+	  {"sanctum": "$DATA/util.kdl", "scripture": "1"},
+	  {"vox-cast": "progress"},
+	  {"incantation": "true"},
+	  {"incantation": "exit 3"},
+	  {"incantation": "true"}`)
+	w := &witness{}
+
+	out, _ := perform(t, r, Options{Aspect: "on", Herald: w})
+
+	if out.Verdict != Reverted {
+		t.Fatalf("verdict %q", out.Verdict)
+	}
+	want := []string{"progress", "2 sanctum 1/4", "progress", "4 incantation 2/4", "failure"}
+	if !slices.Equal(w.seen, want) {
+		t.Fatalf("saw %q, want %q", w.seen, want)
+	}
+}

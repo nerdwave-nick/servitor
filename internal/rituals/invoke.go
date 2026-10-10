@@ -21,6 +21,11 @@ type Petition struct {
 	// Herald hears the vox-casts and the fall; nil hears nothing. The
 	// caller raises it and lets it rest afterwards.
 	Herald invocation.Herald
+	// Commence, when not nil, is told once the pre-flight has passed and the
+	// liturgy is about to be performed, with the result so far: the rite,
+	// the options and how the rite stood before. It is never told of an
+	// invocation refused or foreseen.
+	Commence func(Result)
 }
 
 // Result is what came of a petition.
@@ -67,6 +72,9 @@ func (s *Servitor) Invoke(ctx context.Context, p Petition) (Result, error) {
 	res.Foresight = inv.Foresee()
 	if err != nil || p.Foresee {
 		return res, err
+	}
+	if p.Commence != nil {
+		p.Commence(res)
 	}
 	out, err := inv.PerformContext(ctx)
 	if err != nil {

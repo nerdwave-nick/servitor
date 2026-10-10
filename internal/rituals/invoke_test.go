@@ -224,3 +224,42 @@ func TestInvoke_OnlyRitesFitToBeInvoked(t *testing.T) {
 	}
 	grimdark(t, err.Error())
 }
+
+func TestInvoke_CommenceIsToldOnceTheLiturgyIsAboutToBePerformed(t *testing.T) {
+	fx := newFixture(t)
+	fx.vessel("util.kdl", "input {}\n")
+	fx.rite("mouse", mouse)
+	fx.rite("lost", strings.Replace(mouse, "$DATA/util.kdl", "$DATA/no-hall/util.kdl", 1))
+	s := fx.servitor()
+	h := &herald{}
+	var told []Result
+	commence := func(res Result) {
+		if len(h.heard) != 0 {
+			t.Errorf("commence was told after the herald heard %v", h.heard)
+		}
+		told = append(told, res)
+	}
+
+	for _, p := range []Petition{
+		{Rite: "lost", Aspect: "on"},
+		{Rite: "mouse", Aspect: "on", Foresee: true},
+		{Rite: "mouse", Aspect: "maybe"},
+	} {
+		p.Commence = commence
+		if _, err := s.Invoke(context.Background(), p); err != nil && p.Foresee {
+			t.Fatal(err)
+		}
+	}
+	if len(told) != 0 {
+		t.Fatalf("commence was told of an invocation never performed: %+v", told)
+	}
+
+	res, err := s.Invoke(context.Background(), Petition{Rite: "mouse", Aspect: "on", Herald: h, Commence: commence})
+	if err != nil || res.Outcome == nil {
+		t.Fatalf("%v %+v", err, res)
+	}
+	if len(told) != 1 || told[0].Rite.Name != "mouse" || told[0].Options.Aspect != "on" ||
+		told[0].Options.Former != "" || told[0].Former != res.Former || told[0].Outcome != nil {
+		t.Fatalf("commence was told %+v", told)
+	}
+}

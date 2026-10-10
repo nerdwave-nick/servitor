@@ -28,6 +28,17 @@ type Watcher interface {
 	Begin(v Verse, step, steps int)
 }
 
+// Witness is a herald that also sees every real step once it is performed,
+// before any vox-cast that follows it is proclaimed: a vessel of the
+// servitor that tells the faithful, verse by verse, what was done. A step
+// that falls is not seen; the fall is proclaimed.
+type Witness interface {
+	Herald
+	// Performed is told once the step of verse v is performed: it is the
+	// step-th real step (counted from one) of the liturgy's steps.
+	Performed(v Verse, step, steps int)
+}
+
 // Tidings name what a proclamation tells.
 type Tidings string
 
@@ -82,7 +93,8 @@ func newCrier(h Herald, v placeholder.Values, steps []performer) *crier {
 	return c
 }
 
-// performed notes that step was performed; a vox-cast is proclaimed.
+// performed notes that step was performed and tells a witnessing herald;
+// a vox-cast is proclaimed.
 func (c *crier) performed(step performer) {
 	if c == nil {
 		return
@@ -91,6 +103,9 @@ func (c *crier) performed(step performer) {
 	if !ok {
 		c.done++
 		c.last = step.verse()
+		if w, witnessing := c.herald.(Witness); witnessing {
+			w.Performed(c.last, c.done, c.steps)
+		}
 		return
 	}
 	c.proclaim(vox.tidings, c.done, c.last, "", nil)
