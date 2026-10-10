@@ -27,12 +27,19 @@ func newFixture(t *testing.T) fixture {
 // the vessels' place) into the Librarium and loads it.
 func (fx fixture) rite(t *testing.T, liturgy string) *librarium.Rite {
 	t.Helper()
+	return fx.riteWith(t, "", liturgy)
+}
+
+// riteWith is rite with further keys of the rite itself (e.g. `"tongue":
+// "zsh",`) written before its liturgy.
+func (fx fixture) riteWith(t *testing.T, keys, liturgy string) *librarium.Rite {
+	t.Helper()
 	scripture := fmt.Sprintf(`{
-  "pattern": "Mark I",
+  "pattern": "Mark I",%s
   "aspects": ["on", "off"],
   "inscriptions": {"reason": {"purpose": "why"}},
   "liturgy": [%s]
-}`, strings.ReplaceAll(liturgy, "$DATA", fx.data))
+}`, keys, strings.ReplaceAll(liturgy, "$DATA", fx.data))
 	path := filepath.Join(fx.lib, "rites", "mouse.json")
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		t.Fatal(err)

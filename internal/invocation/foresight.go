@@ -3,6 +3,7 @@ package invocation
 import (
 	"io/fs"
 	"strings"
+	"time"
 )
 
 // Foresight tells what one step would do. Exactly one of its changes is set
@@ -11,6 +12,30 @@ type Foresight struct {
 	Verse
 	Vessel *VesselChange // sanctums and transcriptions
 	Tether *TetherChange // tethers
+	Speech *Speech       // incantations and litanies
+}
+
+// Speech is what an incantation or litany will speak, every placeholder
+// rendered.
+type Speech struct {
+	// Tongue is the tongue of the step: step > rite > settings > bash. The
+	// reversion is always spoken in it; a litany recited by its own shebang
+	// speaks only its reversion in it.
+	Tongue string
+	// Shebang is true for a litany whose scroll may be executed: it is
+	// recited by its own shebang rather than through the tongue.
+	Shebang bool
+	// Words are the incantation's command, or the path of the litany's scroll.
+	Words string
+	// Offerings are a litany's offerings, exactly as they will be handed over.
+	Offerings []string
+	// Argv is the program and every argument exactly as they will be spoken.
+	Argv []string
+	// Reversion is the command spoken in the tongue should the invocation
+	// fall; "" when there is none.
+	Reversion string
+	// Patience is how long the step, and its reversion, may labour.
+	Patience time.Duration
 }
 
 // VesselChange is what a sanctum or transcription does to its vessel.

@@ -29,11 +29,13 @@ func (p *preflight) prepare(s librarium.Step) performer {
 		return p.transcription(s)
 	case *librarium.Tether:
 		return p.tether(s)
+	case *librarium.Incantation:
+		return p.incantation(s)
+	case *librarium.Litany:
+		return p.litany(s)
 	case *librarium.VoxCast:
 		return silentVox{v: p.verse(s.Kind(), s.Tidings)}
 	}
-	p.denounce(s.Kind().Key(), "the servitor has not yet been taught to give voice to a %s; this rite cannot be "+
-		"invoked until it has", s.Kind().Key())
 	return nil
 }
 
