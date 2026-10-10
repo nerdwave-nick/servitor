@@ -115,7 +115,8 @@ func (d *decoder) decodePattern(root *hujson.Value, obj *hujson.Object) bool {
 		}
 		return true
 	}
-	d.heresy(root, "the scripture bears no \"pattern\"; every rite must declare the Mark of its form, and "+
+	d.heresy(root, "the scripture bears no \"pattern\"; every scripture of the Librarium must declare the "+
+		"Mark of its form, and "+
 		"this servitor reads only \"pattern\": %q — scripture of no pattern is heresy, and the servitor "+
 		"will not guess at its meaning", Pattern)
 	return false

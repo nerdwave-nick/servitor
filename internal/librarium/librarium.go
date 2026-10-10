@@ -17,9 +17,10 @@ const RitesDir = "rites"
 // Extensions are the extensions a scripture may bear.
 var Extensions = []string{".json", ".jsonc"}
 
-// Librarium is every rite read from one Librarium.
+// Librarium is every rite and the settings read from one Librarium.
 type Librarium struct {
 	Dir        string
+	Settings   *Settings           // the settings kept beside the rites
 	Rites      map[string]*Rite    // rites free of heresy, fit to be invoked
 	Heretical  map[string]bool     // rites whose scripture holds heresy
 	Scriptures map[string][]string // every scripture found, per rite name
@@ -47,7 +48,8 @@ func (l *Librarium) Names() []string {
 	return names
 }
 
-// Load reads and examines every scripture in dir's rites/.
+// Load reads and examines every scripture in dir's rites/ and the settings
+// kept beside them.
 func Load(dir string) *Librarium { return load(dir, nil) }
 
 // Preview loads dir as if ov were written, without touching the Librarium.
@@ -76,6 +78,7 @@ func readHeresy(path, name string, err error) Finding {
 
 func load(dir string, ov *Overlay) *Librarium {
 	lib := &Librarium{Dir: dir, Rites: map[string]*Rite{}, Heretical: map[string]bool{}}
+	lib.Settings, lib.Findings = LoadSettings(dir)
 	lib.Scriptures = lib.scan(ov)
 	var read []*Rite
 	for _, name := range lib.Names() {
