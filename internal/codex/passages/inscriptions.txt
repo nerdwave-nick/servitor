@@ -1,0 +1,46 @@
+Named words carried by one invocation and kept on the data-slate
+
+An inscription is a word the faithful lay upon one invocation of a rite: the
+reason a do-not-disturb was raised, the mode a cursor is to keep. A rite
+declares its inscriptions once, under "inscriptions", each by its key; a
+declaration may carry a "purpose", may be "mandatory", and may hold
+"decrees", the word each aspect inscribes when none is given.
+
+Every declared inscription becomes a rune of the rite's own ritual:
+servitor invoke <rite> <aspect> --<key> <word>. The rune outranks the decree;
+a rune given an empty word ("") clears the decree, and the inscription is then
+left uninscribed. A rune of an inscription the rite never declared is heresy,
+and the invocation is refused before anything is performed.
+
+An inscription's key must begin with a letter or digit and continue only
+with letters, digits, ".", "_" or "-", for it is spoken as the rune --<key>
+and illuminated as {{inscription.<key>}}. It may not bear the name of one of
+the servitor's own runes (foresee, silence, librarium, chronicle, binharic).
+
+Within the rite's words an inscription is illuminated as
+{{inscription.<key>}} (empty when uninscribed); naming an inscription the rite
+never declared is heresy. Incantations, litanies and the auspex also receive
+it in their environment as SERVITOR_INSCRIPTION_<KEY>, the key in capitals
+with every "-" and "." made "_". Inside the words of
+a tongue, prefer the environment: an illuminated word is spoken into the
+command exactly as inscribed, and the tongue would interpret its quotes,
+dollars and semicolons, whereas "$SERVITOR_INSCRIPTION_REASON" stays one word.
+
+The inscriptions of an invocation are kept on the rite's data-slate, read by
+the augury and recorded in the chronicle. The omens of later auguries render
+with the inscriptions the data-slate keeps.
+
+Kindred passages: mandatory, decrees, purpose, placeholders, augury,
+data-slate
+
+Exempla:
+  "inscriptions": {
+    "reason": {"purpose": "why the rite was invoked"},
+    "mode":   {"mandatory": true, "decrees": {"on": "auto-hide", "off": "always-visible"}}
+  }
+
+  servitor invoke mouse-autohide-toggle on --reason "gaming remnant"
+  servitor invoke mouse-autohide-toggle off --mode ""     # clears the decree
+  servitor augury mouse-autohide-toggle reason
+
+  {"incantation": "echo \"$SERVITOR_INSCRIPTION_REASON\" >> ~/.cache/dnd-reasons"}

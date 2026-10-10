@@ -1,0 +1,22 @@
+Perform a rite in reverent silence, withholding the tidings of triumph
+
+The rune --silence (shorthand -s) is given to the ritual invoke. When the
+invocation triumphs, the servitor withholds the summary it would otherwise
+speak — the rite, the former and the new aspect, and every verse performed —
+and says nothing at all; its exit of 0 alone bears witness.
+
+Silence does not hide failure: should the pre-flight forbid the invocation or
+a step fall, the lament is still spoken, with the fallen verse, its last
+words and the outcome of every reversion. Neither does silence still the
+vox-casts of the liturgy: those are heard upon the controlling terminal, or
+sent to the desktop, as the rite commands. To still the desktop's vox, set
+the key "vox" of the settings to "off".
+
+Silence suits rites invoked from hotkeys, bars and other rites, where only
+the exit and the vox-casts matter.
+
+Kindred passages: invoke, vox, vox-cast, foresee
+
+Exempla:
+  servitor invoke mouse-autohide-toggle on --silence
+  bindsym $mod+m exec servitor invoke mouse-autohide-toggle on -s

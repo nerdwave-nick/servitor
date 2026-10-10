@@ -1,0 +1,43 @@
+A named liturgy that brings the machine into one of its aspects
+
+A rite is the servitor's unit of devotion: one scripture-file in the rites/
+hall of the Librarium, written in JSONC — JSON that suffers comments and
+trailing commas — and bearing "pattern": "Mark I". The rite is named after
+its scripture-file without the extension: rites/theme.json (or theme.jsonc)
+is the rite "theme". Only the rites/ hall is read.
+
+A rite's name must begin with a letter or digit and continue only with
+letters, digits, ".", "_" or "-". Two scriptures for one name — theme.json
+beside theme.jsonc — is heresy, and neither is believed. Every key of the
+scripture is examined, and a key the codex does not know is heresy, so a
+misspelt key never passes in silence.
+
+The keys of a rite are "pattern", "purpose", "aspects", "inscriptions",
+"auspex", "tongue" and "liturgy"; only the pattern and the aspects are
+demanded. A heretical rite is shown in the census and the cogitator with its
+heresies, but it cannot be invoked until it is purified.
+
+Know also that "rite" is a key of its own within the long form of the
+auspex, where it holds the words the auspex speaks:
+{"auspex": {"rite": "<words>", "patience": "5s"}}.
+
+Each rite becomes a ritual of its own beneath invoke, with its aspects for
+completion and its inscriptions as runes; {{rite.name}} illuminates as its
+name, and its commands receive it as SERVITOR_RITE.
+
+Kindred passages: pattern, aspects, liturgy, inscriptions, auspex, librarium
+
+Exempla:
+  // <Librarium>/rites/mouse-autohide-toggle.json
+  {
+    "pattern": "Mark I",
+    "purpose": "Hide the mouse cursor after inactivity",
+    "aspects": ["on", "off"],
+    "liturgy": [
+      {"sanctum": "~/.config/niri/util.kdl",
+       "scripture": {"on": "cursor {\n    hide-after-inactive-ms 400\n}", "off": ""}},
+      {"incantation": "niri msg action do-screen-transition"},
+    ],
+  }
+
+  servitor invoke mouse-autohide-toggle on

@@ -1,0 +1,21 @@
+Ask whether a rite stands in one aspect, answered by exit alone
+
+The rune --is <aspect> is given to the ritual augury. Instead of speaking
+what it reads, the augury then answers a single question by its exit alone:
+0 when the rite stands in that aspect, 1 when it does not — whether it stands
+in another aspect, lies dormant, or its omens disagree. Nothing is spoken
+upon a match or a miss, so the rune serves the conditions of other commands
+and rites.
+
+The aspect named must be one the rite declares, and the augury exits 2 when
+it is not, when the rite is unknown or heretical, or when a key is given
+beside the rune: --is asks after the aspect alone. The auspex is awakened, as
+in every augury, so the answer heeds the true aspect of the machine.
+
+The aspects of the rite are offered by completion after --is.
+
+Kindred passages: augury, aspects, omens, standing, auspex
+
+Exempla:
+  servitor augury mouse-autohide-toggle --is on && echo "the cursor is veiled"
+  if servitor augury dnd --is on; then makoctl mode -r do-not-disturb; fi

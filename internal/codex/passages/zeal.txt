@@ -1,0 +1,29 @@
+Leave to overwrite what the servitor did not itself create
+
+The servitor is cautious with the work of other hands, for it keeps no copy
+of anything it casts down. A transcription replaces a vessel that stands
+only when that vessel's scripture is the scripture of one of the rite's
+aspects; a tether rebinds only a name that is already a tether. Anything else
+standing in their way halts the pre-flight with heresy, and nothing at all
+is performed.
+
+Write "zeal": true upon a transcription or a tether to grant it leave to
+sweep such obstacles aside: the transcription overwrites (or, for null
+scripture, strikes) whatever vessel stands, and the tether casts down a
+scripture-file standing where its name is to be bound. Even zeal never casts
+down a hall.
+
+Zeal is a truth for every aspect, never an aspect map. Use it knowingly: the
+reversion of a falling invocation restores what a zealous step displaced,
+but once the invocation triumphs, the former scripture is gone for ever.
+
+Sanctums need no zeal, for they touch only their own warded region.
+
+Kindred passages: transcription, tether, vessel, pre-flight
+
+Exempla:
+  {"transcription": "~/.config/foot/foot.ini", "zeal": true,
+   "scripture": {"*": {"tome": "foot/{{aspect}}.ini"}}}
+
+  {"tether": "~/.config/gtk-3.0/gtk.css", "zeal": true,
+   "anchor": "~/.config/visages/{{aspect}}/gtk.css"}

@@ -1,0 +1,59 @@
+The {{…}} marks the servitor fills in a rite's words at invocation
+
+Hear how one scripture serves many aspects: wherever a rite's words would
+differ only by the aspect, the rite, or an inscription, the scribe sets a
+placeholder, and at every invocation the servitor illuminates it — fills the
+mark with what the invocation knows, before a single step is performed.
+
+These marks are known in every word of a rite:
+  {{aspect}}              the aspect being invoked
+  {{former}}              the aspect the rite stood in before; empty when
+                          the servitor cannot know it
+  {{rite.name}}           the rite's own name
+  {{inscription.<key>}}   the inscription of that key, from its rune or its
+                          decree; empty when neither gives it
+
+The tidings a vox-cast sends are drawn from the servitor's own embedded
+lists of tidings, and those alone speak the further marks of the invocation:
+{{heresy}} (why it fell), {{step}} (the verse just performed), {{steps}}
+(how many true steps the liturgy holds), {{step.kind}} (that step's own key,
+such as "tether") and {{step.target}} (what that key holds). No word a scribe
+writes into a rite may speak them; there they are heresy.
+
+Placeholders are illuminated in the vessels of sanctums and transcriptions,
+the names and anchors of tethers, the words of incantations, the scrolls and
+offerings of litanies, every reversion, inline scripture, the paths of tomes
+and the scripture of tomes that are illuminated, and the auspex. They are
+never illuminated in wards, glyphs, tongues, seals, patience, decrees or
+purposes, nor in the names of aspects, inscriptions and keys.
+
+A mark the codex does not know, an inscription the rite never declared, and
+a mark opened with {{ but never closed are heresy: the inquisition and every
+pre-flight denounce them, and they are never rendered empty in silence. A
+mark admits no spaces within its braces. To inscribe a literal {{, write
+{{{{; a lone }} is taken as written.
+
+Incantations, litanies and the auspex also receive the same knowledge through
+the environment: SERVITOR_ASPECT, SERVITOR_FORMER_ASPECT, SERVITOR_RITE, and
+for every declared inscription SERVITOR_INSCRIPTION_<KEY> — the key in
+capitals, each "-" and "." made "_" (empty when unset). Prefer these over
+placeholders within the words a tongue will speak: a placeholder pastes its
+value into the words before the tongue reads them, so a quote, a "$" or a
+";" within an inscription would be interpreted by the tongue as part of the
+command. A variable of the environment is read by the tongue as one word,
+untouched, when written within double quotes.
+
+Kindred passages: aspect-maps, inscriptions, illuminate, incantation, vox-cast
+
+Exempla:
+  {"sanctum": "~/.config/niri/util.kdl",
+   "scripture": "// {{rite.name}} invoked as {{aspect}}, formerly {{former}}"}
+
+  // heeded: the tongue receives the reason as one word, whatever it holds
+  {"incantation": "notify-send servitor \"$SERVITOR_INSCRIPTION_REASON\""}
+
+  // perilous: a reason of  it's done; reboot  is spoken as commands
+  {"incantation": "notify-send servitor '{{inscription.reason}}'"}
+
+  {"tether": "~/.local/share/nfluff/current-theme",
+   "anchor": "~/.config/nfluff/themes/{{aspect}}"}

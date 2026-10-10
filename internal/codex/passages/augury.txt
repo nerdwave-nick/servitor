@@ -1,0 +1,45 @@
+Read the aspect a rite stands in, how it stands, and its inscriptions
+
+The augury reads the omens of one rite and speaks what they reveal: the
+aspect the machine stands in, the rite's standing, whether other hands
+desecrated it, the inscriptions of its last invocation, its last rite with
+verdict and hour, every omen with its verse, and every taint upon its
+sanctums. The augury changes nothing; it awakens the rite's auspex, should
+the rite keep one, but performs no step.
+
+Without a key, the augury speaks one object in binharic, for other machines
+to read:
+
+  {"rite": "theme", "aspect": "porpl", "standing": "performed",
+   "desecrated": false, "inscriptions": {"reason": "gaming remnant"},
+   "last_rite": {"verdict": "triumph", "at": "2026-10-10T13:30:00Z"},
+   "omens": [{"verse": 2, "tether": "~/.local/share/nfluff/current-theme",
+              "aspect": "porpl"}, {"auspex": true, "aspect": "porpl"}],
+   "taint": []}
+
+The key "former", naming the aspect the data-slate recorded, appears only
+when the rite is desecrated.
+
+With a key, the augury speaks that single value and nothing more: aspect,
+standing, desecrated, former, or any inscription the rite declares (an empty
+line when it is uninscribed). Should an inscription bear the name of one of
+the first four, the augury's own value is spoken; the inscription is still
+read in the binharic object.
+
+With the rune --is <aspect>, the augury speaks nothing at all: it exits 0
+when the rite stands in that aspect and 1 when it does not, for the
+conditions of other rites and commands.
+
+The augury exits 0 when it was read — a dormant or heretical rite is still
+read and spoken — 1 when --is did not match, and 2 when it could not be read:
+an unknown rite or key, an aspect the rite knows not, a key given beside
+--is, a heretical rite asked --is, or a malformed rune.
+
+Kindred passages: is, omens, standing, data-slate, inscriptions, auspex
+
+Exempla:
+  servitor augury theme
+  servitor augury theme aspect
+  servitor augury theme reason
+  servitor augury theme | jq -r .inscriptions.reason
+  servitor augury mouse --is on && echo "the cursor is veiled"

@@ -18,10 +18,6 @@ func (a *app) newAuguryCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "augury <rite> [key]",
 		Short: "Perform an augury: read the aspect, standing and inscriptions of a rite",
-		Long:  auguryLongHelp,
-		Example: `  servitor augury mouse-autohide-toggle
-  servitor augury mouse-autohide-toggle reason
-  if servitor augury mouse-autohide-toggle --is on; then echo "the cursor is veiled"; fi`,
 		Args: func(_ *cobra.Command, args []string) error {
 			if len(args) < 1 || len(args) > 2 {
 				return &ExitError{Code: 2, Err: fmt.Errorf("the augury demands one rite, and at most one key, "+
@@ -51,7 +47,7 @@ func (a *app) newAuguryCmd() *cobra.Command {
 		return nil, cobra.ShellCompDirectiveNoFileComp
 	})
 	cmd.SetFlagErrorFunc(func(cmd *cobra.Command, err error) error {
-		return &ExitError{Code: 2, Err: fmt.Errorf("%s\nConsult '%s --help' for the proper liturgy", runeError(err), cmd.CommandPath())}
+		return &ExitError{Code: 2, Err: fmt.Errorf("%s\n%s", runeError(err), liturgyHint(cmd))}
 	})
 	return cmd
 }

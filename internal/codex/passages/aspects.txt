@@ -1,0 +1,32 @@
+The named conditions a rite can bring the machine into
+
+Under "aspects" a rite lists, by hand and in order, every condition it can
+bring the machine into: "on" and "off", "dark" and "light", the names of the
+themes of a visage. The list is never discovered from halls or vessels and
+never asked of the faithful while the rite is performed; what is not written
+here does not exist for the rite.
+
+The list must not be empty, for a rite without aspects can never be invoked,
+and no aspect may be named twice. An aspect's name must begin with a letter
+or digit and continue only with letters, digits, ".", "_" or "-"; the "*"
+is no aspect but the fallback of aspect maps, serving every aspect not named
+there.
+
+Completion offers the aspects in the order written, and marks the one the
+rite stands in. Every aspect map of the rite's steps — scripture, anchors,
+commands, scrolls, offerings, reversions — must hold a value for every
+aspect, written by name or served by "*"; only decrees may leave an aspect
+without. An aspect-map key that names no declared aspect is heresy.
+
+At invocation the aspect being invoked is spoken as {{aspect}} and in the
+environment as SERVITOR_ASPECT; the aspect the rite stood in before is
+{{former}} and SERVITOR_FORMER_ASPECT. Which aspect a rite stands in now is
+divined from its omens, as the augury tells.
+
+Kindred passages: aspect-maps, invoke, augury, omens, standing, placeholders
+
+Exempla:
+  "aspects": ["default", "finii", "porpl"]
+
+  servitor invoke theme porpl
+  servitor augury theme --is porpl && echo "the visage is porpl"

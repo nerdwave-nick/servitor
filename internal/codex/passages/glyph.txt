@@ -1,0 +1,39 @@
+The mark that opens a sanctum's markers in the vessel's own tongue
+
+The markers of a sanctum must be read by the vessel's own machine-spirit as
+idle remarks, never as commands. The glyph is the mark that begins such a
+remark in the vessel's tongue — "#" for most, "//" for the C-born tongues and
+KDL, "--" for Lua and SQL. It stands at the head of both markers:
+
+  <glyph> +++ begin of sanctum <ward> -- aspect|<aspect> +++
+
+When neither "glyph" nor "closing-glyph" is written, both are divined from the
+vessel's extension:
+
+  //        .kdl .js .ts .jsonc .json5 .c .h .cpp .hpp .go .rs .java .kt
+            .swift .zig .scss .less .qml .dart
+  --        .lua .sql .hs
+  "         .vim
+  %         .tex
+  ;;        .el .scm .lisp
+  ;         .ini
+  /* */     .css
+  <!-- -->  .html .xml .svg .md
+
+Any other extension — or none — is given "#" and no closing glyph. When only
+"closing-glyph" is written, the glyph is still divined. When "glyph" is
+written, the closing glyph is only what "closing-glyph" says, and none if it
+says nothing.
+
+The glyph must be a single line and may not be empty. It is never
+illuminated. Changing the glyph of a sanctum already kept in a vessel leaves
+the old markers unrecognised, and a new sanctum is appended.
+
+Kindred passages: closing-glyph, sanctum, ward, vessel
+
+Exempla:
+  {"sanctum": "~/.config/hypr/hyprland.conf", "glyph": "#",
+   "scripture": {"on": "decoration { blur { enabled = true } }", "off": ""}}
+
+  {"sanctum": "~/.config/app/settings.txt", "glyph": "//",
+   "scripture": {"*": "visage = {{aspect}}"}}

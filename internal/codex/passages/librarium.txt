@@ -1,0 +1,30 @@
+The hall where rites and settings are kept, and the rune naming it
+
+The Librarium is the servitor's archive: a hall holding the hall rites/, in
+which every rite is recorded as one scripture (<name>.json or <name>.jsonc,
+the name of the scripture-file being the rite's name), and beside it the
+settings in servitor.json. Only rites/ is read; scriptures kept elsewhere in
+the Librarium are not rites.
+
+The servitor finds its Librarium thus, the first that speaks prevailing: the
+universal rune --librarium (shorthand -l), given to any ritual; then the
+environment's SERVITOR_LIBRARIUM; then $XDG_CONFIG_HOME/servitor, or
+~/.config/servitor when that is not set. A leading "~" and the $NAMES of the
+environment are expanded, and a relative path is reckoned from the hall the
+servitor was summoned in. Should the rune be spoken more than once, the last
+prevails.
+
+Naming another Librarium changes everything at once: its rites, its settings
+and — where its settings name one — its chronicle.
+
+Paths within a rite that do not begin at the root — vessels, tethers,
+anchors, tomes and litany scrolls — are reckoned from the hall rites/ of the
+Librarium, where the rite's scripture is kept, and incantations, litanies and
+the auspex are spoken in that hall.
+
+Kindred passages: rite, chronicle, pattern, vessel, tongue, patience, vox
+
+Exempla:
+  servitor --librarium ~/dotfiles/servitor census
+  servitor -l ./sandbox invoke theme porpl --foresee
+  SERVITOR_LIBRARIUM=~/dotfiles/servitor servitor cogitator

@@ -1,0 +1,36 @@
+The name that marks one sanctum within its vessel
+
+A ward is the name a sanctum bears inside its markers, the sigil by which the
+servitor finds its own region amid the rest of a vessel's scripture. It is
+written into both markers:
+
+  # +++ begin of sanctum <ward> -- aspect|on +++
+  # +++ end of sanctum <ward> +++
+
+When a sanctum writes no "ward", the rite's own name serves as its ward.
+Wards exist so that many sanctums — of one rite or of several — may dwell in
+the same vessel side by side, each rewriting only its own region.
+
+A ward may not be empty and may hold no whitespace, for it is written into
+the markers. Nor may it hold the sanctum's closing glyph, which would end
+the marker in its midst. The ward is never illuminated: placeholders have no
+power there, for the marker must be found again by every augury.
+
+One ward may be kept only once in one vessel. Should two sanctums — in one
+rite or across the rites of the Librarium — claim the same ward in the same
+vessel, the inquisition denounces it as heresy, for they would overwrite each
+other's scripture. Vessels are compared after "~", $NAMES and the rite's hall
+are reckoned, so two spellings of one path do not escape judgement. A vessel
+found to hold the same ward begun twice is heresy as well.
+
+Changing a ward abandons the old sanctum: its markers remain in the vessel,
+and a new sanctum is appended under the new ward at the next invocation.
+
+Kindred passages: sanctum, glyph, closing-glyph, vessel, inquisition
+
+Exempla:
+  {"sanctum": "~/.config/niri/util.kdl", "ward": "cursor",
+   "scripture": {"on": "cursor { hide-after-inactive-ms 400; }", "off": ""}}
+
+  {"sanctum": "~/.config/niri/util.kdl", "ward": "gaps",
+   "scripture": {"*": "layout { gaps 8; }"}}

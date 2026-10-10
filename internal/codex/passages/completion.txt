@@ -1,0 +1,34 @@
+Engrave the completion litanies of the servitor into your terminal
+
+The completion ritual speaks a litany of completion for the tongue of your
+terminal — bash, zsh, fish or powershell — which, once sourced, lets the Tab
+key complete the servitor's words as they are typed. The litany is not
+static: on every Tab it asks the servitor itself, so it always knows the
+rites of the Librarium as they stand now.
+
+It offers the rituals; the rites of the Librarium, each with its purpose;
+the aspects of a rite, the aspect it stands in marked as the current aspect;
+the inscription runes of a rite, each with its purpose, and the values its
+decrees grant, each naming the aspects that decree it; the keys of an
+augury; the aspects for --is; the rites for the Inquisition; and every topic
+of the codex for expound, each with its summing line. The rune --librarium
+completes halls, and --chronicle the names of scripture-files.
+
+Completion must answer at once, so it never awakens an auspex: the current
+aspect it marks is read from the omens of the steps and the data-slate alone.
+
+Bash requires the bash-completion package to be installed; zsh requires
+compinit to have been called. Each tongue keeps its litanies in its own
+place; the exempla below engrave them for the present session or for good.
+
+Kindred passages: invoke, augury, expound, inscriptions, decrees, auspex
+
+Exempla:
+  source <(servitor completion bash)
+  servitor completion bash \
+    > ~/.local/share/bash-completion/completions/servitor
+
+  servitor completion zsh > "${fpath[1]}/_servitor"
+
+  servitor completion fish | source
+  servitor completion fish > ~/.config/fish/completions/servitor.fish

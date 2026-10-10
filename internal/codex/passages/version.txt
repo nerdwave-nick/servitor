@@ -1,0 +1,17 @@
+Reveal the pattern of the servitor itself
+
+The rune --version (shorthand -v) is given to the servitor alone, before any
+ritual. The servitor then speaks the pattern it was forged in — the version
+recorded when it was built, or "dev" for a servitor forged from unmarked
+sources — with a blessing, and does nothing else.
+
+Do not confuse the servitor's own pattern with the pattern of scripture: the
+key "pattern" of a rite or of the settings names the form the scripture is
+written in, "Mark I" for this servitor, while the rune --version names the
+forging of the servitor itself.
+
+Kindred passages: pattern, expound
+
+Exempla:
+  servitor --version
+  servitor -v

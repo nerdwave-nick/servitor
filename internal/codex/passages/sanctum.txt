@@ -1,0 +1,59 @@
+A step that keeps a warded region of a vessel and rewrites it alone
+
+The sanctum is the most reverent of the steps. Its own key names a vessel —
+a scripture-file of the machine — and within that vessel it keeps a warded
+region between two markers. Each invocation rewrites the scripture between
+the markers and nothing else; every line outside them is inviolate, so the
+servitor may share a vessel with the hands that wrote the rest of it.
+
+The markers are written in the vessel's own glyphs, so the vessel's own
+machine-spirit reads them as mere remarks:
+
+  <glyph> +++ begin of sanctum <ward> -- aspect|<aspect> +++ <closing-glyph>
+  <glyph> +++ end of sanctum <ward> +++ <closing-glyph>
+
+The begin marker records the aspect the sanctum was last invoked into; of
+the key|value pairs after "--" only aspect| is read and all others are
+passed over. When the vessel holds no sanctum of this ward yet, the sanctum
+is appended to the vessel's end after a blank line; when it holds one, the
+sanctum is rewritten in its place and keeps its indent.
+
+The "scripture" is what the sanctum holds for each aspect — an aspect map of
+inline words, a list of lines or a tome. Empty scripture ("") keeps an empty
+sanctum, markers and all. Null scripture is heresy: a sanctum is never struck
+from its vessel, for its marker is what remembers the aspect. Scripture that
+would carry one of the sanctum's own markers into the vessel is heresy too.
+
+"ward" names the sanctum within its vessel and defaults to the rite's name.
+"glyph" and "closing-glyph" are divined from the vessel's extension unless
+written. "consecrate": true brings a missing vessel into being (sealed 0644);
+without it a missing vessel is heresy in the pre-flight. Halls are never
+raised: the hall that is to hold the vessel must already stand.
+
+The vessel's path may speak placeholders; a leading "~" and the $NAMES of
+the environment are expanded, and a path not rooted at "/" is reckoned from
+the rites/ hall of the Librarium. A vessel that is a tether is followed: the
+scripture-file at the far end is rewritten, the tether itself remains. Every
+write is whole and sudden — a fresh scripture-file takes the old one's place
+at once — and keeps the seal the vessel bore.
+
+The sanctum yields an omen: the aspect its begin marker records. Should hands
+other than the servitor's alter the scripture between the markers, so that
+it is no longer the scripture of the recorded aspect, the sanctum is tainted;
+the augury names it under "taint" and the inquisition notes it as impurity.
+Markers begun twice, never sealed, or sealed without beginning are heresy.
+
+Should the invocation fall, the reversion returns the vessel to the very
+scripture it held before, and strikes a vessel the sanctum consecrated.
+
+Kindred passages: ward, glyph, closing-glyph, consecrate, scripture, vessel,
+omens, standing
+
+Exempla:
+  {"sanctum": "~/.config/niri/util.kdl",
+   "scripture": {"on": "cursor {\n    hide-after-inactive-ms 400\n}",
+                 "off": ""}}
+
+  {"sanctum": "~/.config/waybar/style.css", "ward": "palette",
+   "consecrate": true,
+   "scripture": {"tome": "palettes/{{aspect}}.css"}}

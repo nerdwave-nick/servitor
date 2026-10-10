@@ -1,0 +1,39 @@
+A step that binds a name in the machine to an anchor elsewhere
+
+Know that a tether is a binding of the machine's own making: a name upon the
+filesystem that leads whoever reads it onward to its anchor, as a vox-relay
+leads a summons to a distant shrine. The tether step binds such a name to the
+anchor its aspect demands, rebinds it when another aspect is invoked, and
+unbinds it when the anchor is written null.
+
+The step's own key holds the bound name; "anchor" holds where it leads, and
+may differ for every aspect as an aspect map. Both may speak placeholders, so
+one anchor may serve every aspect through {{aspect}}. A leading "~" and the
+$NAMES of the environment are expanded in both, and a path that does not
+begin at the root is reckoned from the hall where the rite's scripture is
+kept (the rites/ hall of the Librarium); the tether is bound to the full path
+so reckoned.
+
+The servitor rebinds only a tether. Should a scripture-file already stand
+where the name is to be bound, the pre-flight refuses, for the servitor keeps
+no copy of what it casts down — unless the step burns with "zeal", and then
+the scripture-file gives way. A hall standing there never gives way, zeal or
+no zeal. Missing halls above the name are never raised; the pre-flight
+denounces them.
+
+A tether yields an omen: the anchor it leads to is compared with the anchor
+each aspect would render, and the aspect whose anchor it matches is the aspect
+it bears witness to. The inquisition notes as an impurity an anchor that
+stands nowhere for some aspect.
+
+Should the invocation fall, the reversion restores the binding exactly as it
+was found — rebound to its former anchor, or unbound if none stood before.
+
+Kindred passages: anchor, zeal, omens, aspect-maps, placeholders
+
+Exempla:
+  {"tether": "~/.local/share/nfluff/current-theme",
+   "anchor": "~/.config/nfluff/themes/{{aspect}}"}
+
+  {"tether": "~/.config/foot/colors.ini",
+   "anchor": {"dark": "~/.config/foot/night.ini", "*": null}}

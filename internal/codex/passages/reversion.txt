@@ -1,0 +1,42 @@
+The undoing of a fallen invocation, and the words that undo a command
+
+Should a step fall — its death-mark not 0, its patience run out, or the
+invocation halted at its master's command — the servitor does not leave the
+machine half-changed. It reverts: every step already performed is undone in
+reverse order, from the fallen step back to the first, so that the machine
+returns to its former aspect.
+
+Sanctums, transcriptions and tethers revert themselves, for the servitor
+captured what stood before it changed them: a sanctum and a transcribed
+vessel are written back as they were (a vessel the step consecrated is
+removed again), and a tether is rebound to its former anchor, or unbound.
+
+Incantations and litanies cannot be undone by the servitor alone; it does
+not know what their words did. Under "reversion" such a step carries the
+words that undo it — one line, spoken in the step's tongue, under the
+step's patience, in the rite's hall, with the same environment as the step.
+They may differ per aspect as an aspect map, and {{former}} (and
+SERVITOR_FORMER_ASPECT) name the aspect the machine is to return to. The
+reversion of the fallen step itself is spoken too, for it may have done half
+its work. A step without reversion reverts nothing.
+
+A reversion that falls does not stop the others; every one is attempted and
+its outcome told. When all succeed the verdict is reverted; when any falls,
+the verdict is faltered, and the rite will likely show corrupted. A halt
+from the terminal never halts the reversions. When foreseeing, the reversion
+each step would speak is shown.
+
+Kindred passages: verdicts, incantation, litany, placeholders, chronicle,
+invoke
+
+Exempla:
+  {"incantation": "systemctl --user stop wlsunset",
+   "reversion": "systemctl --user start wlsunset"}
+
+  // aspects "sharp" and "soft": only leaving "sharp" needs undoing
+  {"incantation": {"sharp": "hyprctl keyword decoration:rounding 0",
+                   "soft": "hyprctl keyword decoration:rounding 12"},
+   "reversion": {"sharp": "hyprctl reload", "*": ""}}
+
+  {"litany": "hooks/apply-theme", "offerings": ["{{aspect}}"],
+   "reversion": "hooks/apply-theme \"$SERVITOR_FORMER_ASPECT\""}

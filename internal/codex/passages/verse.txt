@@ -1,0 +1,30 @@
+The place of a step within its liturgy, counted from one
+
+The steps of a liturgy are its verses, and each is named by its place: the
+first step written is verse 1, the next verse 2, and so on to the last,
+vox-casts included. Wherever the servitor speaks of one step, it names the
+verse and then the step by its own key and what that key holds — never by a
+bare number, but as the liturgy itself would say it.
+
+In the binharic of an augury, every omen and every taint bears "verse" beside
+the step's own key: {"verse": 2, "tether": "…"}. The chronicle names the step
+that fell as "fell_at": {"verse": 3, "incantation": "…"}, and each reversion
+by its verse and verdict. On the terminal, foresight, summaries and laments
+speak "verse 1 · sanctum ~/.config/niri/util.kdl".
+
+The heresies of a step are found by line and column within the scripture,
+not by verse; the verse names the step in what the servitor performed or
+observed. The vox-casts of progress tell "step x / n", counting only the true
+steps, and their tidings may name the verse just performed as {{step}}.
+
+Kindred passages: liturgy, omens, chronicle, verdicts, foresee
+
+Exempla:
+  servitor invoke theme porpl --foresee
+
+  verse 1 · vox-cast progress
+  verse 2 · tether ~/.local/share/nfluff/current-theme
+  verse 3 · incantation source ~/.config/nfluff/themes/porpl/hooks
+
+  {"verse": 2, "tether": "~/.local/share/nfluff/current-theme",
+   "aspect": "porpl"}

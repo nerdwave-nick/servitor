@@ -1,0 +1,38 @@
+A scripture-file of the machine that a rite writes into
+
+A vessel is any scripture-file of the machine that a rite reshapes: a sanctum
+rewrites only its warded region within the vessel, a transcription writes
+the whole vessel anew or casts it out. The step's own key holds the vessel's
+path, and the path is one for every aspect, for omens and markers must know
+where to look.
+
+A leading "~" and the $NAMES of the environment are expanded in the path,
+and placeholders are illuminated; a path that does not begin at the root is
+reckoned from the hall where the rite's scripture is kept (the rites/ hall of
+the Librarium). Write full paths, or paths from "~", unless the vessel truly
+dwells beside the rite.
+
+A vessel reached through a tether is followed: the scripture-file at the far
+end is rewritten, and the tether itself remains as it was. Every rewriting is
+whole or nothing — the new scripture is inscribed beside the vessel and then
+set in its place at once, so no reader ever sees it half-written. The
+vessel's seal is kept, and a vessel the servitor brings into being receives
+the seal 0644 — unless a transcription names a "seal" of its own.
+
+The servitor never raises missing halls above a vessel: the pre-flight
+denounces them, and nothing is performed. A sanctum whose vessel is absent
+consecrates it only when "consecrate" is true; otherwise the pre-flight
+refuses, and the inquisition notes the missing vessel as an impurity. A
+transcription replaces a vessel only when it holds the scripture of one of
+the rite's aspects — or when the step burns with zeal. No copy of a vessel is
+kept beyond the reversion of the invocation itself.
+
+Kindred passages: sanctum, transcription, consecrate, seal, zeal, tether
+
+Exempla:
+  {"sanctum": "~/.config/niri/util.kdl",
+   "scripture": {"on": "cursor {\n    hide-after-inactive-ms 400\n}",
+                 "off": ""}}
+
+  {"transcription": "$XDG_CONFIG_HOME/foot/theme.ini",
+   "scripture": {"tome": "themes/{{aspect}}.ini"}, "seal": "0600"}

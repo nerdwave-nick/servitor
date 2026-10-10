@@ -1,0 +1,46 @@
+A step that recites a whole written scroll of commands
+
+Where an incantation speaks a single line, a litany recites a whole scroll:
+a scripture-file of commands kept beside the rite or anywhere upon the
+machine. The step's own key holds the path of the scroll, and it may differ
+for every aspect as an aspect map. A leading "~" and the $NAMES of the
+environment are expanded, and a path that does not begin at the root is
+reckoned from the hall where the rite's scripture is kept.
+
+A scroll the machine may execute is recited by its own shebang, whatever its
+tongue; any other scroll is recited through the tongue of the step, the rite
+or the settings ("<tongue> <scroll>"). The scroll must stand when its turn
+comes: the pre-flight looks for it as the steps before it would leave the
+machine, so a transcription earlier in the liturgy may write the very scroll
+a litany then recites.
+
+A litany receives nothing it is not offered. Under "offerings" a list of
+words is laid before the scroll, each handed over exactly as written — never
+parsed by a tongue, never split, no "~" expanded — with only its placeholders
+filled; each may differ per aspect. Without offerings the scroll is recited
+bare, and learns the aspect from SERVITOR_ASPECT and its kin.
+
+Like an incantation, the scroll is recited in the rite's hall with nothing
+upon its input, anointed with SERVITOR_ASPECT, SERVITOR_FORMER_ASPECT,
+SERVITOR_RITE and SERVITOR_INSCRIPTION_<KEY>. A death-mark other than 0, or
+patience run out (30s unless the settings or the step say otherwise), makes
+it fall; on running out the servitor slays it with every process it
+summoned. Its words are captured, never printed. Background children that
+must outlive it should send their words elsewhere ("cmd >/dev/null 2>&1 &").
+Interactive scrolls are unsupported: neither the cogitator nor a hotkey
+lends them a terminal.
+
+Its "reversion" is not a scroll but one line of words, spoken in the tongue
+should the invocation fall. A litany yields no omen.
+
+Kindred passages: offerings, incantation, tongue, patience, reversion,
+placeholders
+
+Exempla:
+  {"litany": "scripts/change-theme",
+   "offerings": ["{{aspect}}", "{{former}}"]}
+
+  {"litany": {"day": "hooks/dawn.sh", "night": "hooks/dusk.sh"},
+   "tongue": "zsh",
+   "patience": "1m",
+   "reversion": "hooks/restore.sh \"$SERVITOR_FORMER_ASPECT\""}

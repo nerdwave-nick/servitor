@@ -25,10 +25,7 @@ func (a *app) newInvokeCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "invoke <rite> <aspect> [--<inscription> <value>...]",
 		Short: "Invoke an aspect of a rite: perform its liturgy",
-		Long:  invokeLongHelp,
-		Example: `  servitor invoke mouse-autohide-toggle on --reason "gaming remnant"
-  servitor invoke mouse-autohide-toggle off --foresee`,
-		Args: cobra.ArbitraryArgs,
+		Args:  cobra.ArbitraryArgs,
 		// Rites complete as rituals of their own; never fall back to files.
 		ValidArgsFunction: cobra.NoFileCompletions,
 		RunE: func(cmd *cobra.Command, args []string) error {

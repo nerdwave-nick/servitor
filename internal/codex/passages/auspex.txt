@@ -1,0 +1,37 @@
+The rite's own scanning words, telling which aspect the machine bears
+
+Some aspects leave no mark a step could read: a do-not-disturb raised from
+a bar, a mode held only in the memory of a daemon. For such rites the
+"auspex" is the rite's own scanning device — words spoken in the rite's
+tongue that print the name of the aspect the machine stands in. What it
+prints, trimmed of surrounding emptiness, is an omen like any other.
+
+The auspex is written short, as the words alone, or long, as
+{"rite": "<words>", "patience": "5s"}, where "rite" holds the words and
+"patience" how long the auspex may labour; unless written, its patience is
+two seconds. When its patience runs out its whole process group is slain.
+An auspex that falls, outlasts its patience, or prints a word that names no
+declared aspect gives no omen at all — it is never mistaken for an aspect.
+
+The auspex is spoken in the rite's tongue (else the tongue of the settings,
+else bash), from the hall of the rite's scripture, with the environment of
+the rite's commands: SERVITOR_RITE, the inscriptions of the data-slate as
+SERVITOR_INSCRIPTION_<KEY>, and SERVITOR_ASPECT. During an invocation
+SERVITOR_ASPECT and {{aspect}} name the aspect being invoked; when an augury
+or census asks it outside of one, they are empty. Placeholders may be spoken
+in its words.
+
+The augury, the census and the inquisition awaken the auspex. Completion
+never does, so that a Tab is answered at once, and neither does --foresee,
+which touches nothing at all. Where the auspex agrees with the omens of the
+steps on an aspect the data-slate did not record, the rite is desecrated —
+changed by other hands — which is noted, not condemned.
+
+Kindred passages: omens, standing, augury, patience, tongue, aspects
+
+Exempla:
+  "auspex": "makoctl mode | grep -q do-not-disturb && echo on || echo off"
+
+  "auspex": {"rite": "darkman get", "patience": "5s"}
+
+  servitor augury do-not-disturb aspect

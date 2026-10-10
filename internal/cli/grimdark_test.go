@@ -6,13 +6,15 @@ import (
 	"testing"
 )
 
+// TestRootHelpAndVersion: the servitor's own lore is the index of the codex;
+// a ritual's lore is its passage, followed by its flavored invocation.
 func TestRootHelpAndVersion(t *testing.T) {
 	e := newEnv(t)
 	help := e.mustRun("--help")
 	for _, want := range []string{
-		"+++ SERVITOR", "+++ begin of sanctum", "Mark I", "Sanctioned Rituals:", "Runes:", "Exempla:",
-		"invoke", "augury", "census", "inquisition", "cogitator", "completion",
-		"-l, --librarium", "SERVITOR_LIBRARIUM",
+		"THE CODEX", "servitor expound <topic>", "Rituals\n", "Runes\n",
+		"invoke", "augury", "census", "inquisition", "cogitator", "completion", "expound",
+		"librarium", "chronicle", "sanctum", "tether", "pattern",
 	} {
 		if !strings.Contains(help, want) {
 			t.Errorf("root help missing %q", want)
@@ -23,7 +25,8 @@ func TestRootHelpAndVersion(t *testing.T) {
 			t.Errorf("root help still speaks of %q", unwanted)
 		}
 	}
-	if sub := e.mustRun("census", "--help"); !strings.Contains(sub, "Universal Runes:") || !strings.Contains(sub, "--binharic") {
+	if sub := e.mustRun("census", "--help"); !strings.Contains(sub, "as written in the codex") ||
+		!strings.Contains(sub, "Universal Runes:") || !strings.Contains(sub, "--binharic") || !strings.Contains(sub, "-l, --librarium") {
 		t.Errorf("census help not flavored:\n%s", sub)
 	}
 	if out := e.mustRun("--version"); !strings.Contains(out, "blessed be the Omnissiah") {
@@ -129,7 +132,7 @@ func TestRoot_StartsCogitatorOnlyOnTerminal(t *testing.T) {
 	}
 
 	isTerminal = func() bool { return false }
-	if out := e.mustRun(); !strings.Contains(out, "Sanctioned Rituals") || gotDir != "" {
+	if out := e.mustRun(); !strings.Contains(out, "THE CODEX") || gotDir != "" {
 		t.Fatal("without a terminal servitor must print help, not awaken the cogitator")
 	}
 	isTerminal = func() bool { return true }

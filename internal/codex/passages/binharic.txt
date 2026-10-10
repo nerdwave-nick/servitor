@@ -1,0 +1,21 @@
+Speak in binharic, the tongue of machines, for other machines to read
+
+The rune --binharic is given to the census and to the Inquisition. Their
+answers are then rendered not as tables and sentences for the faithful but as
+binharic for lesser machines: indented objects with stable keys, which other
+commands may parse — jq foremost among them.
+
+The census in binharic is a list in which every rite bears rite, aspect,
+standing, aspects, purpose, desecrated, last_rite and recorded_in. The
+Inquisition in binharic is a list of findings, each bearing scripture, line,
+column, rite, judgement ("heresy" or "impurity") and denunciation; its exit
+remains 1 when any heresy was found.
+
+The augury needs no such rune: spoken without a key it always answers in
+binharic, and spoken with a key it answers with that single value.
+
+Kindred passages: census, inquisition, augury
+
+Exempla:
+  servitor census --binharic | jq -r '.[] | "\(.rite) \(.aspect)"'
+  servitor inquisition --binharic | jq length

@@ -1,0 +1,20 @@
+Judge the scriptures alone, sparing the machine they act upon
+
+The rune --spare-vessels is given to the Inquisition. Without it, the
+Inquisition judges not only the scriptures of the rites and the settings but
+also the machine their liturgies act upon: it seeks out tongues spoken
+nowhere, vessels missing without "consecrate", anchors missing for some
+aspect, tainted sanctums and desecrated rites — and to know desecration it
+reads every omen and awakens every auspex.
+
+With the rune, the Inquisition weighs the scriptures alone: their form,
+keys, aspects, aspect maps, placeholders, inscriptions, tomes and wards, and
+the settings. No vessel is read and no auspex awakened, so the judgement is
+swift and the same upon every machine — fit for scriptures kept in a
+repository and judged far from the machine they will serve.
+
+Kindred passages: inquisition, heresy, vessel, auspex
+
+Exempla:
+  servitor inquisition --spare-vessels
+  servitor --librarium ./servitor inquisition --spare-vessels --binharic

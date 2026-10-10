@@ -1,0 +1,62 @@
+Invoke an aspect of a rite and perform its liturgy, verse by verse
+
+Invocation is the servitor's foremost ritual. Name a rite and one of its
+aspects, and the servitor brings the machine into that aspect by performing
+the rite's liturgy — its sanctums, transcriptions, tethers, incantations,
+litanies and vox-casts — one step after another, exactly in the order
+written. Every rite of the Librarium stands beneath this ritual as a ritual
+of its own, so the faithful write: servitor invoke <rite> <aspect>.
+
+First comes the pre-flight, which touches nothing: every placeholder is
+illuminated, every tome read afresh, every vessel, tether and tongue weighed,
+and every inscription resolved. Should the pre-flight find any heresy, the
+invocation is forbidden, each heresy is recited, and nothing on the machine
+is disturbed.
+
+Then the liturgy is performed. Should a step fall — a vessel that cannot be
+written, an incantation that ends bearing a death-mark, a patience that runs
+out — the steps already performed are reverted in reverse order, the fallen
+step among them, and the lament tells which verse fell, its last words, and
+how each reversion went. An interrupt from the terminal (Ctrl-C) halts the
+invocation in the same manner: the labouring command and its kin are slain,
+no further step begins, and every deed is undone; a second interrupt during
+the reversions is not heeded, so that the reversions may finish.
+
+Each inscription the rite declares becomes a rune of its own, --<key>
+<value>, which outranks the rite's decree for that aspect; an empty word
+clears it. A mandatory inscription that neither rune nor decree supplies
+forbids the invocation. The rune --foresee (-f) reveals everything the
+invocation would do and performs none of it; --silence (-s) withholds the
+summary of a triumph.
+
+After a performance the servitor writes the rite's data-slate and adds one
+line to the chronicle, whatever the verdict. An invocation the pre-flight
+forbade, or one merely foreseen, is neither chronicled nor recorded on the
+data-slate, for nothing was performed. Vox-casts are printed upon the
+controlling terminal when there is one, and sent to the desktop otherwise.
+
+The servitor exits 0 upon triumph, and 1 when the invocation was forbidden,
+the rite or aspect is unknown, or a step fell.
+
+A rite's scripture, kept in <Librarium>/rites/<name>.json, may read thus:
+
+  {
+    "pattern": "Mark I",
+    "purpose": "Hide the mouse cursor after inactivity",
+    "aspects": ["on", "off"],
+    "inscriptions": {"reason": {"purpose": "why the rite was invoked"}},
+    "liturgy": [
+      {"sanctum": "~/.config/niri/util.kdl",
+       "scripture": {"on": "cursor {\n    hide-after-inactive-ms 400\n}",
+                     "off": ""}},
+      {"incantation": "niri msg action do-screen-transition"},
+      {"vox-cast": "success"}
+    ]
+  }
+
+Kindred passages: rite, liturgy, pre-flight, reversion, inscriptions, verdicts
+
+Exempla:
+  servitor invoke mouse-autohide-toggle on --reason "gaming remnant"
+  servitor invoke mouse-autohide-toggle off --foresee
+  servitor invoke theme "$(printf 'default\nfinii\nporpl\n' | fuzzel --dmenu)"

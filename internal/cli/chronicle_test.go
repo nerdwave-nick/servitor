@@ -66,9 +66,9 @@ func TestChronicleRune_PlacesTheChronicle(t *testing.T) {
 
 func TestChronicleRune_AliasStaysHidden(t *testing.T) {
 	e := newEnv(t)
-	for _, args := range [][]string{{"--help"}, {"census", "--help"}} {
+	for _, args := range [][]string{{"--help"}, {"census", "--help"}, {"expound", "chronicle"}} {
 		out := e.mustRun(args...)
-		if !strings.Contains(out, "--chronicle") || !strings.Contains(out, librarium.EnvChronicle) {
+		if args[0] != "--help" && (!strings.Contains(out, "--chronicle") || !strings.Contains(out, librarium.EnvChronicle)) {
 			t.Errorf("%v does not name the chronicle rune:\n%s", args, out)
 		}
 		if strings.Contains(out, "--log") {

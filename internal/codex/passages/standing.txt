@@ -1,0 +1,42 @@
+How a rite stands: performed, dormant, corrupted, tainted and the rest
+
+Every augury and every census judges how each rite stands, weighing its
+omens against its data-slate. Six standings are known to the codex:
+
+  performed    the omens agree on one aspect; or no step gives an omen and
+               the data-slate names the aspect last invoked
+  dormant      neither omen nor data-slate names an aspect: the rite was
+               never invoked, and nothing in the machine bears its mark
+  corrupted    the omens disagree, so no aspect can be named; or the last
+               invocation faltered and could not be wholly reverted
+  tainted      other hands altered the scripture within a sanctum: it no
+               longer holds what its marker's aspect commands
+  desecrated   the omens agree on an aspect the data-slate did not record —
+               the machine was changed outside the servitor
+  heretical    the rite's scripture is invalid, and nothing can be read
+
+A rite holds the gravest standing that applies, from heretical down through
+corrupted, tainted and desecrated to performed or dormant.
+
+Desecration is no heresy. When a rite is invoked elsewhere — a bar that
+flips do-not-disturb, a hand that re-points a tether — the servitor reports
+the true aspect, marks the rite desecrated and names the aspect its
+data-slate remembers as "former"; the next invocation through the servitor
+cleanses it. The inquisition notes desecrated rites and tainted sanctums as
+impurities; a heretical rite stands accused of heresy.
+
+In binharic, an augury speaks "standing", "desecrated" (true or false),
+"former" (only when desecrated), "omens", and "taint" — the sanctums other
+hands altered, each named by its verse. The census bears "standing" and
+"desecrated" for every rite.
+
+Kindred passages: omens, data-slate, augury, census, heresy
+
+Exempla:
+  servitor augury mouse-autohide-toggle standing
+  servitor census
+
+  {"rite": "dnd", "aspect": "on", "standing": "desecrated",
+   "desecrated": true, "former": "off", "inscriptions": {},
+   "last_rite": {"verdict": "triumph", "at": "2026-10-10T13:30:00Z"},
+   "omens": [{"auspex": true, "aspect": "on"}], "taint": []}
