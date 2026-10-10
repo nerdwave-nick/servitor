@@ -57,6 +57,9 @@ func TestPerform_RevertsEveryFileStepWhenOneFalls(t *testing.T) {
 		t.Fatalf("reverted verses %v, want %v", verses, want)
 	}
 	sameTree(t, before, tree(t, fx.data))
+	if out.Verdict != Reverted {
+		t.Fatalf("verdict %q", out.Verdict)
+	}
 	if exists(created) || sealOf(t, util) != 0o640 || sealOf(t, vis) != 0o600 || anchorOf(t, theme) != "themes/porpl" {
 		t.Fatal("the machine was not restored")
 	}
@@ -137,6 +140,12 @@ func TestPerformAll_RevertsFromTheFallenStepBackToTheFirst(t *testing.T) {
 	if out.Fell == nil || out.Fell.Number != 4 || out.Fell.Heresy == nil {
 		t.Fatalf("fell %+v", out.Fell)
 	}
+	if out.Verdict != Faltered {
+		t.Fatalf("verdict %q", out.Verdict)
+	}
+	if len(out.Deeds) != 4 || out.Deeds[3].Number != 4 || out.Deeds[3].Heresy == nil || out.Deeds[2].Heresy != nil {
+		t.Fatalf("deeds %+v", out.Deeds)
+	}
 	if steps[4].performed || steps[4].wasRevered {
 		t.Fatal("a step after the fallen one was touched")
 	}
@@ -163,7 +172,7 @@ func TestPerformAll_RevertsFromTheFallenStepBackToTheFirst(t *testing.T) {
 func TestPerformAll_Triumphs(t *testing.T) {
 	var log []string
 	out := performAll([]performer{&deed{n: 1, log: &log, changes: true}, &deed{n: 2, log: &log}})
-	if out.Fell != nil || len(out.Reversions) != 0 || len(log) != 2 {
+	if out.Fell != nil || len(out.Reversions) != 0 || len(log) != 2 || out.Verdict != Triumph || len(out.Deeds) != 2 {
 		t.Fatalf("outcome %+v, log %v", out, log)
 	}
 }
@@ -226,12 +235,6 @@ func TestForesee_TouchesNothing(t *testing.T) {
 	if c := seen[4].Vessel; c.BeforeSeal != 0o600 || c.AfterSeal != 0o644 || !equalStrings(c.Diff(), []string{"- visage off", "+ visage on"}) {
 		t.Errorf("transcription foreseen as %+v", c)
 	}
-}
-
-func TestPrepare_DoesNotYetSpeakCommands(t *testing.T) {
-	fx := newFixture(t)
-	refused(t, fx.rite(t, `{"incantation": "true"}`), Options{Aspect: "on"}, "incantation")
-	refused(t, fx.rite(t, `{"litany": "scroll"}`), Options{Aspect: "on"}, "litany")
 }
 
 func equalInts(a, b []int) bool {

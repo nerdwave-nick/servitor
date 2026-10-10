@@ -12,8 +12,8 @@
 // directory of the rite's scripture (librarium.Rite.ResolvePath).
 //
 // Steps of every kind join the same ordered loop through the performer
-// interface; incantations and litanies are not yet spoken, and vox-casts are
-// not yet sent.
+// interface. Incantations and litanies are spoken by real processes (see
+// speak.go); vox-casts are not yet sent.
 package invocation
 
 import (
@@ -35,6 +35,10 @@ type Options struct {
 	// invocations illuminated their scripture; a transcription recognises
 	// its own vessel by them too.
 	Recorded map[string]string
+	// Orders are the settings resolved; they give incantations and litanies
+	// the tongue and patience their step and rite do not name. Zero orders
+	// speak bash with librarium.DefaultPatience.
+	Orders librarium.Orders
 }
 
 // Verse names one step of the liturgy: its place, its kind and what its own
@@ -65,25 +69,6 @@ type Invocation struct {
 	foresight []Foresight
 	heresies  Heresies
 	performed bool
-}
-
-// Fall is the step that failed and why.
-type Fall struct {
-	Verse
-	Heresy error
-}
-
-// Reversion is the outcome of undoing one step; Heresy is nil when it
-// triumphed.
-type Reversion struct {
-	Verse
-	Heresy error
-}
-
-// Outcome is how a performance ended.
-type Outcome struct {
-	Fell       *Fall       // nil when every step was performed
-	Reversions []Reversion // in the order performed: from the fallen step back to the first
 }
 
 // Prepare runs the pre-flight of rite r for opts. The returned invocation
@@ -145,17 +130,38 @@ func (inv *Invocation) Perform() (Outcome, error) {
 	return performAll(inv.steps), nil
 }
 
+// utterer is a performer whose commands utter words worth keeping.
+type utterer interface {
+	uttered() (said, unsaid string) // what perform and revert uttered
+}
+
+func uttered(step performer) (said, unsaid string) {
+	if u, ok := step.(utterer); ok {
+		return u.uttered()
+	}
+	return "", ""
+}
+
 func performAll(steps []performer) Outcome {
-	var out Outcome
+	out := Outcome{Verdict: Triumph}
 	for k, step := range steps {
 		err := step.perform()
+		said, _ := uttered(step)
+		out.Deeds = append(out.Deeds, Deed{Verse: step.verse(), Output: said, Heresy: err})
 		if err == nil {
 			continue
 		}
-		out.Fell = &Fall{Verse: step.verse(), Heresy: err}
+		out.Fell = &Fall{Verse: step.verse(), Heresy: err, Output: said}
+		out.Verdict = Reverted
 		for j := k; j >= 0; j-- {
-			if reverted, err := steps[j].revert(); reverted || err != nil {
-				out.Reversions = append(out.Reversions, Reversion{Verse: steps[j].verse(), Heresy: err})
+			reverted, err := steps[j].revert()
+			if !reverted && err == nil {
+				continue
+			}
+			_, unsaid := uttered(steps[j])
+			out.Reversions = append(out.Reversions, Reversion{Verse: steps[j].verse(), Heresy: err, Output: unsaid})
+			if err != nil {
+				out.Verdict = Faltered
 			}
 		}
 		break
