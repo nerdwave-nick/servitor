@@ -1,7 +1,6 @@
 package librarium
 
 import (
-	"bytes"
 	"encoding/json/jsontext"
 	"errors"
 	"fmt"
@@ -11,27 +10,20 @@ import (
 // Marshal writes r as indented Mark I scripture. Keys follow the order of
 // the codex (save "$schema", which is kept and written first), defaults that
 // were never written stay unwritten, the alias "force" is written as "zeal",
-// and comments are not preserved.
+// and comments are not preserved. An array or object of scalars shares one
+// line when it fits in eighty columns, save scripture written as its lines.
 func Marshal(r *Rite) ([]byte, error) {
-	var buf bytes.Buffer
-	w := &writer{enc: jsontext.NewEncoder(&buf, jsontext.WithIndent("  "))}
+	w := &writer{}
 	w.rite(r)
-	if w.err != nil {
-		return nil, w.err
-	}
-	return buf.Bytes(), nil
+	return w.layout()
 }
 
-// writer emits tokens until the first failure.
+// writer gathers the tokens of a scripture until the first failure, and
+// lays them out once whole.
 type writer struct {
-	enc *jsontext.Encoder
-	err error
-}
-
-func (w *writer) tok(t jsontext.Token) {
-	if w.err == nil {
-		w.err = w.enc.WriteToken(t)
-	}
+	root  *node
+	stack []frame
+	err   error
 }
 
 func (w *writer) str(s string) { w.tok(jsontext.String(s)) }
@@ -194,7 +186,7 @@ func (w *writer) scripture(s Scripture) {
 		w.flag("illuminate", s.Illuminate)
 		w.end()
 	case strings.Contains(s.Text, "\n"):
-		w.strings(strings.Split(s.Text, "\n"))
+		w.lines(strings.Split(s.Text, "\n"))
 	default:
 		w.str(s.Text)
 	}

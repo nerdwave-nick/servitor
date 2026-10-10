@@ -6,6 +6,7 @@ import (
 	"strings"
 	"testing"
 	"time"
+	"unicode/utf8"
 )
 
 // roundTrip writes r, reads it back and demands an equal, pure rite whose
@@ -87,5 +88,61 @@ func (alienStep) Kind() Kind { return 0 }
 func TestMarshal_RefusesAlienSteps(t *testing.T) {
 	if _, err := Marshal(&Rite{Name: "x", Aspects: []string{"on"}, Liturgy: []Step{alienStep{}}}); err == nil {
 		t.Fatal("an alien step must not be written")
+	}
+}
+
+// TestMarshal_ShortScalarMembersShareOneLine: an array or object of scalars
+// is written on one line when that line, indent and key with it, fits in
+// eighty columns; scripture written as lines keeps one line per line.
+func TestMarshal_ShortScalarMembersShareOneLine(t *testing.T) {
+	r, fs := parse(t, theme)
+	if len(fs) != 0 {
+		t.Fatalf("findings: %v", fs)
+	}
+	data := string(roundTrip(t, r))
+	for _, want := range []string{
+		"\n  \"aspects\": [\"default\", \"finii\", \"porpl\"],\n",
+		"\n    \"reason\": {\"purpose\": \"why the rite was invoked\"},\n",
+		"\n      \"decrees\": {\"default\": \"plain\", \"*\": \"ornate\"}\n",
+		"\n  \"auspex\": {\"rite\": \"cat ~/.cache/theme\", \"patience\": \"5s\"},\n",
+		"\n    {\"incantation\": \"niri msg action do-screen-transition -d 200\"},\n",
+		"\n    {\"vox-cast\": \"progress\"},\n",
+		"\n    {\"vox-cast\": \"success\"}\n",
+		"\n        {\"default\": \"-q\", \"*\": \"{{inscription.reason}}\"}\n",
+		"\n        \"finii\": [\n          \"a {\",\n          \"  b\",\n          \"}\"\n        ],\n",
+		"\n      \"reversion\": {\"*\": \"\"}\n",
+	} {
+		if !strings.Contains(data, want) {
+			t.Errorf("scripture lacks %q:\n%s", want, data)
+		}
+	}
+	for _, line := range strings.Split(data, "\n") {
+		if n := utf8.RuneCountInString(line); n > 80 && (strings.HasSuffix(line, "]") || strings.HasSuffix(line, "],") ||
+			strings.HasSuffix(line, "}") || strings.HasSuffix(line, "},")) && strings.Count(line, `"`) > 2 {
+			t.Errorf("a line of %d columns was joined: %s", n, line)
+		}
+	}
+}
+
+func TestMarshal_JoinsWhatFitsAndNothingElse(t *testing.T) {
+	long := strings.Repeat("x", 60)
+	r := &Rite{Name: "x", Aspects: []string{"on", "off"}, Liturgy: []Step{
+		&Litany{Scroll: Uniform("s"), Offerings: []AspectMap[string]{Uniform("~/x/{{aspect}}")}},
+		&Litany{Scroll: Uniform("s"), Offerings: []AspectMap[string]{}},
+		&Litany{Scroll: Uniform("s"), Offerings: []AspectMap[string]{Uniform(long), Uniform(long)}},
+		&Sanctum{Vessel: "/v", Scripture: Uniform(Inline("a\nb"))},
+		&Sanctum{Vessel: "/w", Scripture: PerAspect(Entry[Scripture]{"on", Inline("c\nd")}, Entry[Scripture]{"*", Inline("e")})},
+	}}
+	data := string(roundTrip(t, r))
+	for _, want := range []string{
+		"\n      \"offerings\": [\"~/x/{{aspect}}\"]\n",
+		"\n    {\"litany\": \"s\", \"offerings\": []},\n",
+		"\n      \"offerings\": [\n        \"" + long + "\",\n        \"" + long + "\"\n      ]\n",
+		"\n      \"scripture\": [\n        \"a\",\n        \"b\"\n      ]\n",
+		"\n        \"on\": [\n          \"c\",\n          \"d\"\n        ],\n        \"*\": \"e\"\n",
+	} {
+		if !strings.Contains(data, want) {
+			t.Errorf("scripture lacks %q:\n%s", want, data)
+		}
 	}
 }
