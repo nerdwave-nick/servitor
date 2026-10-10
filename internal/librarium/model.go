@@ -1,5 +1,7 @@
 // Package librarium reads, examines and writes rites of pattern Mark I kept
-// in a Librarium's rites/ directory.
+// in a Librarium's rites/ directory, and reads the settings kept beside them
+// in servitor.json (LoadSettings; Settings.Resolve applies runes, the
+// environment and the defaults).
 //
 // A rite's scripture is JSONC. Every key is examined: unknown keys, malformed
 // values, undeclared aspects, unknown placeholders and the other heresies of
