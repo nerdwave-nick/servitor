@@ -1,6 +1,9 @@
 package invocation
 
-import "io/fs"
+import (
+	"context"
+	"io/fs"
+)
 
 // newSeal is the seal of a vessel the servitor brings into being, unless
 // a transcription names another.
@@ -45,7 +48,7 @@ func (s *vesselStep) foresee() Foresight {
 	return Foresight{Verse: s.v, Vessel: &c}
 }
 
-func (s *vesselStep) perform() error {
+func (s *vesselStep) perform(context.Context) error {
 	c, err := s.plan(disk{})
 	if err != nil {
 		return err

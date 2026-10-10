@@ -41,8 +41,8 @@ type voice struct {
 }
 
 // speak runs the command to its end and returns what it uttered.
-func (v voice) speak() (string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), v.patience)
+func (v voice) speak(halt context.Context) (string, error) {
+	ctx, cancel := context.WithTimeout(halt, v.patience)
 	defer cancel()
 	cmd := exec.CommandContext(ctx, v.argv[0], v.argv[1:]...)
 	cmd.Dir, cmd.Env = v.dir, v.env
@@ -59,13 +59,15 @@ func (v voice) speak() (string, error) {
 func (v voice) judge(ctx context.Context, err error) error {
 	var exit *exec.ExitError
 	switch {
+	case errors.Is(ctx.Err(), context.Canceled):
+		return errHalted
 	case errors.Is(ctx.Err(), context.DeadlineExceeded):
 		return fmt.Errorf("its patience of %v ran out, and the servitor slew it together with every process "+
 			"it had summoned", v.patience)
 	case err == nil, errors.Is(err, exec.ErrWaitDelay):
 		return nil
 	case errors.As(err, &exit) && exit.Exited():
-		return fmt.Errorf("it ended with the status %d, and so the step has failed", exit.ExitCode())
+		return fmt.Errorf("it ended bearing the death-mark %d, a sign that its work was not done", exit.ExitCode())
 	case errors.As(err, &exit):
 		if ws, ok := exit.Sys().(syscall.WaitStatus); ok && ws.Signaled() {
 			return fmt.Errorf("it was struck down by the signal %q before it could end", ws.Signal())
@@ -73,6 +75,11 @@ func (v voice) judge(ctx context.Context, err error) error {
 	}
 	return fmt.Errorf("it could not be awakened: %w", lament(v.argv[0], unwrapStart(err)))
 }
+
+// errHalted is the heresy of a step the master halted, or would have begun
+// after the halt.
+var errHalted = errors.New("the invocation was halted at its master's command; the servitor slew whatever the " +
+	"step had summoned and began no further step")
 
 // unwrapStart lays bare the cause of a failed start, beneath the plain
 // words exec wraps it in.

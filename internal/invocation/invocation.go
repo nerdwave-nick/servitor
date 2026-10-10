@@ -18,6 +18,7 @@
 package invocation
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"maps"
@@ -60,7 +61,7 @@ type performer interface {
 	// foresee tells what the step will do, as planned in the pre-flight.
 	foresee() Foresight
 	// perform does the step, capturing what it changes.
-	perform() error
+	perform(ctx context.Context) error
 	// revert undoes what perform changed; reverted is false when there
 	// was nothing to undo.
 	revert() (reverted bool, err error)
@@ -125,7 +126,13 @@ var ErrPerformed = errors.New("this invocation has already been performed; prepa
 // have done part of its work — and a failing reversion does not stop the
 // others. The error is not nil, and nothing is performed, when the
 // pre-flight found heresy or the invocation was performed before.
-func (inv *Invocation) Perform() (Outcome, error) {
+func (inv *Invocation) Perform() (Outcome, error) { return inv.PerformContext(context.Background()) }
+
+// PerformContext is Perform, halted when ctx is done: the incantation or
+// litany being spoken is slain with its whole process group and falls, no
+// further step is begun, and the steps performed are reverted as after any
+// fall. Reversions are never halted; each labours within its own patience.
+func (inv *Invocation) PerformContext(ctx context.Context) (Outcome, error) {
 	if len(inv.heresies) > 0 {
 		return Outcome{}, inv.heresies
 	}
@@ -134,7 +141,7 @@ func (inv *Invocation) Perform() (Outcome, error) {
 	}
 	inv.performed = true
 	c := newCrier(inv.opts.Herald, values(inv.rite, inv.opts, inv.opts.Inscriptions), inv.steps)
-	return performAll(inv.steps, c), nil
+	return performAll(ctx, inv.steps, c), nil
 }
 
 // utterer is a performer whose commands utter words worth keeping.
@@ -151,10 +158,14 @@ func uttered(step performer) (said, unsaid string) {
 
 // performAll performs steps in order, telling c (which may be nil) of
 // every step performed and of the fall.
-func performAll(steps []performer, c *crier) Outcome {
+func performAll(ctx context.Context, steps []performer, c *crier) Outcome {
 	out := Outcome{Verdict: Triumph}
 	for k, step := range steps {
-		err := step.perform()
+		begun := ctx.Err() == nil
+		err := errHalted
+		if begun {
+			err = step.perform(ctx)
+		}
 		said, _ := uttered(step)
 		out.Deeds = append(out.Deeds, Deed{Verse: step.verse(), Output: said, Heresy: err})
 		if err == nil {
@@ -163,7 +174,11 @@ func performAll(steps []performer, c *crier) Outcome {
 		}
 		out.Fell = &Fall{Verse: step.verse(), Heresy: err, Output: said}
 		out.Verdict = Reverted
-		for j := k; j >= 0; j-- {
+		from := k
+		if !begun {
+			from = k - 1 // a step never begun has nothing to revert
+		}
+		for j := from; j >= 0; j-- {
 			reverted, err := steps[j].revert()
 			if !reverted && err == nil {
 				continue

@@ -10,7 +10,7 @@ func TestRootHelpAndVersion(t *testing.T) {
 	e := newEnv(t)
 	help := e.mustRun("--help")
 	for _, want := range []string{
-		"+++ SERVITOR", "begin servitor managed", "Sanctioned Rituals:", "Runes:", "Exempla:",
+		"+++ SERVITOR", "+++ begin of sanctum", "Mark I", "Sanctioned Rituals:", "Runes:", "Exempla:",
 		"invoke", "augury", "census", "inquisition", "cogitator", "completion",
 		"-l, --librarium", "SERVITOR_LIBRARIUM",
 	} {
@@ -113,7 +113,7 @@ func TestPlainVocabulary_EnvironmentIsIgnored(t *testing.T) {
 	if got := e.mustRun("--help"); got != want {
 		t.Fatal("SERVITOR_NO_GRIMDARK must change nothing")
 	}
-	if got := e.mustRun("census"); !strings.Contains(got, "RITE") || !strings.Contains(got, "(dormant)") {
+	if got := e.mustRun("census"); !strings.Contains(got, "RITE") || !strings.Contains(got, "dormant") {
 		t.Fatalf("census:\n%s", got)
 	}
 }

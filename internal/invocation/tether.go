@@ -1,6 +1,7 @@
 package invocation
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/nerdwave-nick/servitor/internal/librarium"
@@ -89,7 +90,7 @@ func (t *tethered) foresee() Foresight {
 	return Foresight{Verse: t.v, Tether: &c}
 }
 
-func (t *tethered) perform() error {
+func (t *tethered) perform(context.Context) error {
 	c, before, err := t.plan(disk{})
 	if err != nil {
 		return err

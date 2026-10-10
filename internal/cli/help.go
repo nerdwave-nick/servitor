@@ -4,44 +4,48 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+
+	"github.com/nerdwave-nick/servitor/internal/librarium"
 )
 
-// exampleRite is the sample definition shown in the root help.
+// exampleRite is the sample scripture shown in the root help.
 const exampleRite = `  {
-    "description": "Hide the mouse cursor after inactivity",
-    "states": ["on", "off"],
-    "files": [{
-      "file": "~/.config/niri/util.kdl",
-      "guard": "mouse-autohide",          // default: the name
-      "comment": "//",                    // default: inferred from extension
-      "values": [
-        {"state": "on",  "value": "cursor {\n    hide-after-inactive-ms 400\n}"},
-        {"state": "off", "value": ""}
-      ],
-      "meta": {"reason": {"optional": true, "description": "why it was switched"}}
-    }]
+    "pattern": "Mark I",
+    "purpose": "Hide the mouse cursor after inactivity",
+    "aspects": ["on", "off"],
+    "inscriptions": {"reason": {"purpose": "why the rite was invoked"}},
+    "liturgy": [
+      {"sanctum": "~/.config/niri/util.kdl",   // ward: the rite's name; glyph: by the vessel
+       "scripture": {"on": "cursor {\n    hide-after-inactive-ms 400\n}", "off": ""}},
+      {"incantation": "niri msg action load-config-file"},
+      {"vox-cast": "success"}
+    ]
   }`
 
-const rootLong = `+++ SERVITOR · Configuration Thrall of the Adeptus Mechanicus +++
+const rootLong = `+++ SERVITOR · Thrall of the Adeptus Mechanicus +++
 
-The servitor performs RITES upon the sacred texts of your machine. Each rite
-knows a fixed set of ASPECTS. Invoking an aspect rewrites one warded SANCTUM in
-every VESSEL of the rite:
+The servitor performs RITES upon your machine. Each rite knows a fixed set of
+ASPECTS and a LITURGY of steps, performed in the order written: SANCTUMS,
+TRANSCRIPTIONS, TETHERS, INCANTATIONS, LITANIES and VOX-CASTS. Should a step
+fall, every deed already done is reverted.
 
-  // begin servitor managed -- <ward> -- state|on reason|"gaming remnant"
+A sanctum rewrites only its warded region of a VESSEL; the rest of the vessel
+remains inviolate, and a sanctum not yet kept is appended to its end:
+
+  // +++ begin of sanctum <ward> -- aspect|on +++
   <scripture kept by the servitor>
-  // end servitor managed -- <ward>
+  // +++ end of sanctum <ward> +++
 
-Only the lines between the wards are ever touched; the rest of the vessel
-remains inviolate. A sanctum not yet consecrated is appended to the end of its
-vessel. The header bears INSCRIPTIONS as key|value pairs: "state" is inscribed
-by the servitor alone, all others are declared by the rite and may be
-overridden with --<key> runes.
+INSCRIPTIONS declared by a rite are given as --<key> runes, or decreed by the
+rite for each aspect; the servitor keeps them on the rite's data-slate.
 
-Rites are kept in the Librarium (--librarium, or ` + EnvLibrarium + `), one per scripture:
-  <Librarium>/rites/<name>.json      (JSON with comments; "switches/" is also searched)
+Rites are kept in the Librarium (--librarium, or ` + EnvLibrarium + `), one scripture
+each, beside the settings in servitor.json:
+  <Librarium>/rites/<name>.json      (JSON with comments, of pattern Mark I)
 
 ` + exampleRite + `
+
+Every invocation is recorded in the chronicle (--chronicle, or ` + librarium.EnvChronicle + `).
 
 Invoked without a ritual (and attached to a terminal), the servitor awakens
 the COGITATOR, an interactive shrine for performing, consecrating, amending and
@@ -49,40 +53,56 @@ excommunicating rites.`
 
 const rootExample = `  servitor                                   # awaken the cogitator
   servitor invoke mouse-autohide-toggle on --reason "gaming remnant"
-  servitor invoke mouse-autohide-toggle off
+  servitor invoke mouse-autohide-toggle off --foresee
   servitor augury mouse-autohide-toggle
-  servitor augury mouse-autohide-toggle state
+  servitor augury mouse-autohide-toggle aspect
   servitor augury mouse-autohide-toggle --is on && echo "the cursor is veiled"
+  servitor census
   servitor inquisition
   source <(servitor completion bash)`
 
-const switchLongHelp = `Invoke an aspect of a rite: every sanctum of the rite is rewritten with the
-scripture its aspect prescribes.
+const invokeLongHelp = `Invoke an aspect of a rite: its pre-flight examines every step, then its
+liturgy is performed step by step in the order written. Should a step fall —
+or should the invocation be halted by an interrupt — every deed already done is
+reverted, and the lament tells what fell and how the reversion went. Vox-casts
+are printed on the terminal, or sent to the desktop when there is none.
 
-Every inscription declared by the rite is available as a --<key> rune that
-overrides the prescribed value; pass an empty string to erase it. Consult
+Every inscription declared by the rite is a --<key> rune that outranks the
+rite's decree; pass an empty word to clear it. Consult
 "servitor invoke <rite> --help" to learn the aspects and runes of one rite.`
 
-const metaLongHelp = `Perform an augury: read the inscriptions from the sanctum headers of a rite.
+const auguryLongHelp = `Perform an augury: read which aspect a rite stands in, how it stands, its
+inscriptions, its last rite and every omen.
 
-Without a key, the augury speaks a JSON object with "state" and every inscribed
-value. With a key, it speaks only that value (an empty line when uninscribed).
-With --is <aspect>, it speaks nothing and exits 0 when the rite stands in that
-aspect and 1 otherwise, for shell conditions.
+Without a key, the augury speaks one JSON object. With a key — aspect,
+standing, desecrated, former or an inscription of the rite — it speaks only
+that value (an empty line when uninscribed). With --is <aspect>, it speaks
+nothing and exits 0 when the rite stands in that aspect and 1 otherwise, for
+shell conditions.
 
-Exit codes: 0 the augury succeeded, 1 --is did not match, 2 the augury failed
-(unknown rite, never performed, or vessels that disagree; consult --per-file).`
+Exit codes: 0 the augury succeeded, 1 --is did not match, 2 the augury could
+not be read (unknown rite or key, an aspect the rite knows not, a heretical
+rite asked --is).`
 
-const verifyLongHelp = `Summon the Inquisition to examine every rite (or only the named ones). Each
-heresy is reported with its location as file:line:column.
+const censusLongHelp = `Take a census of every rite of the Librarium: the aspect it stands in, how it
+stands (performed, dormant, corrupted, tainted, desecrated or heretical), its
+aspects, its last rite and its purpose. In binharic every rite bears rite,
+aspect, standing, aspects, purpose, desecrated, last_rite and recorded_in.`
 
-The Inquisition purges: malformed JSON, unknown or mistyped fields, undeclared
-or missing aspects, undeclared or reserved inscriptions, rites whose names
-clash (one name recorded in several files), wards claimed twice for the same
-vessel, and — unless --spare-vessels — vessels that are missing, sanctums with
-broken or duplicated wards, and scripture tainted by unsanctioned hands.
+const inquisitionLongHelp = `Summon the Inquisition to examine every rite (or only the named ones), the
+settings and the machine their liturgies act upon. Each heresy and impurity is
+reported with its place as file:line:column.
 
-Exits 1 when any heresy was found. Impurities are noted but forgiven.`
+Heresies must be purged: malformed scripture, unknown keys, a missing or
+foreign pattern, aspects empty or unworthy, unknown placeholders and
+undeclared inscriptions, missing tomes, wards claimed twice in one vessel,
+rites recorded twice, heretical settings, and sanctums whose markers are
+broken. Impurities are noted but forgiven: tongues spoken nowhere, vessels
+missing without consecrate, anchors missing for some aspect, mandatory
+inscriptions without decree, success vox-casts that are not last, tainted
+sanctums and desecrated rites. --spare-vessels judges the scriptures alone.
+
+Exits 1 when any heresy was found.`
 
 func init() {
 	// Usage lines are generated by cobra with a literal " [flags]" suffix.

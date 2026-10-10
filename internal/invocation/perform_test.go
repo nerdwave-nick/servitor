@@ -1,6 +1,7 @@
 package invocation
 
 import (
+	"context"
 	"errors"
 	"os"
 	"path/filepath"
@@ -98,15 +99,19 @@ type deed struct {
 	changes    bool  // perform changes something to revert
 	revertErr  error // revert falls
 	log        *[]string
+	onPerform  func() // called as perform begins
 	performed  bool
 	wasRevered bool
 }
 
 func (d *deed) verse() Verse       { return Verse{Number: d.n, Kind: librarium.KindIncantation, Target: "x"} }
 func (d *deed) foresee() Foresight { return Foresight{Verse: d.verse()} }
-func (d *deed) perform() error {
+func (d *deed) perform(context.Context) error {
 	*d.log = append(*d.log, "perform")
 	d.performed = true
+	if d.onPerform != nil {
+		d.onPerform()
+	}
 	if d.fails {
 		return errors.New("the deed falls")
 	}
@@ -135,7 +140,7 @@ func TestPerformAll_RevertsFromTheFallenStepBackToTheFirst(t *testing.T) {
 		performers[i] = s
 	}
 
-	out := performAll(performers, nil)
+	out := performAll(context.Background(), performers, nil)
 
 	if out.Fell == nil || out.Fell.Number != 4 || out.Fell.Heresy == nil {
 		t.Fatalf("fell %+v", out.Fell)
@@ -171,7 +176,7 @@ func TestPerformAll_RevertsFromTheFallenStepBackToTheFirst(t *testing.T) {
 
 func TestPerformAll_Triumphs(t *testing.T) {
 	var log []string
-	out := performAll([]performer{&deed{n: 1, log: &log, changes: true}, &deed{n: 2, log: &log}}, nil)
+	out := performAll(context.Background(), []performer{&deed{n: 1, log: &log, changes: true}, &deed{n: 2, log: &log}}, nil)
 	if out.Fell != nil || len(out.Reversions) != 0 || len(log) != 2 || out.Verdict != Triumph || len(out.Deeds) != 2 {
 		t.Fatalf("outcome %+v, log %v", out, log)
 	}
@@ -259,4 +264,29 @@ func equalStrings(a, b []string) bool {
 		}
 	}
 	return true
+}
+
+func TestPerformAll_HaltedBetweenStepsBeginsNoMore(t *testing.T) {
+	var log []string
+	ctx, halt := context.WithCancel(context.Background())
+	defer halt()
+	first := &deed{n: 1, changes: true, log: &log, onPerform: halt}
+	second := &deed{n: 2, changes: true, log: &log}
+	third := &deed{n: 3, log: &log}
+
+	out := performAll(ctx, []performer{first, second, third}, nil)
+
+	if second.performed || second.wasRevered || third.performed {
+		t.Fatalf("a step was begun or reverted after the halt: log %v", log)
+	}
+	if out.Fell == nil || out.Fell.Number != 2 || out.Fell.Heresy == nil || out.Verdict != Reverted {
+		t.Fatalf("outcome %+v", out)
+	}
+	grimdark(t, out.Fell.Heresy.Error())
+	if len(out.Reversions) != 1 || out.Reversions[0].Number != 1 || !first.wasRevered {
+		t.Fatalf("reversions %+v", out.Reversions)
+	}
+	if len(out.Deeds) != 2 || out.Deeds[1].Heresy == nil {
+		t.Fatalf("deeds %+v", out.Deeds)
+	}
 }
