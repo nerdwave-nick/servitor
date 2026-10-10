@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
+	"github.com/charmbracelet/x/ansi"
 )
 
 // textScreen is a scrollable read-only modal.
@@ -24,12 +25,24 @@ func (s *textScreen) fullscreen() bool { return false }
 
 func (s *textScreen) visible(m *model) int { return max(3, m.height-10) }
 
+// wrapped are the lines wrapped to the width of the viewscreen.
+func (s *textScreen) wrapped(m *model) []string { return wrap(s.lines, m.width-8) }
+
+// wrap wraps every (possibly styled) line to width cells.
+func wrap(lines []string, width int) []string {
+	var out []string
+	for _, l := range lines {
+		out = append(out, strings.Split(ansi.Wrap(l, max(20, width), ""), "\n")...)
+	}
+	return out
+}
+
 func (s *textScreen) update(m *model, msg tea.Msg) (screen, tea.Cmd) {
 	k, ok := msg.(tea.KeyPressMsg)
 	if !ok {
 		return s, nil
 	}
-	maxOff := max(0, len(s.lines)-s.visible(m))
+	maxOff := max(0, len(s.wrapped(m))-s.visible(m))
 	switch k.String() {
 	case "esc", "q", "enter", "?":
 		return s.back, nil
@@ -46,10 +59,12 @@ func (s *textScreen) update(m *model, msg tea.Msg) (screen, tea.Cmd) {
 }
 
 func (s *textScreen) view(m *model) string {
-	end := min(len(s.lines), s.offset+s.visible(m))
-	body := strings.Join(s.lines[s.offset:end], "\n")
-	if len(s.lines) > s.visible(m) {
-		body += "\n" + m.t.dim.Render(strings.Repeat("─", 8)+" "+strconv.Itoa(s.offset+1)+"–"+strconv.Itoa(end)+"/"+strconv.Itoa(len(s.lines)))
+	lines := s.wrapped(m)
+	s.offset = min(s.offset, max(0, len(lines)-s.visible(m)))
+	end := min(len(lines), s.offset+s.visible(m))
+	body := strings.Join(lines[s.offset:end], "\n")
+	if len(lines) > s.visible(m) {
+		body += "\n" + m.t.dim.Render(strings.Repeat("─", 8)+" "+strconv.Itoa(s.offset+1)+"–"+strconv.Itoa(end)+"/"+strconv.Itoa(len(lines)))
 	}
 	return m.t.modal(s.title, body, m.width-4)
 }

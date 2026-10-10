@@ -251,7 +251,7 @@ func TestOverview_ShowsRitesAndDetails(t *testing.T) {
 		"· 3 » echo chanting {{aspect}}", "· 4 ✉ success", "AUSPEX", "· silent",
 		"RECORDED IN", "rites/mouse.json")
 	h.keys("k")
-	h.mustShow("tainted by heresy", "1:")
+	h.mustShow("tainted by heresy", "1:", "break the holy form")
 	h.keys("enter")
 	h.mustShow("This rite is heretical")
 }

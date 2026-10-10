@@ -131,7 +131,7 @@ func (s *runningScreen) update(m *model, msg tea.Msg) (screen, tea.Cmd) {
 func (s *runningScreen) view(m *model) string {
 	t := m.t
 	w := min(72, m.width-8)
-	b := []string{t.bold.Render(fmt.Sprintf("step %d / %d", s.step, s.steps)) + "  " + progressBar(s.step, s.steps, w-16)}
+	b := []string{t.bold.Render(fmt.Sprintf("step %d / %d", s.step, s.steps)) + "  " + progressBar(max(0, s.step-1), s.steps, w-16)}
 	if s.verse != nil {
 		b = append(b, t.accent.Render("▸ ")+t.text.Render(truncate(verseName(*s.verse), w-2)))
 	} else {
@@ -155,7 +155,8 @@ func (s *runningScreen) hints(m *model) [][2]string {
 	return [][2]string{{"ctrl+c", "halt the rite"}}
 }
 
-// progressBar is a bar of width cells filled for done of all.
+// progressBar is a bar of width cells filled for done of all; the step
+// being performed is not yet done.
 func progressBar(done, all, width int) string {
 	width = max(4, width)
 	filled := width

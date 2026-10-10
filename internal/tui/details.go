@@ -22,7 +22,7 @@ func (m *model) detailView(w int) string {
 	if rite == nil {
 		b := []string{t.danger.Render("✠ This rite is tainted by heresy:"), ""}
 		for _, f := range r.heresies {
-			b = append(b, t.text.Render(truncate(fmt.Sprintf("%d:%d: %s", f.Line, f.Column, f.Message), w)))
+			b = append(b, wrap([]string{t.text.Render(fmt.Sprintf("%d:%d: %s", f.Line, f.Column, f.Message))}, w)...)
 		}
 		return strings.Join(append(b, "", t.dim.Render("o purify in $EDITOR · d excommunicate")), "\n")
 	}

@@ -105,6 +105,7 @@ func TestInvoke_CtrlCHaltsTheRiteRatherThanTheCogitator(t *testing.T) {
 	h.mustShow("Halting the rite")
 	h.await()
 	h.mustShow("The rite mouse has fallen", "halted at its master's command", "Every deed is undone")
+	h.mustShow("further step") // a long heresy is wrapped, not cut short
 	if _, err := os.Stat(filepath.Join(h.dataDir, "mode")); !os.IsNotExist(err) {
 		t.Fatal("the reversion of the incantation was not spoken")
 	}
