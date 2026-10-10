@@ -2,6 +2,7 @@ package cli
 
 import (
 	"bytes"
+	"os"
 	"slices"
 	"strings"
 	"testing"
@@ -25,11 +26,16 @@ func (e *env) complete(args ...string) (values []string, directive string) {
 
 const noFileComp = ":4"
 
+// themeJSON is a rite whose auspex, were it ever awakened, leaves a mark.
+const themeJSON = `{"pattern": "Mark I", "purpose": "Color theme", "aspects": ["dark", "light", "auto"],
+  "auspex": "touch $TARGET.auspex; echo dark",
+  "liturgy": [{"sanctum": "$TARGET", "ward": "theme", "scripture": {"*": "{{aspect}}"}}]}`
+
 func TestCompletion_Callbacks(t *testing.T) {
 	e := newEnv(t)
-	e.addSwitch("switches/theme.json", `{"description": "Color theme", "states": ["dark", "light", "auto"],
-	  "files": [{"file": "$TARGET", "values": [{"state": "dark", "value": "d"}, {"state": "light", "value": "l"}, {"state": "auto", "value": "a"}]}]}`)
-	e.mustRun("invoke", "mouse-autohide-toggle", "off")
+	e.addRite("rites/theme.json", themeJSON)
+	e.addRite("rites/broken.json", `{`)
+	e.mustRun("invoke", "mouse-autohide-toggle", "off", "-s")
 
 	cases := []struct {
 		args []string
@@ -40,11 +46,13 @@ func TestCompletion_Callbacks(t *testing.T) {
 		{[]string{"invoke", "theme", ""}, []string{"dark", "light", "auto"}},
 		{[]string{"invoke", "mouse-autohide-toggle", ""}, []string{"on", "off"}},
 		{[]string{"invoke", "mouse-autohide-toggle", "on", "--example-key", ""}, []string{"example-value", "other-value"}},
+		{[]string{"invoke", "mouse-autohide-toggle", "on", "--reason", ""}, nil},
 		{[]string{"invoke", "unknown", ""}, nil},
-		{[]string{"augury", ""}, []string{"mouse-autohide-toggle", "theme"}},
-		{[]string{"augury", "mouse-autohide-toggle", ""}, []string{"state", "example-key", "reason"}},
+		{[]string{"augury", ""}, []string{"broken", "mouse-autohide-toggle", "theme"}},
+		{[]string{"augury", "mouse-autohide-toggle", ""}, []string{"aspect", "standing", "desecrated", "former", "reason", "example-key"}},
+		{[]string{"augury", "broken", ""}, []string{"aspect", "standing", "desecrated", "former"}},
 		{[]string{"augury", "theme", "--is", ""}, []string{"dark", "light", "auto"}},
-		{[]string{"inquisition", "theme", ""}, []string{"mouse-autohide-toggle"}},
+		{[]string{"inquisition", "theme", ""}, []string{"broken", "mouse-autohide-toggle"}},
 	}
 	for _, c := range cases {
 		got, dir := e.complete(c.args...)
@@ -52,12 +60,16 @@ func TestCompletion_Callbacks(t *testing.T) {
 			t.Errorf("complete %v = %v %s, want %v %s", c.args, got, dir, c.want, noFileComp)
 		}
 	}
+	if _, err := os.Stat(e.target + ".auspex"); err == nil {
+		t.Fatal("completion awoke an auspex")
+	}
 }
 
 func TestCompletion_Runes(t *testing.T) {
 	e := newEnv(t)
 	cases := map[string][]string{
 		"invoke mouse-autohide-toggle on --": {"--reason", "--example-key", "--foresee", "--silence"},
+		"augury mouse-autohide-toggle --":    {"--is"},
 		"census --":                          {"--binharic"},
 		"inquisition --":                     {"--binharic", "--spare-vessels"},
 		"--":                                 {"--version"},
@@ -69,7 +81,7 @@ func TestCompletion_Runes(t *testing.T) {
 				t.Errorf("complete %q missing %s: %v", line, w, got)
 			}
 		}
-		for _, forsaken := range []string{"--dry-run", "--quiet", "--config", "--no-grimdark", "--json", "--no-files", "--help"} {
+		for _, forsaken := range []string{"--dry-run", "--quiet", "--config", "--no-grimdark", "--json", "--no-files", "--help", "--per-file"} {
 			if slices.Contains(got, forsaken) {
 				t.Errorf("complete %q offers %s: %v", line, forsaken, got)
 			}
@@ -99,23 +111,36 @@ func TestCompletion_Rituals(t *testing.T) {
 	}
 }
 
-func TestCompletion_DescriptionsAndCurrentState(t *testing.T) {
+func TestCompletion_DescriptionsAndTheCurrentAspect(t *testing.T) {
 	e := newEnv(t)
-	e.mustRun("invoke", "mouse-autohide-toggle", "on")
-	out := e.mustRun("__complete", "invoke", "mouse-autohide-toggle", "")
-	if !strings.Contains(out, "on\tcurrent aspect\n") {
-		t.Fatalf("current state not marked:\n%s", out)
+	e.addRite("rites/theme.json", themeJSON)
+	e.mustRun("invoke", "mouse-autohide-toggle", "on", "-s")
+	e.mustRun("invoke", "theme", "light", "-s")
+	if err := os.Remove(e.target + ".auspex"); err != nil {
+		t.Fatal(err) // the invocation heeded the auspex
 	}
-	out = e.mustRun("__complete", "augury", "")
-	if !strings.Contains(out, "mouse-autohide-toggle\tHide the cursor after inactivity") {
-		t.Fatalf("rite purpose missing:\n%s", out)
+	for args, want := range map[string]string{
+		"invoke mouse-autohide-toggle":                  "on\tcurrent aspect\n",
+		"augury mouse-autohide-toggle --is":             "on\tcurrent aspect\n",
+		"invoke theme":                                  "light\tcurrent aspect\n",
+		"augury":                                        "mouse-autohide-toggle\tHide the cursor after inactivity\n",
+		"augury mouse-autohide-toggle":                  "reason\twhy the rite was invoked\n",
+		"invoke mouse-autohide-toggle on --example-key": "example-value\tdecreed for on\n",
+	} {
+		out := e.mustRun(append(append([]string{"__complete"}, strings.Fields(args)...), "")...)
+		if !strings.Contains(out, want) {
+			t.Errorf("__complete %s lacks %q:\n%s", args, want, out)
+		}
+	}
+	if _, err := os.Stat(e.target + ".auspex"); err == nil {
+		t.Fatal("completion awoke an auspex")
 	}
 }
 
 func TestCompletion_LibrariumRuneIsHonoured(t *testing.T) {
 	e := newEnv(t)
 	other := newEnv(t)
-	other.addSwitch("switches/only-here.json", `{"states": ["x"], "files": [{"file": "$TARGET", "values": [{"state": "x", "value": ""}]}]}`)
+	other.addRite("rites/only-here.json", `{"pattern": "Mark I", "aspects": ["x"], "liturgy": []}`)
 	got, _ := e.complete("--librarium", other.cfgDir, "invoke", "")
 	if !slices.Contains(got, "only-here") {
 		t.Fatalf("--librarium not used during completion: %v", got)

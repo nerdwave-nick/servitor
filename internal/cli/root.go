@@ -14,8 +14,8 @@ import (
 	"github.com/charmbracelet/x/term"
 	"github.com/spf13/cobra"
 
-	"github.com/nerdwave-nick/servitor/internal/config"
 	"github.com/nerdwave-nick/servitor/internal/librarium"
+	"github.com/nerdwave-nick/servitor/internal/rituals"
 	"github.com/nerdwave-nick/servitor/internal/tui"
 )
 
@@ -40,8 +40,13 @@ func (e *ExitError) Unwrap() error { return e.Err }
 type app struct {
 	configDir string
 	chronicle string // --chronicle and its hidden alias --log; read through runesOf
-	set       *config.Set
-	switchCmd *cobra.Command // parent of the per-rite subcommands
+	lib       *librarium.Librarium
+	invokeCmd *cobra.Command // parent of the per-rite rituals
+}
+
+// servitor makes the Librarium ready for the ritual cmd, swayed by its runes.
+func (a *app) servitor(cmd *cobra.Command) *rituals.Servitor {
+	return &rituals.Servitor{Librarium: a.lib, Runes: runesOf(cmd)}
 }
 
 // runTUI awakens the cogitator; replaced in tests.
@@ -59,7 +64,7 @@ var isTerminal = func() bool {
 // of a --librarium directory become subcommands.
 func NewRootCmd(args []string, stdout, stderr io.Writer) *cobra.Command {
 	a := &app{configDir: resolveConfigDir(args)}
-	a.set = config.Load(a.configDir)
+	a.lib = librarium.Load(a.configDir)
 
 	root := &cobra.Command{
 		Use:           "servitor",
@@ -74,7 +79,7 @@ func NewRootCmd(args []string, stdout, stderr io.Writer) *cobra.Command {
 			if !isTerminal() {
 				return cmd.Help()
 			}
-			return runTUI(a.set.Dir)
+			return runTUI(a.lib.Dir)
 		},
 	}
 	root.SetOut(stdout) // before flavor: the completion command captures its writer
@@ -87,7 +92,7 @@ func NewRootCmd(args []string, stdout, stderr io.Writer) *cobra.Command {
 	root.SetFlagErrorFunc(func(cmd *cobra.Command, err error) error {
 		return fmt.Errorf("%s\nConsult '%s --help' for the proper liturgy", runeError(err), cmd.CommandPath())
 	})
-	root.AddCommand(a.newSwitchCmd(), a.newMetaCmd(), a.newListCmd(), a.newVerifyCmd(), a.newTUICmd())
+	root.AddCommand(a.newInvokeCmd(), a.newAuguryCmd(), a.newCensusCmd(), a.newInquisitionCmd(), a.newTUICmd())
 	flavor(root)
 	return root
 }
@@ -100,7 +105,7 @@ func (a *app) newTUICmd() *cobra.Command {
 consecrate new rites, amend or excommunicate old ones. Press ? within for the
 full catalogue of keys. Also awakened by invoking servitor without a ritual.`,
 		Args: cobra.NoArgs,
-		RunE: func(*cobra.Command, []string) error { return runTUI(a.set.Dir) },
+		RunE: func(*cobra.Command, []string) error { return runTUI(a.lib.Dir) },
 	}
 }
 
@@ -180,17 +185,34 @@ func resolveConfigDir(args []string) string {
 		dir = os.Getenv(EnvLibrarium)
 	}
 	if dir == "" {
-		return config.DefaultDir()
+		return defaultDir()
 	}
 	return expandDir(dir)
 }
 
+// defaultDir is the Librarium when none is named: $XDG_CONFIG_HOME/servitor,
+// else ~/.config/servitor.
+func defaultDir() string {
+	base, err := os.UserConfigDir()
+	if err != nil {
+		home, _ := os.UserHomeDir()
+		base = filepath.Join(home, ".config")
+	}
+	return filepath.Join(base, "servitor")
+}
+
+// expandDir expands a leading "~" and $VARS in p and makes it absolute.
 func expandDir(p string) string {
-	p = config.ExpandPath(p, ".")
+	if p == "~" || strings.HasPrefix(p, "~/") {
+		if home, err := os.UserHomeDir(); err == nil {
+			p = home + p[1:]
+		}
+	}
+	p = os.ExpandEnv(p)
 	if abs, err := filepath.Abs(p); err == nil {
 		return abs
 	}
-	return p
+	return filepath.Clean(p)
 }
 
 func version() string {
