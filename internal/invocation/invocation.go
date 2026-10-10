@@ -164,6 +164,7 @@ func performAll(ctx context.Context, steps []performer, c *crier) Outcome {
 		begun := ctx.Err() == nil
 		err := errHalted
 		if begun {
+			c.begin(step)
 			err = step.perform(ctx)
 		}
 		said, _ := uttered(step)
