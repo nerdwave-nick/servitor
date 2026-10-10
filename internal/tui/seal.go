@@ -1,7 +1,6 @@
 package tui
 
 import (
-	"bytes"
 	"errors"
 	"fmt"
 	"math"
@@ -162,15 +161,39 @@ func (w *wizard) sealView(m *model, width, height int) string {
 	return strings.Join(lines[s.offset:min(len(lines), s.offset+avail)], "\n")
 }
 
-// highlightJSON colors keys and strings of one line of indented JSON.
+// highlightJSON colors one line of indented JSON: every name of a member
+// as an accent, every other string as text, and all else dim.
 func highlightJSON(t *theme, line string) string {
-	trimmed := strings.TrimLeft(line, " ")
-	indent := line[:len(line)-len(trimmed)]
-	if strings.HasPrefix(trimmed, `"`) {
-		if i := bytes.Index([]byte(trimmed), []byte(`": `)); i > 0 {
-			return indent + t.accent.Render(trimmed[:i+1]) + t.dim.Render(":") + t.text.Render(trimmed[i+2:])
+	var b strings.Builder
+	plain := 0 // the start of the dim run not yet written
+	dim := func(end int) {
+		if strings.TrimSpace(line[plain:end]) == "" {
+			b.WriteString(line[plain:end])
+		} else {
+			b.WriteString(t.dim.Render(line[plain:end]))
 		}
-		return indent + t.text.Render(trimmed)
 	}
-	return indent + t.dim.Render(trimmed)
+	for i := 0; i < len(line); i++ {
+		if line[i] != '"' {
+			continue
+		}
+		end := i + 1
+		for end < len(line) && line[end] != '"' {
+			if line[end] == '\\' {
+				end++
+			}
+			end++
+		}
+		end = min(end+1, len(line))
+		dim(i)
+		word := line[i:end]
+		if strings.HasPrefix(strings.TrimLeft(line[end:], " "), ":") {
+			b.WriteString(t.accent.Render(word))
+		} else {
+			b.WriteString(t.text.Render(word))
+		}
+		plain, i = end, end-1
+	}
+	dim(len(line))
+	return b.String()
 }
