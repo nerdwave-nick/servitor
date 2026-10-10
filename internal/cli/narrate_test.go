@@ -40,6 +40,11 @@ func (e *env) addTheme() {
 	e.addRite("rites/theme.json", strings.ReplaceAll(visageJSON, "$HALL", hall))
 }
 
+// speaksAspect reports whether line speaks of the aspect «aspect».
+func speaksAspect(line, aspect string) bool {
+	return strings.Contains(strings.ToLower(line), "the aspect «"+aspect+"»")
+}
+
 func lines(s string) []string { return strings.Split(strings.TrimSuffix(s, "\n"), "\n") }
 
 // closings counts the lines that close a narration.
@@ -65,7 +70,7 @@ func TestInvoke_OnATerminalTheInvocationIsToldOnceAsItHappens(t *testing.T) {
 		t.Fatalf("code=%d stderr=%q stdout:\n%s", code, errOut, out)
 	}
 	if got[0] != "+++ mouse-autohide-toggle · (dormant) → on +++" || got[1] != "  ✔ verse 1 · sanctum ~/util.kdl" ||
-		!strings.HasPrefix(got[2], "✠ ") || !strings.Contains(got[2], "the aspect «on»") {
+		!strings.HasPrefix(got[2], "✠ ") || !speaksAspect(got[2], "on") {
 		t.Fatalf("stdout:\n%s", out)
 	}
 	if e.notified() != "" {
@@ -107,7 +112,7 @@ func TestInvoke_OnATerminalEveryVerseAndVoxCastIsToldInItsPlace(t *testing.T) {
 		if !strings.HasSuffix(got[3], "  (2/3)") || !strings.Contains(got[3], "tether") {
 			t.Errorf("progress told as %q", got[3])
 		}
-		if !strings.Contains(got[5], "the aspect «porpl»") {
+		if !speaksAspect(got[5], "porpl") {
 			t.Errorf("triumph told as %q", got[5])
 		}
 		if e.notified() != "" {
@@ -174,7 +179,7 @@ func TestInvoke_WithoutATerminalTheDesktopHearsAndTheReportFollows(t *testing.T)
 
 	e.addRite("rites/mute.json", `{"pattern": "Mark I", "aspects": ["on"], "liturgy": [{"incantation": "true"}]}`)
 	mute := lines(e.mustRun("invoke", "mute", "on"))
-	if len(mute) != 3 || !strings.HasPrefix(mute[2], "✠ ") || !strings.Contains(mute[2], "the aspect «on»") {
+	if len(mute) != 3 || !strings.HasPrefix(mute[2], "✠ ") || !speaksAspect(mute[2], "on") {
 		t.Fatalf("a rite without vox-casts is not closed:\n%s", strings.Join(mute, "\n"))
 	}
 	if e.notified() != notified {
