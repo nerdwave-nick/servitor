@@ -205,19 +205,24 @@ func lore(v any, path string) map[string]string {
 	return out
 }
 
-// TestExampleRites_AreFaithfulToSchemaAndLibrarium: the example rites are
-// pure in the eyes of the librarium and valid against the schema.
+// TestExampleRites_AreFaithfulToSchemaAndLibrarium: the example rites — the
+// ones shown to the faithful in examples/ and the ones kept for the trials —
+// are pure in the eyes of the librarium and valid against the schema.
 func TestExampleRites_AreFaithfulToSchemaAndLibrarium(t *testing.T) {
 	s := compile(t, Rite)
-	paths, _ := filepath.Glob("testdata/rites/*.json")
-	if len(paths) < 4 {
-		t.Fatalf("too few example rites: %v", paths)
+	shown, _ := filepath.Glob("../examples/rites/*.json")
+	kept, _ := filepath.Glob("testdata/rites/*.json")
+	if len(shown) < 2 || len(kept) < 2 {
+		t.Fatalf("too few example rites: %v, %v", shown, kept)
 	}
-	for _, path := range paths {
+	for _, path := range slices.Concat(shown, kept) {
 		t.Run(filepath.Base(path), func(t *testing.T) {
 			r, fs := librarium.LoadFile(path)
 			if r == nil || len(fs) != 0 {
 				t.Fatalf("the librarium denounces the example:\n%v", fs)
+			}
+			if slices.Contains(shown, path) && r.Schema != URL(Rite) {
+				t.Errorf("the example names the schema %q, not %q", r.Schema, URL(Rite))
 			}
 			data, _ := os.ReadFile(path)
 			if err := validate(t, s, data); err != nil {

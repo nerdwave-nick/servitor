@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# +++ Litany of the Theme's Hooks +++
+#
+# Recites the hooks of the nfluff theme laid before it as its first offering:
+#
+#   recite-hooks ~/.config/nfluff/themes/porpl
+set -euo pipefail
+
+THEME_PATH=${1:?no theme was offered to the litany}
+export THEME_PATH
+
+if [[ ! -d $THEME_PATH ]]; then
+    echo "no theme dwells at $THEME_PATH" >&2
+    exit 1
+fi
+
+# The hooks summon children into the background. Their words are sent
+# elsewhere, lest they hold the ear of the servitor long after the litany ends.
+exec >/dev/null 2>&1
+# shellcheck source=/dev/null
+source "$THEME_PATH/hooks"
