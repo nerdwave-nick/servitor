@@ -51,6 +51,8 @@ func (m *model) updateOverview(msg tea.Msg) tea.Cmd {
 		m.screen = newTextScreen("Verdict of the Inquisition", m.verdict())
 	case "O":
 		return m.showWords()
+	case "h":
+		m.screen = newChronicleScreen(m, nameOf(r))
 	case "n":
 		return m.openWizard(draft{states: "on, off"})
 	case "enter", "space", "e", "c", "d", "o":
