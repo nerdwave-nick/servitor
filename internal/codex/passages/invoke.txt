@@ -27,13 +27,32 @@ Each inscription the rite declares becomes a rune of its own, --<key>
 clears it. A mandatory inscription that neither rune nor decree supplies
 forbids the invocation. The rune --foresee (-f) reveals everything the
 invocation would do and performs none of it; --silence (-s) withholds the
-summary of a triumph.
+report, save the vox-casts the rite asks for.
+
+Spoken at a terminal, the invocation is told in one report as it is
+performed: a header naming the rite and its turning, the former aspect and
+the new; a line for every verse once it is performed, the home written ~
+and a long verse cut short with … to the width of the terminal; every
+progress vox-cast in its place, with how many of the steps that act upon
+the machine are done; and one closing line of triumph, drawn from the
+rite's success vox-cast or, should it have none, from the same litany:
+
+  ❯ servitor invoke mouse-autohide-toggle on
+  +++ mouse-autohide-toggle · off → on +++
+    ✔ verse 1 · sanctum ~/.config/niri/util.kdl
+    ✔ verse 2 · incantation niri msg action do-screen-transition
+  ✠ The Omnissiah is pleased: the rite now bears the aspect «on».
+
+The closing words are drawn at random. Roused without a terminal — from a
+hotkey or a launcher — the servitor sends the vox-casts to the desktop
+instead, and tells the same report once the rite has triumphed. Should a
+step fall, the report ends with the last verse performed, and the lament
+alone tells the fall.
 
 After a performance the servitor writes the rite's data-slate and adds one
 line to the chronicle, whatever the verdict. An invocation the pre-flight
 forbade, or one merely foreseen, is neither chronicled nor recorded on the
-data-slate, for nothing was performed. Vox-casts are printed upon the
-controlling terminal when there is one, and sent to the desktop otherwise.
+data-slate, for nothing was performed.
 
 The servitor exits 0 upon triumph, and 1 when the invocation was forbidden,
 the rite or aspect is unknown, or a step fell.

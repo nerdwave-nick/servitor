@@ -10,7 +10,7 @@ vox-casts of an invocation roused without a terminal are sent there:
   "off"          the desktop hears nothing
 
 The vox governs the desktop alone: an invocation spoken at a terminal still
-prints its vox-casts there, whatever the vox commands. Should notify-send be
+tells its vox-casts in its report, whatever the vox commands. Should notify-send be
 missing from the machine, the servitor stays silent rather than fail. Any
 other value is heresy, denounced by the inquisition with its place.
 

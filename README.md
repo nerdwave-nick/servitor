@@ -308,8 +308,8 @@ placeholders are filled, and a leading `~/` is borne to the invoker's home.
 
 ### Vox-cast
 
-`{"vox-cast": "progress"}` tells of the step performed last and how far the
-liturgy has come ("step x / n"); `{"vox-cast": "success"}` proclaims the
+`{"vox-cast": "progress"}` tells of the kind of step performed last and how
+far the liturgy has come; `{"vox-cast": "success"}` proclaims the
 triumph, and belongs last. Tidings of a fall need no step. See
 [Vox-casts](#vox-casts).
 
@@ -336,10 +336,37 @@ triumph, and belongs last. Tidings of a fall need no step. See
    data-slate, `$XDG_STATE_HOME/servitor/data-slates/<rite>.json`, and in
    the chronicle.
 
+Spoken at a terminal, the invocation is told in one report as it is
+performed: a header with the rite and its turning, a line for every verse
+once it is performed (the home written `~`, a long verse cut short with `…`
+to the terminal's width), every progress vox-cast in its place with the
+count of steps done, and one closing line of triumph, drawn from the rite's
+success vox-cast or, should it have none, from the same litany:
+
+```console
+❯ servitor invoke mouse-autohide-toggle on
++++ mouse-autohide-toggle · off → on +++
+  ✔ verse 1 · sanctum ~/.config/niri/util.kdl
+  ✔ verse 2 · incantation niri msg action load-config-file
+✠ The Omnissiah is pleased: the rite now bears the aspect «on».
+
+❯ servitor invoke theme porpl
++++ theme · default → porpl +++
+  ✔ verse 1 · incantation niri msg action do-screen-transition --delay-ms 200 |…
+  ✔ verse 2 · tether ~/.local/share/nfluff/current-theme
+  ⋯ Incense burns; the tether is complete.  (2/3)
+  ✔ verse 4 · litany scripts/recite-hooks
+✠ Binharic hymns resound: the aspect «porpl» is attained.
+```
+
+Should a verse fall, the report ends with the last verse performed and the
+lament alone tells the fall, its last words and every reversion.
+
 `--foresee` (`-f`) shows every sanctum and transcription as it would change,
 every tether rebound and every command as it would be spoken, and performs
-nothing, not even the auspex. `--silence` (`-s`) withholds the summary of a
-triumph. The ritual exits 0 upon triumph and 1 otherwise.
+nothing, not even the auspex. `--silence` (`-s`) withholds the report, save
+the lines the rite's own vox-casts ask for. The ritual exits 0 upon triumph
+and 1 otherwise.
 
 ## Rituals and runes
 
@@ -435,13 +462,17 @@ servitor inquisition --binharic | jq -r '.[] | select(.judgement == "heresy") | 
 
 > *+++ Thought for the day: Death to the false positive! +++*
 
-Invoked from a terminal, every vox-cast is printed there as one line.
-Invoked from a hotkey or a launcher, with no controlling terminal, the
-vox-casts of one invocation become **one** missive upon the desktop through
-`notify-send`, replaced in place by the next: progress lingers until the rite
-ends, triumph fades as the desktop wills, and a fall is proclaimed with
-critical urgency, unbidden. The words are drawn at random from the
-servitor's own litanies of progress, triumph and lament. Should `notify-send`
+Invoked from a terminal, every vox-cast is told in its place within the
+report of the invocation (see [Invocation](#invocation)): a progress as
+`⋯ <words>  (x/n)`, the triumph as the closing `✠ <words>`. Invoked from a
+hotkey or a launcher, with no controlling terminal, the vox-casts of one
+invocation become **one** missive upon the desktop through `notify-send`,
+headed `theme → porpl` and replaced in place by the next: progress tells
+"step x / n" and lingers until the rite ends, triumph fades as the desktop
+wills, and a fall is proclaimed with critical urgency, unbidden; the report
+follows on stdout once the rite has triumphed. The words are drawn at
+random from the servitor's own litanies of progress, triumph and lament,
+and speak of "the aspect «porpl»", never of a bare aspect. Should `notify-send`
 be absent, the servitor stays silent rather than fail; `"vox": "off"` in the
 settings silences the desktop altogether. In the cogitator the tidings are
 shown in the cogitator itself.

@@ -4,26 +4,36 @@ A vox-cast is a step that does nothing to the machine and everything for its
 master: it sends tidings of the invocation as it is performed. Its own key
 holds which tidings to proclaim, and the codex knows but two:
 
-  "progress"  tells of the step performed last and how far the liturgy has
-              come ("step x / n", counting only the steps that act upon the
-              machine; a progress cast before any such step tells that the
+  "progress"  tells of the kind of step performed last and how far the
+              liturgy has come, counting only the steps that act upon the
+              machine (a progress cast before any such step tells that the
               liturgy begins)
   "success"   proclaims the triumph of the rite and the aspect it now bears
 
 Tidings of failure need no step: should a step fall, the servitor proclaims
 the heresy, the fallen step and how the reversion went, unbidden. The words
 themselves are drawn at random from the servitor's own litanies of progress,
-triumph and lament, and name the rite, the aspect, the step's own key and
-what it holds; a rite does not write them.
+triumph and lament, and speak of the aspect, written «aspect», and of the
+step's own key; a rite does not write them.
 
 Where the tidings are heard depends on whence the servitor was roused. With
-a controlling terminal, each vox-cast is printed there as one line. Without
-one — invoked from a hotkey or a launcher — every vox-cast of the invocation
-becomes one missive upon the desktop through notify-send, replaced in place
-by the next: progress lingers until the rite ends, triumph fades as the
-desktop wills, and a fall is proclaimed with critical urgency so that it
-cannot pass unseen. Should notify-send be absent or fall silent, the
-servitor stays silent too; a vox-cast never fails an invocation. The
+a controlling terminal, each vox-cast is told in its place within the
+report of the invocation (see invoke): a progress as a line of its own,
+ending in the count of steps done, and the triumph as the report's closing
+line. A fall is told by the lament alone.
+
+    ✔ verse 2 · tether ~/.local/share/nfluff/current-theme
+    ⋯ Incense burns; the tether is complete.  (2/3)
+    ✔ verse 4 · litany scripts/recite-hooks
+  ✠ Binharic hymns resound: the aspect «porpl» is attained.
+
+Without one — invoked from a hotkey or a launcher — every vox-cast of the
+invocation becomes one missive upon the desktop through notify-send, headed
+by the rite and its aspect ("theme → porpl") and replaced in place by the
+next: progress tells "step x / n" and lingers until the rite ends, triumph
+fades as the desktop wills, and a fall is proclaimed with critical urgency
+so that it cannot pass unseen. Should notify-send be absent or fall silent,
+the servitor stays silent too; a vox-cast never fails an invocation. The
 settings' "vox" may silence the desktop altogether; when foreseeing, nothing
 is proclaimed at all.
 

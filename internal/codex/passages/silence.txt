@@ -1,15 +1,22 @@
-Perform a rite in reverent silence, withholding the tidings of triumph
+Perform a rite in reverent silence, withholding the report of the invocation
 
-The rune --silence (shorthand -s) is given to the ritual invoke. When the
-invocation triumphs, the servitor withholds the summary it would otherwise
-speak — the rite, the former and the new aspect, and every verse performed —
-and says nothing at all; its exit of 0 alone bears witness.
+The rune --silence (shorthand -s) is given to the ritual invoke. The
+servitor then withholds the report it would otherwise tell — the header
+with the rite, the former and the new aspect, the line of every verse
+performed and the closing line of triumph. Upon a controlling terminal only
+the lines the rite's own vox-casts ask for remain, told as ever:
+
+  ❯ servitor invoke theme porpl --silence
+    ⋯ Incense burns; the tether is complete.  (2/3)
+  ✠ Binharic hymns resound: the aspect «porpl» is attained.
+
+A rite without vox-casts says nothing at all; its exit of 0 alone bears
+witness. Without a terminal the vox-casts go to the desktop, as the rite
+commands, and nothing is printed.
 
 Silence does not hide failure: should the pre-flight forbid the invocation or
 a step fall, the lament is still spoken, with the fallen verse, its last
-words and the outcome of every reversion. Neither does silence still the
-vox-casts of the liturgy: those are heard upon the controlling terminal, or
-sent to the desktop, as the rite commands. To still the desktop's vox, set
+words and the outcome of every reversion. To still the desktop's vox, set
 the key "vox" of the settings to "off".
 
 Silence suits rites invoked from hotkeys, bars and other rites, where only
