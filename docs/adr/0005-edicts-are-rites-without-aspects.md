@@ -73,24 +73,27 @@ every rite with `aspects`, both records stand unchanged.
   the very burden described above — a meaningless aspect word on every invocation, a
   standing that says nothing true, and a one-key `space` that performs a destructive
   rite.
-- **Omitting `aspects`** to make an edict — rejected by the owner: a missing key cannot
-  tell an edict from a rite whose aspects were forgotten, and today's "aspects
-  missing" heresy would fall silent. An edict is declared by its own key, and a rite
-  with neither is still heresy, now naming both ways.
+- **Omitting `aspects`** to make an edict — rejected; the owner chose a separate
+  marker key. A missing key cannot tell an edict from a rite whose aspects were
+  forgotten, and today's "aspects missing" heresy would fall silent. An edict is
+  declared by its own key, and a rite with neither is still heresy, now naming both
+  ways.
 - **An explicit `"aspects": []`** — rejected: an empty list of aspects is heresy for
   every rite today, and reading it as "edict" would make a slip of the hand mean
   something.
-- **Allowing tethers and transcriptions in edicts** — rejected by the owner: they
+- **Allowing tethers and transcriptions in edicts** — rejected; the owner chose a
+  liturgy of incantations, litanies and vox-casts only. Tethers and transcriptions
   exist to hold and reveal an aspect, and an edict has none. Edicts that write
   vessels or bind names are out of scope.
 - **Keeping one-shot rites out of the servitor** (hotkeys calling commands directly)
   — rejected: such rites want the same inscriptions, reversion, vox-casts, chronicle
   and cogitator as any rite.
-- **Letting `space` proclaim an edict at once** — rejected by the owner: an edict may
-  reboot the machine, and a single key must never do that.
-- **Confirmation only where a rite opts into it** — rejected by the owner: the danger
-  would remain the default for every edict whose author forgot to ask. The cogitator
-  always confirms an edict.
+- **Letting `space` proclaim an edict at once** — rejected; the owner chose that the
+  cogitator never proclaims an edict on a single key. An edict may reboot the
+  machine, and one stray key should not do that.
+- **Confirmation only where a rite opts into it** — rejected; the owner chose that the
+  cogitator always confirms an edict. With an opt-in, the danger would remain the
+  default for every edict whose author forgot to ask.
 
 ## Consequences
 
