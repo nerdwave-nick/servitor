@@ -1,0 +1,30 @@
+The heresies for which the pre-flight forbade an invocation, in binharic
+
+When an invocation is spoken with the rune --binharic and its pre-flight
+finds heresy, nothing is performed and no verdict is passed: the servitor
+speaks upon stdout one object of binharic instead of the chronicle's line.
+It bears the rite, the aspect it was to enter, and the key "forbidden": every
+heresy the pre-flight found, one denunciation to each word, in the order of
+the liturgy. An edict's forbiddance bears no aspect, for an edict enters
+none.
+
+"forbidden" is no verdict. The verdicts remain triumph, reverted and
+faltered, and are passed only upon a liturgy that was performed; a forbidden
+invocation touched nothing, wrote neither data-slate nor chronicle, and
+earns the death-mark 2. The lament that names the heresies is spoken upon
+stderr all the same, for the faithful who watch.
+
+An unknown rite or aspect, words strayed after an edict's name or a
+malformed rune are refused before the pre-flight is even begun: they too
+bear the death-mark 2, yet speak only upon stderr, and stdout stays empty.
+
+Kindred passages: binharic, pre-flight, heresy, death-marks, invoke
+
+Exempla:
+  servitor invoke theme porpl --binharic
+
+  {"rite":"theme","aspect":"porpl","forbidden":["…/rites/theme.json:9:7: heresy: …"]}
+
+  {"rite":"screenshot","forbidden":["…: heresy: the inscription \"region\" is mandatory, …"]}
+
+  servitor invoke theme porpl --binharic | jq -r '.forbidden[]?'

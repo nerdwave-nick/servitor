@@ -1,0 +1,39 @@
+The death-marks the servitor itself bears when an invocation ends
+
+As an incantation ends bearing a death-mark, so does the servitor. The
+ritual invoke tells by its death-mark alone how the invocation ended, so
+that lesser machines may branch upon it without reading a word, and it is
+the same whether or not the rune --binharic was spoken:
+
+  0  triumph: every step was performed, the edict obeyed
+  1  reverted: a step fell, and every deed was undone; the machine stands
+     as it stood before
+  2  refused before anything was touched: the pre-flight found heresy, the
+     rite or the aspect is unknown, words strayed after an edict's name, a
+     rune was malformed, or --foresee was spoken with --binharic
+  3  faltered: a step fell, and a reversion fell too; the rite lies
+     corrupted until it is invoked anew
+
+The death-mark 2 is the augury's own mark for what it could not read. An
+invocation halted by its master's interrupt is reverted like any other that
+fell, and bears 1, or 3 should a reversion falter. A foresight bears 0 when
+its pre-flight was pure and 2 when it was not.
+
+Only the forbiddance of the pre-flight and the verdicts speak upon stdout
+in binharic; every other refusal bearing 2 speaks upon stderr alone. The
+augury and the Inquisition keep marks of their own, recited in their
+passages.
+
+Kindred passages: verdicts, invoke, binharic, forbidden, augury,
+inquisition
+
+Exempla:
+  servitor invoke theme porpl; echo "death-mark $?"
+
+  servitor invoke mouse-autohide-toggle on -s
+  case $? in
+    0) echo "the Omnissiah is pleased" ;;
+    1) echo "reverted; the machine stands as before" ;;
+    2) echo "forbidden; nothing was touched" ;;
+    3) echo "faltered; summon the Inquisition" ;;
+  esac

@@ -14,7 +14,9 @@ Three verdicts are known to the codex:
 
 A reverted or faltered invocation ends with the servitor's lament — the step
 that fell, its last words, and how each reversion went — and the invoke
-ritual exits 1. A faltered verdict leaves the rite corrupted until it is
+ritual bears the death-mark 1 when reverted and 3 when faltered (0 upon
+triumph). Spoken with --binharic, it speaks the chronicle's line of the
+invocation, verdict and all, upon stdout. A faltered verdict leaves the rite corrupted until it is
 invoked anew, for no single aspect can be trusted to stand; an edict lies
 corrupted alike, until it is proclaimed again.
 
@@ -29,7 +31,8 @@ verdict: neither its data-slate nor the chronicle is touched. The same holds
 for an invocation only foreseen. An invocation halted by its master's
 interrupt is reverted like any other that fell, and judged accordingly.
 
-Kindred passages: chronicle, data-slate, reversion, invoke, standing
+Kindred passages: chronicle, data-slate, reversion, invoke, standing,
+death-marks, forbidden
 
 Exempla:
   servitor augury theme | jq -r .last_rite.verdict

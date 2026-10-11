@@ -33,7 +33,11 @@ which outranks the rite's decree for that aspect (or the edict's one decree);
 an empty word clears it. A mandatory inscription that neither rune nor decree
 supplies forbids the invocation. The rune --foresee (-f) reveals everything
 the invocation would do and performs none of it; --silence (-s) withholds the
-report, save the vox-casts the rite asks for.
+report, save the vox-casts the rite asks for. The rune --binharic speaks
+upon stdout, for lesser machines, the very line the invocation added to the
+chronicle — or, should the pre-flight forbid it, the heresies under
+"forbidden" — and tells the report upon stderr instead; the desktop hears
+as it always would. --binharic and --foresee are not spoken together.
 
 Spoken at a terminal, the invocation is told in one report as it is
 performed: a header naming the rite and its turning, the former aspect and
@@ -68,9 +72,11 @@ line to the chronicle, whatever the verdict. An invocation the pre-flight
 forbade, or one merely foreseen, is neither chronicled nor recorded on the
 data-slate, for nothing was performed.
 
-The servitor exits 0 upon triumph, and 1 when the invocation was forbidden,
-the rite or aspect is unknown, a word was written after an edict's name, or
-a step fell.
+The servitor's death-mark tells how the invocation ended, with or without
+--binharic: 0 upon triumph, 1 when it was reverted, 2 when it was refused
+before anything was touched (the pre-flight forbade it, the rite or aspect
+is unknown, a word was written after an edict's name, a rune was
+malformed), and 3 when it faltered.
 
 A rite's scripture, kept in <Librarium>/rites/<name>.json, may read thus:
 
@@ -89,10 +95,11 @@ A rite's scripture, kept in <Librarium>/rites/<name>.json, may read thus:
   }
 
 Kindred passages: rite, edict, liturgy, pre-flight, reversion, inscriptions,
-verdicts
+verdicts, binharic, forbidden, death-marks
 
 Exempla:
   servitor invoke mouse-autohide-toggle on --reason "gaming remnant"
   servitor invoke mouse-autohide-toggle off --foresee
   servitor invoke theme "$(printf 'default\nfinii\nporpl\n' | fuzzel --dmenu)"
   servitor invoke screenshot --region full
+  servitor invoke theme porpl --binharic | jq -r .verdict

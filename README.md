@@ -381,8 +381,31 @@ lament alone tells the fall, its last words and every reversion.
 `--foresee` (`-f`) shows every sanctum and transcription as it would change,
 every tether rebound and every command as it would be spoken, and performs
 nothing, not even the auspex. `--silence` (`-s`) withholds the report, save
-the lines the rite's own vox-casts ask for. The ritual exits 0 upon triumph
-and 1 otherwise.
+the lines the rite's own vox-casts ask for.
+
+`--binharic` is for lesser machines: stdout then bears one line of
+binharic alone, the very line the invocation added to the
+[chronicle](#the-chronicle), while the report and every lament go to stderr
+(the desktop hears as it always would). Should the pre-flight forbid the
+invocation, the line names the heresies under `forbidden` instead; an
+edict's names no aspect. `--binharic` is not spoken with `--foresee`.
+
+```console
+❯ servitor invoke theme porpl --binharic 2>/dev/null
+{"at":"2026-10-11T13:30:00Z","rite":"theme","aspect":"porpl","former":"default","inscriptions":{},"verdict":"triumph"}
+
+❯ servitor invoke theme porpl --binharic 2>/dev/null
+{"rite":"theme","aspect":"porpl","forbidden":["…/rites/theme.json:9:7: heresy: …"]}
+```
+
+The death-mark tells how it ended, with or without `--binharic`:
+
+| Death-mark | The invocation |
+|---|---|
+| 0 | triumphed |
+| 1 | was reverted: a step fell and every deed was undone |
+| 2 | was refused before anything was touched: the pre-flight forbade it, the rite or aspect is unknown, words strayed after an edict, or a rune was malformed |
+| 3 | faltered: a step fell and a reversion fell too |
 
 ## Edicts
 
@@ -469,8 +492,8 @@ servitor ✠ the edict "screenshot" bears no aspect and is proclaimed by its nam
 
 | Ritual | What it does |
 |---|---|
-| `servitor invoke <rite> <aspect> [--<key> <word>] [-f] [-s]` | Perform an aspect of a rite. |
-| `servitor invoke <edict> [--<key> <word>] [-f] [-s]` | Proclaim an edict, its whole liturgy anew. |
+| `servitor invoke <rite> <aspect> [--<key> <word>] [-f] [-s] [--binharic]` | Perform an aspect of a rite. |
+| `servitor invoke <edict> [--<key> <word>] [-f] [-s] [--binharic]` | Proclaim an edict, its whole liturgy anew. |
 | `servitor augury <rite> [key] [--is <aspect>]` | Read how a rite stands, the aspect it bears (an edict bears none) and its inscriptions. |
 | `servitor census [--binharic]` | Every rite with its aspect, standing, aspects, last rite and purpose. |
 | `servitor inquisition [rite…] [--binharic] [--spare-vessels]` | Denounce heresy in rites, settings and vessels. |
