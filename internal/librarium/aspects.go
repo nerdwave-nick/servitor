@@ -10,16 +10,27 @@ import (
 // aspect (with Fallback) or a single value read by one. isValue tells objects
 // that are single values (such as tomes) from aspect maps; nil means every
 // object is an aspect map. When full, every declared aspect must be served.
+//
+// An edict bears no aspect, so every aspect map in it — even one keyed by
+// Fallback alone — is heresy; its values are still read for their own.
+// A rite of aspects whose aspects could not be read is heretical already,
+// and its keys are not judged against aspects it never declared.
 func aspectMap[T any](d *decoder, v *hujson.Value, what string, full bool,
 	isValue func(*hujson.Value) bool, one func(*hujson.Value, string) (T, bool)) AspectMap[T] {
 	if _, isObj := v.Value.(*hujson.Object); !isObj || (isValue != nil && isValue(v)) {
 		val, _ := one(v, what)
 		return Uniform(val)
 	}
+	edict := d.rite.Edict
+	if edict {
+		d.heresy(v, "%s is written as an aspect map, yet an edict bears no aspect to key it by: it is "+
+			"proclaimed whole, never invoked into an aspect, so not even %q has an aspect to serve — write "+
+			"one plain value in its stead", what, Fallback)
+	}
 	m := AspectMap[T]{entries: []Entry[T]{}}
 	fs, _ := d.object(v, what, nil)
 	for _, f := range fs {
-		if f.name != Fallback && len(d.aspects) > 0 && !slices.Contains(d.aspects, f.name) {
+		if !edict && f.name != Fallback && len(d.aspects) > 0 && !slices.Contains(d.aspects, f.name) {
 			d.heresy(f.key, "%s names the aspect %q, which the rite never declared (it declares %s); every "+
 				"key of an aspect map must be a declared aspect, or %q to serve every aspect not named",
 				what, f.name, quoteAll(d.aspects), Fallback)
@@ -31,7 +42,7 @@ func aspectMap[T any](d *decoder, v *hujson.Value, what string, full bool,
 		val, _ := one(f.val, entry)
 		m.entries = append(m.entries, Entry[T]{Aspect: f.name, Value: val})
 	}
-	if missing := m.unserved(d.aspects); full && len(missing) > 0 {
+	if missing := m.unserved(d.aspects); full && !edict && len(missing) > 0 {
 		d.heresy(v, "%s gives no value for %s and holds no %q to serve %s; were the rite invoked into "+
 			"such an aspect, the servitor would not know what to do", what, aspectList(missing), Fallback,
 			pronoun(missing))

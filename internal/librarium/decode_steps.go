@@ -20,6 +20,17 @@ var stepKeys = map[Kind][]string{
 	KindVoxCast:       {"vox-cast"},
 }
 
+// edictForbids tells why an edict may not hold a step of each kind that
+// exists to hold and reveal an aspect.
+var edictForbids = map[Kind]string{
+	KindSanctum: "an edict may not keep a sanctum, for a sanctum's marker records the aspect its vessel " +
+		"was brought into",
+	KindTranscription: "an edict may not perform a transcription, for a transcribed vessel bears the " +
+		"scripture of one aspect and reveals that aspect thereafter",
+	KindTether: "an edict may not bind a tether, for the anchor a tether leads to reveals the aspect the " +
+		"machine stands in",
+}
+
 // StepKeys returns the keys a step of kind k may hold, its own key first.
 func StepKeys(k Kind) []string { return append([]string{}, stepKeys[k]...) }
 
@@ -40,7 +51,9 @@ func (d *decoder) decodeStep(v *hujson.Value, verse int) Step {
 		return nil
 	}
 	var kind Kind
-	for _, m := range obj.Members {
+	var ownKey *hujson.Value
+	for i := range obj.Members {
+		m := &obj.Members[i]
 		k := kindOf(m.Name.Value.(hujson.Literal).String())
 		switch {
 		case k == 0:
@@ -49,13 +62,17 @@ func (d *decoder) decodeStep(v *hujson.Value, verse int) Step {
 				"two steps", verse, kind.Key(), k.Key())
 			return nil
 		default:
-			kind = k
+			kind, ownKey = k, &m.Name
 		}
 	}
 	if kind == 0 {
 		d.heresy(v, "verse %d of the liturgy names no kind of step; a step must hold exactly one of the keys %s",
 			verse, quoteAll(keysOfKinds()))
 		return nil
+	}
+	if why, forbidden := edictForbids[kind]; forbidden && d.rite.Edict {
+		d.heresy(ownKey, "verse %d: %s, and an edict bears none — the liturgy of an edict holds only "+
+			"incantations, litanies and vox-casts", verse, why)
 	}
 	what := fmt.Sprintf("the %s of verse %d", kind.Key(), verse)
 	fs, _ := d.object(v, what, stepKeys[kind])

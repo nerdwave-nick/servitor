@@ -1,0 +1,47 @@
+A rite without aspects, proclaimed whole each time it is invoked
+
+Some rites bring the machine into no aspect at all: they are commands done
+once and done again — the visage of the machine captured, the machine spirit
+bidden to sleep or to wake anew. Such a rite is written as an edict, marked
+by "edict": true in place of "aspects". "edict": false is as if unwritten.
+A rite bears exactly one of the two: "aspects" beside "edict": true is
+heresy, and so is a rite that bears neither.
+
+An edict is invoked by its name alone, with no aspect after it, and every
+invocation performs its whole liturgy anew; nothing is passed over because
+it was performed before. Its inscriptions are runes as for any rite.
+
+Because an edict stands in no aspect, nothing of it may hold or reveal one:
+  - its liturgy holds only incantations, litanies and vox-casts; a sanctum,
+    a transcription or a tether in an edict is heresy, for each exists to
+    keep an aspect and bear witness to it
+  - it bears no auspex, for there is no aspect to divine
+  - every value is written once and plainly: an aspect map — even one keyed
+    by "*" alone — is heresy in its commands, scrolls, offerings, reversions
+    and decrees, and patience and tongue are single words as in every rite
+  - its words never speak {{aspect}} or {{former}}; {{rite.name}} and
+    {{inscription.<key>}} serve it as they serve every rite
+
+All else is as for any rite: "purpose", "inscriptions" with "mandatory" and
+a decree of one plain word, "tongue", and the reversion, patience, tongue and
+offerings of its incantations and litanies. Should the servitor write an
+edict's scripture anew, it keeps "edict": true and never writes "aspects".
+
+Kindred passages: rite, aspects, liturgy, incantation, litany, vox-cast,
+invoke, heresy
+
+Exempla:
+  // <Librarium>/rites/screenshot.json
+  {
+    "pattern": "Mark I",
+    "purpose": "Capture the visage of the machine",
+    "edict": true,
+    "inscriptions": {"region": {"purpose": "the slurp geometry", "decrees": "full"}},
+    "liturgy": [
+      {"incantation": "grim -g \"$(slurp)\" ~/pictures/{{inscription.region}}.png",
+       "patience": "2m"},
+      {"vox-cast": "success"},
+    ],
+  }
+
+  servitor invoke screenshot --region full

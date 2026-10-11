@@ -42,7 +42,7 @@ var heresyCases = []heresyCase{
 	{"key written twice", mark(`"purpose": "a", "purpose": "b",`, ``), Heresy, `the key "purpose" is written twice`, `"purpose": "b"`, 0},
 	{"wrong form", mark(`"purpose": 7,`, ``), Heresy, `the "purpose" of a rite must be written as a string, yet here stands a number`, `7,`, 0},
 	{"invalid rite name", ``, Heresy, "no fit name for a rite", `{`, 0}, // see TestParse_InvalidRiteName
-	{"aspects missing", `{"pattern": "Mark I", "liturgy": []}`, Heresy, `declares no "aspects"`, `{`, 0},
+	{"aspects missing", `{"pattern": "Mark I", "liturgy": []}`, Heresy, `declares neither "aspects" nor "edict": true`, `{`, 0},
 	{"aspects empty", `{"pattern": "Mark I", "aspects": []}`, Heresy, "declares no aspects", `[]`, 0},
 	{"aspects no list", `{"pattern": "Mark I", "aspects": "on"}`, Heresy, "must be written as a list of names", `"on"`, 0},
 	{"aspect twice", `{"pattern": "Mark I", "aspects": ["on", "on"]}`, Heresy, `the aspect "on" is declared twice`, `"on"]`, 0},

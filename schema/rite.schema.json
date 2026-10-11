@@ -2,10 +2,60 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/nerdwave-nick/servitor/main/schema/rite.schema.json",
   "title": "Scripture of a rite, pattern Mark I",
-  "description": "A named liturgy that brings the machine into one of its aspects, kept in the rites/ hall of the Librarium; the rite bears the name of its scripture. Only the form of each key is judged here; recite 'servitor inquisition' for the full judgement of the Inquisition, and 'servitor expound <key>' for the lore of any key.",
+  "description": "A named liturgy that brings the machine into one of its aspects, or, written as an edict, is proclaimed whole and bears no aspect at all; it is kept in the rites/ hall of the Librarium and bears the name of its scripture. A rite bears exactly one of \"aspects\" and \"edict\": true. Only the form of each key is judged here; recite 'servitor inquisition' for the full judgement of the Inquisition, and 'servitor expound <key>' for the lore of any key.",
   "type": "object",
-  "required": ["pattern", "aspects"],
+  "required": ["pattern"],
   "additionalProperties": false,
+  "if": {
+    "required": ["edict"],
+    "properties": {
+      "edict": {
+        "description": "Only \"edict\": true makes the rite an edict; false is as if unwritten.",
+        "const": true
+      }
+    }
+  },
+  "then": {
+    "not": {"anyOf": [{"required": ["aspects"]}, {"required": ["auspex"]}]},
+    "properties": {
+      "inscriptions": {
+        "description": "The inscriptions of an edict, each decreeing at most one plain word.",
+        "additionalProperties": {
+          "properties": {
+            "decrees": {
+              "description": "The one word an edict inscribes when the invocation gives none; an edict bears no aspect, so it holds no aspect map.",
+              "type": "string"
+            }
+          }
+        }
+      },
+      "liturgy": {
+        "description": "The liturgy of an edict: incantations, litanies and vox-casts alone, every word written plainly; it keeps no sanctum, transcribes no vessel and binds no tether.",
+        "items": {
+          "not": {"anyOf": [{"required": ["sanctum"]}, {"required": ["transcription"]}, {"required": ["tether"]}]},
+          "properties": {
+            "incantation": {
+              "description": "The words an edict speaks, written once; an edict bears no aspect map.",
+              "$ref": "#/$defs/command"
+            },
+            "litany": {
+              "description": "The path of the scroll an edict recites, written once; an edict bears no aspect map.",
+              "$ref": "#/$defs/command"
+            },
+            "offerings": {
+              "description": "What is laid before the scroll of an edict, each offering one plain word.",
+              "items": {"type": "string"}
+            },
+            "reversion": {
+              "description": "The words that undo this step of an edict, written once; an edict bears no aspect map.",
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  },
+  "else": {"required": ["aspects"]},
   "properties": {
     "pattern": {
       "description": "The Mark of the form in which this scripture is written. This servitor reads only \"Mark I\"; scripture of no pattern, or of another, is heresy.",
@@ -16,11 +66,16 @@
       "type": "string"
     },
     "aspects": {
-      "description": "The named conditions the rite can bring the machine into, written by hand: at least one, each named once.",
+      "description": "The named conditions the rite can bring the machine into, written by hand: at least one, each named once. An edict bears none.",
       "type": "array",
       "minItems": 1,
       "uniqueItems": true,
       "items": {"$ref": "#/$defs/name"}
+    },
+    "edict": {
+      "description": "Marks the rite an edict when true: a rite without aspects, proclaimed whole each time it is invoked. An edict bears no \"aspects\" and no auspex, its liturgy holds only incantations, litanies and vox-casts, every value of it is written plainly without aspect maps, and its words never speak {{aspect}} or {{former}}. False is as if unwritten.",
+      "type": "boolean",
+      "default": false
     },
     "inscriptions": {
       "description": "Named words carried by one invocation, spoken as the rune --<key>, illuminated as {{inscription.<key>}} and kept on the data-slate. Each key names one inscription.",
@@ -35,7 +90,7 @@
       "additionalProperties": {"$ref": "#/$defs/inscription"}
     },
     "auspex": {
-      "description": "The rite's own scanning words, telling which aspect the machine bears: a command whose words name the aspect, or {\"rite\": \"<command>\", \"patience\": \"5s\"}. It sees the aspect being invoked as {{aspect}} and SERVITOR_ASPECT.",
+      "description": "The rite's own scanning words, telling which aspect the machine bears: a command whose words name the aspect, or {\"rite\": \"<command>\", \"patience\": \"5s\"}. It sees the aspect being invoked as {{aspect}} and SERVITOR_ASPECT. An edict bears none.",
       "oneOf": [
         {"$ref": "#/$defs/command"},
         {"$ref": "#/$defs/auspex"}
