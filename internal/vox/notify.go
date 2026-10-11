@@ -20,7 +20,7 @@ const patience = 5 * time.Second
 // desktop is the one notification of an invocation.
 type desktop struct {
 	id        string   // the notification's id; "" before the first is shown
-	lingering *Message // the last progress sent, which never expires
+	lingering *Message // the last progress or awaiting sent, which never expires
 }
 
 // send shows m, replacing the notification shown before.
@@ -30,7 +30,8 @@ type desktop struct {
 // the daemon have shown a new notification instead. Progress is shown with
 // "-t 0", so it does not expire while the rite runs however long its
 // steps labour, and normal urgency, so it neither stays nor alarms once
-// replaced; rest lets a lingering progress expire. Triumph keeps the
+// replaced; so is the awaiting of dominion, however long the wait; rest
+// lets a lingering progress or awaiting expire. Triumph keeps the
 // daemon's own expiry. A fall is critical: the freedesktop specification
 // lets critical notifications stay until they are dismissed, so a fall
 // cannot pass unseen.
@@ -51,6 +52,12 @@ func (d *desktop) send(m Message, resting bool) {
 			args = append(args, "-t", "0", "-h", "int:value:"+strconv.Itoa(m.Percent))
 			d.lingering = &m
 		}
+	case invocation.Dominion:
+		args = append(args, "-u", "normal")
+		if !resting {
+			args = append(args, "-t", "0")
+			d.lingering = &m
+		}
 	case invocation.Success:
 		args = append(args, "-u", "normal")
 	case invocation.Failure:
@@ -68,7 +75,8 @@ func (d *desktop) send(m Message, resting bool) {
 	}
 }
 
-// rest sends a lingering progress once more, so that it may expire.
+// rest sends a lingering progress or awaiting once more, so that it may
+// expire.
 func (d *desktop) rest() {
 	if d.lingering != nil {
 		d.send(*d.lingering, true)

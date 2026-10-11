@@ -1,0 +1,8 @@
+# +++ Vox-casts of an edict awaiting dominion +++
+# One template per line; blank lines and lines starting with "#" are ignored.
+# Told once, unbidden, when another invocation holds dominion over the
+# edict, before the invocation waits. Each names the edict "the edict
+# {{rite.name}}" and speaks no aspect.
+The edict {{rite.name}} is already being proclaimed; the servitor waits for its dominion to be relinquished.
+Another invocation holds dominion over the edict {{rite.name}}. The servitor waits its turn.
+Another hand proclaims the edict {{rite.name}}; the servitor kneels and waits for its end.

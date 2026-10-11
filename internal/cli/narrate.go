@@ -77,7 +77,9 @@ func (n *narration) Performed(v invocation.Verse, _, _ int) {
 
 // Proclaim satisfies invocation.Herald. Upon a terminal a progress is told
 // with the count of real steps and the first success closes the report;
-// the fall is left to the lament.
+// the fall is left to the lament. The awaiting of dominion, told before the
+// header, is a line of its own that silence withholds; without a terminal
+// only the desktop hears it.
 func (n *narration) Proclaim(p invocation.Proclamation) {
 	m := vox.Compose(p, n.pick)
 	closed := n.closing != ""
@@ -91,6 +93,10 @@ func (n *narration) Proclaim(p invocation.Proclamation) {
 		return
 	}
 	switch p.Tidings {
+	case invocation.Dominion:
+		if !n.silence {
+			fmt.Fprintln(n.w, "⋯ "+m.Flavour)
+		}
 	case invocation.Progress:
 		fmt.Fprintf(n.w, "  ⋯ %s  (%d/%d)\n", m.Flavour, p.Values.Tidings.Step, p.Values.Tidings.Steps)
 	case invocation.Success:
