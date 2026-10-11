@@ -15,6 +15,10 @@
 // either the rite lies dormant. Omens agreeing on an aspect the data-slate
 // did not record mark the rite desecrated, a sanctum whose scripture other
 // hands altered taints it, and a last invocation that faltered corrupts it.
+//
+// An edict bears no aspect and yields no omen: it lies dormant until first
+// proclaimed, stands proclaimed after a last invocation that ended in
+// triumph or was reverted, and corrupted after one that faltered.
 package augury
 
 import (
@@ -29,7 +33,7 @@ type Standing string
 
 // The standings, from the gravest down. A rite holds the gravest that
 // applies: heretical, corrupted, tainted, desecrated, then performed or
-// dormant.
+// dormant. An edict is heretical, corrupted, proclaimed or dormant.
 const (
 	Heretical  Standing = "heretical"  // its scripture is heresy
 	Corrupted  Standing = "corrupted"  // its omens disagree, or its last invocation faltered
@@ -37,12 +41,16 @@ const (
 	Desecrated Standing = "desecrated" // its omens agree on an aspect the data-slate did not record
 	Performed  Standing = "performed"  // its omens, or else its data-slate, name its aspect
 	Dormant    Standing = "dormant"    // neither omen nor data-slate names an aspect
+	// Proclaimed is for edicts alone: the last invocation of the edict
+	// ended in triumph, or was reverted.
+	Proclaimed Standing = "proclaimed"
 )
 
 // Augury is what the servitor reads of one rite; it marshals as the JSON of
 // `servitor augury`.
 type Augury struct {
 	Rite       string
+	Edict      bool   // the rite is an edict, which bears no aspect
 	Aspect     string // "" when unknown
 	Standing   Standing
 	Desecrated bool   // the omens agree on an aspect the data-slate did not record
@@ -100,6 +108,11 @@ func (o Options) env() librarium.Environment {
 func Augur(r *librarium.Rite, opts Options) (Augury, error) {
 	slate, err := ReadSlate(opts.env(), r.Name)
 	a := fromSlate(r.Name, slate)
+	if r.Edict {
+		a.Edict = true
+		a.proclamation(slate)
+		return a, err
+	}
 	s := newSeer(r, slate)
 	for i, step := range r.Liturgy {
 		omen, taint := s.observe(i, step)
@@ -164,6 +177,20 @@ func (a *Augury) judge(slate *Slate) {
 	}
 	if slate != nil && slate.LastRite != nil && slate.LastRite.Verdict == invocation.Faltered {
 		a.Standing = Corrupted
+	}
+}
+
+// proclamation judges the standing of an edict from its data-slate alone:
+// it seeks no omen and awakens no auspex, for an edict brings the machine
+// into no aspect.
+func (a *Augury) proclamation(slate *Slate) {
+	switch {
+	case slate == nil || slate.LastRite == nil:
+		a.Standing = Dormant
+	case slate.LastRite.Verdict == invocation.Faltered:
+		a.Standing = Corrupted
+	default:
+		a.Standing = Proclaimed
 	}
 }
 

@@ -7,12 +7,28 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/invocation"
 )
 
-// MarshalJSON writes the augury in the shape of the codex: rite, aspect,
-// standing, desecrated, former (only when desecrated), inscriptions,
-// last_rite (null when never invoked), omens and taint (lists, never null).
+// MarshalJSON writes the augury in the shape of the codex: rite, edict
+// (false), aspect, standing, desecrated, former (only when desecrated),
+// inscriptions, last_rite (null when never invoked), omens and taint
+// (lists, never null). An edict's is rite, edict (true), standing,
+// inscriptions and last_rite alone.
 func (a Augury) MarshalJSON() ([]byte, error) {
+	inscriptions := a.Inscriptions
+	if inscriptions == nil {
+		inscriptions = map[string]string{}
+	}
+	if a.Edict {
+		return json.Marshal(struct {
+			Rite         string            `json:"rite"`
+			Edict        bool              `json:"edict"`
+			Standing     Standing          `json:"standing"`
+			Inscriptions map[string]string `json:"inscriptions"`
+			LastRite     *LastRite         `json:"last_rite"`
+		}{a.Rite, true, a.Standing, inscriptions, a.LastRite})
+	}
 	type binharic struct {
 		Rite         string            `json:"rite"`
+		Edict        bool              `json:"edict"`
 		Aspect       string            `json:"aspect"`
 		Standing     Standing          `json:"standing"`
 		Desecrated   bool              `json:"desecrated"`
@@ -23,12 +39,9 @@ func (a Augury) MarshalJSON() ([]byte, error) {
 		Taint        []Taint           `json:"taint"`
 	}
 	b := binharic{Rite: a.Rite, Aspect: a.Aspect, Standing: a.Standing, Desecrated: a.Desecrated,
-		Inscriptions: a.Inscriptions, LastRite: a.LastRite, Omens: a.Omens, Taint: a.Taint}
+		Inscriptions: inscriptions, LastRite: a.LastRite, Omens: a.Omens, Taint: a.Taint}
 	if a.Desecrated {
 		b.Former = a.Former
-	}
-	if b.Inscriptions == nil {
-		b.Inscriptions = map[string]string{}
 	}
 	if b.Omens == nil {
 		b.Omens = []Omen{}
