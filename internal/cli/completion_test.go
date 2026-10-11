@@ -69,8 +69,8 @@ func TestCompletion_Runes(t *testing.T) {
 	e := newEnv(t)
 	cases := map[string][]string{
 		"invoke mouse-autohide-toggle on --": {"--reason", "--example-key", "--foresee", "--silence"},
-		"augury mouse-autohide-toggle --":    {"--is"},
-		"census --":                          {"--binharic"},
+		"augury mouse-autohide-toggle --":    {"--is", "--spare-auspex"},
+		"census --":                          {"--binharic", "--spare-auspex"},
 		"inquisition --":                     {"--binharic", "--spare-vessels"},
 		"--":                                 {"--version"},
 	}

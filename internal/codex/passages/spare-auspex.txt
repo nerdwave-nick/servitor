@@ -1,0 +1,27 @@
+Answer at once, leaving every auspex unawakened
+
+The rune --spare-auspex is given to the census and to the augury. Without
+it, both awaken the auspex of every rite that keeps one, and each auspex may
+labour as long as its patience allows before the answer is spoken.
+
+With the rune, no auspex is ever awakened. The answer is read from the omens
+of the steps and from the data-slate alone, and so it comes at once — fit for
+bars and other lesser machines that ask often and cannot wait. The aspect
+and the standing are still judged by the agreement of whatever omens remain;
+where none speaks, the data-slate names the aspect, as ever.
+
+Such an answer is no full reading, and it says so: every rite that keeps an
+auspex is marked "auspex": "forgone" in the binharic of the census and of
+the augury. A rite without auspex, an edict and a heretical rite are marked
+"" as ever, for there was nothing to spare.
+
+The rune changes only what is read, never what is spoken: the census table
+stays as it is, and the augury's keys and --is answer as without it. The
+litanies of completion spare the auspex always, and so does --foresee.
+
+Kindred passages: auspex, census, augury, omens, data-slate, patience
+
+Exempla:
+  servitor census --binharic --spare-auspex
+  servitor augury do-not-disturb --spare-auspex | jq -r .aspect
+  servitor augury do-not-disturb --spare-auspex --is on && echo "silence reigns"

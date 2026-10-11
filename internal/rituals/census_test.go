@@ -97,17 +97,18 @@ func TestCensus_EveryRiteInTheShapeOfTheCodex(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := `[{"rite":"broken","edict":false,"aspect":"","standing":"heretical","aspects":[],"purpose":"","desecrated":false,` +
-		`"last_rite":null,"recorded_in":"` + broken + `"},` +
-		`{"rite":"dnd","edict":false,"aspect":"","standing":"dormant","aspects":["on","off"],"purpose":"","desecrated":false,` +
-		`"last_rite":null,"recorded_in":"` + filepath.Join(fx.lib, "rites", "dnd.json") + `"},` +
-		`{"rite":"mouse","edict":false,"aspect":"on","standing":"performed","aspects":["on","off"],` +
+	want := `[{"rite":"broken","edict":false,"aspect":"","standing":"heretical","auspex":"","aspects":[],"purpose":"",` +
+		`"desecrated":false,"last_rite":null,"recorded_in":"` + broken + `"},` +
+		`{"rite":"dnd","edict":false,"aspect":"","standing":"dormant","auspex":"forgone","aspects":["on","off"],"purpose":"",` +
+		`"desecrated":false,"last_rite":null,"recorded_in":"` + filepath.Join(fx.lib, "rites", "dnd.json") + `"},` +
+		`{"rite":"mouse","edict":false,"aspect":"on","standing":"performed","auspex":"","aspects":["on","off"],` +
 		`"purpose":"Hide the cursor after inactivity","desecrated":false,` +
 		`"last_rite":{"verdict":"triumph","at":"2026-10-10T13:30:00Z"},"recorded_in":"` + path + `"}]`
 	if string(data) != want {
 		t.Fatalf("census\n%s\nwant\n%s", data, want)
 	}
-	if entries, _ := s.Census(false); entries[1].Aspect != "off" || !exists(filepath.Join(fx.data, "awoken")) {
+	if entries, _ := s.Census(false); entries[1].Aspect != "off" || entries[1].Auspex != augury.Heeded ||
+		!exists(filepath.Join(fx.data, "awoken")) {
 		t.Fatalf("the census heeded no auspex: %+v", entries[1])
 	}
 }
@@ -130,12 +131,40 @@ func TestCensus_AnEdictBearsNoAspects(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := `[{"rite":"capture","edict":true,"aspect":"","standing":"proclaimed","aspects":[],` +
+	want := `[{"rite":"capture","edict":true,"aspect":"","standing":"proclaimed","auspex":"","aspects":[],` +
 		`"purpose":"Capture the visage of the machine","desecrated":false,` +
 		`"last_rite":{"verdict":"triumph","at":"2026-10-10T13:30:00Z"},"recorded_in":"` + path + `"},` +
-		`{"rite":"dormant","edict":true,"aspect":"","standing":"dormant","aspects":[],"purpose":"","desecrated":false,` +
+		`{"rite":"dormant","edict":true,"aspect":"","standing":"dormant","auspex":"","aspects":[],"purpose":"","desecrated":false,` +
 		`"last_rite":null,"recorded_in":"` + filepath.Join(fx.lib, "rites", "dormant.json") + `"}]`
 	if string(data) != want {
 		t.Fatalf("census\n%s\nwant\n%s", data, want)
+	}
+}
+
+// TestCensus_MarksWhatEveryAuspexGave: every entry tells a heeded auspex
+// from a mute one, and both from a rite that keeps none.
+func TestCensus_MarksWhatEveryAuspexGave(t *testing.T) {
+	fx := newFixture(t)
+	fx.rite("heeded", `{"pattern": "Mark I", "aspects": ["on", "off"], "auspex": "echo on", "liturgy": []}`)
+	fx.rite("fallen", `{"pattern": "Mark I", "aspects": ["on", "off"], "auspex": "echo on; exit 1", "liturgy": []}`)
+	fx.rite("nonsense", `{"pattern": "Mark I", "aspects": ["on", "off"], "auspex": "echo porpl", "liturgy": []}`)
+	fx.rite("impatient", `{"pattern": "Mark I", "aspects": ["on", "off"],
+		"auspex": {"rite": "sleep 3; echo on", "patience": "100ms"}, "liturgy": []}`)
+	fx.rite("silent", `{"pattern": "Mark I", "aspects": ["on", "off"], "liturgy": []}`)
+
+	entries, laments := fx.servitor().Census(false)
+
+	if len(laments) != 0 {
+		t.Fatalf("laments %v", laments)
+	}
+	want := map[string]augury.Heed{"heeded": augury.Heeded, "fallen": augury.Mute, "nonsense": augury.Mute,
+		"impatient": augury.Mute, "silent": augury.NoAuspex}
+	for _, e := range entries {
+		if e.Auspex != want[e.Rite] {
+			t.Errorf("%s: auspex %q, want %q", e.Rite, e.Auspex, want[e.Rite])
+		}
+	}
+	if len(entries) != len(want) {
+		t.Fatalf("census %+v", entries)
 	}
 }

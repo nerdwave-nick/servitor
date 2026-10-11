@@ -41,7 +41,10 @@ func TestCodex_QuestionMarkExpounds(t *testing.T) {
 	h.keys("space", "space")
 	h.mustShow("Exempla:", "current-theme")
 	h.keys("esc")
-	h.mustShow("Passages of the Codex", "tether")
+	h.mustShow("The Codex", "Steps of the liturgy", "tether")
+	if strings.Contains(h.screen(), "as written in the codex") {
+		t.Fatalf("esc did not withdraw from the passage to the index:\n%s", h.screen())
+	}
 	h.keys("esc")
 	if strings.Contains(h.screen(), "Passages of the Codex") {
 		t.Fatalf("esc did not withdraw from the codex:\n%s", h.screen())

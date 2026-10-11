@@ -12,7 +12,7 @@ Without a key, the augury speaks one object in binharic, for other machines
 to read:
 
   {"rite": "theme", "edict": false, "aspect": "porpl",
-   "standing": "performed", "desecrated": false,
+   "standing": "performed", "auspex": "heeded", "desecrated": false,
    "inscriptions": {"reason": "gaming remnant"},
    "last_rite": {"verdict": "triumph", "at": "2026-10-10T13:30:00Z"},
    "omens": [{"verse": 2, "tether": "~/.local/share/nfluff/current-theme",
@@ -20,14 +20,16 @@ to read:
    "taint": []}
 
 The key "former", naming the aspect the data-slate recorded, appears only
-when the rite is desecrated.
+when the rite is desecrated. The key "auspex" tells what the rite's auspex
+gave: "" when it keeps none, "heeded", "mute", or "forgone" when the rune
+--spare-auspex left it unawakened; the passage on the auspex tells all.
 
 The augury of an edict bears "edict": true and only its standing, its
-inscriptions and its last rite — never aspect, desecrated, former, omens or
-taint:
+auspex (always "", for it keeps none), its inscriptions and its last rite —
+never aspect, desecrated, former, omens or taint:
 
   {"rite": "screenshot", "edict": true, "standing": "proclaimed",
-   "inscriptions": {"region": "full"},
+   "auspex": "", "inscriptions": {"region": "full"},
    "last_rite": {"verdict": "triumph", "at": "2026-10-10T13:31:00Z"}}
 
 With a key, the augury speaks that single value and nothing more: aspect,
@@ -37,6 +39,9 @@ the first four, the augury's own value is spoken; the inscription is still
 read in the binharic object. An edict answers its standing and its
 inscriptions alone: asked for its aspect, desecrated or former, it is refused
 with a heresy, for it bears no aspect.
+
+With the rune --spare-auspex, the augury awakens no auspex and answers at
+once from the other omens and the data-slate, in every manner of reading.
 
 With the rune --is <aspect>, the augury speaks nothing at all: it exits 0
 when the rite stands in that aspect and 1 when it does not, for the
@@ -49,8 +54,8 @@ an unknown rite or key, an aspect the rite knows not, a key given beside
 --is, a heretical rite asked --is, an edict asked for an aspect, desecrated,
 former or --is, or a malformed rune.
 
-Kindred passages: is, omens, standing, data-slate, inscriptions, auspex,
-edict
+Kindred passages: is, spare-auspex, omens, standing, data-slate,
+inscriptions, auspex, edict
 
 Exempla:
   servitor augury theme
@@ -59,3 +64,4 @@ Exempla:
   servitor augury theme | jq -r .inscriptions.reason
   servitor augury mouse --is on && echo "the cursor is veiled"
   servitor augury screenshot standing
+  servitor augury do-not-disturb --spare-auspex

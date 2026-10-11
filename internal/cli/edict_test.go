@@ -252,13 +252,13 @@ func TestEdict_AuguryBearsNoAspect(t *testing.T) {
 	e := newEnv(t)
 	e.addRite("rites/capture.json", edictJSON)
 	dormant := "{\n  \"rite\": \"capture\",\n  \"edict\": true,\n  \"standing\": \"dormant\",\n" +
-		"  \"inscriptions\": {},\n  \"last_rite\": null\n}\n"
+		"  \"auspex\": \"\",\n  \"inscriptions\": {},\n  \"last_rite\": null\n}\n"
 	if out := e.mustRun("augury", "capture"); out != dormant {
 		t.Errorf("augury of a dormant edict:\n%s\nwant\n%s", out, dormant)
 	}
 	e.mustRun("invoke", "capture", "-s", "--region", "window")
 	proclaimed := regexp.MustCompile(`^\{\n  "rite": "capture",\n  "edict": true,\n  "standing": "proclaimed",\n` +
-		`  "inscriptions": \{\n    "region": "window"\n  \},\n` +
+		`  "auspex": "",\n  "inscriptions": \{\n    "region": "window"\n  \},\n` +
 		`  "last_rite": \{\n    "verdict": "triumph",\n    "at": "[0-9T:Z-]+"\n  \}\n\}\n$`)
 	if out := e.mustRun("augury", "capture"); !proclaimed.MatchString(out) {
 		t.Errorf("augury of a proclaimed edict:\n%s", out)

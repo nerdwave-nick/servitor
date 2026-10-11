@@ -46,6 +46,18 @@ const (
 	Proclaimed Standing = "proclaimed"
 )
 
+// Heed is what the rite's auspex gave the augury; it marshals as the
+// augury's and the census's "auspex".
+type Heed string
+
+// The heeds of the auspex.
+const (
+	NoAuspex Heed = ""        // the rite keeps no auspex, is an edict, or is heretical
+	Forgone  Heed = "forgone" // the auspex was left unawakened on request
+	Heeded   Heed = "heeded"  // the auspex named one of the rite's aspects
+	Mute     Heed = "mute"    // the auspex fell, outlasted its patience, or named no aspect
+)
+
 // Augury is what the servitor reads of one rite; it marshals as the JSON of
 // `servitor augury`.
 type Augury struct {
@@ -53,6 +65,7 @@ type Augury struct {
 	Edict      bool   // the rite is an edict, which bears no aspect
 	Aspect     string // "" when unknown
 	Standing   Standing
+	Auspex     Heed   // what the auspex gave; its omen, when heeded, stands among Omens
 	Desecrated bool   // the omens agree on an aspect the data-slate did not record
 	Former     string // the data-slate's aspect, when desecrated
 	// Inscriptions are those on the data-slate: a rite never invoked
@@ -85,7 +98,8 @@ type Options struct {
 	// Outside an invocation it is "".
 	Target string
 	// ForgoAuspex leaves the auspex unawakened, for answers that must come
-	// at once (shell completion).
+	// at once (shell completion, --spare-auspex); a rite keeping one is
+	// then marked Forgone.
 	ForgoAuspex bool
 	// Orders are the settings resolved; the auspex is spoken in the rite's
 	// tongue, else theirs, else bash.
@@ -123,8 +137,14 @@ func Augur(r *librarium.Rite, opts Options) (Augury, error) {
 			a.Taint = append(a.Taint, *taint)
 		}
 	}
-	if r.Auspex != nil && !opts.ForgoAuspex {
+	switch {
+	case r.Auspex == nil:
+	case opts.ForgoAuspex:
+		a.Auspex = Forgone
+	default:
+		a.Auspex = Mute
 		if aspect, ok := s.auspex(opts); ok {
+			a.Auspex = Heeded
 			a.Omens = append(a.Omens, Omen{Auspex: true, Aspect: aspect})
 		}
 	}
