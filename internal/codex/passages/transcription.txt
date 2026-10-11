@@ -32,7 +32,11 @@ Should the invocation fall, the reversion restores the vessel exactly as it
 was found — its former scripture and seal — or strikes it again if it did
 not stand before.
 
-Kindred passages: scripture, seal, zeal, tome, illuminate, vessel, omens
+An edict may perform no transcription: a transcribed vessel bears the
+scripture of one aspect and reveals that aspect thereafter, and an edict
+bears none. A transcription in an edict's liturgy is heresy.
+
+Kindred passages: scripture, seal, zeal, tome, illuminate, vessel, omens, edict
 
 Exempla:
   {"transcription": "~/.config/foot/theme.ini",

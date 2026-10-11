@@ -2,7 +2,8 @@ Whether an invocation may proceed without the word of an inscription
 
 An inscription declared "mandatory": true must bear a word in every
 invocation of its rite. The word may come from the rune --<key> given to the
-invocation, or from the rite's decree for the invoked aspect; when neither
+invocation, or from the rite's decree for the invoked aspect (an edict's one
+plain decree); when neither
 supplies one — or when the rune clears the decree with an empty word — the
 invocation is refused as heresy before a single step is performed, and the
 lament names the inscription and the rune that would have satisfied it.
@@ -15,7 +16,9 @@ The inquisition looks ahead on behalf of the faithful: a mandatory
 inscription for which some aspect holds no decree is noted as an impurity,
 for every invocation into that aspect will demand the rune each time. Such a
 rite is not wrong — it may be a deliberate demand for a reason every time it
-is invoked — but the servitor will have it known.
+is invoked — but the servitor will have it known. An edict has no aspects to
+weigh: its mandatory inscription without a decree simply demands the rune at
+every invocation.
 
 Kindred passages: inscriptions, decrees, invoke, inquisition, pre-flight
 

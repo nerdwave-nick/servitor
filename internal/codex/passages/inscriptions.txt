@@ -4,10 +4,12 @@ An inscription is a word the faithful lay upon one invocation of a rite: the
 reason a do-not-disturb was raised, the mode a cursor is to keep. A rite
 declares its inscriptions once, under "inscriptions", each by its key; a
 declaration may carry a "purpose", may be "mandatory", and may hold
-"decrees", the word each aspect inscribes when none is given.
+"decrees", the word each aspect inscribes when none is given (in an edict,
+one plain word).
 
 Every declared inscription becomes a rune of the rite's own ritual:
-servitor invoke <rite> <aspect> --<key> <word>. The rune outranks the decree;
+servitor invoke <rite> <aspect> --<key> <word>, or for an edict, which takes
+no aspect, servitor invoke <edict> --<key> <word>. The rune outranks the decree;
 a rune given an empty word ("") clears the decree, and the inscription is then
 left uninscribed. A rune of an inscription the rite never declared is heresy,
 and the invocation is refused before anything is performed.
@@ -31,7 +33,7 @@ the augury and recorded in the chronicle. The omens of later auguries render
 with the inscriptions the data-slate keeps.
 
 Kindred passages: mandatory, decrees, purpose, placeholders, augury,
-data-slate
+data-slate, edict
 
 Exempla:
   "inscriptions": {

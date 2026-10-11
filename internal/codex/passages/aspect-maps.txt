@@ -26,7 +26,11 @@ spared this, for an inscription may leave an aspect without decree.
 An aspect map may still speak placeholders in each of its values, so a
 single "*" with {{aspect}} often serves where many keys would be written.
 
-Kindred passages: aspects, placeholders, decrees, scripture, anchor
+An edict bears no aspect to key a map by, so every value of an edict is
+written once and plainly: an aspect map in an edict is heresy wherever it
+stands, even one keyed by "*" alone.
+
+Kindred passages: aspects, placeholders, decrees, scripture, anchor, edict
 
 Exempla:
   // one value, every aspect

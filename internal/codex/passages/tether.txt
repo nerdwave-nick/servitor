@@ -29,7 +29,10 @@ stands nowhere for some aspect.
 Should the invocation fall, the reversion restores the binding exactly as it
 was found — rebound to its former anchor, or unbound if none stood before.
 
-Kindred passages: anchor, zeal, omens, aspect-maps, placeholders
+An edict may bind no tether: the anchor a tether leads to bears witness to
+an aspect, and an edict bears none. A tether in an edict's liturgy is heresy.
+
+Kindred passages: anchor, zeal, omens, aspect-maps, placeholders, edict
 
 Exempla:
   {"tether": "~/.local/share/nfluff/current-theme",
