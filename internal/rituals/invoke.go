@@ -53,15 +53,18 @@ type Result struct {
 }
 
 // Invoke performs the petition, or foresees it. The error tells why
-// nothing was performed: *Unrecorded, *Heretical, or invocation.Heresies of
+// nothing was performed: *Unrecorded, *Heretical, invocation.Heresies of
 // the inscriptions or the pre-flight (the result's Foresight is filled for
-// the steps that passed). A performance that fell is no error: its Outcome
-// tells the verdict. Only performances are kept on the data-slate and in
-// the chronicle; a refused or foreseen invocation is not.
+// the steps that passed), or *Forsaken. A performance that fell is no
+// error: its Outcome tells the verdict. Only performances are kept on the
+// data-slate and in the chronicle; a refused or foreseen invocation is not.
 //
 // An invocation that is not foreseen is held Steadfast throughout: the
 // departure of the one who invoked it neither halts it nor leaves it half
-// performed.
+// performed. It holds dominion over its rite from before the augury of its
+// former aspect and its pre-flight until its verdict is kept, awaiting
+// another invocation that holds it (see holdDominion); foresight holds and
+// awaits none.
 func (s *Servitor) Invoke(ctx context.Context, p Petition) (Result, error) {
 	if !p.Foresee {
 		defer Steadfast()()
@@ -74,6 +77,13 @@ func (s *Servitor) Invoke(ctx context.Context, p Petition) (Result, error) {
 	inscriptions, err := invocation.ResolveInscriptions(r, p.Aspect, p.Runes)
 	if err != nil {
 		return res, err
+	}
+	if !p.Foresee {
+		relinquish, err := s.holdDominion(ctx, r, p, &res)
+		if err != nil {
+			return res, err
+		}
+		defer relinquish()
 	}
 	env, orders := s.env(), s.Orders()
 	res.Options = invocation.Options{Aspect: p.Aspect, Edict: r.Edict, Inscriptions: inscriptions, Orders: orders,

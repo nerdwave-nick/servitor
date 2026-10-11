@@ -10,7 +10,8 @@ only the lines the rite's own vox-casts ask for remain, told as ever:
     ⋯ Incense burns; the tether is complete.  (2/3)
   ✠ Binharic hymns resound: the aspect «porpl» is attained.
 
-A rite without vox-casts says nothing at all; its exit of 0 alone bears
+The awaiting of dominion, told before the header, is withheld as well. A
+rite without vox-casts says nothing at all; its exit of 0 alone bears
 witness. Without a terminal the vox-casts go to the desktop, as the rite
 commands, and nothing is printed.
 
@@ -22,7 +23,7 @@ the key "vox" of the settings to "off".
 Silence suits rites invoked from hotkeys, bars and other rites, where only
 the exit and the vox-casts matter.
 
-Kindred passages: invoke, vox, vox-cast, foresee
+Kindred passages: invoke, vox, vox-cast, foresee, dominion
 
 Exempla:
   servitor invoke mouse-autohide-toggle on --silence

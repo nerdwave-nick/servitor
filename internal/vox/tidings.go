@@ -37,6 +37,10 @@ var (
 	edictSuccessFile string
 	//go:embed edict-failure.txt
 	edictFailureFile string
+	//go:embed dominion.txt
+	dominionFile string
+	//go:embed edict-dominion.txt
+	edictDominionFile string
 )
 
 // templates are the embedded template lists by tidings.
@@ -44,6 +48,7 @@ var templates = map[invocation.Tidings][]string{
 	invocation.Progress: parseTemplates("progress.txt", progressFile),
 	invocation.Success:  parseTemplates("success.txt", successFile),
 	invocation.Failure:  parseTemplates("failure.txt", failureFile),
+	invocation.Dominion: parseTemplates("dominion.txt", dominionFile),
 }
 
 // edictTemplates are the embedded template lists of an edict by tidings:
@@ -52,6 +57,7 @@ var edictTemplates = map[invocation.Tidings][]string{
 	invocation.Progress: parseTemplates("edict-progress.txt", edictProgressFile),
 	invocation.Success:  parseTemplates("edict-success.txt", edictSuccessFile),
 	invocation.Failure:  parseTemplates("edict-failure.txt", edictFailureFile),
+	invocation.Dominion: parseTemplates("edict-dominion.txt", edictDominionFile),
 }
 
 // parseTemplates takes one template per line, ignoring blank lines and

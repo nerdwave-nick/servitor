@@ -36,6 +36,11 @@ One performance of a rite, from the pre-flight checks to triumph or reversion â€
 an aspect, or, for an edict, without one. Ritual: `servitor invoke <rite> <aspect>`,
 or `servitor invoke <edict>` with no aspect.
 
+**Dominion**:
+The hold an invocation keeps over its rite and over every vessel and tethered name it
+writes, from before its pre-flight to its verdict, so that no other invocation performs
+upon them meanwhile; another invocation waits until the dominion is relinquished.
+
 **Reversion**:
 When a step of an invocation fails, the steps already performed are undone in reverse
 order, so the machine returns to its former aspect. An incantation or litany may carry
