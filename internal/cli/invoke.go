@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
 
@@ -18,8 +19,8 @@ import (
 func (a *app) newInvokeCmd() *cobra.Command {
 	var foresee, silence bool
 	cmd := &cobra.Command{
-		Use:   "invoke <rite> <aspect> [--<inscription> <value>...]",
-		Short: "Invoke an aspect of a rite: perform its liturgy",
+		Use:   "invoke <rite> <aspect> | <edict> [--<inscription> <value>...]",
+		Short: "Invoke an aspect of a rite, or proclaim an edict: perform its liturgy",
 		Args:  cobra.ArbitraryArgs,
 		// Rites complete as rituals of their own; never fall back to files.
 		ValidArgsFunction: cobra.NoFileCompletions,
@@ -57,7 +58,7 @@ func (a *app) unfitRite(name string) error {
 
 func (a *app) newRiteCmd(r *librarium.Rite, foresee, silence *bool) *cobra.Command {
 	if r.Edict {
-		return a.newEdictCmd(r)
+		return a.newEdictCmd(r, foresee, silence)
 	}
 	short := r.Purpose
 	if short == "" {
@@ -89,10 +90,9 @@ func (a *app) newRiteCmd(r *librarium.Rite, foresee, silence *bool) *cobra.Comma
 	return cmd
 }
 
-// newEdictCmd is the ritual of the edict r. It bears the edict's
-// inscriptions as runes, yet refuses every invocation: this servitor
-// cannot yet proclaim an edict, and it never performs one in part.
-func (a *app) newEdictCmd(r *librarium.Rite) *cobra.Command {
+// newEdictCmd is the ritual of the edict r: it is proclaimed by its name
+// alone, and any word after it is refused before anything is performed.
+func (a *app) newEdictCmd(r *librarium.Rite, foresee, silence *bool) *cobra.Command {
 	short := r.Purpose
 	if short == "" {
 		short = "Proclaim the edict " + r.Name
@@ -102,16 +102,29 @@ func (a *app) newEdictCmd(r *librarium.Rite) *cobra.Command {
 		Short:   short,
 		Long:    riteLong(r),
 		Example: riteExample(r),
-		Args: func(*cobra.Command, []string) error {
-			return fmt.Errorf("the edict %q bears no aspect and is proclaimed whole, yet this servitor has "+
-				"not yet been taught the rite of proclaiming an edict; not one verse of its liturgy is "+
-				"performed", r.Name)
+		Args: func(_ *cobra.Command, args []string) error {
+			if len(args) > 0 {
+				return fmt.Errorf("the edict %q bears no aspect and is proclaimed by its name alone, yet %s "+
+					"was offered after it; not one verse of its liturgy is performed", r.Name, quoteAll(args))
+			}
+			return nil
 		},
 		ValidArgsFunction: cobra.NoFileCompletions,
-		RunE:              func(*cobra.Command, []string) error { return nil },
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			return a.invoke(cmd, r, "", *foresee, *silence)
+		},
 	}
 	inscriptionRunes(cmd, r)
 	return cmd
+}
+
+// quoteAll quotes every word and joins them.
+func quoteAll(words []string) string {
+	quoted := make([]string, len(words))
+	for i, w := range words {
+		quoted[i] = strconv.Quote(w)
+	}
+	return strings.Join(quoted, " ")
 }
 
 // inscriptionRunes gives the ritual of r a rune for each of its
@@ -135,8 +148,9 @@ func inscriptionRunes(cmd *cobra.Command, r *librarium.Rite) {
 	}
 }
 
-// invoke performs (or foresees) the rite r into aspect, heeding an
-// interrupt from the terminal by halting and reverting the invocation.
+// invoke performs (or foresees) the rite r into aspect, or proclaims the
+// edict r (aspect ""), heeding an interrupt from the terminal by halting
+// and reverting the invocation.
 func (a *app) invoke(cmd *cobra.Command, r *librarium.Rite, aspect string, foresee, silence bool) error {
 	runes := map[string]string{}
 	for _, in := range r.Inscriptions {
@@ -166,7 +180,7 @@ func (a *app) invoke(cmd *cobra.Command, r *librarium.Rite, aspect string, fores
 	var hs invocation.Heresies
 	switch {
 	case errors.As(err, &hs):
-		return forbidden(r.Name, aspect, hs)
+		return forbidden(r, aspect, hs)
 	case err != nil:
 		return err
 	case foresee:
