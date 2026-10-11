@@ -3,19 +3,22 @@
 > *+++ Thought for the day: A file unwarded is a file defiled. +++*
 
 **servitor** is a thrall of the Adeptus Mechanicus, bound to the scripture of
-your machine. You teach it **rites**. Each rite knows a fixed set of
-**aspects** and one **liturgy**: an ordered list of steps that rewrite warded
-**sanctums** inside your vessels, transcribe whole vessels, re-bind
-**tethers**, speak **incantations**, recite **litanies** and send
-**vox-casts**. Invoke an aspect, and the servitor performs the liturgy verse
-by verse. Should one verse fall, it undoes every deed already done. It asks
-not *why*. It asks only *which aspect*.
+your machine. You teach it **rites**. A rite knows a fixed set of
+**aspects**, or none at all if it is an **edict**, and one **liturgy**: an
+ordered list of steps that rewrite warded **sanctums** inside your vessels,
+transcribe whole vessels, re-bind **tethers**, speak **incantations**, recite
+**litanies** and send **vox-casts**. Invoke an aspect, and the servitor
+performs the liturgy verse by verse; proclaim an edict, and it performs the
+liturgy whole, every time. Should one verse fall, it undoes every deed
+already done. It asks not *why*. It asks only *which aspect*, and of an
+edict not even that.
 
 ```sh
 servitor                                                  # awaken the cogitator
 servitor invoke mouse-autohide-toggle on --reason "gaming remnant"
 servitor invoke theme "$(printf '%s\n' default finii porpl | fuzzel --dmenu)"
 servitor invoke theme porpl --foresee                     # divine, perform nothing
+servitor invoke screenshot --region whole                 # an edict, by its name alone
 servitor augury theme | jq -r .aspect                     # porpl
 servitor augury mouse-autohide-toggle --is on || echo "the cursor walks unveiled"
 servitor expound tether                                   # as written in the codex
@@ -41,9 +44,9 @@ servitor --version
 ### Completion litanies
 
 Completion knows the rituals, every rite, its aspects (the current one is
-marked), its inscription runes and the values they decree, augury keys and
-the topics of the codex. It never awakens an auspex, so every Tab is answered
-at once.
+marked; an edict is offered none), its inscription runes and the values they
+decree, augury keys and the topics of the codex. It never awakens an auspex,
+so every Tab is answered at once.
 
 ```sh
 # bash (the bash-completion package must be installed)
@@ -133,9 +136,10 @@ with its remarks set aside:
 |---|---|
 | `pattern` | The Mark of the form the scripture is written in: `"Mark I"`. Required. Scripture without a pattern, or of a Mark this servitor was not forged for, is heresy; elder scripture is never read nor converted. |
 | `purpose` | Why the rite exists, in words for the faithful. |
-| `aspects` | The aspects the rite can bring the machine into, written by hand: not empty, never repeated. |
-| `inscriptions` | Named words carried by one invocation. Each may bear a `purpose`, be `mandatory`, and hold `decrees`: the word each aspect inscribes when none is given. |
-| `auspex` | Optional words, spoken in the tongue, that print the aspect the machine bears. Short form `"<words>"`, long form `{"rite": "<words>", "patience": "5s"}`; its patience is 2s unless written. |
+| `aspects` | The aspects the rite can bring the machine into, written by hand: not empty, never repeated. A rite bears either `aspects` or `"edict": true`, never both and never neither. |
+| `edict` | `true` makes the rite an [edict](#edicts), which knows no aspects; `false` is as if unwritten. |
+| `inscriptions` | Named words carried by one invocation. Each may bear a `purpose`, be `mandatory`, and hold `decrees`: the word each aspect inscribes when none is given (an edict's decree is one plain word). |
+| `auspex` | Optional words, spoken in the tongue, that print the aspect the machine bears. Short form `"<words>"`, long form `{"rite": "<words>", "patience": "5s"}`; its patience is 2s unless written. An edict bears none. |
 | `tongue` | The tongue of this rite's incantations and litanies, outranking the settings. |
 | `liturgy` | The steps, performed in the order written. |
 | `$schema` | Read by your editor, passed over by the servitor (see [The codex](#the-codex)). |
@@ -144,7 +148,9 @@ with its remarks set aside:
 
 Any value of a step may be written once for every aspect, or as an object
 keyed by aspect, with `"*"` serving every aspect that names no value of its
-own. An aspect left with no value and no `"*"` is heresy.
+own. An aspect left with no value and no `"*"` is heresy. An edict knows no
+aspect map: each of its values is written once, plainly, and even an object
+keyed by `"*"` alone is heresy there.
 
 ```jsonc
 {"incantation": {"on": "makoctl mode -a do-not-disturb",
@@ -156,9 +162,10 @@ own. An aspect left with no value and no `"*"` is heresy.
 ### Inscriptions
 
 Every inscription becomes a rune of the rite's own ritual,
-`servitor invoke <rite> <aspect> --<key> <word>`, and the rune outranks the
-decree; `--<key> ""` clears it. A `mandatory` inscription that neither rune
-nor decree supplies forbids the invocation. The words of an invocation are
+`servitor invoke <rite> <aspect> --<key> <word>` (of an edict,
+`servitor invoke <edict> --<key> <word>`), and the rune outranks the decree;
+`--<key> ""` clears it. A `mandatory` inscription that neither rune nor
+decree supplies forbids the invocation. The words of an invocation are
 kept on the rite's data-slate (never in its scripture), read back by the
 augury and kept in the chronicle.
 
@@ -181,11 +188,13 @@ offerings, reversions, inline scripture, illuminated tomes) and its auspex may
 speak `{{aspect}}`, `{{former}}` (the aspect before; empty when unknown),
 `{{rite.name}}` and `{{inscription.<key>}}` (empty when uninscribed). Write
 `{{{{` for a literal `{{`. A mark the codex does not know, or an inscription
-the rite never declared, is heresy, never silently left empty.
+the rite never declared, is heresy, never silently left empty. An edict has
+no aspect to speak: in its words `{{aspect}}` and `{{former}}` are heresy.
 
 Incantations, litanies and the auspex also receive `SERVITOR_ASPECT`,
 `SERVITOR_FORMER_ASPECT`, `SERVITOR_RITE` and `SERVITOR_INSCRIPTION_<KEY>`
-(the key in capitals, `-` and `.` made `_`). **Within the words a tongue
+(the key in capitals, `-` and `.` made `_`); an edict's receive no
+`SERVITOR_ASPECT` and no `SERVITOR_FORMER_ASPECT`. **Within the words a tongue
 will speak, prefer these:** a placeholder is pasted into the words before the
 tongue hears them, so a quote, a `$` or a `;` inside an inscription would be
 spoken as a command. `"$SERVITOR_INSCRIPTION_REASON"` stays one word,
@@ -213,6 +222,10 @@ which holds its vessel, its bound name, its words or its scroll.
 | `incantation` | one line of words for the tongue | `tongue`, `patience`, `reversion` |
 | `litany` | the scroll it recites | `offerings`, `tongue`, `patience`, `reversion` |
 | `vox-cast` | `"progress"` or `"success"` | none |
+
+An edict's liturgy holds only incantations, litanies and vox-casts:
+sanctums, transcriptions and tethers keep and reveal an aspect, and an edict
+has none.
 
 Paths of vessels, tethers, anchors, scrolls and tomes expand a leading `~`
 and `$NAMES`, and a path not rooted at `/` is reckoned from the `rites/` hall.
@@ -317,7 +330,9 @@ triumph, and belongs last. Tidings of a fall need no step. See
 
 > *+++ Thought for the day: Excuses are the refuge of the untested. +++*
 
-`servitor invoke <rite> <aspect> [--<inscription> <word>…] [-f] [-s]`
+`servitor invoke <rite> <aspect> [--<inscription> <word>…] [-f] [-s]`, or
+`servitor invoke <edict> [--<inscription> <word>…] [-f] [-s]` for an
+[edict](#edicts)
 
 1. **Pre-flight.** Every placeholder is filled, every tome read, every vessel,
    tether, scroll and tongue weighed and every inscription resolved, without
@@ -337,7 +352,8 @@ triumph, and belongs last. Tidings of a fall need no step. See
    the chronicle.
 
 Spoken at a terminal, the invocation is told in one report as it is
-performed: a header with the rite and its turning, a line for every verse
+performed: a header with the rite and its turning (an edict's header names
+it alone), a line for every verse
 once it is performed (the home written `~`, a long verse cut short with `…`
 to the terminal's width), every progress vox-cast in its place with the
 count of steps done, and one closing line of triumph, drawn from the rite's
@@ -368,12 +384,94 @@ nothing, not even the auspex. `--silence` (`-s`) withholds the report, save
 the lines the rite's own vox-casts ask for. The ritual exits 0 upon triumph
 and 1 otherwise.
 
+## Edicts
+
+> *+++ Thought for the day: If a task is worth doing, it is worth a servitor. +++*
+
+Some deeds bring the machine into no aspect at all: its visage captured, the
+machine spirit bidden to sleep or to wake anew. Written as a rite, such a
+deed would demand a hollow aspect on every invocation
+(`servitor invoke screenshot taken`), report a standing that says nothing
+true, and let the cogitator perform it on a single key. Write it instead as
+an **edict**, with `"edict": true` in place of `aspects`. From
+[`examples/rites/screenshot.json`](examples/rites/screenshot.json), its
+remarks set aside:
+
+```jsonc
+{
+  "$schema": "https://raw.githubusercontent.com/nerdwave-nick/servitor/main/schema/rite.schema.json",
+  "pattern": "Mark I",
+  "purpose": "Capture the visage of the machine",
+  "edict": true,
+  "inscriptions": {
+    "region": {"purpose": "\"chosen\" lets slurp mark the region, \"whole\" takes every output", "decrees": "chosen"},
+  },
+  "liturgy": [
+    {
+      "incantation": "if [ \"$SERVITOR_INSCRIPTION_REGION\" = whole ]; then grim ~/pictures/visage.png; else grim -g \"$(slurp)\" ~/pictures/visage.png; fi",
+      "patience": "2m",
+      "reversion": "rm -f ~/pictures/visage.png",
+    },
+    {"incantation": "wl-copy --type image/png < ~/pictures/visage.png"},
+    {"vox-cast": "success"},
+  ],
+}
+```
+
+Choose an edict when the liturgy is a command to be carried out, not an
+aspect to be kept: when a second invocation should do the work again, and no
+omen could ever tell what the machine bears. Choose a rite of aspects when
+the machine is brought into a condition it keeps, and you will later ask
+which one.
+
+* **Its scripture.** A rite bears exactly one of `aspects` and
+  `"edict": true`; both, or neither, is heresy, and `"edict": false` is as
+  if unwritten. An edict's liturgy holds only incantations, litanies and
+  vox-casts, with their `reversion`, `patience`, `tongue` and `offerings`.
+  It bears no auspex and no aspect map (its decrees are one plain word), and
+  never speaks `{{aspect}}` or `{{former}}`.
+* **Its proclaiming.** An edict is invoked by its name alone; any word
+  after its name is refused before a verse is performed. Every invocation
+  performs the whole liturgy anew, with its pre-flight, reversion, patience
+  and foresight as for any rite. Should the second verse above fall, the
+  first verse's reversion strikes the captured visage.
+* **Its standing.** An edict yields no omen and is judged by its last
+  verdict alone: `dormant` until first proclaimed, `proclaimed` after a
+  triumph or a reversion, `corrupted` after a faltered invocation until it
+  is proclaimed again, `heretical` when its scripture is. It is never
+  `performed`, `tainted` or `desecrated`.
+* **Its augury and census.** The augury speaks its standing, inscriptions
+  and last rite, never an aspect, and refuses `--is`; the census shows `·`
+  for its aspect and its aspects. Its data-slate and its chronicle lines
+  bear no aspect.
+* **The cogitator asks first.** `enter` and `space` alike open its invoke
+  screen: its inscriptions, should it bear any, then a confirmation. Only a
+  second `enter` proclaims it; `p` foresees, `esc` retreats. No single key
+  ever proclaims an edict.
+
+```console
+❯ servitor invoke screenshot --region whole
++++ screenshot · edict +++
+  ✔ verse 1 · incantation if [ "$SERVITOR_INSCRIPTION_REGION" = whole ]; then g…
+  ✔ verse 2 · incantation wl-copy --type image/png < ~/pictures/visage.png
+✠ Every verse is sung; the edict screenshot is carried out.
+
+❯ servitor augury screenshot standing
+proclaimed
+
+❯ servitor invoke screenshot taken
+servitor ✠ the edict "screenshot" bears no aspect and is proclaimed by its name alone, yet "taken" followed its name; not one verse of its liturgy is performed
+```
+
+`servitor expound edict` recites the rest.
+
 ## Rituals and runes
 
 | Ritual | What it does |
 |---|---|
 | `servitor invoke <rite> <aspect> [--<key> <word>] [-f] [-s]` | Perform an aspect of a rite. |
-| `servitor augury <rite> [key] [--is <aspect>]` | Read the aspect a rite stands in, its standing and its inscriptions. |
+| `servitor invoke <edict> [--<key> <word>] [-f] [-s]` | Proclaim an edict, its whole liturgy anew. |
+| `servitor augury <rite> [key] [--is <aspect>]` | Read how a rite stands, the aspect it bears (an edict bears none) and its inscriptions. |
 | `servitor census [--binharic]` | Every rite with its aspect, standing, aspects, last rite and purpose. |
 | `servitor inquisition [rite…] [--binharic] [--spare-vessels]` | Denounce heresy in rites, settings and vessels. |
 | `servitor cogitator` | Awaken the interactive shrine; `servitor` alone does so at a terminal. |
@@ -391,7 +489,7 @@ the servitor alone.
 Without a key the augury speaks one binharic object:
 
 ```json
-{"rite": "theme", "aspect": "porpl", "standing": "performed",
+{"rite": "theme", "edict": false, "aspect": "porpl", "standing": "performed",
  "desecrated": false,
  "inscriptions": {"reason": "the night watch begins"},
  "last_rite": {"verdict": "triumph", "at": "2026-10-10T13:30:00Z"},
@@ -404,6 +502,18 @@ or any inscription the rite declares (an empty line when uninscribed).
 `--is <aspect>` answers by exit alone. The augury exits 0 when it was read,
 1 when `--is` did not match, and 2 when it could not be read.
 
+The augury of an edict bears only its standing, inscriptions and last rite:
+
+```json
+{"rite": "screenshot", "edict": true, "standing": "proclaimed",
+ "inscriptions": {"region": "whole"},
+ "last_rite": {"verdict": "triumph", "at": "2026-10-11T01:42:00Z"}}
+```
+
+Asked for `aspect`, `desecrated` or `former`, or given `--is`, an edict is
+refused, and the augury exits 2: it bears no aspect. Ask after its
+`standing` instead.
+
 ```sh
 servitor augury theme reason
 [ "$(servitor augury mouse-autohide-toggle aspect)" = on ] && echo "the cursor is veiled"
@@ -413,16 +523,18 @@ The servitor does not trust its memory alone: it reads **omens** from the
 machine. A sanctum bears witness through the aspect in its marker, a tether
 through the anchor it leads to, a transcription through the scripture its
 vessel holds, and the auspex through what it prints. Incantations and
-litanies leave nothing to be read. From the omens the **standing** is judged:
+litanies leave nothing to be read, and so an edict yields no omen at all.
+From the omens the **standing** is judged:
 
 | Standing | Meaning |
 |---|---|
 | `performed` | the omens agree on one aspect, or none speaks and the data-slate names it |
-| `dormant` | neither omen nor data-slate names an aspect |
+| `dormant` | neither omen nor data-slate names an aspect; an edict never proclaimed |
 | `corrupted` | the omens disagree, or the last invocation faltered |
 | `tainted` | other hands altered the scripture within a sanctum |
 | `desecrated` | the omens agree on an aspect the data-slate did not record; `former` names the remembered one |
 | `heretical` | the rite's scripture is invalid |
+| `proclaimed` | an edict alone: its last invocation ended in triumph or was reverted |
 
 Desecration is no heresy. When do-not-disturb is raised from your bar, an
 auspex lets the augury report the true aspect and mark the rite desecrated;
@@ -436,12 +548,13 @@ the next invocation through the servitor cleanses it.
 
 ```sh
 servitor census
-servitor census --binharic | jq -r '.[] | select(.standing != "performed") | .rite'
+servitor census --binharic | jq -r '.[] | select(.standing | IN("performed", "proclaimed") | not) | .rite'
 ```
 
-In binharic every rite bears `rite`, `aspect`, `standing`, `aspects`,
-`purpose`, `desecrated`, `last_rite` and `recorded_in`, the scripture it was
-read from.
+In binharic every rite bears `rite`, `edict`, `aspect`, `standing`,
+`aspects`, `purpose`, `desecrated`, `last_rite` and `recorded_in`, the
+scripture it was read from. An edict bears `"edict": true`, an empty
+`aspect` and `"aspects": []`.
 
 ### Inquisition
 
@@ -467,17 +580,19 @@ report of the invocation (see [Invocation](#invocation)): a progress as
 `⋯ <words>  (x/n)`, the triumph as the closing `✠ <words>`. Invoked from a
 hotkey or a launcher, with no controlling terminal, the vox-casts of one
 invocation become **one** missive upon the desktop through `notify-send`,
-headed `theme → porpl` and replaced in place by the next: progress tells
-"step x / n" and lingers until the rite ends, triumph fades as the desktop
-wills, and a fall is proclaimed with critical urgency, unbidden; the report
-follows on stdout once the rite has triumphed. The words are drawn at
-random from the servitor's own litanies of progress, triumph and lament,
-and speak of "the aspect «porpl»", never of a bare aspect. Should `notify-send`
-be absent, the servitor stays silent rather than fail. The settings' `"vox"`
-decides which invocations the desktop hears: `"auto"` (the default) only
-those roused without a terminal, `"notify-send"` every one — a terminal's
-invocation then tells its report *and* sends its missive — and `"off"` none. In the cogitator the tidings are
-shown in the cogitator itself.
+headed `theme → porpl` (an edict's by its name alone) and replaced in place
+by the next: progress tells "step x / n" and lingers until the rite ends,
+triumph fades as the desktop wills, and a fall is proclaimed with critical
+urgency, unbidden; the report follows on stdout once the rite has triumphed.
+The words are drawn at random from the servitor's own litanies of progress,
+triumph and lament, and speak of "the aspect «porpl»", never of a bare
+aspect; an edict's speak of "the edict screenshot", never of an aspect.
+Should `notify-send` be absent, the servitor stays silent rather than fail.
+The settings' `"vox"` decides which invocations the desktop hears: `"auto"`
+(the default) only those roused without a terminal, `"notify-send"` every
+one — a terminal's invocation then tells its report *and* sends its missive
+— and `"off"` none. In the cogitator the tidings are shown in the cogitator
+itself.
 
 ## The chronicle
 
@@ -492,13 +607,21 @@ whatever its verdict:
  "reversions": [{"verse": 4, "verdict": "triumph"}, {"verse": 2, "verdict": "triumph"}]}
 ```
 
+The line of an edict names no aspect and no former aspect, and bears
+`"edict": true` in their stead:
+
+```json
+{"at": "2026-10-11T01:42:00Z", "rite": "screenshot", "edict": true,
+ "inscriptions": {"region": "whole"}, "verdict": "triumph"}
+```
+
 It is kept at the first of: the rune `--chronicle`, `SERVITOR_CHRONICLE`, the
 settings' `chronicle`, `$XDG_STATE_HOME/servitor/chronicle.jsonl`. Past one
 mebibyte it is renamed with the suffix `.1` and a fresh chronicle begins. An
 invocation forbidden by its pre-flight, or only foreseen, is not chronicled.
 
 ```sh
-tail -n 3 ~/.local/state/servitor/chronicle.jsonl | jq -r '.rite + " → " + .aspect + ": " + .verdict'
+tail -n 3 ~/.local/state/servitor/chronicle.jsonl | jq -r '.rite + " → " + (.aspect // "edict") + ": " + .verdict'
 ```
 
 ## The cogitator
@@ -509,13 +632,15 @@ tail -n 3 ~/.local/state/servitor/chronicle.jsonl | jq -r '.rite + " → " + .as
 cogitator, a keyboard-driven shrine: the rites on the left with the glyph of
 their standing; on the right the chosen rite's purpose, aspects (the current
 one marked), standing, last rite, inscriptions, its liturgy with one omen per
-step, and where its scripture is recorded; a Thought for the Day below.
+step, and where its scripture is recorded; a Thought for the Day below. An
+edict bears the mark `❢` beside its standing, shows its nature in place of
+aspects, and its liturgy without omens.
 
 | Key | Rite |
 |---|---|
 | `↑`/`k` `↓`/`j`, `g` `G` | choose a rite; the first, the last |
-| `enter` | invoke: choose the aspect, amend the inscriptions, `p` to foresee |
-| `space` | cycle the rite to its next aspect at once |
+| `enter` | invoke: choose the aspect, amend the inscriptions, `p` to foresee; an edict: amend its inscriptions, then confirm, and a second `enter` proclaims it |
+| `space` | cycle the rite to its next aspect at once; upon an edict, as `enter`: it asks first, and never proclaims at once |
 | `n` | consecrate a new rite |
 | `e` | amend the rite |
 | `c` | replicate the rite |
@@ -535,12 +660,16 @@ never printed, and a fall opens its lament with every reversion and the last
 words of the fallen step.
 
 The consecration wizard (`n`, `e`, `c`) leads a rite through three stations:
-the **Rite** (name, purpose, aspects, inscriptions, auspex), the **Liturgy**
-(`a` adds a step of any kind, `J`/`K` reorder, a page for each aspect where
-values differ, "same for every aspect" writes `"*"`, rarer keys rest under
-the further rites) and the **Seal**, where the scripture stands as it will be
-written, judged by the Inquisition before anything is written. A heretical
-rite cannot be sealed. In forms, `tab`/`↑↓` move between fields, `enter`
+the **Rite** (name, purpose, its nature, a rite of aspects or an edict, then
+aspects, inscriptions, auspex), the **Liturgy** (`a` adds a step of any
+kind, `J`/`K` reorder, a page for each aspect where values differ, "same for
+every aspect" writes `"*"`, rarer keys rest under the further rites) and the
+**Seal**, where the scripture stands as it will be written, judged by the
+Inquisition before anything is written. A heretical rite cannot be sealed.
+An edict is asked no aspects and no auspex, each of its inscriptions takes
+one plain decree, its steps are only incantations, litanies and vox-casts,
+and their values are written once, on a single page; amended or replicated,
+an edict stays an edict. In forms, `tab`/`↑↓` move between fields, `enter`
 advances, `ctrl+s` seals the page and `esc` steps back.
 
 ## The codex
@@ -572,10 +701,15 @@ the codex's own lore:
   transition, re-tethers the nfluff theme, recites the theme's hooks through
   [`rites/scripts/recite-hooks`](examples/rites/scripts/recite-hooks) and
   vox-casts its progress and triumph.
+* [`rites/screenshot.json`](examples/rites/screenshot.json) is an edict:
+  it captures the visage of the machine through grim, the region marked by
+  slurp unless `--region whole` is inscribed, and lays it upon the
+  clipboard, striking the visage should that fall.
 
 ```sh
 servitor --librarium examples inquisition --spare-vessels
 servitor --librarium examples invoke theme porpl --foresee
+servitor --librarium examples invoke screenshot --foresee
 ```
 
 ## For Tech-Priests
