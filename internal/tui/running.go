@@ -5,7 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"math/rand/v2"
+	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 
 	tea "charm.land/bubbletea/v2"
 
@@ -25,6 +28,9 @@ type (
 	invokedMsg struct {
 		res rituals.Result
 		err error
+		// hungUp tells that the terminal hung up while the invocation was
+		// performed: the cogitator ends now that it has ended.
+		hungUp bool
 	}
 )
 
@@ -60,6 +66,11 @@ func (m *model) isRunning() bool {
 // goroutine, and shows the running panel until it has ended. The
 // invocation's words are captured, never printed: the cogitator owns the
 // screen.
+//
+// Like every invocation it is steadfast (rituals.Steadfast): a hangup
+// neither halts it nor ends the cogitator before it has ended. An
+// interrupt or SIGTERM sent to the cogitator halts and reverts it, as
+// ctrl+c does.
 func (m *model) invoke(r *librarium.Rite, aspect string, runes map[string]string) tea.Cmd {
 	ctx, halt := context.WithCancel(context.Background())
 	rs := &runningScreen{rite: r.Name, aspect: aspect, edict: r.Edict, halt: halt}
@@ -71,12 +82,32 @@ func (m *model) invoke(r *librarium.Rite, aspect string, runes map[string]string
 	m.screen = rs
 	s, send := m.s, m.send
 	p := rituals.Petition{Rite: r.Name, Aspect: aspect, Runes: runes, Herald: herald{send}}
+	m.running.Add(1)
 	go func() {
+		defer m.running.Done()
 		defer halt()
-		res, err := s.Invoke(ctx, p)
-		send(invokedMsg{res: res, err: err})
+		halted, stop := signal.NotifyContext(ctx, os.Interrupt, syscall.SIGTERM)
+		defer stop()
+		hangup := heedHangup()
+		res, err := s.Invoke(halted, p)
+		send(invokedMsg{res: res, err: err, hungUp: hangup()})
 	}()
 	return nil
+}
+
+// heedHangup listens for a hangup until the returned heard is asked
+// whether one came. A hangup ignored since the servitor awoke stays
+// ignored, and is never heard.
+func heedHangup() (heard func() bool) {
+	if signal.Ignored(syscall.SIGHUP) {
+		return func() bool { return false }
+	}
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, syscall.SIGHUP)
+	return func() bool {
+		signal.Stop(c)
+		return len(c) > 0
+	}
 }
 
 // invoked ends the running panel: triumph is told in a toast, a fall or a
