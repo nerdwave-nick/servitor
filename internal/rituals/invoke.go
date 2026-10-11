@@ -61,10 +61,10 @@ type Result struct {
 //
 // An invocation that is not foreseen is held Steadfast throughout: the
 // departure of the one who invoked it neither halts it nor leaves it half
-// performed. It holds dominion over its rite from before the augury of its
-// former aspect and its pre-flight until its verdict is kept, awaiting
-// another invocation that holds it (see holdDominion); foresight holds and
-// awaits none.
+// performed. It holds dominion over its rite and over every vessel and
+// tethered name it writes from before the augury of its former aspect and
+// its pre-flight until its verdict is kept, awaiting another invocation that
+// holds any of it (see holdDominion); foresight holds and awaits none.
 func (s *Servitor) Invoke(ctx context.Context, p Petition) (Result, error) {
 	if !p.Foresee {
 		defer Steadfast()()
@@ -78,13 +78,49 @@ func (s *Servitor) Invoke(ctx context.Context, p Petition) (Result, error) {
 	if err != nil {
 		return res, err
 	}
+	var held *dominions
 	if !p.Foresee {
-		relinquish, err := s.holdDominion(ctx, r, p, &res)
+		held, err = s.holdDominion(ctx, r, p, inscriptions, &res)
 		if err != nil {
 			return res, err
 		}
-		defer relinquish()
+		defer held.relinquish()
 	}
+	laments := len(res.Laments)
+	inv, err := s.prepare(r, p, inscriptions, &res)
+	for err == nil && !held.covers(res.Foresight) {
+		// The pre-flight revealed places beyond those held: they are
+		// seized, and what was read without dominion over them is read anew.
+		res.Laments = res.Laments[:laments]
+		if err := held.seize(res.Foresight); err != nil {
+			return res, err
+		}
+		inv, err = s.prepare(r, p, inscriptions, &res)
+	}
+	if err != nil || p.Foresee {
+		return res, err
+	}
+	if p.Commence != nil {
+		p.Commence(res)
+	}
+	out, err := inv.PerformContext(ctx)
+	if err != nil {
+		return res, err
+	}
+	res.Outcome = &out
+	at := s.now()
+	res.lament(augury.Record(s.env(), r.Name, out, res.Options, at))
+	entry := chronicle.New(at, r.Name, res.Options, out)
+	res.Entry = &entry
+	res.lament(chronicle.Append(res.Options.Orders.Chronicle, entry))
+	return res, nil
+}
+
+// prepare reads how the rite stands, or for an edict the inscriptions on
+// its data-slate, and runs the pre-flight, filling res's Options, Former and
+// Foresight.
+func (s *Servitor) prepare(r *librarium.Rite, p Petition, inscriptions map[string]string,
+	res *Result) (*invocation.Invocation, error) {
 	env, orders := s.env(), s.Orders()
 	res.Options = invocation.Options{Aspect: p.Aspect, Edict: r.Edict, Inscriptions: inscriptions, Orders: orders,
 		Herald: p.Herald}
@@ -104,23 +140,7 @@ func (s *Servitor) Invoke(ctx context.Context, p Petition) (Result, error) {
 	}
 	inv, err := invocation.Prepare(r, res.Options)
 	res.Foresight = inv.Foresee()
-	if err != nil || p.Foresee {
-		return res, err
-	}
-	if p.Commence != nil {
-		p.Commence(res)
-	}
-	out, err := inv.PerformContext(ctx)
-	if err != nil {
-		return res, err
-	}
-	res.Outcome = &out
-	at := s.now()
-	res.lament(augury.Record(env, r.Name, out, res.Options, at))
-	entry := chronicle.New(at, r.Name, res.Options, out)
-	res.Entry = &entry
-	res.lament(chronicle.Append(orders.Chronicle, entry))
-	return res, nil
+	return inv, err
 }
 
 func (r *Result) lament(err error) {

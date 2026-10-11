@@ -1,7 +1,7 @@
 // Package dominion keeps the dominion of invocations: the hold an
-// invocation keeps over its rite (and, in time, over the places it writes)
-// from before its pre-flight to its verdict, so that no other invocation
-// performs upon them meanwhile.
+// invocation keeps over its rite and over every vessel and tethered name it
+// writes, from before its pre-flight to its verdict, so that no other
+// invocation performs upon them meanwhile.
 //
 // A dominion is an exclusive flock upon an empty place beneath the state
 // home of the servitor ($XDG_STATE_HOME/servitor/dominions/), raised on
