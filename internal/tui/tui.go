@@ -4,6 +4,7 @@ package tui
 import (
 	"io"
 	"strings"
+	"sync"
 	"time"
 
 	"charm.land/bubbles/v2/textinput"
@@ -36,6 +37,7 @@ func Run(opt Options) error {
 	p := tea.NewProgram(m, popts...)
 	m.send = p.Send
 	_, err := p.Run()
+	m.running.Wait() // a rite is never abandoned half performed
 	return err
 }
 
@@ -97,6 +99,7 @@ type model struct {
 	toast   toast
 	thought int
 	screen  screen
+	running sync.WaitGroup // the invocation being performed, if any
 }
 
 func newModel(dir string, runes librarium.Runes) *model {
@@ -178,7 +181,11 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, nil
 	case invokedMsg:
-		return m, m.invoked(msg)
+		cmd := m.invoked(msg)
+		if msg.hungUp {
+			return m, tea.Quit // the terminal is gone; the rite has ended
+		}
+		return m, cmd
 	case tea.KeyPressMsg:
 		if msg.String() == "ctrl+c" && !m.isRunning() {
 			return m, tea.Quit

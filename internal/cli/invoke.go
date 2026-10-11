@@ -162,9 +162,16 @@ func inscriptionRunes(cmd *cobra.Command, r *librarium.Rite) {
 // edict r (aspect ""), heeding an interrupt from the terminal by halting
 // and reverting the invocation. In binharic the verdict (or the
 // forbiddance) is spoken upon stdout and the narration upon stderr.
+//
+// From here until Execute has spoken the lament, the servitor is
+// steadfast: neither a hangup nor a reader gone from stdout or stderr cuts
+// short the liturgy, its report or its death-mark.
 func (a *app) invoke(cmd *cobra.Command, r *librarium.Rite, aspect string, ir invokeRunes) error {
 	if ir.foresee && ir.binharic {
 		return refused(errForeseenInBinharic)
+	}
+	if !ir.foresee {
+		a.relent = rituals.Steadfast()
 	}
 	runes := map[string]string{}
 	for _, in := range r.Inscriptions {

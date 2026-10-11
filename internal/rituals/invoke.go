@@ -58,7 +58,14 @@ type Result struct {
 // the steps that passed). A performance that fell is no error: its Outcome
 // tells the verdict. Only performances are kept on the data-slate and in
 // the chronicle; a refused or foreseen invocation is not.
+//
+// An invocation that is not foreseen is held Steadfast throughout: the
+// departure of the one who invoked it neither halts it nor leaves it half
+// performed.
 func (s *Servitor) Invoke(ctx context.Context, p Petition) (Result, error) {
+	if !p.Foresee {
+		defer Steadfast()()
+	}
 	r, err := s.Rite(p.Rite)
 	if err != nil {
 		return Result{}, err

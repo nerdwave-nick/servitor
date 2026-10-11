@@ -1,0 +1,48 @@
+How a caller that does not wait invokes the servitor, and what it survives
+
+A picker, a launcher, a bar of the desktop or any other lesser machine may
+invoke a rite and go its way without waiting for the verdict: the vox tells
+the faithful how the invocation ended. Such a caller launches the servitor
+detached, as the launcher fuzzel launches its programs — it forks, its child
+execs the servitor with stdin upon /dev/null, and the errno of an exec that
+fell is sent back through a pipe closed upon exec, so that the caller knows
+at once whether the servitor awoke, and may then depart:
+
+  - stdin, stdout and stderr upon /dev/null, never a pipe that the caller
+    reads and then abandons;
+  - a session of its own (setsid), so that no hangup of the caller's
+    terminal reaches the servitor;
+  - should the caller dwell in a cgroup or scope that may be slain whole,
+    a launch prefix that sets the servitor in a scope of its own:
+    systemd-run --user --scope … or uwsm app -- ….
+
+Once launched, the servitor needs its caller no more. The death of the one
+who launched it never slays it: the orphan is adopted by the machine and
+performs its liturgy to the end. The servitor never detaches itself; that is
+the caller's office.
+
+The servitor stands steadfast besides, so that not even a careless caller
+leaves a rite half performed. For the whole of an invocation, from the
+ritual invoke as from the cogitator, it heeds no hangup, for a caller
+departing is no command to undo. A word it speaks upon a stdout or stderr
+whose reader is gone is lost in silence: it never touches the liturgy, its
+reversion, the data-slate or the chronicle, and the death-mark still tells
+the verdict. An interrupt (Ctrl-C) and SIGTERM are heeded as ever: they halt
+the invocation and revert it. A cogitator whose terminal hangs up while it
+performs a rite ends once the rite has ended, and never before.
+
+Two blows no steadfastness survives. SIGKILL, which no process may refuse,
+slays the servitor where it stands: the rite is left as it was mid-liturgy,
+neither reverted nor chronicled, and the augury may find it corrupted until
+it is invoked anew. And a caller whose whole cgroup or scope is slain takes
+the servitor with it, unless a launch prefix set it apart.
+
+Kindred passages: invoke, cogitator, vox, reversion, death-marks, binharic
+
+Exempla:
+  setsid -f servitor invoke theme porpl </dev/null >/dev/null 2>&1
+
+  systemd-run --user --scope -- \
+    setsid -f servitor invoke theme porpl </dev/null >/dev/null 2>&1
+
+  uwsm app -- servitor invoke screenshot --region full </dev/null >/dev/null 2>&1
