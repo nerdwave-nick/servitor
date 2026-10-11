@@ -3,13 +3,15 @@ The ordered steps a rite performs, one after another as written
 The "liturgy" of a rite is a list of steps, and every step is one object
 named by its own key: "sanctum", "transcription", "tether", "incantation",
 "litany" or "vox-cast". An object bearing none of these keys, or more than
-one, is heresy, and so is any key the step's kind does not know.
+one, is heresy, and so is any key the step's kind does not know. The
+liturgy of an edict holds only incantations, litanies and vox-casts; a
+sanctum, transcription or tether there is heresy.
 
 At invocation the pre-flight first examines every step without touching
 anything; only then are the steps performed, in the order written, never in
 parallel and never reordered. Should one fall, the steps already performed
 are reverted in reverse order, the fallen one included, and the machine
-returns to its former aspect.
+returns to its former aspect, or, for an edict, to how it stood before.
 
 Each step is named by its verse, its place in the liturgy counted from one;
 the foresight, the omens of an augury, the chronicle and the laments of the

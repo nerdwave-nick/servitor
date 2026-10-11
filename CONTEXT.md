@@ -175,7 +175,7 @@ standing, inscriptions and last rite. Ritual: `servitor augury`.
 
 **Census**:
 The ritual that lists every rite and the aspect it stands in; an edict stands in none
-and shows only its standing and last rite. Ritual: `servitor census`.
+and shows its standing and last rite in place of an aspect. Ritual: `servitor census`.
 
 **Inquisition**:
 The ritual that examines rites, settings and vessels and denounces heresies (which

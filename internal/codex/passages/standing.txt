@@ -36,8 +36,9 @@ impurities; a heretical rite stands accused of heresy.
 
 In binharic, an augury speaks "standing", "desecrated" (true or false),
 "former" (only when desecrated), "omens", and "taint" — the sanctums other
-hands altered, each named by its verse. The census bears "standing" and
-"desecrated" for every rite.
+hands altered, each named by its verse; the augury of an edict speaks its
+"standing" alone among these. The census bears "standing" and "desecrated"
+for every rite, an edict's desecrated ever false.
 
 Kindred passages: omens, data-slate, augury, census, heresy, edict
 

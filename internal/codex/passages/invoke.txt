@@ -28,11 +28,11 @@ invocation in the same manner: the labouring command and its kin are slain,
 no further step begins, and every deed is undone; a second interrupt during
 the reversions is not heeded, so that the reversions may finish.
 
-Each inscription the rite declares becomes a rune of its own, --<key>
-<value>, which outranks the rite's decree for that aspect (or the edict's
-one decree); an empty word clears it. A mandatory inscription that neither rune nor decree supplies
-forbids the invocation. The rune --foresee (-f) reveals everything the
-invocation would do and performs none of it; --silence (-s) withholds the
+Each inscription the rite declares becomes a rune of its own, --<key> <value>,
+which outranks the rite's decree for that aspect (or the edict's one decree);
+an empty word clears it. A mandatory inscription that neither rune nor decree
+supplies forbids the invocation. The rune --foresee (-f) reveals everything
+the invocation would do and performs none of it; --silence (-s) withholds the
 report, save the vox-casts the rite asks for.
 
 Spoken at a terminal, the invocation is told in one report as it is

@@ -10,7 +10,8 @@ The purpose of a rite is spoken wherever the rite is named to a reader: in
 the census and its binharic answer (key "purpose"), in the detail panel of
 the cogitator, beside the rite's name when completion offers it, and as the
 short lore of the rite's own ritual beneath "servitor invoke". A rite
-without purpose is offered with its aspects instead.
+without purpose is offered with its aspects instead, and an edict without
+one by its name alone.
 
 The purpose of an inscription is spoken beside its rune on the rite's own
 page of lore and when completion offers the inscription's key to an augury,

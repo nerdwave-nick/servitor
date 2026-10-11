@@ -1,4 +1,4 @@
-The word each aspect inscribes when the invocation gives none
+The word each aspect, or an edict, inscribes when the invocation gives none
 
 An inscription's "decrees" name, per aspect, the word inscribed when an
 invocation gives no rune for it. They are written as an aspect map: a single

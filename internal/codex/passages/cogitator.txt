@@ -35,19 +35,18 @@ nothing performed. While it is proclaimed, its panel, the tidings of its
 triumph and the lament of its fall name the edict alone, never a former
 aspect and an aspect invoked.
 
-The key h unrolls the chronicle across the whole screen: every invocation
-of the current chronicle and of the one rotated before it, newest first, a
-line each with its moment, its rite, the former aspect and the aspect
-invoked — or, for an edict, the mark ❢ edict in their place — and its
-verdict. It opens already filtered to the rite chosen in the list; /
-rewrites the filter, which seeks the rite, either aspect and the verdict, or
-the word edict for every proclaiming of an edict, and esc while writing
-casts the filter away so that every entry is shown. enter reads the chosen entry whole: its inscriptions, the verse it
-fell at and the heresy that felled it, and the verdict upon every
+The key h unrolls the chronicle across the whole screen: every invocation of
+the current chronicle and of the one rotated before it, newest first, a line
+each with its moment, its rite, the former aspect and the aspect invoked — or,
+for an edict, the mark ❢ edict in their place — and its verdict. It opens
+already filtered to the rite chosen in the list; / rewrites the filter, which
+seeks the rite, either aspect and the verdict, or the word edict for every
+proclaiming of an edict, and esc while writing casts the filter away so that
+every entry is shown. enter reads the chosen entry whole: its inscriptions,
+the verse it fell at and the heresy that felled it, and the verdict upon every
 reversion. esc returns to the chronicle, and from there to the rites. The
 cogitator reads the chronicle that the rune --chronicle, the environment or
-the settings place, as every ritual does; it never amends or strikes an
-entry.
+the settings place, as every ritual does; it never amends or strikes an entry.
 
 The consecration wizard, awakened by n, e and c, leads a rite through three
 stations. At the Rite the faithful speak its name and purpose, choose its

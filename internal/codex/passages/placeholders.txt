@@ -42,12 +42,12 @@ the environment: SERVITOR_ASPECT, SERVITOR_FORMER_ASPECT, SERVITOR_RITE, and
 for every declared inscription SERVITOR_INSCRIPTION_<KEY> — the key in
 capitals, each "-" and "." made "_" (empty when unset). An edict's
 incantations and litanies receive no SERVITOR_ASPECT and no
-SERVITOR_FORMER_ASPECT. Prefer these over
-placeholders within the words a tongue will speak: a placeholder pastes its
-value into the words before the tongue reads them, so a quote, a "$" or a
-";" within an inscription would be interpreted by the tongue as part of the
-command. A variable of the environment is read by the tongue as one word,
-untouched, when written within double quotes.
+SERVITOR_FORMER_ASPECT. Prefer these over placeholders within the words a
+tongue will speak: a placeholder pastes its value into the words before the
+tongue reads them, so a quote, a "$" or a ";" within an inscription would be
+interpreted by the tongue as part of the command. A variable of the
+environment is read by the tongue as one word, untouched, when written within
+double quotes.
 
 Kindred passages: aspect-maps, inscriptions, illuminate, incantation, vox-cast,
 edict

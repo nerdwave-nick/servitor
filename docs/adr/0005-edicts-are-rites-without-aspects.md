@@ -42,9 +42,11 @@ brought into an aspect; every invocation performs its whole liturgy anew.
 - **Proclaiming:** `servitor invoke <edict> [--<inscription> v] [-f] [-s]` takes no
   aspect, and any further word is refused with a heresy. Pre-flight, performing,
   reversion, patience and foresight are unchanged. The data-slate keeps inscriptions
-  and `last_rite` but no `aspect`; a chronicle line omits `aspect` and `former` and
-  carries `"edict": true`. Vox-casts and tidings never speak an aspect; edicts have
-  their own grimdark template lists, each naming `the edict {{rite.name}}`.
+  and `last_rite` but no `aspect`; its inscriptions follow the rule for rites (after
+  triumph, those the edict was proclaimed with; after a fall, those recorded before).
+  A chronicle line omits `aspect` and `former` and carries `"edict": true`. Vox-casts
+  and tidings never speak an aspect; edicts have their own grimdark template lists,
+  each naming `the edict {{rite.name}}`.
 - **Standing:** an edict is *dormant* until first proclaimed, *proclaimed* after a
   last invocation that ended in triumph or was reverted, *corrupted* when the last
   invocation faltered (until it is proclaimed again), and *heretical* when its
@@ -54,7 +56,10 @@ brought into an aspect; every invocation performs its whole liturgy anew.
   "inscriptions", "last_rite"}`, without `aspect`, `desecrated`, `former`, `omens` or
   `taint`; rites gain `"edict": false`. Asking an edict for `aspect`, `desecrated` or
   `former`, or `--is`, is refused with a heresy (exit 2). Census binharic gains
-  `"edict"` for every rite, and an edict has `"aspects": []`, never `null`.
+  `"edict"` for every rite, and an edict has `"aspects": []`, never `null`; unlike
+  the augury, the census keeps the same keys for every entry, so an edict's also
+  carries `"aspect": ""` and `"desecrated": false`. Heretical scripture is read as a
+  heretical rite (`"edict": false`), because the Librarium keeps nothing of it.
 - **The cogitator always asks first:** `enter` and `space` on an edict both open the
   invoke screen, without an aspect chooser: the inscription form when the edict has
   inscriptions, then a confirmation; a second `enter` proclaims, `p` foresees, `esc`
@@ -100,7 +105,9 @@ every rite with `aspects`, both records stand unchanged.
 - `CONTEXT.md` gains **Edict** and the standing *proclaimed*; the definitions of Rite,
   Aspect, Invocation and Standing hold for edicts too.
 - Inquisition examines an edict's scrolls, tongues and tomes once instead of once per
-  aspect. Excommunication with purge has no sanctums to remove from an edict.
+  aspect. A litany scroll that stands nowhere is an impurity in an edict, since no
+  step of an edict can write it. Excommunication with purge has no sanctums to remove
+  from an edict.
 - The JSON Schema declares `edict` xor `aspects`, restricts an edict's steps, and
   forbids its `auspex` and aspect maps; what the schema cannot declare stays beyond
   the schema in the judgement trials, as with other whole-rite rules.

@@ -19,14 +19,14 @@ with letters, digits, ".", "_" or "-", for it is spoken as the rune --<key>
 and illuminated as {{inscription.<key>}}. It may not bear the name of one of
 the servitor's own runes (foresee, silence, librarium, chronicle, binharic).
 
-Within the rite's words an inscription is illuminated as
-{{inscription.<key>}} (empty when uninscribed); naming an inscription the rite
-never declared is heresy. Incantations, litanies and the auspex also receive
-it in their environment as SERVITOR_INSCRIPTION_<KEY>, the key in capitals
-with every "-" and "." made "_". Inside the words of
-a tongue, prefer the environment: an illuminated word is spoken into the
-command exactly as inscribed, and the tongue would interpret its quotes,
-dollars and semicolons, whereas "$SERVITOR_INSCRIPTION_REASON" stays one word.
+Within the rite's words an inscription is illuminated as {{inscription.<key>}}
+(empty when uninscribed); naming an inscription the rite never declared is
+heresy. Incantations, litanies and the auspex also receive it in their
+environment as SERVITOR_INSCRIPTION_<KEY>, the key in capitals with every "-"
+and "." made "_". Inside the words of a tongue, prefer the environment: an
+illuminated word is spoken into the command exactly as inscribed, and the
+tongue would interpret its quotes, dollars and semicolons, whereas
+"$SERVITOR_INSCRIPTION_REASON" stays one word.
 
 The inscriptions of an invocation are kept on the rite's data-slate, read by
 the augury and recorded in the chronicle. The omens of later auguries render

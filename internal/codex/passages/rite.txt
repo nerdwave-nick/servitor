@@ -1,4 +1,4 @@
-A named liturgy that brings the machine into one of its aspects
+A named liturgy that brings the machine into an aspect, or proclaims an edict
 
 A rite is the servitor's unit of devotion: one scripture-file in the rites/
 hall of the Librarium, written in JSONC — JSON that suffers comments and
@@ -16,16 +16,17 @@ The keys of a rite are "pattern", "purpose", "aspects", "edict",
 "inscriptions", "auspex", "tongue" and "liturgy"; only the pattern is
 demanded, and beside it exactly one of "aspects" and "edict": true. A rite of
 aspects brings the machine into one of them; an edict bears none and is
-proclaimed whole each time it is invoked. A heretical rite is shown in the census and the cogitator with its
-heresies, but it cannot be invoked until it is purified.
+proclaimed whole each time it is invoked. A heretical rite is shown in the
+census and the cogitator with its heresies, but it cannot be invoked until it
+is purified.
 
 Know also that "rite" is a key of its own within the long form of the
 auspex, where it holds the words the auspex speaks:
 {"auspex": {"rite": "<words>", "patience": "5s"}}.
 
 Each rite becomes a ritual of its own beneath invoke, with its aspects (an
-edict has none) for completion and its inscriptions as runes; {{rite.name}} illuminates as its
-name, and its commands receive it as SERVITOR_RITE.
+edict has none) for completion and its inscriptions as runes; {{rite.name}}
+illuminates as its name, and its commands receive it as SERVITOR_RITE.
 
 Kindred passages: pattern, aspects, edict, liturgy, inscriptions, auspex,
 librarium

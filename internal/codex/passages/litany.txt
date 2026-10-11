@@ -25,13 +25,12 @@ Like an incantation, the scroll is recited in the rite's hall with nothing
 upon its input, anointed with SERVITOR_ASPECT, SERVITOR_FORMER_ASPECT,
 SERVITOR_RITE and SERVITOR_INSCRIPTION_<KEY> — the scroll of an edict with
 SERVITOR_RITE and SERVITOR_INSCRIPTION_<KEY> alone, for an edict bears no
-aspect. A death-mark other than 0, or
-patience run out (30s unless the settings or the step say otherwise), makes
-it fall; on running out the servitor slays it with every process it
-summoned. Its words are captured, never printed. Background children that
-must outlive it should send their words elsewhere ("cmd >/dev/null 2>&1 &").
-Interactive scrolls are unsupported: neither the cogitator nor a hotkey
-lends them a terminal.
+aspect. A death-mark other than 0, or patience run out (30s unless the
+settings or the step say otherwise), makes it fall; on running out the
+servitor slays it with every process it summoned. Its words are captured,
+never printed. Background children that must outlive it should send their
+words elsewhere ("cmd >/dev/null 2>&1 &"). Interactive scrolls are
+unsupported: neither the cogitator nor a hotkey lends them a terminal.
 
 Its "reversion" is not a scroll but one line of words, spoken in the tongue
 should the invocation fall. A litany yields no omen.

@@ -7,12 +7,12 @@ in another aspect, lies dormant, or its omens disagree. Nothing is spoken
 upon a match or a miss, so the rune serves the conditions of other commands
 and rites.
 
-The aspect named must be one the rite declares, and the augury exits 2 when
-it is not, when the rite is unknown or heretical, or when a key is given
-beside the rune: --is asks after the aspect alone. An edict stands in no
-aspect, so --is upon an edict is refused with a heresy and exit 2; ask after
-its standing instead. The auspex is awakened, as
-in every augury, so the answer heeds the true aspect of the machine.
+The aspect named must be one the rite declares, and the augury exits 2 when it
+is not, when the rite is unknown or heretical, or when a key is given beside
+the rune: --is asks after the aspect alone. An edict stands in no aspect, so
+--is upon an edict is refused with a heresy and exit 2; ask after its standing
+instead. The auspex is awakened, as in every augury, so the answer heeds the
+true aspect of the machine.
 
 The aspects of the rite are offered by completion after --is; for an edict
 nothing is offered.
