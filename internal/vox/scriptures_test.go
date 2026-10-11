@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 	"testing"
 
@@ -15,11 +16,12 @@ func spoken(tmpl string) *regexp.Regexp {
 	re := regexp.QuoteMeta(tmpl)
 	re = strings.ReplaceAll(re, regexp.QuoteMeta("{{aspect}}"), "«[^»]+»")
 	re = strings.ReplaceAll(re, regexp.QuoteMeta("{{step.kind}}"), "(sanctum|transcription|tether|incantation|litany)")
+	re = strings.ReplaceAll(re, regexp.QuoteMeta("{{rite.name}}"), `[\w.-]+`)
 	return regexp.MustCompile("^" + re + "$")
 }
 
 func drawn(tid invocation.Tidings, words string) bool {
-	for _, tmpl := range templates[tid] {
+	for _, tmpl := range append(slices.Clone(templates[tid]), edictTemplates[tid]...) {
 		if spoken(tmpl).MatchString(words) {
 			return true
 		}

@@ -231,8 +231,12 @@ func TestPassages_SpeakNoPlainGloss(t *testing.T) {
 // Librarium the faithful read first and the litanies of the vox-casts are
 // grimdark, like the codex.
 func TestScripturesOfTheFaithful_SpeakNoPlainGloss(t *testing.T) {
-	paths := []string{"../../README.md", "../../examples/rites/scripts/recite-hooks",
-		"../vox/success.txt", "../vox/progress.txt", "../vox/failure.txt"}
+	paths := []string{"../../README.md", "../../examples/rites/scripts/recite-hooks"}
+	litanies, _ := filepath.Glob("../vox/*.txt")
+	if len(litanies) < 6 {
+		t.Fatalf("too few litanies of the vox-casts: %v", litanies)
+	}
+	paths = append(paths, litanies...)
 	rites, _ := filepath.Glob("../../examples/rites/*.json")
 	if len(rites) < 2 {
 		t.Fatalf("too few example rites: %v", rites)
