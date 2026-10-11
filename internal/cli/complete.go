@@ -47,8 +47,8 @@ func (a *app) aspectCompletions(r *librarium.Rite) []cobra.Completion {
 }
 
 // decreeCompletions lists the values decreed for an inscription, each with
-// the aspects decreeing it.
-func decreeCompletions(in librarium.Inscription) []cobra.Completion {
+// the aspects decreeing it; an edict decrees one value for itself alone.
+func decreeCompletions(in librarium.Inscription, edict bool) []cobra.Completion {
 	var values []string
 	aspects := map[string][]string{}
 	for _, e := range in.Decrees.Entries() {
@@ -62,7 +62,11 @@ func decreeCompletions(in librarium.Inscription) []cobra.Completion {
 	}
 	out := make([]cobra.Completion, len(values))
 	for i, v := range values {
-		out[i] = cobra.CompletionWithDesc(v, "decreed for "+strings.Join(aspects[v], ", "))
+		desc := "decreed for " + strings.Join(aspects[v], ", ")
+		if edict {
+			desc = "decreed by the edict"
+		}
+		out[i] = cobra.CompletionWithDesc(v, desc)
 	}
 	return out
 }

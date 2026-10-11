@@ -55,6 +55,10 @@ func TestEdict_NoRitualFallsBeforeIt(t *testing.T) {
 	if words, _ := e.complete("invoke", "capture", "--region", ""); !slices.Contains(words, "full") {
 		t.Errorf("the edict's decree does not complete: %v", words)
 	}
+	if out := e.mustRun("__complete", "invoke", "capture", "--region", ""); !strings.Contains(out, "full\tdecreed by the edict\n") ||
+		strings.Contains(out, "*") {
+		t.Errorf("the edict's decree completes as:\n%s", out)
+	}
 }
 
 // aspectless matches what an edict's report, vox-casts and laments never
@@ -139,11 +143,18 @@ func TestEdict_OnATerminalIsToldAsItHappensWithoutAnAspect(t *testing.T) {
 func TestEdict_RefusesEveryWordAfterItsName(t *testing.T) {
 	e := newEnv(t)
 	e.addRite("rites/capture.json", edictJSON)
-	for _, args := range [][]string{{"invoke", "capture", "on"}, {"invoke", "capture", "taken", "again"},
-		{"invoke", "capture", "on", "-f"}} {
-		_, errOut, code := e.run(args...)
-		if code != 1 || !strings.Contains(errOut, `the edict "capture" bears no aspect`) {
-			t.Errorf("servitor %v: exit %d\nstderr: %s", args, code, errOut)
+	for _, tc := range []struct {
+		args  []string
+		words string
+	}{
+		{[]string{"invoke", "capture", "on"}, `"on"`},
+		{[]string{"invoke", "capture", "taken", "again"}, `"taken" "again"`},
+		{[]string{"invoke", "capture", "on", "-f"}, `"on"`},
+	} {
+		_, errOut, code := e.run(tc.args...)
+		if code != 1 || !strings.Contains(errOut, `the edict "capture" bears no aspect`) ||
+			!strings.Contains(errOut, "yet "+tc.words+" followed its name") {
+			t.Errorf("servitor %v: exit %d\nstderr: %s", tc.args, code, errOut)
 		}
 		grimdark(t, errOut)
 	}

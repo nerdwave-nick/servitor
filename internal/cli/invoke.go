@@ -105,7 +105,7 @@ func (a *app) newEdictCmd(r *librarium.Rite, foresee, silence *bool) *cobra.Comm
 		Args: func(_ *cobra.Command, args []string) error {
 			if len(args) > 0 {
 				return fmt.Errorf("the edict %q bears no aspect and is proclaimed by its name alone, yet %s "+
-					"was offered after it; not one verse of its liturgy is performed", r.Name, quoteAll(args))
+					"followed its name; not one verse of its liturgy is performed", r.Name, quoteAll(args))
 			}
 			return nil
 		},
@@ -143,7 +143,7 @@ func inscriptionRunes(cmd *cobra.Command, r *librarium.Rite) {
 		}
 		cmd.Flags().Var(wordRune(new(string), "", "word"), in.Key, usage)
 		_ = cmd.RegisterFlagCompletionFunc(in.Key, func(*cobra.Command, []string, string) ([]cobra.Completion, cobra.ShellCompDirective) {
-			return decreeCompletions(in), cobra.ShellCompDirectiveNoFileComp
+			return decreeCompletions(in, r.Edict), cobra.ShellCompDirectiveNoFileComp
 		})
 	}
 }
