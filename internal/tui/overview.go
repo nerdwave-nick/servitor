@@ -77,6 +77,10 @@ func (m *model) rowAction(key string, r *row) tea.Cmd {
 	if r.rite() == nil {
 		return m.notify(toastErr, "This rite is heretical. Purify it with o ($EDITOR) or excommunicate it with d.")
 	}
+	if r.rite().Edict {
+		return m.notify(toastErr, "The edict "+r.name+" bears no aspect, and this servitor has not yet been "+
+			"taught to proclaim an edict. Nothing was performed.")
+	}
 	if key == "enter" {
 		m.screen = newInvokeScreen(r)
 		return nil
@@ -111,8 +115,12 @@ func nameOf(r *row) string {
 }
 
 // cycle invokes the aspect after the current one, inscribed by its decrees.
+// A rite without aspects has none to cycle to.
 func (m *model) cycle(r *row) tea.Cmd {
 	aspects := r.rite().Aspects
+	if len(aspects) == 0 {
+		return nil
+	}
 	next := aspects[0]
 	for i, a := range aspects {
 		if a == r.reading.Aspect {
