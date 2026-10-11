@@ -6,8 +6,8 @@ for the faithful but as binharic for lesser machines: objects with stable
 keys, which other commands may parse — jq foremost among them.
 
 The census in binharic is a list in which every rite bears rite, edict,
-aspect, standing, auspex, aspects, purpose, desecrated, last_rite and
-recorded_in; an edict bears "edict": true and an empty list of aspects. The
+aspect, standing, auspex, aspects, purpose, desecrated, last_rite,
+recorded_in and canon; an edict bears "edict": true and an empty list of aspects. The
 Inquisition in binharic is a list of findings, each bearing scripture, line,
 column, rite, judgement ("heresy" or "impurity") and denunciation; its exit
 remains 1 when any heresy was found.
@@ -25,7 +25,7 @@ The augury needs no such rune: spoken without a key it always answers in
 binharic, and spoken with a key it answers with that single value.
 
 Kindred passages: census, inquisition, augury, invoke, forbidden,
-death-marks
+death-marks, canon
 
 Exempla:
   servitor census --binharic | jq -r '.[] | "\(.rite) \(.aspect)"'

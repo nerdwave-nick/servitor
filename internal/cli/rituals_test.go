@@ -52,6 +52,10 @@ func TestAugury_SpeaksTheJSONOfTheCodex(t *testing.T) {
 	out := e.mustRun("augury", "mouse-autohide-toggle")
 	want := regexp.MustCompile(`^\{\n  "rite": "mouse-autohide-toggle",\n  "edict": false,\n  "aspect": "on",\n  "standing": "performed",\n` +
 		`  "auspex": "",\n  "desecrated": false,\n  "inscriptions": \{\n    "example-key": "example-value",\n    "reason": "gaming remnant"\n  \},\n` +
+		`  "canon": \[\n    \{\n      "key": "reason",\n      "purpose": "why the rite was invoked",\n      "mandatory": false,\n` +
+		`      "decrees": \{\},\n      "decree": null\n    \},\n    \{\n      "key": "example-key",\n      "purpose": "",\n` +
+		`      "mandatory": true,\n      "decrees": \{\n        "off": "other-value",\n        "on": "example-value"\n      \},\n` +
+		`      "decree": null\n    \}\n  \],\n` +
 		`  "last_rite": \{\n    "verdict": "triumph",\n    "at": "[0-9T:Z-]+"\n  \},\n` +
 		`  "omens": \[\n    \{\n      "verse": 1,\n      "sanctum": "` + regexp.QuoteMeta(e.target) + `",\n      "aspect": "on"\n    \}\n  \],\n` +
 		`  "taint": \[\]\n\}\n$`)

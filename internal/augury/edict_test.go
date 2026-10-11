@@ -138,12 +138,12 @@ func TestAugury_MarshalsAnEdictWithoutAspect(t *testing.T) {
 	a := Augury{Rite: "capture", Edict: true, Standing: Proclaimed,
 		Inscriptions: map[string]string{"region": "window"},
 		LastRite:     &LastRite{Verdict: invocation.Reverted, At: noon}}
-	want := `{"rite":"capture","edict":true,"standing":"proclaimed","auspex":"","inscriptions":{"region":"window"},` +
+	want := `{"rite":"capture","edict":true,"standing":"proclaimed","auspex":"","inscriptions":{"region":"window"},"canon":[],` +
 		`"last_rite":{"verdict":"reverted","at":"2026-10-10T13:30:00Z"}}`
 	if got := marshal(t, a); got != want {
 		t.Errorf("got  %s\nwant %s", got, want)
 	}
-	dormant := `{"rite":"capture","edict":true,"standing":"dormant","auspex":"","inscriptions":{},"last_rite":null}`
+	dormant := `{"rite":"capture","edict":true,"standing":"dormant","auspex":"","inscriptions":{},"canon":[],"last_rite":null}`
 	if got := marshal(t, Augury{Rite: "capture", Edict: true, Standing: Dormant}); got != dormant {
 		t.Errorf("got  %s\nwant %s", got, dormant)
 	}
@@ -155,6 +155,7 @@ func TestAugury_MarshalsAnEdictReadFromItsSlate(t *testing.T) {
 	fx.proclaim(t, r, map[string]string{"region": "window"})
 	fx.fall(t, r, invocation.Faltered)
 	want := `{"rite":"capture","edict":true,"standing":"corrupted","auspex":"","inscriptions":{"region":"window"},` +
+		`"canon":[{"key":"region","purpose":"the slurp geometry","mandatory":false,"decrees":{},"decree":"full"}],` +
 		`"last_rite":{"verdict":"faltered","at":"2026-10-10T13:30:00Z"}}`
 	if got := marshal(t, fx.augur(t, r, Options{})); got != want {
 		t.Errorf("got  %s\nwant %s", got, want)

@@ -1,0 +1,48 @@
+The inscriptions a rite declares, as the augury and the census speak them
+
+Where "inscriptions" in the augury names the words the last invocation laid
+upon the data-slate, "canon" names what the rite's scripture declares: every
+inscription it may be given, in the order it is written. Other machines read
+it to ask the faithful for each inscription before they invoke, without
+reading the scripture themselves.
+
+Each declaration of the canon bears five keys, always all of them:
+
+  key         the inscription's name, spoken as the rune --<key>
+  purpose     why it exists; "" when the scripture names none
+  mandatory   true when every invocation must bear its word, from the
+              rune or from a decree, else false
+  decrees     the decree of every aspect that has one; a "*" of the
+              scripture is resolved for each aspect it serves, and an
+              aspect without a decree is absent, so no reader need ever
+              interpret an aspect map
+  decree      an edict's one plain decree, or null when it decrees nothing;
+              always null for a rite, whose decrees stand per aspect
+
+An edict knows no aspect, so its "decrees" is always {} and its decree, if
+any, stands under "decree". A rite that declares no inscription bears
+"canon": [], and so does a heretical rite, for nothing of its scripture is
+kept.
+
+The augury bears the canon beside "inscriptions", and every entry of the
+census in binharic bears it too, so that a single census suffices to know
+every rite and what each may be inscribed with.
+
+Kindred passages: inscriptions, decrees, mandatory, purpose, augury,
+census, binharic, edict, aspect-maps
+
+Exempla:
+  servitor augury theme | jq .canon
+
+  "canon": [{"key": "reason", "purpose": "why the visage was changed",
+             "mandatory": false, "decrees": {}, "decree": null}]
+
+  "canon": [{"key": "mode", "purpose": "", "mandatory": true,
+             "decrees": {"off": "always-visible", "on": "auto-hide"},
+             "decree": null}]
+
+  "canon": [{"key": "region", "purpose": "the slurp geometry",
+             "mandatory": false, "decrees": {}, "decree": "full"}]
+
+  servitor census --binharic |
+    jq -r '.[] | .rite as $r | .canon[] | select(.mandatory) | "\($r) --\(.key)"'
