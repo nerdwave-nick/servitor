@@ -149,3 +149,23 @@ func readlink(t *testing.T, p string) string {
 	}
 	return l
 }
+
+func TestExcommunicate_AnEdictIsStruckAndHasNoSanctumToPurge(t *testing.T) {
+	for _, purge := range []bool{false, true} {
+		fx := newFixture(t)
+		path := fx.rite("capture", capture)
+		if _, err := fx.servitor().Invoke(context.Background(), Petition{Rite: "capture"}); err != nil {
+			t.Fatal(err)
+		}
+		said := fx.read(filepath.Join(fx.data, "said"))
+
+		ex, err := fx.servitor().Excommunicate("capture", purge)
+
+		if err != nil || len(ex.Purged) != 0 || len(ex.Struck) != 1 || ex.Struck[0] != path || exists(path) {
+			t.Fatalf("purge %v: %+v, %v", purge, ex, err)
+		}
+		if got := fx.read(filepath.Join(fx.data, "said")); got != said {
+			t.Errorf("purge %v: the excommunication touched what the edict left: %q", purge, got)
+		}
+	}
+}
