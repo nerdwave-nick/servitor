@@ -27,6 +27,10 @@ how each reversion went. An interrupt from the terminal (Ctrl-C) halts the
 invocation in the same manner: the labouring command and its kin are slain,
 no further step begins, and every deed is undone; a second interrupt during
 the reversions is not heeded, so that the reversions may finish.
+SIGTERM halts it alike. A hangup does not: the departure of the one who
+invoked it is no command to undo, and a reader gone from stdout or stderr
+loses only the words, never a deed. Lesser machines that do not wait launch
+the servitor detached, as its own passage teaches.
 
 Each inscription the rite declares becomes a rune of its own, --<key> <value>,
 which outranks the rite's decree for that aspect (or the edict's one decree);
@@ -95,7 +99,7 @@ A rite's scripture, kept in <Librarium>/rites/<name>.json, may read thus:
   }
 
 Kindred passages: rite, edict, liturgy, pre-flight, reversion, inscriptions,
-verdicts, binharic, forbidden, death-marks
+verdicts, binharic, forbidden, death-marks, detached
 
 Exempla:
   servitor invoke mouse-autohide-toggle on --reason "gaming remnant"

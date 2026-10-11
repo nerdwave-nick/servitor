@@ -82,7 +82,8 @@ the cogitator for screen and keys, and is struck down when its patience runs
 out. Interactive commands are not supported within the cogitator: invoke such
 rites from a terminal, or write their commands so that they ask nothing.
 
-Kindred passages: invoke, inquisition, expound, standing, librarium, chronicle
+Kindred passages: invoke, inquisition, expound, standing, librarium, chronicle,
+detached
 
 Exempla:
   servitor

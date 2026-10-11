@@ -343,8 +343,8 @@ triumph, and belongs last. Tidings of a fall need no step. See
    order: sanctums, transcriptions and tethers are restored exactly as they
    were found (a vessel the rite brought into being is struck); incantations
    and litanies speak their `reversion`. A failing reversion does not halt
-   the others. An interrupt from the terminal (Ctrl-C) halts and reverts the
-   invocation the same way.
+   the others. An interrupt from the terminal (Ctrl-C) or SIGTERM halts and
+   reverts the invocation the same way; a hangup does not.
 4. **Verdict.** `triumph` (every step performed), `reverted` (a step fell and
    all was undone) or `faltered` (a step fell and some reversion fell too;
    the rite then stands corrupted). The verdict is kept on the rite's
@@ -406,6 +406,27 @@ The death-mark tells how it ended, with or without `--binharic`:
 | 1 | was reverted: a step fell and every deed was undone |
 | 2 | was refused before anything was touched: the pre-flight forbade it, the rite or aspect is unknown, words strayed after an edict, or a rune was malformed |
 | 3 | faltered: a step fell and a reversion fell too |
+
+### Invoked by machines that do not wait
+
+A picker, a launcher or a bar that invokes a rite and departs at once
+launches the servitor detached, as fuzzel launches its programs: stdin,
+stdout and stderr upon `/dev/null`, a session of its own (`setsid`), and,
+should the caller's own cgroup or scope be slain whole, a launch prefix
+such as `systemd-run --user --scope` or `uwsm app --`. The death of its
+caller never slays the servitor, and the [vox](#vox-casts) tells how the
+invocation ended.
+
+```console
+❯ setsid -f servitor invoke theme porpl </dev/null >/dev/null 2>&1
+```
+
+The servitor stands steadfast besides: for the whole of an invocation, from
+the ritual invoke as from the cogitator, it heeds no hangup, and words lost
+upon a stdout or stderr whose reader is gone never touch the liturgy, its
+reversion, the data-slate or the chronicle. An interrupt and SIGTERM still
+halt and revert it. SIGKILL, and a slain cgroup without a launch prefix, it
+cannot survive. `servitor expound detached` tells the whole of it.
 
 ## Edicts
 
