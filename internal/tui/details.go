@@ -31,15 +31,7 @@ func (m *model) detailView(w int) string {
 	if rite.Purpose != "" {
 		b = append(b, t.text.Render(rite.Purpose), "")
 	}
-	var aspects []string
-	for _, s := range rite.Aspects {
-		if s == a.Aspect {
-			aspects = append(aspects, t.accent.Bold(true).Render(t.glyphCurrent+" "+s))
-		} else {
-			aspects = append(aspects, t.dim.Render(t.glyphOther+" "+s))
-		}
-	}
-	b = append(b, label("aspects")+strings.Join(aspects, "  "))
+	b = append(b, m.aspectsLine(rite, a, label))
 	glyph, standing := m.standingGlyph(a.Standing)
 	line := label("standing") + glyph + " " + standing
 	if a.Desecrated && a.Standing != augury.Desecrated {
@@ -54,9 +46,31 @@ func (m *model) detailView(w int) string {
 	for _, l := range m.liturgy(rite, a) {
 		b = append(b, " "+fit(l, w-1))
 	}
-	b = append(b, "", label("auspex")+m.auspexLine(rite, a))
+	b = append(b, "")
+	if !rite.Edict { // an edict knows no auspex
+		b = append(b, label("auspex")+m.auspexLine(rite, a))
+	}
 	b = append(b, label("recorded in")+t.dim.Render(truncateLeft(shortPath(rite.Path), w-labelW)))
 	return strings.Join(b, "\n")
+}
+
+// aspectsLine shows the aspects of a rite with the current one marked, or
+// names an edict, which bears none.
+func (m *model) aspectsLine(rite *librarium.Rite, a augury.Augury, label func(string) string) string {
+	t := m.t
+	if rite.Edict {
+		return label("nature") + t.accent.Bold(true).Render(glyphEdict+" edict") +
+			t.dim.Render(" · it bears no aspect and is proclaimed by its name alone")
+	}
+	var aspects []string
+	for _, s := range rite.Aspects {
+		if s == a.Aspect {
+			aspects = append(aspects, t.accent.Bold(true).Render(t.glyphCurrent+" "+s))
+		} else {
+			aspects = append(aspects, t.dim.Render(t.glyphOther+" "+s))
+		}
+	}
+	return label("aspects") + strings.Join(aspects, "  ")
 }
 
 func (m *model) lastRite(lr *augury.LastRite) string {
@@ -101,7 +115,7 @@ func (m *model) omenMark(o *augury.Omen, aspect string) string {
 }
 
 // liturgy is one line per step: its omen, verse, kind glyph and what its
-// own key holds.
+// own key holds. An edict reveals no omen, so its steps bear no mark.
 func (m *model) liturgy(rite *librarium.Rite, a augury.Augury) []string {
 	t := m.t
 	omens, tainted := map[int]*augury.Omen{}, map[int]bool{}
@@ -114,8 +128,11 @@ func (m *model) liturgy(rite *librarium.Rite, a augury.Augury) []string {
 	lines := make([]string, len(rite.Liturgy))
 	for i, step := range rite.Liturgy {
 		o := omens[i+1]
-		line := m.omenMark(o, a.Aspect) + " " + t.dim.Render(fmt.Sprintf("%d", i+1)) + " " +
+		line := t.dim.Render(fmt.Sprintf("%d", i+1)) + " " +
 			t.accent.Render(kindGlyph(step.Kind())) + " " + t.text.Render(stepWords(step, a.Aspect))
+		if !rite.Edict {
+			line = m.omenMark(o, a.Aspect) + " " + line
+		}
 		if o != nil && o.Aspect != a.Aspect {
 			line += t.dim.Render(" (" + o.Aspect + ")")
 		}

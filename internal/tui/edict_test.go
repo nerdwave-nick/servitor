@@ -21,9 +21,9 @@ const edictRite = `{
 
 // TestEdict_TheCogitatorStandsFirmBeforeAnEdict: an edict is listed and
 // shown, and every key upon it — space, enter, amend, replicate, the
-// chronicle, the verdict — answers without the cogitator falling; until the
-// servitor is taught to proclaim an edict, nothing of it is performed and
-// the wizard does not take it up.
+// chronicle, the verdict — answers without the cogitator falling. space and
+// enter only ask before proclaiming it and e and c lead it into the wizard as
+// an edict; a single key performs nothing of it.
 func TestEdict_TheCogitatorStandsFirmBeforeAnEdict(t *testing.T) {
 	h := newHarness(t)
 	h.writeRite("capture", edictRite)
@@ -34,6 +34,8 @@ func TestEdict_TheCogitatorStandsFirmBeforeAnEdict(t *testing.T) {
 		h.mustShow("capture", "edict")
 		h.mustNotShow("Consecrate a rite", "Choose the aspect")
 		h.keys("esc")
+		h.mustShow("Rites (2)")
+		h.mustNotShow("Proclaim the edict")
 	}
 	h.keys("h", "esc", "i", "esc", "?", "esc", "j", "k")
 	if _, err := os.Stat(filepath.Join(h.dataDir, "captured")); err == nil {

@@ -43,6 +43,7 @@ func (h herald) Begin(v invocation.Verse, step, steps int) {
 // "step x / n" and the step being performed. ctrl+c halts it.
 type runningScreen struct {
 	rite, aspect string
+	edict        bool // an edict is proclaimed, into no aspect
 	step, steps  int
 	verse        *invocation.Verse
 	casts        []vox.Message
@@ -61,7 +62,7 @@ func (m *model) isRunning() bool {
 // screen.
 func (m *model) invoke(r *librarium.Rite, aspect string, runes map[string]string) tea.Cmd {
 	ctx, halt := context.WithCancel(context.Background())
-	rs := &runningScreen{rite: r.Name, aspect: aspect, halt: halt}
+	rs := &runningScreen{rite: r.Name, aspect: aspect, edict: r.Edict, halt: halt}
 	for _, step := range r.Liturgy {
 		if step.Kind() != librarium.KindVoxCast {
 			rs.steps++
@@ -83,28 +84,34 @@ func (m *model) invoke(r *librarium.Rite, aspect string, runes map[string]string
 func (m *model) invoked(msg invokedMsg) tea.Cmd {
 	m.screen = nil
 	res, err := msg.res, msg.err
-	name := ""
+	name, edict := "", false
 	if res.Rite != nil {
-		name = res.Rite.Name
+		name, edict = res.Rite.Name, res.Rite.Edict
 	}
 	m.reload(name)
 	var hs invocation.Heresies
 	switch {
 	case errors.As(err, &hs):
+		forbids := "The pre-flight forbids invoking " + name + " into " + res.Options.Aspect
+		if edict {
+			forbids = "The pre-flight forbids the proclaiming of the edict " + name
+		}
 		m.screen = newTextScreen("The pre-flight forbids the invocation",
-			m.t.text.Render("The pre-flight forbids invoking "+name+" into "+res.Options.Aspect+"; nothing was touched.")+
-				"\n\n"+m.foresight(res, err))
+			m.t.text.Render(forbids+"; nothing was touched.")+"\n\n"+m.foresight(res, err))
 		return nil
 	case err != nil:
 		return m.notify(toastErr, err.Error())
 	}
 	m.last = &res
 	if out := res.Outcome; out.Verdict != invocation.Triumph {
-		m.screen = newTextScreen("The rite "+name+" has fallen", m.fallen(*out))
+		m.screen = newTextScreen("The "+riteNoun(edict)+" "+name+" has fallen", m.fallen(*out, edict))
 		return nil
 	}
 	text := fmt.Sprintf("The rite %s is performed: %s → %s. The Omnissiah is pleased.", name,
 		former(res.Options.Former), res.Options.Aspect)
+	if edict {
+		text = "The edict " + name + " is proclaimed. The Omnissiah is pleased."
+	}
 	if len(res.Laments) > 0 {
 		return m.notify(toastErr, text+" Yet: "+res.Laments[0].Error())
 	}
@@ -146,13 +153,17 @@ func (s *runningScreen) view(m *model) string {
 		}
 	}
 	if s.halting {
-		b = append(b, "", t.warn.Render("Halting the rite; its deeds are being undone…"))
+		b = append(b, "", t.warn.Render("Halting the "+riteNoun(s.edict)+"; its deeds are being undone…"))
 	}
-	return t.modal("Invocation of "+s.rite+" → "+s.aspect, strings.Join(b, "\n"), m.width-4)
+	title := "Invocation of " + s.rite + " → " + s.aspect
+	if s.edict {
+		title = "Proclamation of the edict " + s.rite
+	}
+	return t.modal(title, strings.Join(b, "\n"), m.width-4)
 }
 
 func (s *runningScreen) hints(m *model) [][2]string {
-	return [][2]string{{"ctrl+c", "halt the rite"}}
+	return [][2]string{{"ctrl+c", "halt the " + riteNoun(s.edict)}}
 }
 
 // progressBar is a bar of width cells filled for done of all; the step

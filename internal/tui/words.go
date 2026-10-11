@@ -16,6 +16,14 @@ func verseName(v invocation.Verse) string {
 	return strings.TrimSpace(fmt.Sprintf("verse %d · %s %s", v.Number, v.Kind.Key(), shortPath(v.Target)))
 }
 
+// riteNoun names what is invoked: an edict, or a rite.
+func riteNoun(edict bool) string {
+	if edict {
+		return "edict"
+	}
+	return "rite"
+}
+
 // former names the aspect a rite stood in before, or its dormancy.
 func former(aspect string) string {
 	if aspect == "" {
@@ -111,9 +119,9 @@ func uttered(what, output string) []string {
 	return out
 }
 
-// fallen tells why the rite fell, its last words and how every reversion
-// went.
-func (m *model) fallen(out invocation.Outcome) string {
+// fallen tells why the rite or edict fell, its last words and how every
+// reversion went.
+func (m *model) fallen(out invocation.Outcome, edict bool) string {
 	t := m.t
 	f := out.Fell
 	b := []string{t.bold.Render("It fell at " + verseName(f.Verse)), t.danger.Render(f.Heresy.Error())}
@@ -135,7 +143,7 @@ func (m *model) fallen(out invocation.Outcome) string {
 	}
 	b = append(b, "")
 	if out.Verdict == invocation.Faltered {
-		b = append(b, t.danger.Render("The reversion faltered; the rite lies corrupted. Summon the Inquisition, "+
+		b = append(b, t.danger.Render("The reversion faltered; the "+riteNoun(edict)+" lies corrupted. Summon the Inquisition, "+
 			"and mend by hand what remains."))
 	} else {
 		b = append(b, t.ok.Render("Every deed is undone; the machine stands as it stood before."))
@@ -150,8 +158,12 @@ func (m *model) showWords() tea.Cmd {
 	}
 	t := m.t
 	out := m.last.Outcome
-	b := []string{t.bold.Render(fmt.Sprintf("The rite %s, %s → %s: %s", m.last.Rite.Name,
-		former(m.last.Options.Former), m.last.Options.Aspect, out.Verdict)), ""}
+	head := fmt.Sprintf("The rite %s, %s → %s: %s", m.last.Rite.Name,
+		former(m.last.Options.Former), m.last.Options.Aspect, out.Verdict)
+	if m.last.Options.Edict {
+		head = fmt.Sprintf("The edict %s: %s", m.last.Rite.Name, out.Verdict)
+	}
+	b := []string{t.bold.Render(head), ""}
 	for _, d := range out.Deeds {
 		if d.Kind == librarium.KindVoxCast {
 			continue

@@ -15,8 +15,12 @@ import (
 func (m *model) chronicled(e chronicle.Entry) string {
 	t := m.t
 	label := func(s string) string { return t.label.Render(padRight(s, labelW)) }
+	head := fmt.Sprintf("The rite %s, %s: %s", e.Rite, turn(e), e.Verdict)
+	if e.Edict {
+		head = fmt.Sprintf("The edict %s: %s", e.Rite, e.Verdict)
+	}
 	b := []string{
-		t.bold.Render(fmt.Sprintf("The rite %s, %s: %s", e.Rite, turn(e), e.Verdict)), "",
+		t.bold.Render(head), "",
 		label("INVOKED") + t.text.Render(e.At.Local().Format("2006-01-02 15:04:05 MST")),
 		label("VERDICT") + m.verdictMark(e.Verdict),
 		label("INSCRIPTIONS") + m.inscribed(e.Inscriptions),
@@ -39,13 +43,15 @@ func (m *model) chronicled(e chronicle.Entry) string {
 		}
 	}
 	b = append(b, "")
-	switch e.Verdict {
-	case invocation.Triumph:
+	switch {
+	case e.Verdict == invocation.Triumph && e.Edict:
+		b = append(b, t.ok.Render("The edict was proclaimed in triumph."))
+	case e.Verdict == invocation.Triumph:
 		b = append(b, t.ok.Render("The rite was performed in triumph."))
-	case invocation.Reverted:
+	case e.Verdict == invocation.Reverted:
 		b = append(b, t.ok.Render("Every deed is undone; the machine stood as it stood before."))
 	default:
-		b = append(b, t.danger.Render("The reversion faltered; the rite was left corrupted."))
+		b = append(b, t.danger.Render("The reversion faltered; the "+riteNoun(e.Edict)+" was left corrupted."))
 	}
 	return strings.Join(b, "\n")
 }

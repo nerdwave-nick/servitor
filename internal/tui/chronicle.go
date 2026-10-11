@@ -41,12 +41,17 @@ func newChronicleScreen(m *model, rite string) *chronicleScreen {
 func (s *chronicleScreen) fullscreen() bool { return true }
 
 // applyFilter keeps the entries whose rite, aspects or verdict contain the
-// filter, regardless of case.
+// filter, regardless of case; an edict answers to "edict" in place of
+// aspects.
 func (s *chronicleScreen) applyFilter() {
 	q := strings.ToLower(s.filter.Value())
 	s.shown = s.shown[:0]
 	for _, e := range s.all {
-		hay := strings.ToLower(strings.Join([]string{e.Rite, e.Aspect, former(e.Former), string(e.Verdict)}, " "))
+		turned := []string{e.Aspect, former(e.Former)}
+		if e.Edict {
+			turned = []string{"edict"}
+		}
+		hay := strings.ToLower(strings.Join(append(append([]string{e.Rite}, turned...), string(e.Verdict)), " "))
 		if strings.Contains(hay, q) {
 			s.shown = append(s.shown, e)
 		}
@@ -176,8 +181,14 @@ func (s *chronicleScreen) hints(m *model) [][2]string {
 	return [][2]string{{"j/k", "choose an entry"}, {"enter", "read it whole"}, {"/", "filter"}, {"esc", "withdraw"}}
 }
 
-// turn names the aspects an invocation turned the rite from and to.
-func turn(e chronicle.Entry) string { return former(e.Former) + " → " + e.Aspect }
+// turn names the aspects an invocation turned the rite from and to, or
+// marks the proclaiming of an edict, which turns no aspect.
+func turn(e chronicle.Entry) string {
+	if e.Edict {
+		return glyphEdict + " edict"
+	}
+	return former(e.Former) + " → " + e.Aspect
+}
 
 // verdictMark renders a verdict with its glyph: ✔ for triumph, ✖ otherwise.
 func (m *model) verdictMark(v invocation.Verdict) string {

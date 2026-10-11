@@ -82,28 +82,37 @@ func (s *invokeScreen) choose(m *model) (screen, tea.Cmd) {
 		cmd := m.invoke(s.rite, s.aspect(), nil)
 		return m.screen, cmd // the running panel
 	}
+	s.form = m.inscriptionForm(s.rite, s.aspect())
+	return s, s.form.start()
+}
+
+// inscriptionForm asks for the inscriptions of rite, each prefilled with
+// its decree for aspect ("" for an edict, whose decree is one plain word).
+func (m *model) inscriptionForm(rite *librarium.Rite, aspect string) *form {
 	f := newForm(m.t)
-	for _, in := range s.rite.Inscriptions {
+	for _, in := range rite.Inscriptions {
 		label := in.Key
 		if in.Mandatory {
 			label += " *"
 		}
-		decree, _ := in.Decrees.For(s.aspect())
+		decree, _ := in.Decrees.For(aspect)
 		f.addText(in.Key, label, decree, "", in.Purpose, nil)
 	}
 	f.setWidth(min(60, m.width-12))
-	s.form = f
-	return s, f.start()
+	return f
 }
 
 // runes are the inscriptions as written in the form; an emptied one clears
 // its decree. Without the form the decrees stand.
-func (s *invokeScreen) runes() map[string]string {
-	if s.form == nil {
+func (s *invokeScreen) runes() map[string]string { return runesOf(s.form) }
+
+// runesOf are the inscriptions as written in f, nil without a form.
+func runesOf(f *form) map[string]string {
+	if f == nil {
 		return nil
 	}
 	out := map[string]string{}
-	for _, fl := range s.form.fields {
+	for _, fl := range f.fields {
 		out[fl.key] = fl.value()
 	}
 	return out

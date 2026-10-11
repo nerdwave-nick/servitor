@@ -78,8 +78,7 @@ func (m *model) rowAction(key string, r *row) tea.Cmd {
 		return m.notify(toastErr, "This rite is heretical. Purify it with o ($EDITOR) or excommunicate it with d.")
 	}
 	if r.rite().Edict {
-		return m.notify(toastErr, "The edict "+r.name+" bears no aspect, and this servitor has not yet been "+
-			"taught to proclaim an edict. Nothing was performed.")
+		return m.proclaim(r.rite()) // enter and space alike ask first
 	}
 	if key == "enter" {
 		m.screen = newInvokeScreen(r)
@@ -204,7 +203,10 @@ func (m *model) listView(w, h int) string {
 	for i := start; i < min(len(m.rows), start+h); i++ {
 		r := m.rows[i]
 		glyph, state := m.standingGlyph(r.reading.Standing)
-		if r.reading.Aspect != "" {
+		switch {
+		case r.rite() != nil && r.rite().Edict:
+			state = t.accent.Render(glyphEdict+" ") + state // an edict stands in no aspect
+		case r.reading.Aspect != "":
 			state = t.accent.Render(r.reading.Aspect)
 		}
 		name := truncate(r.name, w-lipgloss.Width(state)-5)
@@ -224,6 +226,8 @@ func (m *model) standingGlyph(s augury.Standing) (string, string) {
 	switch s {
 	case augury.Performed:
 		return t.ok.Render(t.glyphApplied), t.ok.Render(string(s))
+	case augury.Proclaimed:
+		return t.ok.Render(t.glyphProclaimed), t.ok.Render(string(s))
 	case augury.Dormant:
 		return t.dim.Render(t.glyphDormant), t.dim.Render(string(s))
 	case augury.Heretical:

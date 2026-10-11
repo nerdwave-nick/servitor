@@ -29,8 +29,11 @@ type theme struct {
 	bar, barAccent, key, selected, label      lipgloss.Style
 
 	glyphApplied, glyphDormant, glyphCorrupt, glyphBroken, glyphCursor string
-	glyphCurrent, glyphOther, glyphLogo                                string
+	glyphCurrent, glyphOther, glyphLogo, glyphProclaimed               string
 }
+
+// glyphEdict marks an edict wherever a rite would show its aspect.
+const glyphEdict = "❢"
 
 func newTheme() *theme {
 	p := forgePalette
@@ -51,7 +54,7 @@ func newTheme() *theme {
 		label:     s().Foreground(p.accent).Bold(true),
 
 		glyphApplied: "●", glyphDormant: "○", glyphCorrupt: "◐", glyphBroken: "✠",
-		glyphCursor: "▌", glyphCurrent: "◆", glyphOther: "◇", glyphLogo: "⚙",
+		glyphCursor: "▌", glyphCurrent: "◆", glyphOther: "◇", glyphLogo: "⚙", glyphProclaimed: "◉",
 	}
 	return t
 }
