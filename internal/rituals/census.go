@@ -7,6 +7,7 @@ import (
 // Entry is one rite of the census; it marshals as the census's binharic.
 type Entry struct {
 	Rite       string           `json:"rite"`
+	Edict      bool             `json:"edict"` // an edict bears no aspect: its aspect is "", its aspects []
 	Aspect     string           `json:"aspect"`
 	Standing   augury.Standing  `json:"standing"`
 	Aspects    []string         `json:"aspects"`
@@ -30,10 +31,13 @@ func (s *Servitor) Census(forgoAuspex bool) (entries []Entry, laments []error) {
 		if r.Lament != nil {
 			laments = append(laments, r.Lament)
 		}
-		e := Entry{Rite: name, Aspect: r.Aspect, Standing: r.Standing, Aspects: []string{},
+		e := Entry{Rite: name, Edict: r.Edict, Aspect: r.Aspect, Standing: r.Standing, Aspects: []string{},
 			Desecrated: r.Desecrated, LastRite: r.LastRite, RecordedIn: s.Librarium.Scriptures[name][0]}
 		if r.Rite != nil {
-			e.Aspects, e.Purpose = r.Rite.Aspects, r.Rite.Purpose
+			e.Purpose = r.Rite.Purpose
+			if !r.Rite.Edict {
+				e.Aspects = r.Rite.Aspects
+			}
 		}
 		entries = append(entries, e)
 	}

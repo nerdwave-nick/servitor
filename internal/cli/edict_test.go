@@ -242,3 +242,27 @@ func TestInvoke_HelpNamesThePlainWordsOfAVerse(t *testing.T) {
 		}
 	}
 }
+
+// TestEdict_InTheCensus: the census shows an edict with · for aspect and
+// aspects, its standing and last rite; its binharic marks every rite an
+// edict or not, and gives an edict "aspects": [].
+func TestEdict_InTheCensus(t *testing.T) {
+	e := newEnv(t)
+	e.addRite("rites/capture.json", edictJSON)
+	if out := e.mustRun("census"); !regexp.MustCompile(`(?m)^capture\s+·\s+dormant\s+·\s+·\s+Capture the visage of the machine$`).MatchString(out) {
+		t.Errorf("census of a dormant edict:\n%s", out)
+	}
+	e.mustRun("invoke", "capture", "-s")
+	out := e.mustRun("census")
+	if !regexp.MustCompile(`(?m)^capture\s+·\s+proclaimed\s+·\s+triumph \d{4}-\d\d-\d\d \d\d:\d\d\s+Capture the visage of the machine$`).MatchString(out) {
+		t.Errorf("census of a proclaimed edict:\n%s", out)
+	}
+	if !regexp.MustCompile(`(?m)^mouse-autohide-toggle\s+·\s+dormant\s+on\|off\s+·\s+Hide the cursor`).MatchString(out) {
+		t.Errorf("census of a rite beside an edict:\n%s", out)
+	}
+	raw := e.mustRun("census", "--binharic")
+	if !strings.Contains(raw, "\"rite\": \"capture\",\n    \"edict\": true,\n") || !strings.Contains(raw, "\"aspects\": [],\n") ||
+		!strings.Contains(raw, "\"rite\": \"mouse-autohide-toggle\",\n    \"edict\": false,\n") {
+		t.Errorf("census --binharic:\n%s", raw)
+	}
+}

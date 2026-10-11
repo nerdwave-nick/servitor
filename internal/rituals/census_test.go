@@ -97,11 +97,11 @@ func TestCensus_EveryRiteInTheShapeOfTheCodex(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := `[{"rite":"broken","aspect":"","standing":"heretical","aspects":[],"purpose":"","desecrated":false,` +
+	want := `[{"rite":"broken","edict":false,"aspect":"","standing":"heretical","aspects":[],"purpose":"","desecrated":false,` +
 		`"last_rite":null,"recorded_in":"` + broken + `"},` +
-		`{"rite":"dnd","aspect":"","standing":"dormant","aspects":["on","off"],"purpose":"","desecrated":false,` +
+		`{"rite":"dnd","edict":false,"aspect":"","standing":"dormant","aspects":["on","off"],"purpose":"","desecrated":false,` +
 		`"last_rite":null,"recorded_in":"` + filepath.Join(fx.lib, "rites", "dnd.json") + `"},` +
-		`{"rite":"mouse","aspect":"on","standing":"performed","aspects":["on","off"],` +
+		`{"rite":"mouse","edict":false,"aspect":"on","standing":"performed","aspects":["on","off"],` +
 		`"purpose":"Hide the cursor after inactivity","desecrated":false,` +
 		`"last_rite":{"verdict":"triumph","at":"2026-10-10T13:30:00Z"},"recorded_in":"` + path + `"}]`
 	if string(data) != want {
@@ -109,5 +109,33 @@ func TestCensus_EveryRiteInTheShapeOfTheCodex(t *testing.T) {
 	}
 	if entries, _ := s.Census(false); entries[1].Aspect != "off" || !exists(filepath.Join(fx.data, "awoken")) {
 		t.Fatalf("the census heeded no auspex: %+v", entries[1])
+	}
+}
+
+func TestCensus_AnEdictBearsNoAspects(t *testing.T) {
+	fx := newFixture(t)
+	path := fx.rite("capture", capture)
+	fx.rite("dormant", `{"pattern": "Mark I", "edict": true, "liturgy": [{"incantation": "true"}]}`)
+	s := fx.servitor()
+	if _, err := s.Invoke(context.Background(), Petition{Rite: "capture"}); err != nil {
+		t.Fatal(err)
+	}
+
+	entries, laments := s.Census(true)
+
+	if len(laments) != 0 {
+		t.Fatalf("laments %v", laments)
+	}
+	data, err := json.Marshal(entries)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := `[{"rite":"capture","edict":true,"aspect":"","standing":"proclaimed","aspects":[],` +
+		`"purpose":"Capture the visage of the machine","desecrated":false,` +
+		`"last_rite":{"verdict":"triumph","at":"2026-10-10T13:30:00Z"},"recorded_in":"` + path + `"},` +
+		`{"rite":"dormant","edict":true,"aspect":"","standing":"dormant","aspects":[],"purpose":"","desecrated":false,` +
+		`"last_rite":null,"recorded_in":"` + filepath.Join(fx.lib, "rites", "dormant.json") + `"}]`
+	if string(data) != want {
+		t.Fatalf("census\n%s\nwant\n%s", data, want)
 	}
 }
