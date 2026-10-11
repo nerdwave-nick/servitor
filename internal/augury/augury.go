@@ -74,6 +74,9 @@ type Augury struct {
 	LastRite     *LastRite // nil when the rite was never invoked
 	Omens        []Omen    // in written order, the auspex's last
 	Taint        []Taint   // in written order
+	// Canon are the inscriptions the rite declares, in written order; a
+	// heretical rite declares none.
+	Canon []Declaration
 }
 
 // Omen is what one step, or the auspex, reveals about the aspect.
@@ -122,6 +125,7 @@ func (o Options) env() librarium.Environment {
 func Augur(r *librarium.Rite, opts Options) (Augury, error) {
 	slate, err := ReadSlate(opts.env(), r.Name)
 	a := fromSlate(r.Name, slate)
+	a.Canon = CanonOf(r)
 	if r.Edict {
 		a.Edict = true
 		a.proclamation(slate)

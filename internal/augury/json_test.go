@@ -34,12 +34,15 @@ func TestAugury_MarshalsAsWrittenInTheCodex(t *testing.T) {
 	codex := `{"rite": "theme", "edict": false, "aspect": "porpl", "standing": "performed",
  "auspex": "heeded", "desecrated": false,
  "inscriptions": {"reason": "gaming remnant"},
+ "canon": [{"key": "reason", "purpose": "why the visage was changed", "mandatory": false,
+            "decrees": {}, "decree": null}],
  "last_rite": {"verdict": "triumph", "at": "2026-10-10T13:30:00Z"},
  "omens": [{"verse": 2, "tether": "~/.local/share/nfluff/current-theme", "aspect": "porpl"},
            {"auspex": true, "aspect": "porpl"}],
  "taint": []}`
 	a := Augury{Rite: "theme", Aspect: "porpl", Standing: Performed, Auspex: Heeded,
 		Inscriptions: map[string]string{"reason": "gaming remnant"},
+		Canon:        []Declaration{{Key: "reason", Purpose: "why the visage was changed", Decrees: map[string]string{}}},
 		LastRite:     &LastRite{Verdict: invocation.Triumph, At: noon},
 		Omens: []Omen{
 			{Verse: invocation.Verse{Number: 2, Kind: librarium.KindTether, Target: "~/.local/share/nfluff/current-theme"}, Aspect: "porpl"},
@@ -54,7 +57,7 @@ func TestAugury_MarshalsFormerOnlyWhenDesecrated(t *testing.T) {
 	a := Augury{Rite: "dnd", Aspect: "on", Standing: Tainted, Desecrated: true, Former: "off",
 		Omens: []Omen{{Verse: invocation.Verse{Number: 1, Kind: librarium.KindSanctum, Target: "/v"}, Aspect: "on"}},
 		Taint: []Taint{{Verse: invocation.Verse{Number: 1, Kind: librarium.KindSanctum, Target: "/v"}}}}
-	want := `{"rite":"dnd","edict":false,"aspect":"on","standing":"tainted","auspex":"","desecrated":true,"former":"off","inscriptions":{},` +
+	want := `{"rite":"dnd","edict":false,"aspect":"on","standing":"tainted","auspex":"","desecrated":true,"former":"off","inscriptions":{},"canon":[],` +
 		`"last_rite":null,"omens":[{"verse":1,"sanctum":"/v","aspect":"on"}],"taint":[{"verse":1,"sanctum":"/v"}]}`
 	if got := marshal(t, a); got != want {
 		t.Errorf("got  %s\nwant %s", got, want)
@@ -62,7 +65,7 @@ func TestAugury_MarshalsFormerOnlyWhenDesecrated(t *testing.T) {
 }
 
 func TestAugury_MarshalsADormantRiteWithEmptyLists(t *testing.T) {
-	want := `{"rite":"dnd","edict":false,"aspect":"","standing":"dormant","auspex":"forgone","desecrated":false,"inscriptions":{},` +
+	want := `{"rite":"dnd","edict":false,"aspect":"","standing":"dormant","auspex":"forgone","desecrated":false,"inscriptions":{},"canon":[],` +
 		`"last_rite":null,"omens":[],"taint":[]}`
 	if got := marshal(t, Augury{Rite: "dnd", Standing: Dormant, Auspex: Forgone}); got != want {
 		t.Errorf("got  %s\nwant %s", got, want)
@@ -78,6 +81,8 @@ func TestAugury_MarshalsEveryStepByItsOwnKey(t *testing.T) {
 	got := marshal(t, fx.augur(t, r, Options{}))
 	want := compact(t, `{"rite": "mouse", "edict": false, "aspect": "on", "standing": "performed", "auspex": "heeded",
  "desecrated": false, "inscriptions": {"reason": "gaming remnant"},
+ "canon": [{"key": "place", "purpose": "where", "mandatory": false, "decrees": {}, "decree": null},
+           {"key": "reason", "purpose": "why", "mandatory": false, "decrees": {}, "decree": null}],
  "last_rite": {"verdict": "triumph", "at": "2026-10-10T13:30:00Z"},
  "omens": [{"verse": 1, "sanctum": "`+fx.data+`/niri.kdl", "aspect": "on"},
            {"verse": 2, "transcription": "`+fx.data+`/flag", "aspect": "on"},

@@ -244,6 +244,10 @@ func TestInvoke_HelpNamesThePlainWordsOfAVerse(t *testing.T) {
 	}
 }
 
+// edictCanon is the canon of edictJSON as the augury speaks it.
+const edictCanon = "  \"canon\": [\n    {\n      \"key\": \"region\",\n      \"purpose\": \"the slurp geometry\",\n" +
+	"      \"mandatory\": false,\n      \"decrees\": {},\n      \"decree\": \"full\"\n    }\n  ],\n"
+
 // TestEdict_AuguryBearsNoAspect: the augury of an edict speaks rite, edict,
 // standing, inscriptions and last rite alone, answers its standing and
 // inscriptions, and refuses every sign of an aspect, and --is, with a
@@ -252,13 +256,13 @@ func TestEdict_AuguryBearsNoAspect(t *testing.T) {
 	e := newEnv(t)
 	e.addRite("rites/capture.json", edictJSON)
 	dormant := "{\n  \"rite\": \"capture\",\n  \"edict\": true,\n  \"standing\": \"dormant\",\n" +
-		"  \"auspex\": \"\",\n  \"inscriptions\": {},\n  \"last_rite\": null\n}\n"
+		"  \"auspex\": \"\",\n  \"inscriptions\": {},\n" + edictCanon + "  \"last_rite\": null\n}\n"
 	if out := e.mustRun("augury", "capture"); out != dormant {
 		t.Errorf("augury of a dormant edict:\n%s\nwant\n%s", out, dormant)
 	}
 	e.mustRun("invoke", "capture", "-s", "--region", "window")
 	proclaimed := regexp.MustCompile(`^\{\n  "rite": "capture",\n  "edict": true,\n  "standing": "proclaimed",\n` +
-		`  "auspex": "",\n  "inscriptions": \{\n    "region": "window"\n  \},\n` +
+		`  "auspex": "",\n  "inscriptions": \{\n    "region": "window"\n  \},\n` + regexp.QuoteMeta(edictCanon) +
 		`  "last_rite": \{\n    "verdict": "triumph",\n    "at": "[0-9T:Z-]+"\n  \}\n\}\n$`)
 	if out := e.mustRun("augury", "capture"); !proclaimed.MatchString(out) {
 		t.Errorf("augury of a proclaimed edict:\n%s", out)

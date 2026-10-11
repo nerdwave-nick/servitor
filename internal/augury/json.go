@@ -9,13 +9,17 @@ import (
 
 // MarshalJSON writes the augury in the shape of the codex: rite, edict
 // (false), aspect, standing, auspex, desecrated, former (only when
-// desecrated), inscriptions, last_rite (null when never invoked), omens and
-// taint (lists, never null). An edict's is rite, edict (true), standing,
-// auspex (always ""), inscriptions and last_rite alone.
+// desecrated), inscriptions, canon, last_rite (null when never invoked),
+// omens and taint (lists, never null). An edict's is rite, edict (true),
+// standing, auspex (always ""), inscriptions, canon and last_rite alone.
 func (a Augury) MarshalJSON() ([]byte, error) {
 	inscriptions := a.Inscriptions
 	if inscriptions == nil {
 		inscriptions = map[string]string{}
+	}
+	canon := a.Canon
+	if canon == nil {
+		canon = []Declaration{}
 	}
 	if a.Edict {
 		return json.Marshal(struct {
@@ -24,8 +28,9 @@ func (a Augury) MarshalJSON() ([]byte, error) {
 			Standing     Standing          `json:"standing"`
 			Auspex       Heed              `json:"auspex"`
 			Inscriptions map[string]string `json:"inscriptions"`
+			Canon        []Declaration     `json:"canon"`
 			LastRite     *LastRite         `json:"last_rite"`
-		}{a.Rite, true, a.Standing, NoAuspex, inscriptions, a.LastRite})
+		}{a.Rite, true, a.Standing, NoAuspex, inscriptions, canon, a.LastRite})
 	}
 	type binharic struct {
 		Rite         string            `json:"rite"`
@@ -36,12 +41,13 @@ func (a Augury) MarshalJSON() ([]byte, error) {
 		Desecrated   bool              `json:"desecrated"`
 		Former       string            `json:"former,omitempty"`
 		Inscriptions map[string]string `json:"inscriptions"`
+		Canon        []Declaration     `json:"canon"`
 		LastRite     *LastRite         `json:"last_rite"`
 		Omens        []Omen            `json:"omens"`
 		Taint        []Taint           `json:"taint"`
 	}
 	b := binharic{Rite: a.Rite, Aspect: a.Aspect, Standing: a.Standing, Auspex: a.Auspex, Desecrated: a.Desecrated,
-		Inscriptions: inscriptions, LastRite: a.LastRite, Omens: a.Omens, Taint: a.Taint}
+		Inscriptions: inscriptions, Canon: canon, LastRite: a.LastRite, Omens: a.Omens, Taint: a.Taint}
 	if a.Desecrated {
 		b.Former = a.Former
 	}
