@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json/v2"
 	"fmt"
+	"maps"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -17,8 +18,8 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/augury"
 )
 
-// heard is one line of a vigil and the moment it was heard.
-type heard struct {
+// vigilLine is one line of a vigil and the moment it was heard.
+type vigilLine struct {
 	line map[string]any
 	at   time.Time
 }
@@ -29,7 +30,7 @@ type listener struct {
 	t     *testing.T
 	mu    sync.Mutex
 	buf   bytes.Buffer
-	lines []heard
+	lines []vigilLine
 	bear  int // lines heard before the listener departs; 0 never departs
 }
 
@@ -51,13 +52,13 @@ func (l *listener) Write(p []byte) (int, error) {
 		if err := json.Unmarshal(line, &v); err != nil {
 			l.t.Errorf("the vigil spoke a line that is no binharic object: %q: %v", line, err)
 		}
-		l.lines = append(l.lines, heard{line: v, at: now})
+		l.lines = append(l.lines, vigilLine{line: v, at: now})
 	}
 }
 
 // vigil keeps `census --vigil` with the further runes and returns its
 // lines; stderr must stay empty and the death-mark 0.
-func (e *env) vigil(runes ...string) []heard {
+func (e *env) vigil(runes ...string) []vigilLine {
 	e.t.Helper()
 	l := &listener{t: e.t}
 	var errb bytes.Buffer
@@ -70,7 +71,7 @@ func (e *env) vigil(runes ...string) []heard {
 
 // settle replays a vigil: the last line of every rite, without its herald,
 // by rite; it fails unless "concluded" is told once, last.
-func settle(t *testing.T, lines []heard) map[string]map[string]any {
+func settle(t *testing.T, lines []vigilLine) map[string]map[string]any {
 	t.Helper()
 	if len(lines) == 0 || !reflect.DeepEqual(lines[len(lines)-1].line, map[string]any{"herald": "concluded"}) {
 		t.Fatalf("the vigil did not end with its conclusion: %v", lines)
@@ -79,7 +80,7 @@ func settle(t *testing.T, lines []heard) map[string]map[string]any {
 	for _, h := range lines[:len(lines)-1] {
 		switch h.line["herald"] {
 		case "rite":
-			entry := maps(h.line)
+			entry := maps.Clone(h.line)
 			delete(entry, "herald")
 			last[entry["rite"].(string)] = entry
 		case "lament":
@@ -88,14 +89,6 @@ func settle(t *testing.T, lines []heard) map[string]map[string]any {
 		}
 	}
 	return last
-}
-
-func maps(m map[string]any) map[string]any {
-	c := map[string]any{}
-	for k, v := range m {
-		c[k] = v
-	}
-	return c
 }
 
 // TestVigil_TellsTheCensusAsItIsLearnt: the vigil tells every rite by name
