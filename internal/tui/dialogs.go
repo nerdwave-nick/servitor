@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
-	"github.com/charmbracelet/x/ansi"
+	"charm.land/lipgloss/v2"
 )
 
 // textScreen is a scrollable read-only modal.
@@ -28,11 +28,13 @@ func (s *textScreen) visible(m *model) int { return max(3, m.height-10) }
 // wrapped are the lines wrapped to the width of the viewscreen.
 func (s *textScreen) wrapped(m *model) []string { return wrap(s.lines, m.width-8) }
 
-// wrap wraps every (possibly styled) line to width cells.
+// wrap wraps every (possibly styled) line to width cells. Each line it
+// breaks off bears the style that was upon the break, so it stands styled on
+// its own however the lines are later cut, scrolled or framed.
 func wrap(lines []string, width int) []string {
 	var out []string
 	for _, l := range lines {
-		out = append(out, strings.Split(ansi.Wrap(l, max(20, width), ""), "\n")...)
+		out = append(out, strings.Split(lipgloss.Wrap(l, max(20, width), ""), "\n")...)
 	}
 	return out
 }
