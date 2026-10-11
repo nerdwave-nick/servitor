@@ -1,7 +1,7 @@
 How a rite stands: performed, dormant, corrupted, tainted and the rest
 
 Every augury and every census judges how each rite stands, weighing its
-omens against its data-slate. Six standings are known to the codex:
+omens against its data-slate. Seven standings are known to the codex:
 
   performed    the omens agree on one aspect; or no step gives an omen and
                the data-slate names the aspect last invoked
@@ -14,9 +14,18 @@ omens against its data-slate. Six standings are known to the codex:
   desecrated   the omens agree on an aspect the data-slate did not record —
                the machine was changed outside the servitor
   heretical    the rite's scripture is invalid, and nothing can be read
+  proclaimed   for an edict alone: its last invocation ended in triumph or
+               was reverted
 
 A rite holds the gravest standing that applies, from heretical down through
 corrupted, tainted and desecrated to performed or dormant.
+
+An edict stands in no aspect and yields no omen, so it is judged by the
+verdict of its last invocation alone: dormant until it is first proclaimed,
+proclaimed after a last invocation that ended in triumph or was reverted,
+corrupted after one that faltered — until it is proclaimed again — and
+heretical when its scripture is. An edict is never performed, tainted or
+desecrated, and no rite of aspects is ever proclaimed.
 
 Desecration is no heresy. When a rite is invoked elsewhere — a bar that
 flips do-not-disturb, a hand that re-points a tether — the servitor reports
@@ -30,7 +39,7 @@ In binharic, an augury speaks "standing", "desecrated" (true or false),
 hands altered, each named by its verse. The census bears "standing" and
 "desecrated" for every rite.
 
-Kindred passages: omens, data-slate, augury, census, heresy
+Kindred passages: omens, data-slate, augury, census, heresy, edict
 
 Exempla:
   servitor augury mouse-autohide-toggle standing

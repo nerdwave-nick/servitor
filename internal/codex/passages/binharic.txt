@@ -5,8 +5,9 @@ answers are then rendered not as tables and sentences for the faithful but as
 binharic for lesser machines: indented objects with stable keys, which other
 commands may parse — jq foremost among them.
 
-The census in binharic is a list in which every rite bears rite, aspect,
-standing, aspects, purpose, desecrated, last_rite and recorded_in. The
+The census in binharic is a list in which every rite bears rite, edict,
+aspect, standing, aspects, purpose, desecrated, last_rite and recorded_in;
+an edict bears "edict": true and an empty list of aspects. The
 Inquisition in binharic is a list of findings, each bearing scripture, line,
 column, rite, judgement ("heresy" or "impurity") and denunciation; its exit
 remains 1 when any heresy was found.

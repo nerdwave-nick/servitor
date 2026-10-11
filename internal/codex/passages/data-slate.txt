@@ -23,7 +23,9 @@ only when no omen can be read — a rite whose liturgy holds only incantations
 and litanies, and no auspex. Where omens speak and agree on an aspect the
 data-slate did not record, the rite is desecrated, and the augury names the
 remembered aspect as "former". The inscriptions an augury speaks are those
-of the data-slate; a rite never invoked through the servitor has none.
+of the data-slate; a rite never invoked through the servitor has none. For
+an edict the data-slate is all there is: the verdict of its last rite alone
+judges it dormant, proclaimed or corrupted.
 
 An invocation refused in its pre-flight, or only foreseen, leaves the
 data-slate untouched. A data-slate garbled beyond reading is denounced;

@@ -15,7 +15,9 @@ Incantations, litanies and vox-casts leave nothing behind to be read, and so
 give no omen; neither does a vessel that cannot be read, nor a step whose
 observation fits several aspects at once. The auspex gives none when it
 exceeds its patience, when it ends bearing a death-mark, or when it speaks
-anything but a declared aspect.
+anything but a declared aspect. An edict yields no omen at all: it holds only
+incantations, litanies and vox-casts and bears no auspex, and its standing
+is judged from its data-slate alone.
 
 To compare, the servitor renders each observed field for every aspect, with
 the inscriptions its data-slate recorded for that aspect, or else that

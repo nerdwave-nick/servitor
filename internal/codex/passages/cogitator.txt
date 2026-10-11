@@ -6,7 +6,8 @@ alone when it stands at a terminal; without a terminal the servitor recites
 the index of the codex instead.
 
 On its left the cogitator lists every rite of the Librarium with the glyph
-of its standing and the aspect it stands in; on its right it reveals the
+of its standing and the aspect it stands in — an edict, which stands in none,
+with its standing alone; on its right it reveals the
 chosen rite: its purpose, its aspects with the current one marked, its
 inscriptions and where its scripture is recorded. Heretical rites are shown
 too, with the heresy that taints them.
