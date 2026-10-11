@@ -1,36 +1,57 @@
-How an invocation holds dominion over its rite, and how another awaits it
+How an invocation holds dominion over its rite and its vessels, and how another awaits it
 
-Every invocation holds dominion over the rite it performs, from before its
-pre-flight to its verdict: the ritual invoke as the cogitator, a rite as an
-edict. It seizes the dominion before it reads the former aspect and passes
-the pre-flight, and relinquishes it only once the liturgy has triumphed or
-its reversion is done and the verdict is kept. Meanwhile no other invocation
-of that rite performs: two invocations of one rite never interleave their
+Every invocation holds dominion over the rite it performs, and over every
+vessel and tethered name its liturgy writes, from before its pre-flight to
+its verdict: the ritual invoke as the cogitator, a rite as an edict. It
+seizes the dominion before it reads the former aspect and passes the
+pre-flight, and relinquishes it only once the liturgy has triumphed or its
+reversion is done and the verdict is kept. Meanwhile no other invocation of
+that rite performs: two invocations of one rite never interleave their
 liturgies, and the later is performed after the earlier, so that the aspect
-it commands is the one that remains. Rites of other names do not wait upon
-one another; their invocations are performed side by side.
+it commands is the one that remains.
 
-An invocation that finds the dominion held does not refuse. It tells once
-that it waits, then waits for the dominion to be relinquished; no patience
-bounds the waiting, for the holder is bounded by the patience of its own
-steps. Upon a terminal the awaiting is one line before the header (upon
-stderr under --binharic, withheld by --silence); without a terminal it is
-the invocation's one desktop missive, as the vox commands, replaced in place
-by the vox-casts that follow. Dominion free at once is never spoken of. An
-interrupt (Ctrl-C) or SIGTERM ends the waiting, and nothing is touched.
+Nor does another invocation write those vessels meanwhile. Several rites
+may keep sanctums of different wards in one vessel; while one of them holds
+dominion over it, the others wait. So no rite rewrites the vessel upon what
+it read before another wrote it, and no reversion casts out the sanctum of
+another rite. A vessel is known by the place where it truly dwells: reached
+through a tether, or through a tethered hall, it is one with the same vessel
+named directly, and a vessel the invocation is yet to consecrate is guarded
+all the same, reckoned through the hall that is to hold it. The vessels are
+those the liturgy writes as it is illuminated for this very invocation; a
+vessel only the pre-flight reveals, named by the former aspect or reached
+through a tether bound meanwhile, is seized before anything is performed.
+An edict writes no vessel and holds dominion over its own name alone.
+
+The dominion over the rite is seized first, then that over the vessels one
+after another in the order of their paths, the same order for every
+invocation; so no two invocations ever each hold what the other awaits.
+Rites that share no vessel and no tethered name do not wait upon one
+another; their invocations are performed side by side.
+
+An invocation that finds any of its dominion held does not refuse. It tells
+once that it waits, however much it awaits, then waits for the dominion to
+be relinquished; no patience bounds the waiting, for the holder is bounded
+by the patience of its own steps. Upon a terminal the awaiting is one line
+before the header (upon stderr under --binharic, withheld by --silence);
+without a terminal it is the invocation's one desktop missive, as the vox
+commands, replaced in place by the vox-casts that follow. Dominion free at
+once is never spoken of. An interrupt (Ctrl-C) or SIGTERM ends the waiting,
+and nothing is touched.
 
 The places of dominion lie beneath $XDG_STATE_HOME/servitor/dominions/: one
-empty place for each rite, rites/<rite>, raised when first needed and never
-struck. The machine grants each to a living servitor alone: a servitor slain
-mid-liturgy, even by SIGKILL, leaves no dominion behind, and the next
-invocation proceeds at once.
+empty place for each rite, rites/<rite>, and one for each vessel and
+tethered name, vessels/<the sha256 of the path where it truly dwells>,
+raised when first needed and never struck. The machine grants each to a
+living servitor alone: a servitor slain mid-liturgy, even by SIGKILL, leaves
+no dominion behind, and the next invocation proceeds at once.
 
 Foresight touches nothing and seizes no dominion; neither do the augury, the
 census or the inquisition. None of them ever waits, whatever invocation is
 being performed.
 
 Kindred passages: invoke, cogitator, foresee, augury, census, inquisition,
-vox, silence, binharic
+vox, silence, binharic, vessel, sanctum, ward, tether
 
 Exempla:
   ❯ servitor invoke theme porpl
@@ -38,6 +59,13 @@ Exempla:
   +++ theme · default → porpl +++
     ✔ verse 1 · tether ~/.local/share/nfluff/current-theme
   ✠ Binharic hymns resound: the aspect «porpl» is attained.
+
+  ❯ servitor invoke mouse-autohide-toggle on
+  ⋯ mouse-autohide-toggle must wait: dominion lies with another invocation. Stillness is the first devotion.
+  +++ mouse-autohide-toggle · off → on +++
+    ✔ verse 1 · sanctum ~/.config/niri/util.kdl
+    ✔ verse 2 · incantation niri msg action do-screen-transition
+  ✠ The Omnissiah is pleased: the rite now bears the aspect «on».
 
   ❯ servitor invoke screenshot
   ⋯ Another hand proclaims the edict screenshot; the servitor kneels and waits for its end.
