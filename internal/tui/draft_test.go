@@ -1,6 +1,7 @@
 package tui
 
 import (
+	"strings"
 	"testing"
 	"time"
 
@@ -118,5 +119,104 @@ func TestParseAspectsAndInscriptionKeys(t *testing.T) {
 		if _, err := parseKeys(bad); err == nil {
 			t.Errorf("parseKeys(%q) should fail", bad)
 		}
+	}
+}
+
+// edictScripture is an edict holding every kind of step an edict may bear
+// and every further rite of them, each value written plainly.
+const edictScripture = `{
+  "pattern": "Mark I",
+  "purpose": "Capture the visage",
+  "edict": true,
+  "inscriptions": {
+    "region": {"purpose": "the slurp geometry", "decrees": "full"},
+    "name": {"mandatory": true}
+  },
+  "tongue": "sh",
+  "liturgy": [
+    {"vox-cast": "progress"},
+    {"incantation": "grim {{inscription.region}}", "tongue": "zsh", "patience": "2m", "reversion": "rm -f shot"},
+    {"litany": "scripts/shot", "offerings": ["--to", "~/{{inscription.name}}"], "patience": "5s"},
+    {"vox-cast": "success"}
+  ]
+}`
+
+func TestDraft_AnEdictRoundTrips(t *testing.T) {
+	want, found := librarium.Parse("capture", "/lib/rites/capture.json", []byte(edictScripture))
+	if found.Heretical() || !want.Edict {
+		t.Fatalf("the fixture is no pure edict: %v", found)
+	}
+	d := riteDraftFrom(want)
+	if !d.edict || len(d.aspectList()) != 0 {
+		t.Fatalf("the draft of an edict speaks of aspects: %+v", d)
+	}
+	got := d.toRite("/lib/rites/capture.json")
+	data, err := librarium.Marshal(got)
+	if err != nil || !got.Equal(want) {
+		t.Fatalf("the edict changed on its way through the wizard (%v):\n%s", err, data)
+	}
+	if !strings.Contains(string(data), `"edict": true`) || strings.Contains(string(data), `"aspects"`) {
+		t.Fatalf("the edict is written with aspects:\n%s", data)
+	}
+}
+
+func TestDraft_NewEdictStepsHoldOneValue(t *testing.T) {
+	d := newRiteDraft()
+	d.name, d.edict, d.auspex, d.patience = "capture", true, "echo on", "2s"
+	d.declare([]string{"region"})
+	d.inscriptions[0].decrees[librarium.Fallback] = "full"
+	inc := newStepDraft(librarium.KindIncantation)
+	inc.command.setOnce("grim {{inscription.region}}")
+	inc.reversion.setOnce("")
+	lit := newStepDraft(librarium.KindLitany)
+	lit.command.setOnce("scripts/shot")
+	lit.offerings.setOnce([]string{"--to", "~/shots"})
+	lit.fixed["patience"] = "5s"
+	d.steps = []stepDraft{inc, lit, newStepDraft(librarium.KindVoxCast)}
+	r := d.toRite("/lib/rites/capture.json")
+	want := &librarium.Rite{Name: "capture", Edict: true,
+		Inscriptions: []librarium.Inscription{{Key: "region", Decrees: librarium.Uniform("full")}},
+		Liturgy: []librarium.Step{
+			&librarium.Incantation{Command: librarium.Uniform("grim {{inscription.region}}")},
+			&librarium.Litany{Scroll: librarium.Uniform("scripts/shot"),
+				Offerings: []librarium.AspectMap[string]{librarium.Uniform("--to"), librarium.Uniform("~/shots")},
+				Utterance: librarium.Utterance{Patience: 5 * time.Second}},
+			&librarium.VoxCast{Tidings: librarium.VoxProgress},
+		}}
+	if !r.Equal(want) {
+		data, _ := librarium.Marshal(r)
+		t.Fatalf("edict =\n%s", data)
+	}
+}
+
+// TestDraft_ARiteTurnedEdictKeepsWhatItsAspectsSpoke: a rite declared an
+// edict writes no aspects, yet a value its aspects spoke apart is kept as
+// written, for the Inquisition to denounce, never silently flattened.
+func TestDraft_ARiteTurnedEdictKeepsWhatItsAspectsSpoke(t *testing.T) {
+	rite, found := librarium.Parse("echo", "/lib/rites/echo.json", []byte(`{
+  "pattern": "Mark I", "aspects": ["on", "off"],
+  "liturgy": [{"incantation": {"on": "echo on", "*": "echo other"}}, {"incantation": "echo plain"}]
+}`))
+	if found.Heretical() {
+		t.Fatalf("the fixture is heretical: %v", found)
+	}
+	d := riteDraftFrom(rite)
+	d.edict = true
+	r := d.toRite("/lib/rites/echo.json")
+	if !r.Edict || r.Aspects != nil {
+		t.Fatalf("not an edict: %+v", r)
+	}
+	if c := r.Liturgy[0].(*librarium.Incantation).Command; c.IsUniform() || len(c.Entries()) != 2 {
+		t.Fatalf("the words of the aspects were lost: %+v", c.Entries())
+	}
+	if c := r.Liturgy[1].(*librarium.Incantation).Command; !c.IsUniform() {
+		t.Fatalf("a plain value became an aspect map: %+v", c.Entries())
+	}
+	data, err := librarium.Marshal(r)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, found := librarium.Parse("echo", "/lib/rites/echo.json", data); !found.Heretical() {
+		t.Fatalf("the Inquisition finds no heresy in:\n%s", data)
 	}
 }

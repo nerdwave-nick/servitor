@@ -1,6 +1,11 @@
 package tui
 
-import "github.com/nerdwave-nick/servitor/internal/librarium"
+import (
+	"maps"
+	"slices"
+
+	"github.com/nerdwave-nick/servitor/internal/librarium"
+)
 
 // varied is a value of a step that may vary per aspect, as the wizard
 // edits it: each aspect either speaks a value of its own or shares the
@@ -54,6 +59,20 @@ func (v *varied[T]) set(aspect string, x T, same bool) {
 	v.own[aspect] = x
 }
 
+// setOnce gives the value x once for all, as an edict writes it: what any
+// aspect spoke of its own is forgotten.
+func (v *varied[T]) setOnce(x T) {
+	v.own = map[string]T{}
+	v.shared, v.hasShared = x, true
+}
+
+// spoken are the aspects a value written for an edict, which declares
+// none, still speaks of its own — kept from the rite it was, for the
+// Inquisition to denounce — followed by "*".
+func (v varied[T]) spoken() []string {
+	return append(slices.Sorted(maps.Keys(v.own)), librarium.Fallback)
+}
+
 // ownAfter reports whether an aspect after aspects[i] speaks a value of
 // its own.
 func (v varied[T]) ownAfter(aspects []string, i int) bool {
@@ -68,8 +87,12 @@ func (v varied[T]) ownAfter(aspects []string, i int) bool {
 // toMap writes the value as an aspect map over aspects: one value when
 // every aspect shares it, else each aspect's own followed by "*" for the
 // aspects that share. A value never given stays unwritten, and an aspect
-// given none is left for the Inquisition to denounce.
+// given none is left for the Inquisition to denounce. Without aspects, as
+// for an edict, the value is written once unless aspects spoke their own.
 func (v varied[T]) toMap(aspects []string) librarium.AspectMap[T] {
+	if len(aspects) == 0 {
+		aspects = v.spoken()
+	}
 	var entries []librarium.Entry[T]
 	sharing := false
 	for _, a := range aspects {

@@ -173,8 +173,13 @@ func offeringsFrom(offs []librarium.AspectMap[string]) varied[[]string] {
 }
 
 // offeringsTo writes the offerings per aspect as one aspect map per
-// offering, written once when every aspect offers the same.
+// offering, written once when every aspect offers the same. Without
+// aspects, as for an edict, every offering is written once unless aspects
+// spoke their own.
 func offeringsTo(v varied[[]string], aspects []string) []librarium.AspectMap[string] {
+	if len(aspects) == 0 {
+		aspects = v.spoken()
+	}
 	n := 0
 	for _, a := range aspects {
 		list, _ := v.value(a)

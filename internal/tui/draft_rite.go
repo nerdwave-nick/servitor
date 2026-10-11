@@ -17,6 +17,7 @@ type riteDraft struct {
 	origName, origPath string // the rite amended; empty for a new one
 	name, purpose      string
 	aspects            string // separated by commas
+	edict              bool   // proclaimed whole, without aspects
 	inscriptions       []inscriptionDraft
 	auspex, patience   string // the auspex and its patience
 	tongue             string
@@ -36,7 +37,7 @@ func newRiteDraft() riteDraft { return riteDraft{aspects: "on, off"} }
 // riteDraftFrom is the rite r as the wizard amends it.
 func riteDraftFrom(r *librarium.Rite) riteDraft {
 	d := riteDraft{origName: r.Name, origPath: r.Path, name: r.Name, purpose: r.Purpose,
-		aspects: strings.Join(r.Aspects, ", "), tongue: r.Tongue}
+		aspects: strings.Join(r.Aspects, ", "), edict: r.Edict, tongue: r.Tongue}
 	if a := r.Auspex; a != nil {
 		d.auspex = a.Rite
 		if a.Patience != 0 {
@@ -56,8 +57,12 @@ func riteDraftFrom(r *librarium.Rite) riteDraft {
 	return d
 }
 
-// aspectList is the declared aspects; the form has examined them.
+// aspectList is the declared aspects; the form has examined them. An
+// edict declares none.
 func (d riteDraft) aspectList() []string {
+	if d.edict {
+		return nil
+	}
 	a, _ := parseAspects(d.aspects)
 	return a
 }
@@ -87,12 +92,13 @@ func (d *riteDraft) declare(keys []string) {
 	d.inscriptions = next
 }
 
-// toRite writes the rite as it would be recorded at path.
+// toRite writes the rite as it would be recorded at path. An edict is
+// written without aspects and auspex, whatever the draft kept of them.
 func (d riteDraft) toRite(path string) *librarium.Rite {
 	aspects := d.aspectList()
 	r := &librarium.Rite{Name: d.name, Path: path, Purpose: strings.TrimSpace(d.purpose), Aspects: aspects,
-		Tongue: strings.TrimSpace(d.tongue)}
-	if a := strings.TrimSpace(d.auspex); a != "" {
+		Edict: d.edict, Tongue: strings.TrimSpace(d.tongue)}
+	if a := strings.TrimSpace(d.auspex); a != "" && !d.edict {
 		r.Auspex = &librarium.Auspex{Rite: a}
 		r.Auspex.Patience, _ = time.ParseDuration(strings.TrimSpace(d.patience))
 	}
