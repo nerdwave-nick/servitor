@@ -42,6 +42,9 @@ type app struct {
 	chronicle string // --chronicle and its hidden alias --log; read through runesOf
 	lib       *librarium.Librarium
 	invokeCmd *cobra.Command // parent of the per-rite rituals
+	// relent lets go of the invocation's steadfastness once the servitor
+	// has spoken its last word; nil when nothing was invoked.
+	relent func()
 }
 
 // servitor makes the Librarium ready for the ritual cmd, swayed by its runes.
@@ -63,6 +66,12 @@ var isTerminal = func() bool {
 // (without the program name); they are inspected up front so that the rites
 // of a --librarium directory become subcommands.
 func NewRootCmd(args []string, stdout, stderr io.Writer) *cobra.Command {
+	root, _ := newRoot(args, stdout, stderr)
+	return root
+}
+
+// newRoot builds the command tree and the app its rituals serve.
+func newRoot(args []string, stdout, stderr io.Writer) (*cobra.Command, *app) {
 	a := &app{configDir: resolveConfigDir(args)}
 	a.lib = librarium.Load(a.configDir)
 
@@ -95,7 +104,7 @@ func NewRootCmd(args []string, stdout, stderr io.Writer) *cobra.Command {
 	root.SetHelpCommand(newHelpCmd())
 	root.SetHelpFunc(a.lore(root.HelpFunc()))
 	flavor(root)
-	return root
+	return root, a
 }
 
 func (a *app) newTUICmd() *cobra.Command {
@@ -145,7 +154,12 @@ func Execute(args []string, stdout, stderr io.Writer) int {
 	if isCompletionRequest(args) {
 		out = &completion
 	}
-	root := NewRootCmd(args, out, stderr)
+	root, a := newRoot(args, out, stderr)
+	defer func() {
+		if a.relent != nil {
+			a.relent() // only once the lament is spoken
+		}
+	}()
 	root.SetArgs(args)
 	err := root.Execute()
 	if out == &completion {
