@@ -22,9 +22,8 @@ the vigil passes over a herald it does not know rather than falling. The
 census spoken without --vigil knows no herald.
 
 A lesser machine forged in Rust reads every line into one enumeration
-tagged by the herald, with a fallback for heralds yet unknown:
-
-  #[serde(tag = "herald", rename_all = "snake_case")]
+tagged by the herald, #[serde(tag = "herald", rename_all = "snake_case")],
+whose last variant, marked #[serde(other)], receives heralds yet unknown.
 
 Kindred passages: vigil, lament, census, auspex, binharic, canon
 
