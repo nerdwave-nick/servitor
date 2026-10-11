@@ -54,6 +54,9 @@ const (
 // Proclamation is what a herald hears.
 type Proclamation struct {
 	Tidings Tidings
+	// Edict tells that an edict is proclaimed: Values bear no aspect, and
+	// the vox-cast must speak none.
+	Edict bool
 	// Values illuminate the herald's vox-cast templates: the invocation's
 	// aspect, former aspect, rite and inscriptions, and in Values.Tidings
 	// the counting of real steps — those that are not vox-casts. Step is
@@ -73,6 +76,7 @@ type Proclamation struct {
 // crier counts the real steps of a performance and tells the herald.
 type crier struct {
 	herald Herald
+	edict  bool // an edict is proclaimed
 	values placeholder.Values
 	steps  int   // real steps in the liturgy
 	done   int   // real steps performed
@@ -80,11 +84,11 @@ type crier struct {
 }
 
 // newCrier counts the real steps among steps; it is nil without a herald.
-func newCrier(h Herald, v placeholder.Values, steps []performer) *crier {
+func newCrier(h Herald, edict bool, v placeholder.Values, steps []performer) *crier {
 	if h == nil {
 		return nil
 	}
-	c := &crier{herald: h, values: v}
+	c := &crier{herald: h, edict: edict, values: v}
 	for _, s := range steps {
 		if _, vox := s.(voxCast); !vox {
 			c.steps++
@@ -143,7 +147,7 @@ func (c *crier) proclaim(t Tidings, step int, v Verse, heresy string, out *Outco
 		Heresy: heresy, Step: step, Steps: c.steps,
 		StepKind: v.Kind.Key(), StepTarget: v.Target,
 	}
-	c.herald.Proclaim(Proclamation{Tidings: t, Values: values, Verse: v, Outcome: out})
+	c.herald.Proclaim(Proclamation{Tidings: t, Edict: c.edict, Values: values, Verse: v, Outcome: out})
 }
 
 // voxCast is a vox-cast step; performing it changes nothing, for the crier

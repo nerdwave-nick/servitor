@@ -8,7 +8,7 @@ import (
 )
 
 // ResolveInscriptions resolves the inscriptions of an invocation of r into
-// aspect: a rune given (runes holds every --<key> written, "" for one
+// aspect ("" for an edict, whose decrees are one plain word): a rune given (runes holds every --<key> written, "" for one
 // written empty) outranks the decree for aspect, and a rune written empty
 // clears the decree. Only inscriptions with a value are returned.
 //
@@ -47,15 +47,21 @@ func ResolveInscriptions(r *librarium.Rite, aspect string, runes map[string]stri
 }
 
 // unmet denounces every mandatory inscription that inscriptions leave
-// without value for an invocation into aspect.
+// without value for an invocation into aspect, or for the proclaiming of
+// an edict.
 func unmet(r *librarium.Rite, aspect string, inscriptions map[string]string) Heresies {
 	var hs Heresies
 	for _, in := range r.Inscriptions {
-		if in.Mandatory && inscriptions[in.Key] == "" {
-			hs = append(hs, inscriptionHeresy(r, "/inscriptions/"+in.Key, fmt.Sprintf("the inscription %q is "+
-				"mandatory, yet the invocation into %q bears no word for it: give the rune --%s, or let the rite "+
-				"decree it for this aspect", in.Key, aspect, in.Key)))
+		if !in.Mandatory || inscriptions[in.Key] != "" {
+			continue
 		}
+		message := fmt.Sprintf("the inscription %q is mandatory, yet the invocation into %q bears no word for "+
+			"it: give the rune --%s, or let the rite decree it for this aspect", in.Key, aspect, in.Key)
+		if r.Edict {
+			message = fmt.Sprintf("the inscription %q is mandatory, yet the proclaiming of the edict %q bears no "+
+				"word for it: give the rune --%s, or let the edict decree it", in.Key, r.Name, in.Key)
+		}
+		hs = append(hs, inscriptionHeresy(r, "/inscriptions/"+in.Key, message))
 	}
 	return hs
 }

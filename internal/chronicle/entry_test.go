@@ -75,6 +75,26 @@ func TestNew_WritesTheLineOfTheCodex(t *testing.T) {
 			out:  invocation.Outcome{Verdict: invocation.Triumph},
 			want: `{"at":"2026-10-10T13:30:00Z","rite":"theme","aspect":"porpl","inscriptions":{},"verdict":"triumph"}`,
 		},
+		{
+			name: "edict proclaimed",
+			opts: invocation.Options{Edict: true, Inscriptions: map[string]string{"region": "full"}},
+			out:  invocation.Outcome{Verdict: invocation.Triumph},
+			want: `{"at":"2026-10-10T13:30:00Z","rite":"theme","edict":true,"inscriptions":{"region":"full"},"verdict":"triumph"}`,
+		},
+		{
+			name: "edict faltered",
+			opts: invocation.Options{Edict: true},
+			out: invocation.Outcome{
+				Verdict: invocation.Faltered,
+				Fell:    &invocation.Fall{Verse: verse(2, librarium.KindIncantation, "exit 3"), Heresy: fell},
+				Reversions: []invocation.Reversion{
+					{Verse: verse(1, librarium.KindIncantation, "true"), Heresy: errors.New("the reversion fell")},
+				},
+			},
+			want: `{"at":"2026-10-10T13:30:00Z","rite":"theme","edict":true,"inscriptions":{},"verdict":"faltered",` +
+				`"fell_at":{"verse":2,"incantation":"exit 3"},"heresy":"the incantation fell silent",` +
+				`"reversions":[{"verse":1,"verdict":"faltered"}]}`,
+		},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
