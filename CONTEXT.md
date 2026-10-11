@@ -3,14 +3,20 @@
 The servitor is a thrall of the Adeptus Mechanicus that performs rites upon the
 machine: it rewrites sacred scripture in vessels, binds names to distant places,
 speaks incantations and recites litanies, so that the machine takes on the aspect a
-rite commands. Every word it speaks, every key of its scripture and every rune of its
-invocation belongs to the liturgy below.
+rite commands, or performs what an edict proclaims. Every word it speaks, every key of
+its scripture and every rune of its invocation belongs to the liturgy below.
 
 ## Rites and aspects
 
 **Rite**:
 A named liturgy kept in the Librarium (one scripture in `rites/`) that brings the
-machine into one of a fixed set of aspects.
+machine into one of a fixed set of aspects — or, if it is an edict, into none.
+
+**Edict**:
+A rite that knows no aspects: it declares `"edict": true` instead of `aspects`, and
+every invocation proclaims its whole liturgy anew. Its liturgy holds only
+incantations, litanies and vox-casts; it has no auspex, no aspect map and no
+`{{aspect}}` or `{{former}}`. Key: `edict`.
 
 **Pattern**:
 The Mark of the form a rite or the settings are written in — `"pattern": "Mark I"`,
@@ -19,28 +25,33 @@ unknown or missing pattern is heresy.
 
 **Aspect**:
 One of the named conditions a rite can bring the machine into, written by hand under
-`aspects`. A rite always stands in exactly one aspect, or in none if it lies dormant.
+`aspects`. A rite that is not an edict always stands in exactly one aspect, or in none
+if it lies dormant; an edict never stands in any.
 
 **Purpose**:
 The words that tell a reader why a rite or an inscription exists. Key: `purpose`.
 
 **Invocation**:
-One performance of a rite into an aspect, from the pre-flight checks to triumph or
-reversion. Ritual: `servitor invoke <rite> <aspect>`.
+One performance of a rite, from the pre-flight checks to triumph or reversion — into
+an aspect, or, for an edict, without one. Ritual: `servitor invoke <rite> <aspect>`,
+or `servitor invoke <edict>` with no aspect.
 
 **Reversion**:
 When a step of an invocation fails, the steps already performed are undone in reverse
 order, so the machine returns to its former aspect. An incantation or litany may carry
-its own undoing words under `reversion`.
+its own undoing words under `reversion`; an edict, which has no former aspect, is
+undone by these words alone.
 
 **Aspect map**:
 A value of a rite that is either the same for every aspect, or a table naming one
-value per aspect with `"*"` serving every aspect not named.
+value per aspect with `"*"` serving every aspect not named. An edict writes every
+value plainly and knows no aspect map.
 
 **Placeholder**:
 A `{{…}}` mark inside a rite's words that the servitor fills at invocation:
 `{{aspect}}` (the aspect being invoked), `{{former}}` (the aspect before it),
 `{{rite.name}}`, `{{inscription.<key>}}`, and `{{heresy}}` in messages of failure.
+An edict's words never hold `{{aspect}}` or `{{former}}`.
 
 ## The liturgy and its steps
 
@@ -119,7 +130,8 @@ yielding an omen where no step can. Key: `auspex`.
 
 **Data-slate**:
 The servitor's record for each rite of its last invocation — aspect, inscriptions and
-verdict. It names the aspect only when no omen can be read.
+verdict; an edict's record holds no aspect. It names the aspect only when no omen can
+be read.
 
 **Verdict**:
 How an invocation ended: *triumph* (every step performed), *reverted* (a step failed and
@@ -134,7 +146,14 @@ data-slate.
 How a rite stands: *performed* (its omens agree), *dormant* (never invoked, no omen),
 *corrupted* (its omens disagree), *tainted* (a sanctum was altered by other hands),
 *desecrated* (its omens agree on an aspect the data-slate did not record), or
-*heretical* (its scripture is invalid).
+*heretical* (its scripture is invalid). An edict has no omens and stands only as
+*dormant* (never proclaimed), *proclaimed* (its last invocation ended in triumph or
+was reverted), *corrupted* (its last invocation faltered, until it is proclaimed
+again) or *heretical*; it is never *performed*, *tainted* or *desecrated*.
+
+**Proclaimed**:
+The standing of an edict whose last invocation ended in triumph or was reverted. Only
+an edict can stand proclaimed.
 
 ## Places and rituals
 
@@ -151,12 +170,12 @@ The record of every invocation ever performed, readable in the cogitator. Key an
 `chronicle`.
 
 **Augury**:
-The ritual that reads a rite's aspect, inscriptions and omens. Ritual:
-`servitor augury`.
+The ritual that reads a rite's aspect, inscriptions and omens — or an edict's
+standing, inscriptions and last rite. Ritual: `servitor augury`.
 
 **Census**:
-The ritual that lists every rite and the aspect it stands in. Ritual:
-`servitor census`.
+The ritual that lists every rite and the aspect it stands in; an edict stands in none
+and shows only its standing and last rite. Ritual: `servitor census`.
 
 **Inquisition**:
 The ritual that examines rites, settings and vessels and denounces heresies (which

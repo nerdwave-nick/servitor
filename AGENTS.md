@@ -27,6 +27,7 @@ domain and the code; never add plain words or plain glosses to anything a user r
 | format version | pattern | `"pattern": "Mark I"` |
 | switch / profile (named config) | rite | file in `rites/` |
 | state | aspect | `aspects` |
+| one-shot action (no state) | edict | `"edict": true` (instead of `aspects`) |
 | description | purpose | `purpose` |
 | ordered step list | liturgy | `liturgy` |
 | managed block in a file | sanctum | step key `sanctum` |
@@ -57,6 +58,7 @@ domain and the code; never add plain words or plain glosses to anything a user r
 | state ledger file | data-slate | `$XDG_STATE_HOME/servitor/data-slates/<rite>.json` |
 | status | standing | JSON `standing` |
 | applied / never applied / inconsistent | performed / dormant / corrupted | standing values |
+| last run done (no state) | proclaimed | standing value (edicts only) |
 | edited by hand (drift) | tainted | JSON `taint` |
 | changed outside servitor | desecrated | JSON `desecrated` |
 | invalid definition | heretical | standing value |
@@ -84,6 +86,10 @@ domain and the code; never add plain words or plain glosses to anything a user r
 | previous state | former | `{{former}}`, `SERVITOR_FORMER_ASPECT` |
 | metadata placeholder / env | inscription | `{{inscription.x}}`, `SERVITOR_INSCRIPTION_X` |
 | error text placeholder | heresy | `{{heresy}}` |
+
+The one-shot action is an **edict**, not a "deed": `invocation.Deed` already names
+one performed step of an invocation in the code (`Outcome.Deeds`). See
+`docs/adr/0005-edicts-are-rites-without-aspects.md`.
 
 Sanctum markers:
 
