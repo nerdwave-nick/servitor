@@ -18,7 +18,7 @@ func (a *app) newAuguryCmd() *cobra.Command {
 	var is string
 	cmd := &cobra.Command{
 		Use:   "augury <rite> [key]",
-		Short: "Perform an augury: read the aspect, standing and inscriptions of a rite",
+		Short: "Perform an augury: read the standing and inscriptions of a rite or edict, and a rite's aspect",
 		Args: func(_ *cobra.Command, args []string) error {
 			if len(args) < 1 || len(args) > 2 {
 				return &ExitError{Code: 2, Err: fmt.Errorf("the augury demands one rite, and at most one key, "+

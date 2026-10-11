@@ -321,3 +321,52 @@ func TestEdict_InTheCensus(t *testing.T) {
 		t.Errorf("census --binharic:\n%s", raw)
 	}
 }
+
+// TestAugury_ShortSpeaksOfEdictsToo: the augury's own words do not promise
+// an aspect of every rite, for an edict bears none.
+func TestAugury_ShortSpeaksOfEdictsToo(t *testing.T) {
+	e := newEnv(t)
+	out := e.mustRun("__complete", "")
+	line := ""
+	for l := range strings.Lines(out) {
+		if strings.HasPrefix(l, "augury\t") {
+			line = strings.TrimSpace(strings.TrimPrefix(l, "augury\t"))
+		}
+	}
+	if !strings.Contains(line, "edict") {
+		t.Errorf("the augury is described as %q, which tells nothing of edicts", line)
+	}
+	grimdark(t, line)
+}
+
+// TestEdict_WithoutPurposeIsCompletedWithFlavour: an edict that writes no
+// purpose is offered with a few words of lore rather than with nothing,
+// the same words at every Tab, and never with an aspect.
+func TestEdict_WithoutPurposeIsCompletedWithFlavour(t *testing.T) {
+	e := newEnv(t)
+	e.addRite("rites/slumber.json", `{"pattern": "Mark I", "edict": true, "liturgy": [{"incantation": "true"}]}`)
+	for _, ritual := range []string{"invoke", "augury"} {
+		first := ""
+		for range 3 {
+			out := e.mustRun("__complete", ritual, "")
+			desc, found := "", false
+			for l := range strings.Lines(out) {
+				if name, d, ok := strings.Cut(strings.TrimSuffix(l, "\n"), "\t"); ok && name == "slumber" {
+					desc, found = d, true
+				}
+			}
+			if !found || strings.TrimSpace(desc) == "" {
+				t.Fatalf("__complete %s offers the edict without lore:\n%s", ritual, out)
+			}
+			if aspectless.MatchString(desc) {
+				t.Errorf("the edict's lore %q speaks of an aspect", desc)
+			}
+			grimdark(t, desc)
+			if first == "" {
+				first = desc
+			} else if desc != first {
+				t.Errorf("the edict's lore changes between Tabs: %q, then %q", first, desc)
+			}
+		}
+	}
+}

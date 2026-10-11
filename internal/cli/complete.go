@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"hash/fnv"
 	"slices"
 	"strings"
 
@@ -23,13 +24,34 @@ func (a *app) riteCompletions(given ...string) []cobra.Completion {
 		desc := "heretical"
 		if r := a.lib.Rites[name]; r != nil {
 			desc = r.Purpose
-			if desc == "" {
+			switch {
+			case desc != "":
+			case r.Edict:
+				desc = edictLore(name)
+			default:
 				desc = strings.Join(r.Aspects, "|")
 			}
 		}
 		out = append(out, cobra.CompletionWithDesc(name, desc))
 	}
 	return out
+}
+
+// lore is told of an edict that writes no purpose, in place of nothing.
+var lore = []string{
+	"an edict of unwritten purpose, proclaimed whole",
+	"the Omnissiah alone knows its purpose",
+	"its purpose is sealed; proclaim it and behold",
+	"no purpose was inscribed, yet the edict endures",
+	"a command of the Machine God, its reason unspoken",
+}
+
+// edictLore is the lore told of the edict name: the same words at every
+// Tab, though edicts differ among themselves.
+func edictLore(name string) string {
+	h := fnv.New32a()
+	h.Write([]byte(name))
+	return lore[h.Sum32()%uint32(len(lore))]
 }
 
 // aspectCompletions lists the aspects of r, marking the one it stands in.
