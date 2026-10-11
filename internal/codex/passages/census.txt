@@ -10,7 +10,9 @@ auspexes are awakened together, never more than sixteen at once, so that
 slow ones labour side by side rather than one after another; the census is
 told by the names of the rites all the same. With the rune --spare-auspex
 it awakens none, and answers at once from the other omens and the
-data-slates.
+data-slates. With the rune --vigil it tells every rite at once, line by
+line in binharic, and tells again each rite whose auspex was awaited as
+soon as it settles.
 
 Spoken plainly, the census is a table with the columns RITE, ASPECT,
 STANDING, ASPECTS, LAST RITE and PURPOSE; a "·" marks what is not known. An
@@ -28,8 +30,8 @@ keeps none (and for an edict or a heretical rite), "heeded", "mute", or
 false for every other rite. A rite whose data-slate cannot be read is still
 counted; the lament is spoken apart from the census.
 
-Kindred passages: augury, standing, binharic, auspex, spare-auspex, canon,
-librarium, inquisition, edict
+Kindred passages: augury, standing, binharic, auspex, spare-auspex, vigil,
+herald, canon, librarium, inquisition, edict
 
 Exempla:
   servitor census
@@ -38,3 +40,4 @@ Exempla:
   servitor --librarium ~/dotfiles/servitor census
   servitor census --binharic --spare-auspex |
     jq -r '.[] | select(.auspex == "forgone") | .rite'
+  servitor census --vigil | jq -c 'select(.herald == "rite")'

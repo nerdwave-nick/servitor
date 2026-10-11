@@ -516,7 +516,7 @@ servitor ✠ the edict "screenshot" bears no aspect and is proclaimed by its nam
 | `servitor invoke <rite> <aspect> [--<key> <word>] [-f] [-s] [--binharic]` | Perform an aspect of a rite. |
 | `servitor invoke <edict> [--<key> <word>] [-f] [-s] [--binharic]` | Proclaim an edict, its whole liturgy anew. |
 | `servitor augury <rite> [key] [--is <aspect>] [--spare-auspex]` | Read how a rite stands, the aspect it bears (an edict bears none) and its inscriptions. |
-| `servitor census [--binharic] [--spare-auspex]` | Every rite with its aspect, standing, aspects, last rite and purpose. |
+| `servitor census [--binharic] [--spare-auspex] [--vigil]` | Every rite with its aspect, standing, aspects, last rite and purpose. |
 | `servitor inquisition [rite…] [--binharic] [--spare-vessels]` | Denounce heresy in rites, settings and vessels. |
 | `servitor cogitator` | Awaken the interactive shrine; `servitor` alone does so at a terminal. |
 | `servitor expound [topic] [--schema [rite\|settings]]` | Recite a passage of the codex, or its index. |
@@ -623,6 +623,23 @@ data-slate:
 ```sh
 servitor census --binharic --spare-auspex
 servitor augury do-not-disturb --spare-auspex | jq -r .aspect
+```
+
+A lesser machine that must show every rite at once keeps vigil instead:
+`--vigil` speaks one binharic object per line, each named by its `herald`.
+First a `"rite"` line for every rite by name, read without its auspex: a
+rite whose auspex is yet to answer bears `"auspex": "awaited"`, every other
+rite is told whole at once. Then one more `"rite"` line for every awaited
+rite as its auspex settles, `"heeded"` or `"mute"`, each replacing the
+earlier line entirely; then a single `{"herald": "concluded"}`. A data-slate
+that cannot be read is told as `{"herald": "lament", "lament": …, "rite": …}`.
+Once concluded, every rite's last line, its herald set aside, is its entry
+of `census --binharic`. Should the reader depart early, the servitor slays
+the auspexes still labouring and departs in silence.
+
+```sh
+servitor census --vigil | jq -c 'select(.herald == "rite") | {rite, aspect, auspex}'
+servitor census --vigil --spare-auspex      # every rite once, forgone, then concluded
 ```
 
 ### Inquisition

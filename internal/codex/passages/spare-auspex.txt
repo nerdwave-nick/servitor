@@ -19,9 +19,14 @@ The rune changes only what is read, never what is spoken: the census table
 stays as it is, and the augury's keys and --is answer as without it. The
 litanies of completion spare the auspex always, and so does --foresee.
 
-Kindred passages: auspex, census, augury, omens, data-slate, patience
+Given with --vigil, the census tells every rite once, whole, in its first
+telling — none is awaited, for no auspex will answer — and concludes at
+once.
+
+Kindred passages: auspex, census, augury, vigil, omens, data-slate, patience
 
 Exempla:
   servitor census --binharic --spare-auspex
+  servitor census --vigil --spare-auspex
   servitor augury do-not-disturb --spare-auspex | jq -r .aspect
   servitor augury do-not-disturb --spare-auspex --is on && echo "silence reigns"
