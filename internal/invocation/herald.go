@@ -49,6 +49,11 @@ const (
 	Success Tidings = librarium.VoxSuccess
 	// Failure: a step fell; told unbidden once the reversions are done.
 	Failure Tidings = "failure"
+	// Dominion: another invocation holds dominion over what this one must
+	// touch, and it waits for the dominion to be relinquished; told
+	// unbidden, once, before the pre-flight, and never when the dominion
+	// is free at once. Its Values bear the rite and the aspect invoked.
+	Dominion Tidings = "dominion"
 )
 
 // Proclamation is what a herald hears.

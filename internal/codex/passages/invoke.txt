@@ -99,7 +99,7 @@ A rite's scripture, kept in <Librarium>/rites/<name>.json, may read thus:
   }
 
 Kindred passages: rite, edict, liturgy, pre-flight, reversion, inscriptions,
-verdicts, binharic, forbidden, death-marks, detached
+verdicts, binharic, forbidden, death-marks, detached, dominion
 
 Exempla:
   servitor invoke mouse-autohide-toggle on --reason "gaming remnant"

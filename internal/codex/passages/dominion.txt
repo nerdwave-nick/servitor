@@ -1,0 +1,43 @@
+How an invocation holds dominion over its rite, and how another awaits it
+
+Every invocation holds dominion over the rite it performs, from before its
+pre-flight to its verdict: the ritual invoke as the cogitator, a rite as an
+edict. It seizes the dominion before it reads the former aspect and passes
+the pre-flight, and relinquishes it only once the liturgy has triumphed or
+its reversion is done and the verdict is kept. Meanwhile no other invocation
+of that rite performs: two invocations of one rite never interleave their
+liturgies, and the later is performed after the earlier, so that the aspect
+it commands is the one that remains. Rites of other names do not wait upon
+one another; their invocations are performed side by side.
+
+An invocation that finds the dominion held does not refuse. It tells once
+that it waits, then waits for the dominion to be relinquished; no patience
+bounds the waiting, for the holder is bounded by the patience of its own
+steps. Upon a terminal the awaiting is one line before the header (upon
+stderr under --binharic, withheld by --silence); without a terminal it is
+the invocation's one desktop missive, as the vox commands, replaced in place
+by the vox-casts that follow. Dominion free at once is never spoken of. An
+interrupt (Ctrl-C) or SIGTERM ends the waiting, and nothing is touched.
+
+The places of dominion lie beneath $XDG_STATE_HOME/servitor/dominions/: one
+empty place for each rite, rites/<rite>, raised when first needed and never
+struck. The machine grants each to a living servitor alone: a servitor slain
+mid-liturgy, even by SIGKILL, leaves no dominion behind, and the next
+invocation proceeds at once.
+
+Foresight touches nothing and seizes no dominion; neither do the augury, the
+census or the inquisition. None of them ever waits, whatever invocation is
+being performed.
+
+Kindred passages: invoke, cogitator, foresee, augury, census, inquisition,
+vox, silence, binharic
+
+Exempla:
+  ❯ servitor invoke theme porpl
+  ⋯ Another invocation holds dominion over what theme must touch. The servitor waits its turn.
+  +++ theme · default → porpl +++
+    ✔ verse 1 · tether ~/.local/share/nfluff/current-theme
+  ✠ Binharic hymns resound: the aspect «porpl» is attained.
+
+  ❯ servitor invoke screenshot
+  ⋯ Another hand proclaims the edict screenshot; the servitor kneels and waits for its end.

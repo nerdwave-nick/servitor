@@ -1,0 +1,9 @@
+# +++ Vox-casts of a rite awaiting dominion +++
+# One template per line; blank lines and lines starting with "#" are ignored.
+# Told once, unbidden, when another invocation holds dominion over what the
+# rite must touch, before the invocation waits. Each names the rite by
+# {{rite.name}} alone and speaks no aspect: the same notice serves every
+# dominion awaited.
+Another invocation holds dominion over what {{rite.name}} must touch. The servitor waits its turn.
+Another hand holds dominion where {{rite.name}} must labour; the servitor kneels and waits for it to be relinquished.
+{{rite.name}} must wait: dominion lies with another invocation. Stillness is the first devotion.
