@@ -150,7 +150,7 @@ func TestRuneErrors_PointToTheCodex(t *testing.T) {
 		{[]string{"--bogus"}, 1, "'servitor expound'"},
 		{[]string{"census", "--bogus"}, 1, "'servitor expound census'"},
 		{[]string{"augury", "mouse-autohide-toggle", "--bogus"}, 2, "'servitor expound augury'"},
-		{[]string{"invoke", "mouse-autohide-toggle", "on", "--bogus"}, 1, "'servitor expound invoke'"},
+		{[]string{"invoke", "mouse-autohide-toggle", "on", "--bogus"}, 2, "'servitor expound invoke'"},
 	} {
 		_, errOut, code := e.run(c.args...)
 		if code != c.code || !strings.Contains(errOut, "unknown rune") || !strings.Contains(errOut, c.hint) || strings.Contains(errOut, "--help") {

@@ -16,8 +16,11 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/rituals"
 )
 
+// invokeRunes are the runes every invocation heeds.
+type invokeRunes struct{ foresee, silence, binharic bool }
+
 func (a *app) newInvokeCmd() *cobra.Command {
-	var foresee, silence bool
+	runes := &invokeRunes{}
 	cmd := &cobra.Command{
 		Use:   "invoke <rite> <aspect> | <edict> [--<inscription> <value>...]",
 		Short: "Invoke an aspect of a rite, or proclaim an edict: perform its liturgy",
@@ -28,17 +31,24 @@ func (a *app) newInvokeCmd() *cobra.Command {
 			if len(args) == 0 {
 				return cmd.Help()
 			}
-			return a.unfitRite(args[0])
+			return refused(a.unfitRite(args[0]))
 		},
 	}
-	cmd.PersistentFlags().BoolVarP(&foresee, "foresee", "f", false,
+	cmd.PersistentFlags().BoolVarP(&runes.foresee, "foresee", "f", false,
 		"divine the outcome without touching anything, not even the auspex")
-	cmd.PersistentFlags().BoolVarP(&silence, "silence", "s", false,
+	cmd.PersistentFlags().BoolVarP(&runes.silence, "silence", "s", false,
 		"perform the rite in reverent silence")
+	const binharic = "speak the chronicled verdict in binharic for lesser machines, and narrate upon stderr"
+	cmd.PersistentFlags().BoolVar(&runes.binharic, "binharic", false, binharic)
+	cmd.PersistentFlags().BoolVar(&runes.binharic, "json", false, binharic)
+	_ = cmd.PersistentFlags().MarkHidden("json")
+	cmd.SetFlagErrorFunc(func(cmd *cobra.Command, err error) error {
+		return refused(fmt.Errorf("%s\n%s", runeError(err), liturgyHint(cmd)))
+	})
 	a.invokeCmd = cmd
 	for _, name := range a.lib.Names() {
 		if r := a.lib.Rites[name]; r != nil {
-			cmd.AddCommand(a.newRiteCmd(r, &foresee, &silence))
+			cmd.AddCommand(a.newRiteCmd(r, runes))
 		}
 	}
 	return cmd
@@ -56,9 +66,9 @@ func (a *app) unfitRite(name string) error {
 	return err
 }
 
-func (a *app) newRiteCmd(r *librarium.Rite, foresee, silence *bool) *cobra.Command {
+func (a *app) newRiteCmd(r *librarium.Rite, runes *invokeRunes) *cobra.Command {
 	if r.Edict {
-		return a.newEdictCmd(r, foresee, silence)
+		return a.newEdictCmd(r, runes)
 	}
 	short := r.Purpose
 	if short == "" {
@@ -71,11 +81,11 @@ func (a *app) newRiteCmd(r *librarium.Rite, foresee, silence *bool) *cobra.Comma
 		Example: riteExample(r),
 		Args: func(_ *cobra.Command, args []string) error {
 			if len(args) != 1 {
-				return fmt.Errorf("the rite demands exactly one aspect (%s), yet %d were offered",
-					strings.Join(r.Aspects, ", "), len(args))
+				return refused(fmt.Errorf("the rite demands exactly one aspect (%s), yet %d were offered",
+					strings.Join(r.Aspects, ", "), len(args)))
 			}
 			if !r.HasAspect(args[0]) {
-				return unknownAspect(r, args[0])
+				return refused(unknownAspect(r, args[0]))
 			}
 			return nil
 		},
@@ -83,7 +93,7 @@ func (a *app) newRiteCmd(r *librarium.Rite, foresee, silence *bool) *cobra.Comma
 			return a.aspectCompletions(r), cobra.ShellCompDirectiveNoFileComp
 		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return a.invoke(cmd, r, args[0], *foresee, *silence)
+			return a.invoke(cmd, r, args[0], *runes)
 		},
 	}
 	inscriptionRunes(cmd, r)
@@ -92,7 +102,7 @@ func (a *app) newRiteCmd(r *librarium.Rite, foresee, silence *bool) *cobra.Comma
 
 // newEdictCmd is the ritual of the edict r: it is proclaimed by its name
 // alone, and any word after it is refused before anything is performed.
-func (a *app) newEdictCmd(r *librarium.Rite, foresee, silence *bool) *cobra.Command {
+func (a *app) newEdictCmd(r *librarium.Rite, runes *invokeRunes) *cobra.Command {
 	short := r.Purpose
 	if short == "" {
 		short = "Proclaim the edict " + r.Name
@@ -104,14 +114,14 @@ func (a *app) newEdictCmd(r *librarium.Rite, foresee, silence *bool) *cobra.Comm
 		Example: riteExample(r),
 		Args: func(_ *cobra.Command, args []string) error {
 			if len(args) > 0 {
-				return fmt.Errorf("the edict %q bears no aspect and is proclaimed by its name alone, yet %s "+
-					"followed its name; not one verse of its liturgy is performed", r.Name, quoteAll(args))
+				return refused(fmt.Errorf("the edict %q bears no aspect and is proclaimed by its name alone, yet %s "+
+					"followed its name; not one verse of its liturgy is performed", r.Name, quoteAll(args)))
 			}
 			return nil
 		},
 		ValidArgsFunction: cobra.NoFileCompletions,
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			return a.invoke(cmd, r, "", *foresee, *silence)
+			return a.invoke(cmd, r, "", *runes)
 		},
 	}
 	inscriptionRunes(cmd, r)
@@ -150,8 +160,12 @@ func inscriptionRunes(cmd *cobra.Command, r *librarium.Rite) {
 
 // invoke performs (or foresees) the rite r into aspect, or proclaims the
 // edict r (aspect ""), heeding an interrupt from the terminal by halting
-// and reverting the invocation.
-func (a *app) invoke(cmd *cobra.Command, r *librarium.Rite, aspect string, foresee, silence bool) error {
+// and reverting the invocation. In binharic the verdict (or the
+// forbiddance) is spoken upon stdout and the narration upon stderr.
+func (a *app) invoke(cmd *cobra.Command, r *librarium.Rite, aspect string, ir invokeRunes) error {
+	if ir.foresee && ir.binharic {
+		return refused(errForeseenInBinharic)
+	}
 	runes := map[string]string{}
 	for _, in := range r.Inscriptions {
 		if f := cmd.Flags().Lookup(in.Key); f != nil && f.Changed {
@@ -159,10 +173,14 @@ func (a *app) invoke(cmd *cobra.Command, r *librarium.Rite, aspect string, fores
 		}
 	}
 	s := a.servitor(cmd)
-	p := rituals.Petition{Rite: r.Name, Aspect: aspect, Runes: runes, Foresee: foresee}
+	p := rituals.Petition{Rite: r.Name, Aspect: aspect, Runes: runes, Foresee: ir.foresee}
 	var told *narration
-	if !foresee {
-		told = newNarration(cmd.OutOrStdout(), s.Orders().Vox, silence)
+	if !ir.foresee {
+		w := cmd.OutOrStdout()
+		if ir.binharic {
+			w = cmd.ErrOrStderr()
+		}
+		told = newNarration(w, s.Orders().Vox, ir.silence)
 		p.Herald, p.Commence = told, told.commence
 	}
 	ctx, stop := signal.NotifyContext(cmd.Context(), os.Interrupt, syscall.SIGTERM)
@@ -174,21 +192,19 @@ func (a *app) invoke(cmd *cobra.Command, r *librarium.Rite, aspect string, fores
 	for _, l := range res.Laments {
 		fmt.Fprintln(cmd.ErrOrStderr(), "servitor ✠ "+l.Error())
 	}
-	if foresee && res.Rite != nil {
+	if ir.foresee && res.Rite != nil {
 		printForesight(cmd.OutOrStdout(), res)
 	}
 	var hs invocation.Heresies
 	switch {
 	case errors.As(err, &hs):
-		return forbidden(r, aspect, hs)
+		return forbid(cmd.OutOrStdout(), r, aspect, hs, ir.binharic)
 	case err != nil:
-		return err
-	case foresee:
+		return refused(err)
+	case ir.foresee:
 		return nil
-	case res.Outcome.Verdict != invocation.Triumph:
-		return &ExitError{Code: 1, Err: fallen(r, *res.Outcome)}
 	}
-	return nil
+	return judged(cmd.OutOrStdout(), r, res, ir.binharic)
 }
 
 func unknownAspect(r *librarium.Rite, aspect string) error {

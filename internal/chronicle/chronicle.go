@@ -33,11 +33,10 @@ func Rotated(path string) string { return path + ".1" }
 // creating it and its directories when absent and rotating it first when
 // the line would carry it beyond Limit.
 func Append(path string, e Entry) error {
-	line, err := json.Marshal(e, json.Deterministic(true))
+	line, err := Line(e)
 	if err != nil {
 		return err
 	}
-	line = append(line, '\n')
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return lament(path, err)
 	}
@@ -68,6 +67,16 @@ func Append(path string, e Entry) error {
 		return lament(path, err)
 	}
 	return nil
+}
+
+// Line is e exactly as Append writes it: one line of binharic, ended by a
+// newline.
+func Line(e Entry) ([]byte, error) {
+	line, err := json.Marshal(e, json.Deterministic(true))
+	if err != nil {
+		return nil, err
+	}
+	return append(line, '\n'), nil
 }
 
 // seize opens the chronicle at path for appending under an exclusive lock

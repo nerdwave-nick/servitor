@@ -152,7 +152,7 @@ func TestEdict_RefusesEveryWordAfterItsName(t *testing.T) {
 		{[]string{"invoke", "capture", "on", "-f"}, `"on"`},
 	} {
 		_, errOut, code := e.run(tc.args...)
-		if code != 1 || !strings.Contains(errOut, `the edict "capture" bears no aspect`) ||
+		if code != 2 || !strings.Contains(errOut, `the edict "capture" bears no aspect`) ||
 			!strings.Contains(errOut, "yet "+tc.words+" followed its name") {
 			t.Errorf("servitor %v: exit %d\nstderr: %s", tc.args, code, errOut)
 		}
@@ -182,9 +182,10 @@ func TestEdict_ForeseeingTellsAndPerformsNothing(t *testing.T) {
 func TestEdict_AFallIsRevertedAndLamented(t *testing.T) {
 	for _, tc := range []struct {
 		name, reversion, verdict, ending string
+		code                             int
 	}{
-		{"reverted", "echo undone >> $TARGET.edict", "reverted", "Every deed is undone"},
-		{"faltered", "exit 4", "faltered", "the edict lies corrupted"},
+		{"reverted", "echo undone >> $TARGET.edict", "reverted", "Every deed is undone", 1},
+		{"faltered", "exit 4", "faltered", "the edict lies corrupted", 3},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			e := newEnv(t)
@@ -194,7 +195,7 @@ func TestEdict_AFallIsRevertedAndLamented(t *testing.T) {
 
 			_, errOut, code := e.run("invoke", "capture")
 
-			if code != 1 || !strings.Contains(errOut, `the edict "capture" fell at verse 2 · incantation exit 3`) ||
+			if code != tc.code || !strings.Contains(errOut, `the edict "capture" fell at verse 2 · incantation exit 3`) ||
 				!strings.Contains(errOut, tc.ending) || aspectless.MatchString(errOut) {
 				t.Fatalf("exit %d\nstderr: %s", code, errOut)
 			}
@@ -218,7 +219,7 @@ func TestEdict_UnmetInscriptionIsForbiddenByThePreflight(t *testing.T) {
 
 	_, errOut, code := e.run("invoke", "capture")
 
-	if code != 1 || !strings.Contains(errOut, `the pre-flight forbids the proclaiming of the edict "capture"`) ||
+	if code != 2 || !strings.Contains(errOut, `the pre-flight forbids the proclaiming of the edict "capture"`) ||
 		!strings.Contains(errOut, "--region") || aspectless.MatchString(errOut) {
 		t.Fatalf("exit %d\nstderr: %s", code, errOut)
 	}

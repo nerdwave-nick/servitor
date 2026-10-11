@@ -57,6 +57,8 @@ func TestInvokeAndAugury_UserScenario(t *testing.T) {
 	}
 }
 
+// TestInvoke_Errors: whatever is refused before a verse is performed exits
+// 2 and speaks only to stderr.
 func TestInvoke_Errors(t *testing.T) {
 	e := newEnv(t)
 	e.addRite("rites/broken.json", `{"pattern": "Mark I", "aspects": []}`)
@@ -73,7 +75,7 @@ func TestInvoke_Errors(t *testing.T) {
 		{[]string{"invoke", "mouse-autohide-toggle", "on", "--bogus", "x"}, "unknown rune: --bogus"},
 	}
 	for _, c := range cases {
-		if _, errOut, code := e.run(c.args...); code != 1 || !strings.Contains(errOut, c.err) {
+		if out, errOut, code := e.run(c.args...); code != 2 || out != "" || !strings.Contains(errOut, c.err) {
 			t.Errorf("%v: code=%d stderr=%q", c.args, code, errOut)
 		}
 	}

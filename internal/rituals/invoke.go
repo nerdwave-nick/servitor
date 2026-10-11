@@ -42,6 +42,10 @@ type Result struct {
 	Former    augury.Standing
 	Foresight []invocation.Foresight // what every step that passed the pre-flight would do
 	Outcome   *invocation.Outcome    // nil when foreseen or refused
+	// Entry is the line this performance added to the chronicle, nil when
+	// foreseen or refused. It is borne even when the chronicle could not be
+	// written; that is lamented.
+	Entry *chronicle.Entry
 	// Laments are what went amiss around the invocation without undoing it:
 	// a data-slate that could not be read or kept, a chronicle that could
 	// not be written.
@@ -96,7 +100,9 @@ func (s *Servitor) Invoke(ctx context.Context, p Petition) (Result, error) {
 	res.Outcome = &out
 	at := s.now()
 	res.lament(augury.Record(env, r.Name, out, res.Options, at))
-	res.lament(chronicle.Append(orders.Chronicle, chronicle.New(at, r.Name, res.Options, out)))
+	entry := chronicle.New(at, r.Name, res.Options, out)
+	res.Entry = &entry
+	res.lament(chronicle.Append(orders.Chronicle, entry))
 	return res, nil
 }
 
