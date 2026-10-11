@@ -20,8 +20,9 @@ import (
 // opened (a missing tome, or a placeholder an illuminated tome cannot
 // fill, is heresy). The machine yields impurities — a tongue spoken
 // nowhere, a vessel missing that its sanctum may not consecrate, an anchor
-// missing for some aspect, a tainted sanctum, a desecrated rite — and
-// heresy for a vessel whose sanctum markers are broken.
+// missing for some aspect, an edict's scroll missing, a tainted sanctum, a
+// desecrated rite — and heresy for a vessel whose sanctum markers are
+// broken. An edict's machine is examined once, as it bears no aspect.
 func (s *Servitor) Inquire(names []string, spareVessels bool) (librarium.Findings, error) {
 	lib := s.Librarium
 	for _, n := range names {
@@ -78,6 +79,16 @@ func (e *examiner) once(key string) bool {
 	return true
 }
 
+// aspects are the aspects the machine is examined for: every aspect of the
+// rite, or for an edict, which bears none, a single examination without
+// aspect.
+func (e *examiner) aspects() []string {
+	if e.rite.Edict {
+		return []string{""}
+	}
+	return e.rite.Aspects
+}
+
 // path renders text for aspect, with the decrees of that aspect, and
 // resolves it against the rite's directory; ok is false when it cannot be
 // rendered (the Librarium denounced that already).
@@ -118,7 +129,7 @@ func (e *examiner) tomes() {
 		default:
 			continue
 		}
-		for _, aspect := range e.rite.Aspects {
+		for _, aspect := range e.aspects() {
 			sc, ok := m.For(aspect)
 			if !ok || !sc.IsTome() {
 				continue

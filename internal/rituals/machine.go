@@ -23,6 +23,9 @@ func (e *examiner) machine() {
 		case *librarium.Incantation:
 			e.tongue(i, st.Tongue)
 		case *librarium.Litany:
+			if e.rite.Edict {
+				e.scroll(i, st)
+			}
 			if e.litanyNeedsTongue(st) {
 				e.tongue(i, st.Tongue)
 			}
@@ -41,7 +44,7 @@ func (e *examiner) machine() {
 func (e *examiner) sanctum(i int, s *librarium.Sanctum) {
 	glyph, closing := s.Glyphs()
 	m := sanctum.Marker{Glyph: glyph, ClosingGlyph: closing, Ward: s.WardFor(e.rite.Name)}
-	for _, aspect := range e.rite.Aspects {
+	for _, aspect := range e.aspects() {
 		p, ok := e.path(aspect, s.Vessel)
 		if !ok || !e.once(field(i, "sanctum")+" "+p) {
 			continue
@@ -64,7 +67,7 @@ func (e *examiner) sanctum(i int, s *librarium.Sanctum) {
 
 // tether examines the anchor of a tether for every aspect.
 func (e *examiner) tether(i int, t *librarium.Tether) {
-	for _, aspect := range e.rite.Aspects {
+	for _, aspect := range e.aspects() {
 		anchor, ok := t.Anchor.For(aspect)
 		if !ok || anchor.Null {
 			continue
@@ -113,7 +116,7 @@ func (e *examiner) litanyNeedsTongue(l *librarium.Litany) bool {
 	if !l.Reversion.IsZero() {
 		return true
 	}
-	for _, aspect := range e.rite.Aspects {
+	for _, aspect := range e.aspects() {
 		text, ok := l.Scroll.For(aspect)
 		if !ok {
 			continue
@@ -125,6 +128,24 @@ func (e *examiner) litanyNeedsTongue(l *librarium.Litany) bool {
 		}
 	}
 	return false
+}
+
+// scroll denounces the scroll of an edict's litany that does not stand: no
+// step of an edict writes one, so every proclaiming would be refused.
+func (e *examiner) scroll(i int, l *librarium.Litany) {
+	text, ok := l.Scroll.For("")
+	if !ok {
+		return
+	}
+	p, ok := e.path("", text)
+	if !ok || !e.once(field(i, "litany")+" "+p) {
+		return
+	}
+	if _, err := os.Stat(p); errors.Is(err, fs.ErrNotExist) {
+		e.note(librarium.Impurity, field(i, "litany"), "no scroll stands at %s for the litany of verse %d to "+
+			"recite, and no step of an edict writes one: every proclaiming of the edict will be refused until "+
+			"the scroll is written, or the litany names one that stands", p, i+1)
+	}
 }
 
 func speakable(tongue string) bool {

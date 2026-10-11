@@ -176,3 +176,34 @@ func TestInquire_TheMachineTheLiturgiesActUpon(t *testing.T) {
 		t.Fatalf("sparing the vessels:\n%v", spared)
 	}
 }
+
+func TestInquire_TheMachineAnEdictActsUponIsExaminedOnce(t *testing.T) {
+	fx := newFixture(t)
+	fx.vessel("plain.sh", "true\n") // stands, but may not be executed: recited through its tongue
+	fx.rite("capture", `{"pattern": "Mark I", "edict": true,
+	  "inscriptions": {"place": {"purpose": "where", "decrees": "lost"}},
+	  "liturgy": [
+	  {"litany": "$DATA/{{inscription.place}}.sh"},
+	  {"litany": "$DATA/plain.sh", "tongue": "no-such-tongue-of-edicts"},
+	  {"incantation": "true", "tongue": "no-such-tongue-of-edicts"},
+	  {"vox-cast": "success"}]}`)
+	fx.rite("whole", `{"pattern": "Mark I", "edict": true, "liturgy": [{"litany": "$DATA/plain.sh"}]}`)
+
+	fs := inquire(t, fx.servitor(), false)
+
+	scroll := denounced(fs, "capture", librarium.Impurity, filepath.Join(fx.data, "lost.sh"), "scroll", "verse 1")
+	if len(scroll) != 1 || scroll[0].Line != 4 {
+		t.Errorf("the missing scroll of an edict: %v\nin\n%v", scroll, fs)
+	}
+	tongues := denounced(fs, "capture", librarium.Impurity, `"no-such-tongue-of-edicts"`)
+	if len(tongues) != 2 || len(denounced(tongues, "capture", librarium.Impurity, "verse 2")) != 1 ||
+		len(denounced(tongues, "capture", librarium.Impurity, "verse 3")) != 1 {
+		t.Errorf("the missing tongues of an edict: %v\nin\n%v", tongues, fs)
+	}
+	if len(fs) != 3 {
+		t.Errorf("found %d, expected 3:\n%v", len(fs), fs)
+	}
+	if spared := inquire(t, fx.servitor(), true); len(spared) != 0 {
+		t.Fatalf("sparing the vessels:\n%v", spared)
+	}
+}
