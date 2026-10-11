@@ -27,7 +27,7 @@ transcription replaces a vessel only when it holds the scripture of one of
 the rite's aspects — or when the step burns with zeal. No copy of a vessel is
 kept beyond the reversion of the invocation itself.
 
-Kindred passages: sanctum, transcription, consecrate, seal, zeal, tether
+Kindred passages: sanctum, transcription, consecrate, seal, zeal, tether, dominion
 
 Exempla:
   {"sanctum": "~/.config/niri/util.kdl",
