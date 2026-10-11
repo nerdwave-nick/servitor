@@ -107,3 +107,29 @@ func TestInvoke_AnEdictBearsNoAspectAndForeseeingPerformsNothing(t *testing.T) {
 		t.Fatal("a refused or foreseen edict touched the machine, its data-slate or the chronicle")
 	}
 }
+
+func TestAugur_AnEdictAnswersItsStandingAndInscriptionsAlone(t *testing.T) {
+	fx := newFixture(t)
+	fx.rite("capture", capture)
+	s := fx.servitor()
+	if _, err := s.Invoke(context.Background(), Petition{Rite: "capture", Runes: map[string]string{"region": "window"}}); err != nil {
+		t.Fatal(err)
+	}
+	r, err := s.Augur("capture", false)
+	if err != nil || !r.Edict || r.Standing != augury.Proclaimed {
+		t.Fatalf("augury %+v, %v", r, err)
+	}
+	if got := Keys(r.Rite); !slices.Equal(got, []string{"standing", "region"}) {
+		t.Errorf("an edict's keys are %v", got)
+	}
+	for key, want := range map[string]string{"standing": "proclaimed", "region": "window"} {
+		if v, ok := r.Value(key); !ok || v != want {
+			t.Errorf("%s = %q, %v; want %q", key, v, ok, want)
+		}
+	}
+	for _, key := range []string{"aspect", "desecrated", "former"} {
+		if v, ok := r.Value(key); ok {
+			t.Errorf("an edict answers %s = %q", key, v)
+		}
+	}
+}

@@ -243,6 +243,61 @@ func TestInvoke_HelpNamesThePlainWordsOfAVerse(t *testing.T) {
 	}
 }
 
+// TestEdict_AuguryBearsNoAspect: the augury of an edict speaks rite, edict,
+// standing, inscriptions and last rite alone, answers its standing and
+// inscriptions, and refuses every sign of an aspect, and --is, with a
+// heresy (exit 2).
+func TestEdict_AuguryBearsNoAspect(t *testing.T) {
+	e := newEnv(t)
+	e.addRite("rites/capture.json", edictJSON)
+	dormant := "{\n  \"rite\": \"capture\",\n  \"edict\": true,\n  \"standing\": \"dormant\",\n" +
+		"  \"inscriptions\": {},\n  \"last_rite\": null\n}\n"
+	if out := e.mustRun("augury", "capture"); out != dormant {
+		t.Errorf("augury of a dormant edict:\n%s\nwant\n%s", out, dormant)
+	}
+	e.mustRun("invoke", "capture", "-s", "--region", "window")
+	proclaimed := regexp.MustCompile(`^\{\n  "rite": "capture",\n  "edict": true,\n  "standing": "proclaimed",\n` +
+		`  "inscriptions": \{\n    "region": "window"\n  \},\n` +
+		`  "last_rite": \{\n    "verdict": "triumph",\n    "at": "[0-9T:Z-]+"\n  \}\n\}\n$`)
+	if out := e.mustRun("augury", "capture"); !proclaimed.MatchString(out) {
+		t.Errorf("augury of a proclaimed edict:\n%s", out)
+	}
+	for key, want := range map[string]string{"standing": "proclaimed\n", "region": "window\n"} {
+		if out := e.mustRun("augury", "capture", key); out != want {
+			t.Errorf("augury capture %s = %q, want %q", key, out, want)
+		}
+	}
+	for _, args := range [][]string{
+		{"augury", "capture", "aspect"}, {"augury", "capture", "desecrated"}, {"augury", "capture", "former"},
+		{"augury", "capture", "--is", "x"}, {"augury", "capture", "--is", "taken"},
+	} {
+		out, errOut, code := e.run(args...)
+		if code != 2 || out != "" || !strings.Contains(errOut, `the edict "capture" bears no aspect`) {
+			t.Errorf("servitor %v: exit %d\nstdout: %s\nstderr: %s", args, code, out, errOut)
+		}
+		grimdark(t, errOut)
+	}
+	if out, errOut, code := e.run("augury", "capture", "nope"); code != 2 || !strings.Contains(errOut, "(keys: standing, region)") {
+		t.Errorf("an unknown key: exit %d\nstdout: %s\nstderr: %s", code, out, errOut)
+	}
+}
+
+// TestEdict_AuguryCompletesNoSignOfAnAspect: completion offers an edict's
+// standing and inscriptions as keys, and nothing for --is.
+func TestEdict_AuguryCompletesNoSignOfAnAspect(t *testing.T) {
+	e := newEnv(t)
+	e.addRite("rites/capture.json", edictJSON)
+	if keys, _ := e.complete("augury", "capture", ""); !slices.Equal(keys, []string{"standing", "region"}) {
+		t.Errorf("the augury of an edict completes %v", keys)
+	}
+	if aspects, directive := e.complete("augury", "capture", "--is", ""); len(aspects) != 0 || directive != noFileComp {
+		t.Errorf("--is completes %v (%s) for an edict", aspects, directive)
+	}
+	if keys, _ := e.complete("augury", "mouse-autohide-toggle", ""); !slices.Equal(keys[:4], []string{"aspect", "standing", "desecrated", "former"}) {
+		t.Errorf("the augury of a rite completes %v", keys)
+	}
+}
+
 // TestEdict_InTheCensus: the census shows an edict with · for aspect and
 // aspects, its standing and last rite; its binharic marks every rite an
 // edict or not, and gives an edict "aspects": [].

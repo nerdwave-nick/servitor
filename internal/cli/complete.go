@@ -71,7 +71,8 @@ func decreeCompletions(in librarium.Inscription, edict bool) []cobra.Completion 
 	return out
 }
 
-// signs describe the keys every augury answers.
+// signs describe the keys an augury answers; an edict answers its
+// standing alone.
 var signs = map[string]string{
 	"aspect":     "the aspect the rite stands in",
 	"standing":   "how the rite stands",
@@ -87,11 +88,12 @@ func (a *app) completeAuguryArgs(_ *cobra.Command, args []string, _ string) ([]c
 		if _, known := a.lib.Scriptures[args[0]]; !known {
 			return nil, cobra.ShellCompDirectiveNoFileComp
 		}
+		r := a.lib.Rites[args[0]]
 		var out []cobra.Completion
-		for _, k := range rituals.Signs {
+		for _, k := range rituals.SignsOf(r) {
 			out = append(out, cobra.CompletionWithDesc(k, signs[k]))
 		}
-		if r := a.lib.Rites[args[0]]; r != nil {
+		if r != nil {
 			for _, in := range r.Inscriptions {
 				out = append(out, cobra.CompletionWithDesc(in.Key, in.Purpose))
 			}

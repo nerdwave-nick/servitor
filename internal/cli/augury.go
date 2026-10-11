@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"slices"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -40,7 +41,7 @@ func (a *app) newAuguryCmd() *cobra.Command {
 	cmd.Flags().Var(wordRune(&is, "", "aspect"), "is", "exit 0 if the rite stands in this aspect, 1 otherwise")
 	_ = cmd.RegisterFlagCompletionFunc("is", func(_ *cobra.Command, args []string, _ string) ([]cobra.Completion, cobra.ShellCompDirective) {
 		if len(args) > 0 {
-			if r := a.lib.Rites[args[0]]; r != nil {
+			if r := a.lib.Rites[args[0]]; r != nil && !r.Edict {
 				return a.aspectCompletions(r), cobra.ShellCompDirectiveNoFileComp
 			}
 		}
@@ -64,6 +65,11 @@ func augur(cmd *cobra.Command, s *rituals.Servitor, args []string, is string) er
 		if err != nil {
 			return err
 		}
+		if r.Edict {
+			return fmt.Errorf("the edict %q bears no aspect for the rune --is to ask after: it is only ever "+
+				"proclaimed whole and stands in no aspect at all — read its standing instead (servitor augury %s "+
+				"standing)", name, name)
+		}
 		if !r.HasAspect(is) {
 			return unknownAspect(r, is)
 		}
@@ -84,6 +90,11 @@ func augur(cmd *cobra.Command, s *rituals.Servitor, args []string, is string) er
 		return nil
 	case len(args) == 2:
 		v, ok := reading.Value(args[1])
+		if !ok && reading.Edict && slices.Contains(rituals.Signs, args[1]) {
+			return fmt.Errorf("the edict %q bears no aspect, and so no %q to be read: it is only ever proclaimed "+
+				"whole, and its augury answers its standing and its inscriptions alone (keys: %s)",
+				name, args[1], strings.Join(keysOf(reading), ", "))
+		}
 		if !ok {
 			return fmt.Errorf("the rite %q bears no key %q (keys: %s)", name, args[1], strings.Join(keysOf(reading), ", "))
 		}
@@ -97,7 +108,7 @@ func keysOf(r rituals.Reading) []string {
 	if r.Rite != nil {
 		return rituals.Keys(r.Rite)
 	}
-	return rituals.Signs
+	return rituals.SignsOf(nil)
 }
 
 func writeJSON(w io.Writer, v any) error {

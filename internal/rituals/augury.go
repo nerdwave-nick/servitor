@@ -2,6 +2,7 @@ package rituals
 
 import (
 	"errors"
+	"slices"
 	"strconv"
 
 	"github.com/nerdwave-nick/servitor/internal/augury"
@@ -38,15 +39,33 @@ func (s *Servitor) Augur(name string, forgoAuspex bool) (Reading, error) {
 // augury alone.
 var Signs = []string{"aspect", "standing", "desecrated", "former"}
 
-// Keys are the keys the augury of r answers: Signs, then every inscription.
+// edictSigns are the signs an edict answers: it bears no aspect, so it is
+// neither desecrated nor knows a former one.
+var edictSigns = []string{"standing"}
+
+// SignsOf are the signs the augury of r answers: Signs, or for an edict its
+// standing alone. A heretical rite (nil) answers Signs.
+func SignsOf(r *librarium.Rite) []string {
+	if r != nil && r.Edict {
+		return edictSigns
+	}
+	return Signs
+}
+
+// Keys are the keys the augury of r answers: its signs, then every
+// inscription.
 func Keys(r *librarium.Rite) []string {
-	return append(append([]string{}, Signs...), r.InscriptionKeys()...)
+	return append(append([]string{}, SignsOf(r)...), r.InscriptionKeys()...)
 }
 
 // Value is what the reading holds under key — a sign, else an inscription
 // ("" when not inscribed); ok is false for a key the rite knows not. A
-// heretical rite answers the inscriptions its data-slate holds.
+// heretical rite answers the inscriptions its data-slate holds. An edict
+// answers no sign but its standing.
 func (r Reading) Value(key string) (value string, ok bool) {
+	if r.Edict && slices.Contains(Signs, key) && !slices.Contains(edictSigns, key) {
+		return "", false
+	}
 	switch key {
 	case "aspect":
 		return r.Aspect, true
