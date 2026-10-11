@@ -71,6 +71,7 @@ domain and the code; never add plain words or plain glosses to anything a user r
 | explain / help command | expound | `servitor expound [topic]`; `help`, `-h`, `--help` are hidden aliases |
 | the documentation itself | codex | flavour: "as written in the codex" |
 | invocation log | chronicle | `$XDG_STATE_HOME/servitor/chronicle.jsonl`; settings `chronicle`, `--chronicle` (alias `--log`), `SERVITOR_CHRONICLE` |
+| lock (exclusive, per rite / vessel) | dominion | `$XDG_STATE_HOME/servitor/dominions/` |
 | step index | verse | JSON `verse` |
 | step kind + target in JSON | the step's own key | e.g. `"tether": "<path>"`; auspex omen `"auspex": true` |
 | outcome / result | verdict | JSON `verdict`: `triumph` (ok), `reverted` (failed, undone), `faltered` (failed, undo incomplete) |

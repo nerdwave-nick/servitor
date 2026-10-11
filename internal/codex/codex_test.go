@@ -195,7 +195,7 @@ var plainWords = regexp.MustCompile(`(?i)\b(` + strings.Join([]string{
 	`rollbacks?`, `roll(ed)? back`, `notifications?`, `status(es)?`, `drift`, `validat(e|ion)`,
 	`tui`, `documentation`, `dry[ -]run`, `quiet`, `timestamps?`, `file mode`, `target file`,
 	`step index`, `comment (prefix|suffix)`, `file content`, `force`, `flags?`, `subcommands?`,
-	`arguments?`, `errors?`, `warnings?`, `verify`, `logs?`, `results?`, `help`,
+	`arguments?`, `errors?`, `warnings?`, `verify`, `logs?`, `results?`, `help`, `locks?`,
 }, "|") + `)\b`)
 
 // names are the machine's own words — paths (~/.config/niri/config.kdl) and
@@ -255,7 +255,7 @@ func TestScripturesOfTheFaithful_SpeakNoPlainGloss(t *testing.T) {
 }
 
 func TestPlainWords_DenyGlossesButNotOrdinaryWords(t *testing.T) {
-	for _, plain := range []string{"the config", "a symlink", "dry run", "Shell", "status", "the --json rune", "force", "a dry-run"} {
+	for _, plain := range []string{"the config", "a symlink", "dry run", "Shell", "status", "the --json rune", "force", "a dry-run", "a lock"} {
 		if plainWord(plain) == "" {
 			t.Errorf("%q passes the guard", plain)
 		}

@@ -29,13 +29,16 @@ func drawn(tid invocation.Tidings, words string) bool {
 	return false
 }
 
-// TestScriptures_ShowTheVoxCastsAsTheyAreTold: every closing and progress
-// line the README and the codex show is one the servitor could tell.
+// TestScriptures_ShowTheVoxCastsAsTheyAreTold: every closing, progress and
+// awaiting line the README and the codex show is one the servitor could
+// tell.
 func TestScriptures_ShowTheVoxCastsAsTheyAreTold(t *testing.T) {
 	paths, _ := filepath.Glob("../codex/passages/*.txt")
 	paths = append(paths, "../../README.md")
 	shown := 0
 	progress := regexp.MustCompile(`^⋯ (.+)  \(\d+/\d+\)$`)
+	awaiting := regexp.MustCompile(`^⋯ (.+)$`)
+	awaited := 0
 	for _, path := range paths {
 		data, err := os.ReadFile(path)
 		if err != nil {
@@ -54,10 +57,18 @@ func TestScriptures_ShowTheVoxCastsAsTheyAreTold(t *testing.T) {
 				if !drawn(invocation.Progress, m[1]) {
 					t.Errorf("%s shows a progress never told: %q", path, line)
 				}
+			} else if m := awaiting.FindStringSubmatch(line); m != nil {
+				awaited++
+				if !drawn(invocation.Dominion, m[1]) {
+					t.Errorf("%s shows an awaiting of dominion never told: %q", path, line)
+				}
 			}
 		}
 	}
 	if shown < 4 {
 		t.Fatalf("the scriptures show only %d vox-casts", shown)
+	}
+	if awaited < 2 {
+		t.Fatalf("the scriptures show only %d awaitings of dominion", awaited)
 	}
 }
