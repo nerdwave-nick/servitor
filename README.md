@@ -515,6 +515,8 @@ Without a key the augury speaks one binharic object:
 {"rite": "theme", "edict": false, "aspect": "porpl", "standing": "performed",
  "desecrated": false,
  "inscriptions": {"reason": "the night watch begins"},
+ "canon": [{"key": "reason", "purpose": "why the visage was changed",
+            "mandatory": false, "decrees": {}, "decree": null}],
  "last_rite": {"verdict": "triumph", "at": "2026-10-10T13:30:00Z"},
  "omens": [{"verse": 2, "tether": "~/.local/share/nfluff/current-theme", "aspect": "porpl"}],
  "taint": []}
@@ -525,11 +527,21 @@ or any inscription the rite declares (an empty line when uninscribed).
 `--is <aspect>` answers by exit alone. The augury exits 0 when it was read,
 1 when `--is` did not match, and 2 when it could not be read.
 
-The augury of an edict bears only its standing, inscriptions and last rite:
+`inscriptions` holds the words the data-slate keeps; `canon` holds what the
+rite declares, in written order: each inscription's `key`, `purpose` (`""`
+when unwritten), `mandatory`, its `decrees` per aspect (a `"*"` resolved for
+every aspect it serves, an aspect without a decree absent) and `decree`, an
+edict's one plain decree or `null`. An edict's `decrees` is `{}`, and a
+heretical rite's canon is `[]`.
+
+The augury of an edict bears only its standing, inscriptions, canon and last
+rite:
 
 ```json
 {"rite": "screenshot", "edict": true, "standing": "proclaimed",
  "inscriptions": {"region": "whole"},
+ "canon": [{"key": "region", "purpose": "the slurp geometry",
+            "mandatory": false, "decrees": {}, "decree": "full"}],
  "last_rite": {"verdict": "triumph", "at": "2026-10-11T01:42:00Z"}}
 ```
 
@@ -575,9 +587,10 @@ servitor census --binharic | jq -r '.[] | select(.standing | IN("performed", "pr
 ```
 
 In binharic every rite bears `rite`, `edict`, `aspect`, `standing`,
-`auspex`, `aspects`, `purpose`, `desecrated`, `last_rite` and `recorded_in`,
-the scripture it was read from. An edict bears `"edict": true`, an empty
-`aspect` and `"aspects": []`.
+`auspex`, `aspects`, `purpose`, `desecrated`, `last_rite`, `recorded_in`
+(the scripture it was read from) and `canon`, as the augury speaks it, so
+one census tells what every rite may be inscribed with. An edict bears
+`"edict": true`, an empty `aspect` and `"aspects": []`.
 
 `auspex`, in the census and the augury alike, tells what the rite's auspex
 gave: `""` when it keeps none (an edict or a heretical rite neither),

@@ -14,6 +14,8 @@ to read:
   {"rite": "theme", "edict": false, "aspect": "porpl",
    "standing": "performed", "auspex": "heeded", "desecrated": false,
    "inscriptions": {"reason": "gaming remnant"},
+   "canon": [{"key": "reason", "purpose": "why the visage was changed",
+              "mandatory": false, "decrees": {}, "decree": null}],
    "last_rite": {"verdict": "triumph", "at": "2026-10-10T13:30:00Z"},
    "omens": [{"verse": 2, "tether": "~/.local/share/nfluff/current-theme",
               "aspect": "porpl"}, {"auspex": true, "aspect": "porpl"}],
@@ -23,13 +25,19 @@ The key "former", naming the aspect the data-slate recorded, appears only
 when the rite is desecrated. The key "auspex" tells what the rite's auspex
 gave: "" when it keeps none, "heeded", "mute", or "forgone" when the rune
 --spare-auspex left it unawakened; the passage on the auspex tells all.
+The key "canon" holds every inscription the rite declares, in written order,
+with its purpose, whether it is mandatory and its decrees; "inscriptions"
+holds the words the data-slate keeps. A heretical rite's canon is [], and
+the passage on the canon tells all.
 
 The augury of an edict bears "edict": true and only its standing, its
-auspex (always "", for it keeps none), its inscriptions and its last rite —
-never aspect, desecrated, former, omens or taint:
+auspex (always "", for it keeps none), its inscriptions, its canon and its
+last rite — never aspect, desecrated, former, omens or taint:
 
   {"rite": "screenshot", "edict": true, "standing": "proclaimed",
    "auspex": "", "inscriptions": {"region": "full"},
+   "canon": [{"key": "region", "purpose": "the slurp geometry",
+              "mandatory": false, "decrees": {}, "decree": "full"}],
    "last_rite": {"verdict": "triumph", "at": "2026-10-10T13:31:00Z"}}
 
 With a key, the augury speaks that single value and nothing more: aspect,
@@ -55,13 +63,14 @@ an unknown rite or key, an aspect the rite knows not, a key given beside
 former or --is, or a malformed rune.
 
 Kindred passages: is, spare-auspex, omens, standing, data-slate,
-inscriptions, auspex, edict
+inscriptions, canon, auspex, edict
 
 Exempla:
   servitor augury theme
   servitor augury theme aspect
   servitor augury theme reason
   servitor augury theme | jq -r .inscriptions.reason
+  servitor augury theme | jq -r '.canon[].key'
   servitor augury mouse --is on && echo "the cursor is veiled"
   servitor augury screenshot standing
   servitor augury do-not-disturb --spare-auspex

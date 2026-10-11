@@ -29,11 +29,12 @@ tongue would interpret its quotes, dollars and semicolons, whereas
 "$SERVITOR_INSCRIPTION_REASON" stays one word.
 
 The inscriptions of an invocation are kept on the rite's data-slate, read by
-the augury and recorded in the chronicle. The omens of later auguries render
+the augury and recorded in the chronicle. What the rite declares is spoken
+apart, as the canon of the augury and of the census in binharic. The omens of later auguries render
 with the inscriptions the data-slate keeps.
 
 Kindred passages: mandatory, decrees, purpose, placeholders, augury,
-data-slate, edict
+canon, data-slate, edict
 
 Exempla:
   "inscriptions": {

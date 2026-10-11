@@ -19,15 +19,17 @@ Librarium without rites is told so, with the counsel to consecrate one.
 
 With --binharic, the census is a list for other machines, and every rite
 bears the keys rite, edict, aspect, standing, auspex, aspects, purpose,
-desecrated, last_rite and recorded_in — the last naming the scripture the
-rite was read from. "auspex" tells what the rite's auspex gave: "" when it
+desecrated, last_rite, recorded_in — naming the scripture the rite was read
+from — and canon, every inscription the rite declares with its purpose,
+whether it is mandatory and its decrees, as the augury speaks it ([] for a
+heretical rite). "auspex" tells what the rite's auspex gave: "" when it
 keeps none (and for an edict or a heretical rite), "heeded", "mute", or
 "forgone" under --spare-auspex; the table never shows it. "edict" is true for an edict, whose aspects are an empty list, and
 false for every other rite. A rite whose data-slate cannot be read is still
 counted; the lament is spoken apart from the census.
 
-Kindred passages: augury, standing, binharic, auspex, spare-auspex, librarium,
-inquisition, edict
+Kindred passages: augury, standing, binharic, auspex, spare-auspex, canon,
+librarium, inquisition, edict
 
 Exempla:
   servitor census
