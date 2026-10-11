@@ -16,6 +16,8 @@ const (
 	Undeclared
 	// Unclosed is a {{ that no }} ever closes.
 	Unclosed
+	// Aspectless is {{aspect}} or {{former}} in the words of an edict.
+	Aspectless
 )
 
 // Position locates a heresy within the words it was found in.
@@ -32,6 +34,8 @@ type Heresy struct {
 	Mark string // the mark as written, e.g. "{{stat}}"; "{{" when unclosed
 	Name string // what stands between the braces, e.g. "stat"
 	Mode Mode
+	// Edict tells that the words were an edict's, which bears no aspect.
+	Edict bool
 }
 
 // Message is the grimdark denunciation without its position.
@@ -45,28 +49,46 @@ func (h Heresy) Message() string {
 	case Unclosed:
 		return "a mark is opened with {{ but never sealed with }}; an open mark is a breach " +
 			"through which corruption seeps into the rite. To inscribe a literal {{, write {{{{"
+	case Aspectless:
+		which := "the aspect being invoked"
+		if h.Name == "former" {
+			which = "the former aspect"
+		}
+		return fmt.Sprintf("%s calls upon %s, yet an edict bears no aspect: it is proclaimed whole, "+
+			"never invoked into an aspect, so there is neither an aspect nor a former aspect to "+
+			"illuminate — %s", h.Mark, which, h.speakable())
 	}
 	if h.Mode == RiteMode && slices.Contains(voxMarks, h.Name) {
 		return fmt.Sprintf("%s may be spoken only in the tidings of a vox-cast; within the liturgy "+
 			"of a rite it is heresy", h.Mark)
 	}
 	return fmt.Sprintf("%s is no placeholder known to the codex and shall not be illuminated as "+
-		"nothing; %s", h.Mark, h.Mode.speakable())
+		"nothing; %s", h.Mark, h.speakable())
 }
 
-// speakable recites the marks a mode may speak.
-func (m Mode) speakable() string {
+// speakable recites the marks the words of the heresy may speak.
+func (h Heresy) speakable() string {
 	marks, words := riteMarks, "the words of a rite"
-	if m == VoxCastMode {
-		marks, words = append(slices.Clone(riteMarks), voxMarks...), "the tidings of a vox-cast"
+	if h.Edict {
+		marks, words = edictMarks, "the words of an edict"
+	}
+	if h.Mode == VoxCastMode {
+		marks, words = append(slices.Clone(marks), voxMarks...), "the tidings of a vox-cast"
+		if h.Edict {
+			words = "the tidings of an edict's vox-cast"
+		}
 	}
 	last := len(marks) - 1
 	return fmt.Sprintf("%s may speak only {{%s}} and {{%s}}", words,
 		strings.Join(marks[:last], "}}, {{"), marks[last])
 }
 
-// riteMarks are the marks every rite may speak, in the order of the codex.
-var riteMarks = []string{"aspect", "former", "rite.name", inscriptionPrefix + "<key>"}
+// riteMarks are the marks every rite may speak, in the order of the codex;
+// edictMarks are those an edict may speak.
+var (
+	riteMarks  = []string{"aspect", "former", "rite.name", inscriptionPrefix + "<key>"}
+	edictMarks = riteMarks[2:]
+)
 
 // Error is the denunciation prefixed with line:column.
 func (h Heresy) Error() string {
