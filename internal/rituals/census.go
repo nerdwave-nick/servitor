@@ -1,6 +1,8 @@
 package rituals
 
 import (
+	"context"
+
 	"github.com/nerdwave-nick/servitor/internal/augury"
 )
 
@@ -26,11 +28,8 @@ type Entry struct {
 // forgoAuspex leaves every auspex unawakened. Laments are data-slates
 // that could not be read, in the order of their rites.
 func (s *Servitor) Census(forgoAuspex bool) (entries []Entry, laments []error) {
-	names := s.Librarium.Names()
-	read := make([]augural, len(names))
-	s.gather(names, forgoAuspex, func(a augural) { read[a.at] = a })
 	entries = []Entry{}
-	for _, a := range read {
+	for _, a := range s.read(context.Background(), s.Librarium.Names(), forgoAuspex) {
 		if a.lament != nil {
 			laments = append(laments, a.lament)
 		}

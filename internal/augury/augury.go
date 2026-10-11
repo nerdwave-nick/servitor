@@ -22,6 +22,7 @@
 package augury
 
 import (
+	"context"
 	"os"
 
 	"github.com/nerdwave-nick/servitor/internal/invocation"
@@ -56,6 +57,10 @@ const (
 	Forgone  Heed = "forgone" // the auspex was left unawakened on request
 	Heeded   Heed = "heeded"  // the auspex named one of the rite's aspects
 	Mute     Heed = "mute"    // the auspex fell, outlasted its patience, or named no aspect
+	// Awaited is for a census kept as a vigil alone: the rite is told
+	// before its auspex settled, and will be told again once it has. No
+	// augury bears it.
+	Awaited Heed = "awaited"
 )
 
 // Augury is what the servitor reads of one rite; it marshals as the JSON of
@@ -123,6 +128,12 @@ func (o Options) env() librarium.Environment {
 // laments a data-slate that cannot be read; the augury is then read as if
 // the rite had none.
 func Augur(r *librarium.Rite, opts Options) (Augury, error) {
+	return AugurContext(context.Background(), r, opts)
+}
+
+// AugurContext is Augur whose auspex labours only while ctx lasts: when ctx
+// ends, its whole process group is slain and it is mute.
+func AugurContext(ctx context.Context, r *librarium.Rite, opts Options) (Augury, error) {
 	slate, err := ReadSlate(opts.env(), r.Name)
 	a := fromSlate(r.Name, slate)
 	a.Canon = CanonOf(r)
@@ -147,7 +158,7 @@ func Augur(r *librarium.Rite, opts Options) (Augury, error) {
 		a.Auspex = Forgone
 	default:
 		a.Auspex = Mute
-		if aspect, ok := s.auspex(opts); ok {
+		if aspect, ok := s.auspex(ctx, opts); ok {
 			a.Auspex = Heeded
 			a.Omens = append(a.Omens, Omen{Auspex: true, Aspect: aspect})
 		}

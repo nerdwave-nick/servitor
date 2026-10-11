@@ -40,14 +40,18 @@ rite of the census, under the key "auspex":
              among the omens
   "mute"     the auspex fell, outlasted its patience, or named no declared
              aspect, and gave no omen
+  "awaited"  told only while the census keeps vigil (--vigil): the auspex
+             has not yet settled, and the rite will be told again, heeded
+             or mute, once it has; no augury and no census spoken whole
+             ever bears it
 
 A mute auspex is thus never mistaken for a rite that keeps none. The aspect
 and the standing are judged by the agreement of whatever omens there are,
 heeded or not; the key only tells what the auspex lent them. It is no omen:
 within "omens" the auspex's own omen still bears "auspex": true.
 
-Kindred passages: omens, standing, augury, census, spare-auspex, patience,
-tongue, aspects, edict
+Kindred passages: omens, standing, augury, census, spare-auspex, vigil,
+patience, tongue, aspects, edict
 
 Exempla:
   "auspex": "makoctl mode | grep -q do-not-disturb && echo on || echo off"

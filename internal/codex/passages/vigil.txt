@@ -1,0 +1,48 @@
+Keep vigil over the census, telling each rite as soon as it is known
+
+The rune --vigil is given to the census. Without it the census is spoken
+whole, once the last auspex has settled. With it the census keeps vigil:
+it tells every rite at once, as far as it can be read without an auspex,
+then tells again each rite whose auspex was still awaited, as soon as that
+auspex settles. A lesser machine — a picker, a bar — may thus show every
+rite at once and mend each as its auspex answers.
+
+The vigil is spoken in binharic, with --binharic or without it: one object
+upon each line of stdout, and every object names its kind under the key
+"herald" ("rite", "lament" or "concluded"). Its order is fixed:
+
+  first    one "rite" line for every rite, by name. A rite whose auspex is
+           yet to answer bears "auspex": "awaited"; a rite without auspex,
+           an edict and a heretical rite are told whole at once, and are
+           never told again
+  then     one further "rite" line for every awaited rite, in the order
+           their auspexes settle, bearing "heeded" or "mute"
+  last     exactly one "concluded", once every rite is settled
+
+A "lament" line — a data-slate that cannot be read, naming its rite — may
+come anywhere before the conclusion. A later "rite" line replaces the
+earlier one of the same rite entirely; nothing is ever told in part. Once
+"concluded" is told, the last "rite" line of every rite, its herald set
+aside, is that rite's entry of `servitor census --binharic`, key for key
+and value for value, auspex and canon among them.
+
+The auspexes are awakened together, never more than sixteen at once, as
+for the plain census. With --spare-auspex none is awakened: every rite is
+told once, whole, bearing "forgone" where it keeps an auspex, and the
+conclusion follows at once.
+
+Should the reader of stdout depart before the conclusion, the vigil ends:
+every auspex still labouring is slain with its whole process group, and
+the servitor departs without a word upon stderr; its death-mark is then of
+no meaning. A vigil invokes nothing, as the census never does.
+
+Kindred passages: herald, lament, census, auspex, spare-auspex, binharic,
+canon, data-slate
+
+Exempla:
+  servitor census --vigil
+
+  servitor census --vigil |
+    jq -c 'select(.herald == "rite") | {rite, aspect, auspex}'
+
+  servitor census --vigil --spare-auspex

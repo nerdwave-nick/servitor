@@ -12,12 +12,15 @@ import (
 )
 
 func (a *app) newCensusCmd() *cobra.Command {
-	var binharic, spareAuspex bool
+	var binharic, spareAuspex, vigil bool
 	cmd := &cobra.Command{
 		Use:   "census",
 		Short: "Take a census of all rites and how they stand",
 		Args:  unknownRitual,
 		RunE: func(cmd *cobra.Command, _ []string) error {
+			if vigil {
+				return keepVigil(cmd, a.servitor(cmd), spareAuspex)
+			}
 			entries, laments := a.servitor(cmd).Census(spareAuspex)
 			for _, l := range laments {
 				fmt.Fprintln(cmd.ErrOrStderr(), "servitor ✠ "+l.Error())
@@ -40,6 +43,8 @@ func (a *app) newCensusCmd() *cobra.Command {
 	}
 	binharicRunes(cmd, &binharic, "render the census in binharic for lesser machines")
 	spareAuspexRune(cmd, &spareAuspex)
+	cmd.Flags().BoolVar(&vigil, "vigil", false,
+		"keep vigil: tell every rite at once in binharic, one line each, and again as each auspex settles")
 	return cmd
 }
 

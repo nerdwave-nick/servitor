@@ -28,7 +28,8 @@ const maxAuspexWords = 4 << 10
 // aspect and the data-slate's inscriptions. When its patience runs out the
 // whole group is slain. A failure, an impatient auspex and words that name
 // no declared aspect give no omen; only its standard output is heard.
-func (s *seer) auspex(opts Options) (string, bool) {
+// When ctx ends the group is slain as well, and the auspex gives no omen.
+func (s *seer) auspex(ctx context.Context, opts Options) (string, bool) {
 	v := placeholder.Values{Aspect: opts.Target, Rite: s.rite.Name}
 	if s.slate != nil {
 		v.Inscriptions = s.slate.Inscriptions
@@ -43,7 +44,7 @@ func (s *seer) auspex(opts Options) (string, bool) {
 			tongue = t
 		}
 	}
-	ctx, cancel := context.WithTimeout(context.Background(), s.rite.Auspex.Wait())
+	ctx, cancel := context.WithTimeout(ctx, s.rite.Auspex.Wait())
 	defer cancel()
 	cmd := exec.CommandContext(ctx, tongue, "-c", command)
 	cmd.Dir, cmd.Env = s.rite.Dir(), invocation.Environ(s.rite, v)

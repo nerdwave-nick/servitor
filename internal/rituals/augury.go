@@ -1,6 +1,7 @@
 package rituals
 
 import (
+	"context"
 	"errors"
 	"slices"
 	"strconv"
@@ -20,6 +21,11 @@ type Reading struct {
 // its data-slate alone, standing heretical. forgoAuspex leaves the auspex
 // unawakened. The error is *Unrecorded.
 func (s *Servitor) Augur(name string, forgoAuspex bool) (Reading, error) {
+	return s.augur(context.Background(), name, forgoAuspex)
+}
+
+// augur is Augur whose auspex labours only while ctx lasts.
+func (s *Servitor) augur(ctx context.Context, name string, forgoAuspex bool) (Reading, error) {
 	r, err := s.Rite(name)
 	opts := augury.Options{ForgoAuspex: forgoAuspex, Orders: s.Orders(), Env: s.env()}
 	var heretical *Heretical
@@ -30,7 +36,7 @@ func (s *Servitor) Augur(name string, forgoAuspex bool) (Reading, error) {
 	case err != nil:
 		return Reading{}, err
 	}
-	a, lament := augury.Augur(r, opts)
+	a, lament := augury.AugurContext(ctx, r, opts)
 	return Reading{Augury: a, Rite: r, Lament: lament}, nil
 }
 

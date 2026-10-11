@@ -1,0 +1,36 @@
+The key that names what each line of a vigil tells
+
+Every line the census speaks while it keeps vigil (--vigil) is one binharic
+object, and its key "herald" names what that line tells, so that a lesser
+machine knows each line by that key alone before it reads further:
+
+  "rite"       a rite, whole: every key of its entry in the binharic
+               census — rite, edict, aspect, standing, auspex, aspects,
+               purpose, desecrated, last_rite, recorded_in and canon —
+               set flat beside the herald. A later "rite" line of the same
+               rite replaces the earlier one entirely
+  "lament"     a lament spoken in the course of the vigil, such as a
+               data-slate that cannot be read: its words under "lament",
+               and under "rite" the rite it concerns, whenever it is known
+  "concluded"  the vigil's last line, told exactly once, when every rite
+               is settled; it bears nothing but its herald
+
+A rite told before its auspex answered bears "auspex": "awaited", and is
+told once more when it settles. Keys are only ever added, never taken away,
+and further heralds may be proclaimed in time to come: a machine that reads
+the vigil passes over a herald it does not know rather than falling. The
+census spoken without --vigil knows no herald.
+
+A lesser machine forged in Rust reads every line into one enumeration
+tagged by the herald, with a fallback for heralds yet unknown:
+
+  #[serde(tag = "herald", rename_all = "snake_case")]
+
+Kindred passages: vigil, lament, census, auspex, binharic, canon
+
+Exempla:
+  {"herald":"rite","rite":"theme","edict":false,"aspect":"","standing":"dormant","auspex":"awaited",...}
+  {"herald":"lament","lament":"the data-slate ... is garbled beyond the servitor's reading; ...","rite":"theme"}
+  {"herald":"concluded"}
+
+  servitor census --vigil | jq -r 'select(.herald == "lament") | .lament'

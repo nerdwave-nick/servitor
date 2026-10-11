@@ -54,7 +54,7 @@ var (
 	// Runes are the servitor's own runes (without their dashes), in the
 	// order of the codex. A rite's inscription runes are its own.
 	Runes = []string{"librarium", "chronicle", "foresee", "silence", "is", "binharic", "spare-vessels",
-		"spare-auspex", "schema", "version"}
+		"spare-auspex", "vigil", "schema", "version"}
 )
 
 // keyTopics names the passage of a key whose own name terminals would
