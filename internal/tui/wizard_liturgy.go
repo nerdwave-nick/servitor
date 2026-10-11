@@ -44,6 +44,10 @@ func (w *wizard) updateLiturgy(m *model, msg tea.Msg) (screen, tea.Cmd) {
 	case "a", "n":
 		w.choosing, w.kind = true, 0
 	case "enter", "e":
+		if n > 0 && w.d.edict && !edictBears(steps[w.cursor].kind) {
+			return w, m.notify(toastErr, "An edict bears no "+steps[w.cursor].kind.Key()+": it holds no aspect "+
+				"for one to keep. Cast it out with d.")
+		}
 		if n > 0 {
 			return w, w.editStep(m, w.cursor, steps[w.cursor])
 		}
@@ -72,7 +76,7 @@ func (w *wizard) updateLiturgy(m *model, msg tea.Msg) (screen, tea.Cmd) {
 }
 
 func (w *wizard) updateChoosing(m *model, key string) tea.Cmd {
-	kinds := librarium.Kinds
+	kinds := w.kinds()
 	switch key {
 	case "esc", "q":
 		w.choosing = false
@@ -120,13 +124,13 @@ func (w *wizard) liturgyView(m *model, width, height int) string {
 	t := m.t
 	if w.choosing {
 		lines := []string{t.text.Render("Choose the kind of the new step:"), ""}
-		for i, k := range librarium.Kinds {
+		for i, k := range w.kinds() {
 			line := fmt.Sprintf("%d %s %-14s", i+1, kindGlyph(k), k.Key()) + t.dim.Render(kindWords[k])
 			lines = append(lines, w.marked(m, i == w.kind, line, width))
 		}
 		return strings.Join(lines, "\n")
 	}
-	lines := []string{t.text.Render("The liturgy of the rite " + w.d.name + ", performed in order:"), ""}
+	lines := []string{t.text.Render("The liturgy of the " + w.d.noun() + " " + w.d.name + ", performed in order:"), ""}
 	if len(w.d.steps) == 0 {
 		lines = append(lines, t.dim.Render("  No step is written yet. Press a to add one."))
 	}

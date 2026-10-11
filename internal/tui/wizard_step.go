@@ -113,8 +113,12 @@ func (w *wizard) varying() [][2]string {
 }
 
 // aspectPage writes the fields of the step that vary per aspect, for the
-// aspect i; each bears the choice to be the same for every aspect.
+// aspect i; each bears the choice to be the same for every aspect. An
+// edict, which bears no aspect, speaks them once on a single page.
 func (w *wizard) aspectPage(m *model, i int) tea.Cmd {
+	if w.d.edict {
+		return w.oncePage(m)
+	}
 	sd := &w.work
 	a := w.d.aspectList()[i]
 	f := newForm(m.t)
@@ -174,6 +178,10 @@ func (w *wizard) textOf(key string) *varied[string] {
 // step is complete: the last aspect is written, or every value of the
 // page is the same for every aspect and no later aspect speaks its own.
 func (w *wizard) keepAspect() bool {
+	if w.d.edict {
+		w.keepOnce()
+		return true
+	}
 	f, sd := w.form, &w.work
 	aspects := w.d.aspectList()
 	a := aspects[w.index]

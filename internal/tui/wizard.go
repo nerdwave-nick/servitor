@@ -60,10 +60,6 @@ func (m *model) amend(key string, r *row) tea.Cmd {
 		return m.notify(toastErr, "The consecration wizard cannot read a heretical rite; purify it with o ($EDITOR) "+
 			"or excommunicate it with d.")
 	}
-	if rite.Edict {
-		return m.notify(toastErr, "The consecration wizard cannot yet take up the edict "+r.name+"; amend its "+
-			"scripture with o ($EDITOR).")
-	}
 	d := riteDraftFrom(rite)
 	if key == "c" {
 		d.origName, d.origPath, d.name = "", "", r.name+"-copy"
@@ -90,6 +86,9 @@ func (w *wizard) update(m *model, msg tea.Msg) (screen, tea.Cmd) {
 		return w.updateLiturgy(m, msg)
 	}
 	res, cmd := w.form.update(msg)
+	if edict := w.form.get("edict") == natureEdict; w.page == pageRite && edict != w.d.edict {
+		return w, w.turnNature(m, edict)
+	}
 	if w.page == pageEssence && w.work.kind == librarium.KindSanctum {
 		// The glyphs follow the vessel's extension unless spoken.
 		glyph, closing := librarium.DefaultGlyphs(w.form.get("sanctum"))
@@ -136,8 +135,10 @@ func (w *wizard) onward(m *model) tea.Cmd {
 	switch w.page {
 	case pageRite:
 		d := &w.d
-		d.name, d.purpose, d.aspects = strings.TrimSpace(f.get("name")), f.get("purpose"), f.get("aspects")
-		d.auspex, d.patience, d.tongue = f.get("auspex"), f.get("patience"), f.get("tongue")
+		d.name, d.purpose, d.tongue = strings.TrimSpace(f.get("name")), f.get("purpose"), f.get("tongue")
+		if d.edict = f.get("edict") == natureEdict; !d.edict {
+			d.aspects, d.auspex, d.patience = f.get("aspects"), f.get("auspex"), f.get("patience")
+		}
 		keys, _ := parseKeys(f.get("inscriptions"))
 		d.declare(keys)
 		return w.afterInscription(m, -1)
@@ -180,6 +181,8 @@ func (w *wizard) afterInscription(m *model, i int) tea.Cmd {
 	return nil
 }
 
+// ritePage writes the rite itself; an edict is asked no aspects and no
+// auspex.
 func (w *wizard) ritePage(m *model) tea.Cmd {
 	w.station = stationRite
 	d := w.d
@@ -198,26 +201,46 @@ func (w *wizard) ritePage(m *model) tea.Cmd {
 		})
 	f.addText("purpose", "Purpose", d.purpose, "Hide the cursor of the machine",
 		"Optional. Told in the census, the cogitator and the completions.", nil)
-	f.addText("aspects", "Aspects", d.aspects, "on, off",
-		"The aspects the rite may bring the machine into, separated by commas.",
-		func(s string) error { _, err := parseAspects(s); return err })
+	nature := natureAspects
+	if d.edict {
+		nature = natureEdict
+	}
+	f.addChoice("edict", "Nature", []string{natureAspects, natureEdict}, nature,
+		"A rite brings the machine into one of its aspects; an edict bears none and proclaims its whole "+
+			"liturgy anew at every invocation.")
+	if !d.edict {
+		f.addText("aspects", "Aspects", d.aspects, "on, off",
+			"The aspects the rite may bring the machine into, separated by commas.",
+			func(s string) error { _, err := parseAspects(s); return err })
+	}
 	f.addText("inscriptions", "Inscriptions", strings.Join(d.keys(), ", "), "reason, mode",
 		"Optional, separated by commas; each is spoken as a rune and illuminated as {{inscription.<name>}}.",
 		func(s string) error { _, err := parseKeys(s); return err })
-	f.addText("auspex", "Auspex", d.auspex, "makoctl mode | grep -q do-not-disturb && echo on || echo off",
-		"Optional. A command that speaks the aspect the machine stands in.", nil)
-	f.addText("patience", "Patience of the auspex", d.patience, "2s",
-		"How long the auspex may labour, such as 500ms or 5s.", validPatience)
+	if !d.edict {
+		f.addText("auspex", "Auspex", d.auspex, "makoctl mode | grep -q do-not-disturb && echo on || echo off",
+			"Optional. A command that speaks the aspect the machine stands in.", nil)
+		f.addText("patience", "Patience of the auspex", d.patience, "2s",
+			"How long the auspex may labour, such as 500ms or 5s.", validPatience)
+	}
 	f.addText("tongue", "Tongue", d.tongue, "bash",
 		"The program that speaks the rite's commands; unspoken, the tongue of the settings, or bash.", validWord)
 	return w.setForm(m, pageRite, 0, f)
 }
 
+// inscriptionPage writes the inscription i: its decrees per aspect, or
+// one plain decree for an edict.
 func (w *wizard) inscriptionPage(m *model, i int) tea.Cmd {
 	in := w.d.inscriptions[i]
 	f := newForm(m.t)
 	f.addText("purpose", "Purpose", in.purpose, "why the rite was invoked",
 		"Optional. Told beside its rune in the completions.", nil)
+	if w.d.edict {
+		f.addToggle("mandatory", "Mandatory", in.mandatory,
+			"A proclamation lacking this inscription, with no decree, is refused.")
+		f.addText("decree:*", "Decree", in.decrees[librarium.Fallback], "",
+			"Inscribed when the edict is proclaimed and no rune speaks otherwise; empty decrees nothing.", nil)
+		return w.setForm(m, pageInscription, i, f)
+	}
 	f.addToggle("mandatory", "Mandatory", in.mandatory,
 		"An invocation lacking this inscription, with no decree for its aspect, is refused.")
 	for _, a := range w.d.aspectList() {

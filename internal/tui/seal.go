@@ -84,7 +84,7 @@ func (w *wizard) updateSeal(m *model, msg tea.Msg) (screen, tea.Cmd) {
 		s.offset = math.MaxInt // the view holds it at the last page
 	case "enter", "ctrl+s":
 		if s.heresy {
-			return w, m.notify(toastErr, "Heresy remains. The rite cannot be sealed.")
+			return w, m.notify(toastErr, "Heresy remains. The "+w.d.noun()+" cannot be sealed.")
 		}
 		if err := w.sealRite(m); err != nil {
 			return w, m.notify(toastErr, err.Error())
@@ -94,7 +94,7 @@ func (w *wizard) updateSeal(m *model, msg tea.Msg) (screen, tea.Cmd) {
 		if w.d.origName != "" {
 			verb = "amended"
 		}
-		return nil, m.notify(toastOK, "The rite "+w.d.name+" is "+verb+". Glory to the Omnissiah.")
+		return nil, m.notify(toastOK, "The "+w.d.noun()+" "+w.d.name+" is "+verb+". Glory to the Omnissiah.")
 	}
 	return w, nil
 }
@@ -137,7 +137,7 @@ func (w *wizard) sealView(m *model, width, height int) string {
 	if s.heresy {
 		lines = append(lines, t.danger.Render("✠ Heresy detected. Return and purify the rite:"))
 	} else {
-		lines = append(lines, t.ok.Render("✔ The rite is pure. Press enter to seal it into the Librarium."))
+		lines = append(lines, t.ok.Render("✔ The "+w.d.noun()+" is pure. Press enter to seal it into the Librarium."))
 	}
 	for _, f := range s.found {
 		sev, st := f.Severity.String(), t.warn

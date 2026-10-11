@@ -67,6 +67,14 @@ func (d riteDraft) aspectList() []string {
 	return a
 }
 
+// noun is what the draft is called: a rite, or an edict.
+func (d riteDraft) noun() string {
+	if d.edict {
+		return "edict"
+	}
+	return "rite"
+}
+
 // keys are the declared inscription keys in order.
 func (d riteDraft) keys() []string {
 	keys := make([]string, len(d.inscriptions))

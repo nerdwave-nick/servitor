@@ -43,7 +43,7 @@ func TestWizard_ConsecrateAThemeRite(t *testing.T) {
 	h.mustNotShow("a rite's name must") // the lament fades once the name is amended
 	h.keys("tab")
 	h.typeText("The visage of the machine")
-	h.keys("tab", "ctrl+u")
+	h.keys("tab", "tab", "ctrl+u") // past the nature, which stays aspects
 	h.typeText("dark, porpl")
 	h.keys("tab")
 	h.typeText("reason")

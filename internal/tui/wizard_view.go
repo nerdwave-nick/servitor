@@ -10,9 +10,9 @@ import (
 func (w *wizard) view(m *model) string {
 	t := m.t
 	width, height := m.width, m.bodyH
-	title := "Consecration of a new rite"
+	title := "Consecration of a new " + w.d.noun()
 	if w.d.origName != "" {
-		title = "Amendment of the rite " + w.d.origName
+		title = "Amendment of the " + w.d.noun() + " " + w.d.origName
 	}
 	inner := width - 4
 	var body string
@@ -60,8 +60,11 @@ func (w *wizard) formHeading(m *model) string {
 	t := m.t
 	switch w.page {
 	case pageRite:
-		return t.text.Render("Speak the name, purpose and aspects of the rite, the inscriptions it bears and " +
-			"the auspex that reads it.")
+		if w.d.edict {
+			return t.text.Render("Speak the name and purpose of the edict and the inscriptions it bears.")
+		}
+		return t.text.Render("Speak the name, purpose and aspects of the rite, or declare it an edict, the " +
+			"inscriptions it bears and the auspex that reads it.")
 	case pageInscription:
 		return t.bold.Render(fmt.Sprintf("Inscription %q", w.d.inscriptions[w.index].key)) +
 			t.dim.Render(fmt.Sprintf("  ·  %d/%d", w.index+1, len(w.d.inscriptions)))
@@ -72,24 +75,34 @@ func (w *wizard) formHeading(m *model) string {
 	}
 	k := w.work.kind
 	aspects := w.d.aspectList()
+	spoken := len(aspects) // the pages of the words: one per aspect, or one for an edict
+	if w.d.edict {
+		spoken = 1
+	}
 	pages := 1
 	if k != librarium.KindVoxCast {
-		pages += len(aspects)
+		pages += spoken
 	}
 	if w.work.further && hasFurther(k) {
 		pages++
 	}
 	page, at := "essence", 1
-	switch w.page {
-	case pageFurther:
+	switch {
+	case w.page == pageFurther:
 		page, at = "further rites", 2
-	case pageAspect:
+	case w.page == pageAspect && w.d.edict:
+		page, at = w.varying()[0][1], pages
+	case w.page == pageAspect:
 		page, at = "aspect "+t.accent.Render(aspects[w.index]), pages-len(aspects)+w.index+1
 	}
 	head := t.bold.Render(verse) + t.dim.Render("  ·  ") + t.accent.Render(kindGlyph(k)+" "+k.Key()) +
 		t.dim.Render("  ·  ") + t.dim.Render(page) + t.dim.Render(fmt.Sprintf("  ·  %d/%d", at, pages))
 	if w.page == pageEssence && (k == librarium.KindIncantation || k == librarium.KindLitany) {
-		head += "\n" + t.dim.Render("Its "+w.varying()[0][1]+" is spoken on the pages of the aspects that follow.")
+		where := "the pages of the aspects that follow"
+		if w.d.edict {
+			where = "the page that follows"
+		}
+		head += "\n" + t.dim.Render("Its "+w.varying()[0][1]+" is spoken on "+where+".")
 	}
 	return head
 }
@@ -101,7 +114,8 @@ func (w *wizard) hints(m *model) [][2]string {
 	case w.form != nil:
 		return [][2]string{{"tab", "next field"}, {"enter", "onward"}, {"ctrl+s", "seal page"}, {"esc", "back"}}
 	case w.choosing:
-		return [][2]string{{"j/k", "choose"}, {"1-6", "swift choice"}, {"enter", "take it"}, {"esc", "withdraw"}}
+		return [][2]string{{"j/k", "choose"}, {fmt.Sprintf("1-%d", len(w.kinds())), "swift choice"}, {"enter", "take it"},
+			{"esc", "withdraw"}}
 	}
 	return [][2]string{{"a", "add a step"}, {"enter", "amend"}, {"d", "cast out"},
 		{"J/K", "reorder"}, {"tab", "onward to the seal"}, {"esc", "back"}}
