@@ -68,7 +68,7 @@ func TestResolve_SettingsOnlyOrdersOverDefault(t *testing.T) {
 		t.Fatalf("orders %+v must follow the settings", o)
 	}
 	o = (&Settings{Path: "/lib/servitor.json"}).Resolve(Runes{}, env)
-	if o.Tongue != DefaultTongue || o.Vox != VoxNotifySend || o.Patience != DefaultPatience {
+	if o.Tongue != DefaultTongue || o.Vox != VoxAuto || o.Patience != DefaultPatience {
 		t.Fatalf("orders %+v must fall back to the defaults", o)
 	}
 	if DefaultTongue != "bash" || DefaultPatience != 30*time.Second {
@@ -79,7 +79,7 @@ func TestResolve_SettingsOnlyOrdersOverDefault(t *testing.T) {
 func TestResolve_WithoutSettingsYieldsDefaults(t *testing.T) {
 	var s *Settings
 	o := s.Resolve(Runes{}, environ(map[string]string{"XDG_STATE_HOME": "/state"}))
-	want := Orders{Tongue: "bash", Chronicle: "/state/servitor/chronicle.jsonl", Vox: VoxNotifySend, Patience: 30 * time.Second}
+	want := Orders{Tongue: "bash", Chronicle: "/state/servitor/chronicle.jsonl", Vox: VoxAuto, Patience: 30 * time.Second}
 	if o != want {
 		t.Fatalf("orders %+v, want %+v", o, want)
 	}

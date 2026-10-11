@@ -9,6 +9,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/nerdwave-nick/servitor/internal/invocation"
+	"github.com/nerdwave-nick/servitor/internal/librarium"
 	"github.com/nerdwave-nick/servitor/internal/placeholder"
 	"github.com/nerdwave-nick/servitor/internal/rituals"
 	"github.com/nerdwave-nick/servitor/internal/vox"
@@ -26,8 +27,9 @@ const columns = 80
 // for, and one closing line of triumph.
 //
 // With a controlling terminal the report is told as the invocation is
-// performed and the desktop hears nothing. Without one the vox-casts are
-// sent to the desktop, and the report is told once the rite has triumphed.
+// performed, and the desktop hears only when the vox is "notify-send".
+// Without one the vox-casts are sent to the desktop (unless the vox is
+// "off"), and the report is told once the rite has triumphed.
 // Silence withholds all but the vox-casts told upon a terminal. A fall is
 // told by the lament alone.
 type narration struct {
@@ -36,7 +38,7 @@ type narration struct {
 	silence bool
 	width   int
 	pick    func(n int) int
-	desktop *vox.Herald // nil when live
+	desktop *vox.Herald // nil when the desktop is not to hear
 	res     rituals.Result
 	verses  []invocation.Verse
 	closing string // the triumph a success vox-cast proclaimed
@@ -48,7 +50,7 @@ func newNarration(w io.Writer, voxOrder string, silence bool) *narration {
 	if cols > 0 {
 		n.width = cols
 	}
-	if !live {
+	if !live || voxOrder == librarium.VoxNotifySend {
 		n.desktop = vox.New(vox.Config{Vox: voxOrder, Pick: n.pick})
 	}
 	return n
@@ -82,8 +84,10 @@ func (n *narration) Proclaim(p invocation.Proclamation) {
 	if p.Tidings == invocation.Success && !closed {
 		n.closing = m.Flavour
 	}
-	if !n.live {
+	if n.desktop != nil {
 		n.desktop.Send(m)
+	}
+	if !n.live {
 		return
 	}
 	switch p.Tidings {

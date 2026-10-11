@@ -52,7 +52,7 @@ var settingsHeresies = []struct {
 	{"patience nothing", `{"pattern": "Mark I", "patience": "0s"}`, `"0s" is no measure of patience`, `"0s"`},
 	{"patience negative", `{"pattern": "Mark I", "patience": "-5s"}`, `"-5s" is no measure of patience`, `"-5s"`},
 	{"patience number", `{"pattern": "Mark I", "patience": 30}`, `the "patience" of the settings must be written as a string`, `30}`},
-	{"vox unknown", `{"pattern": "Mark I", "vox": "loud"}`, `"loud" is no vox the codex knows`, `"loud"`},
+	{"vox unknown", `{"pattern": "Mark I", "vox": "loud"}`, `"loud" is no vox the codex knows; the "vox" of the settings must be "auto"`, `"loud"`},
 	{"vox boolean", `{"pattern": "Mark I", "vox": false}`, `the "vox" of the settings must be written as a string`, `false}`},
 	{"tongue empty", `{"pattern": "Mark I", "tongue": " "}`, `the "tongue" of the settings may not be empty`, `" "`},
 	{"chronicle empty", `{"pattern": "Mark I", "chronicle": ""}`, `the "chronicle" of the settings may not be empty`, `""`},
@@ -111,7 +111,7 @@ func TestLoadSettings_AbsentScriptureYieldsDefaults(t *testing.T) {
 		t.Fatalf("settings %+v, findings %v", *s, fs)
 	}
 	o := s.Resolve(Runes{}, environ(map[string]string{"HOME": "/home/adept"}))
-	want := Orders{Tongue: "bash", Chronicle: "/home/adept/.local/state/servitor/chronicle.jsonl", Vox: VoxNotifySend, Patience: 30 * time.Second}
+	want := Orders{Tongue: "bash", Chronicle: "/home/adept/.local/state/servitor/chronicle.jsonl", Vox: VoxAuto, Patience: 30 * time.Second}
 	if o != want {
 		t.Fatalf("orders %+v, want %+v", o, want)
 	}

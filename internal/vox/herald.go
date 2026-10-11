@@ -16,9 +16,9 @@ type Config struct {
 	Pick func(n int) int
 }
 
-// Herald sends the vox-casts of one invocation roused without a terminal
-// to the desktop, as a single notification replaced in place, unless the
-// vox is "off". It never fails the invocation: a missing or fallen
+// Herald sends the vox-casts of one invocation to the desktop, as a single
+// notification replaced in place, unless the vox is "off"; its caller
+// decides by the vox whether an invocation upon a terminal is heard. It never fails the invocation: a missing or fallen
 // notify-send stays silent. Raise one herald per invocation and Close it
 // afterwards. It is not safe for concurrent use.
 type Herald struct {

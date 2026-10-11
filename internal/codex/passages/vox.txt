@@ -1,12 +1,15 @@
 Whether vox-casts reach the desktop, written in the settings
 
 The vox is the servitor's channel to the desktop. In the settings,
-servitor.json beside the rites of the Librarium, "vox" decides whether the
-vox-casts of an invocation roused without a terminal are sent there:
+servitor.json beside the rites of the Librarium, "vox" decides which
+invocations send their vox-casts there, each as one desktop missive through
+the program notify-send, replaced in place by the next:
 
-  "notify-send"  every vox-cast becomes one desktop missive through the
-                 program notify-send, replaced in place by the next
-                 (this is the default)
+  "auto"         only an invocation roused without a terminal, from a
+                 hotkey or a launcher; at a terminal the report alone
+                 speaks (this is the default)
+  "notify-send"  every invocation, a terminal or none: at a terminal the
+                 desktop hears the vox-casts beside the report
   "off"          the desktop hears nothing
 
 The vox governs the desktop alone: an invocation spoken at a terminal still
@@ -18,4 +21,4 @@ Kindred passages: vox-cast, invoke, librarium
 
 Exempla:
   // servitor.json
-  {"pattern": "Mark I", "vox": "off"}
+  {"pattern": "Mark I", "vox": "notify-send"}

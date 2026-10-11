@@ -19,12 +19,13 @@ var SettingsKeys = []string{"pattern", "tongue", "chronicle", "vox", "patience",
 
 // The vox of the settings: whether tidings reach the desktop.
 const (
-	VoxNotifySend = "notify-send" // tidings are sent through notify-send
+	VoxAuto       = "auto"        // the desktop hears only an invocation roused without a terminal
+	VoxNotifySend = "notify-send" // the desktop hears every invocation, a terminal or none
 	VoxOff        = "off"         // the desktop stays silent
 )
 
 // Voxes are the vox the settings may command.
-var Voxes = []string{VoxNotifySend, VoxOff}
+var Voxes = []string{VoxAuto, VoxNotifySend, VoxOff}
 
 // Settings are the servitor's standing orders as written in a Librarium's
 // servitor.json (pattern Mark I). An order not written — or written in
@@ -34,7 +35,7 @@ type Settings struct {
 	Path      string        // where the settings are kept, whether or not they exist
 	Tongue    string        // "" when not written
 	Chronicle string        // as written; "" when not written
-	Vox       string        // VoxNotifySend, VoxOff, or "" when not written
+	Vox       string        // one of Voxes, or "" when not written
 	Patience  time.Duration // 0 when not written
 }
 
@@ -117,8 +118,9 @@ func (d *decoder) vox(v *hujson.Value) string {
 	if slices.Contains(Voxes, s) {
 		return s
 	}
-	d.heresy(v, "%q is no vox the codex knows; the \"vox\" of the settings must be %q, that tidings of "+
-		"every invocation reach the desktop through notify-send, or %q, that the desktop stays silent "+
-		"(a terminal still hears them)", s, VoxNotifySend, VoxOff)
+	d.heresy(v, "%q is no vox the codex knows; the \"vox\" of the settings must be %q, that the desktop "+
+		"hears through notify-send only an invocation roused without a terminal, %q, that it hears every "+
+		"invocation, a terminal or none, or %q, that the desktop stays silent (a terminal still hears the "+
+		"report)", s, VoxAuto, VoxNotifySend, VoxOff)
 	return ""
 }

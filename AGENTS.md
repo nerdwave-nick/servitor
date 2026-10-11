@@ -48,7 +48,7 @@ domain and the code; never add plain words or plain glosses to anything a user r
 | timeout | patience | `patience` |
 | rollback (per step) | reversion | `reversion` |
 | notification step | vox-cast | `vox-cast` (`progress`, `success`) |
-| desktop notifications on/off | vox | settings `vox`: `notify-send` / `off` |
+| desktop notifications (auto / always / never) | vox | settings `vox`: `auto` / `notify-send` / `off` |
 | metadata key/value | inscription | `inscriptions` (`purpose`, `mandatory`, `decrees`) |
 | per-state default values | decrees | `decrees` |
 | per-state value | aspect map | object keyed by aspect, `"*"` fallback |

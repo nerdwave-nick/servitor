@@ -21,9 +21,9 @@
       "$ref": "#/$defs/word"
     },
     "vox": {
-      "description": "Whether vox-casts reach the desktop: \"notify-send\" sends the tidings of every invocation there, \"off\" keeps the desktop silent (a terminal still hears them).",
-      "enum": ["notify-send", "off"],
-      "default": "notify-send"
+      "description": "Whether vox-casts reach the desktop through notify-send: \"auto\" sends there the tidings of an invocation roused without a terminal (a terminal hears the report instead), \"notify-send\" sends the tidings of every invocation, a terminal or none, \"off\" keeps the desktop silent (a terminal still hears the report).",
+      "enum": ["auto", "notify-send", "off"],
+      "default": "auto"
     },
     "patience": {
       "description": "How long an incantation or litany may labour before it is slain and deemed fallen, unless the step says otherwise: a span greater than nothing, such as \"500ms\", \"30s\" or \"2m\".",

@@ -34,7 +34,9 @@ next: progress tells "step x / n" and lingers until the rite ends, triumph
 fades as the desktop wills, and a fall is proclaimed with critical urgency
 so that it cannot pass unseen. Should notify-send be absent or fall silent,
 the servitor stays silent too; a vox-cast never fails an invocation. The
-settings' "vox" may silence the desktop altogether; when foreseeing, nothing
+settings' "vox" may send the vox-casts of a terminal's invocations to the
+desktop as well ("notify-send"), or silence the desktop altogether ("off");
+when foreseeing, nothing
 is proclaimed at all.
 
 A "success" vox-cast that is not the last step is an impurity, for it would

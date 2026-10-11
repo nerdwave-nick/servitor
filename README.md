@@ -90,7 +90,7 @@ Every key is optional except the pattern:
   "pattern": "Mark I",
   "tongue": "bash",          // the tongue of incantations and litanies
   "patience": "30s",         // how long a command may labour
-  "vox": "notify-send",      // or "off": the desktop hears no vox-cast
+  "vox": "auto",             // "notify-send": the desktop hears every invocation; "off": none
   "chronicle": "~/.local/state/servitor/chronicle.jsonl",
 }
 ```
@@ -473,8 +473,10 @@ wills, and a fall is proclaimed with critical urgency, unbidden; the report
 follows on stdout once the rite has triumphed. The words are drawn at
 random from the servitor's own litanies of progress, triumph and lament,
 and speak of "the aspect «porpl»", never of a bare aspect. Should `notify-send`
-be absent, the servitor stays silent rather than fail; `"vox": "off"` in the
-settings silences the desktop altogether. In the cogitator the tidings are
+be absent, the servitor stays silent rather than fail. The settings' `"vox"`
+decides which invocations the desktop hears: `"auto"` (the default) only
+those roused without a terminal, `"notify-send"` every one — a terminal's
+invocation then tells its report *and* sends its missive — and `"off"` none. In the cogitator the tidings are
 shown in the cogitator itself.
 
 ## The chronicle

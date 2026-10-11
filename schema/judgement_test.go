@@ -172,6 +172,7 @@ var settingsJudgements = map[string]bool{
 	`{"$schema": "https://example.org/s.json", "pattern": "Mark I", "tongue": "zsh", "chronicle": "~/c.jsonl",
 	  "vox": "notify-send", "patience": "45s"}`: true,
 	`{"pattern": "Mark I", "vox": "off"}`:       true,
+	`{"pattern": "Mark I", "vox": "auto"}`:      true,
 	`{"tongue": "zsh"}`:                         false,
 	`{"pattern": "Mark II"}`:                    false,
 	`{"pattern": "Mark I", "shell": "zsh"}`:     false,

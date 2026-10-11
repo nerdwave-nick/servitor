@@ -14,7 +14,7 @@ const EnvChronicle = "SERVITOR_CHRONICLE"
 // Defaults of the orders the settings do not write.
 const (
 	DefaultTongue   = "bash"
-	DefaultVox      = VoxNotifySend
+	DefaultVox      = VoxAuto
 	DefaultPatience = 30 * time.Second
 )
 
@@ -31,7 +31,7 @@ type Runes struct {
 type Orders struct {
 	Tongue    string        // the tongue of incantations and litanies naming none
 	Chronicle string        // absolute path of the chronicle
-	Vox       string        // VoxNotifySend or VoxOff
+	Vox       string        // one of Voxes
 	Patience  time.Duration // the patience of incantations and litanies naming none
 }
 
