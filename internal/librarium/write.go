@@ -8,7 +8,8 @@ import (
 )
 
 // Marshal writes r as indented Mark I scripture. Keys follow the order of
-// the codex (save "$schema", which is kept and written first), defaults that
+// the codex (save "$schema", which is kept and written first), an edict is
+// written with "edict": true and no "aspects", defaults that
 // were never written stay unwritten, the alias "force" is written as "zeal",
 // and comments are not preserved. An array or object of scalars shares one
 // line when it fits in eighty columns, save scripture written as its lines.
@@ -76,8 +77,12 @@ func (w *writer) rite(r *Rite) {
 	w.optional(SchemaKey, r.Schema)
 	w.field("pattern", Pattern)
 	w.optional("purpose", r.Purpose)
-	w.str("aspects")
-	w.strings(r.Aspects)
+	if r.Edict {
+		w.flag("edict", true)
+	} else {
+		w.str("aspects")
+		w.strings(r.Aspects)
+	}
 	if len(r.Inscriptions) > 0 {
 		w.str("inscriptions")
 		w.begin()

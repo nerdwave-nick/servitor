@@ -46,8 +46,11 @@ Markers begun twice, never sealed, or sealed without beginning are heresy.
 Should the invocation fall, the reversion returns the vessel to the very
 scripture it held before, and strikes a vessel the sanctum consecrated.
 
+An edict may keep no sanctum: a sanctum's marker records an aspect, and an
+edict bears none. A sanctum in an edict's liturgy is heresy.
+
 Kindred passages: ward, glyph, closing-glyph, consecrate, scripture, vessel,
-omens, standing
+omens, standing, edict
 
 Exempla:
   {"sanctum": "~/.config/niri/util.kdl",

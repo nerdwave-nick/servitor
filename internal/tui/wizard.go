@@ -60,6 +60,10 @@ func (m *model) amend(key string, r *row) tea.Cmd {
 		return m.notify(toastErr, "The consecration wizard cannot read a heretical rite; purify it with o ($EDITOR) "+
 			"or excommunicate it with d.")
 	}
+	if rite.Edict {
+		return m.notify(toastErr, "The consecration wizard cannot yet take up the edict "+r.name+"; amend its "+
+			"scripture with o ($EDITOR).")
+	}
 	d := riteDraftFrom(rite)
 	if key == "c" {
 		d.origName, d.origPath, d.name = "", "", r.name+"-copy"

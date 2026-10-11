@@ -16,6 +16,13 @@ func scripture(extra, liturgy string) string {
 
 func step(s string) string { return scripture("", s) }
 
+// edict is an edict with the given extra keys and liturgy.
+func edict(extra, liturgy string) string {
+	return fmt.Sprintf(`{"pattern": "Mark I", "edict": true%s, "liturgy": [%s]}`, extra, liturgy)
+}
+
+func edictStep(s string) string { return edict("", s) }
+
 // judgements are scriptures whose purity the schema can tell as well as the
 // librarium: both must judge each alike. Heresies only the whole rite can
 // reveal — an aspect map naming an undeclared aspect or leaving a declared
@@ -134,6 +141,64 @@ var judgements = []struct {
 	{"vox-cast success", step(`{"vox-cast": "success"}`), true},
 	{"vox-cast failure", step(`{"vox-cast": "failure"}`), false},
 	{"vox-cast with patience", step(`{"vox-cast": "progress", "patience": "1s"}`), false},
+
+	{"edict", `{"pattern": "Mark I", "edict": true}`, true},
+	{"edict every key", edict(`, "purpose": "p", "tongue": "zsh", "inscriptions": {"region": {"purpose": "p",
+		"mandatory": true, "decrees": "full"}, "bare": {}}`, `{"incantation": "a {{inscription.region}}", "tongue": "sh",
+		"patience": "2m", "reversion": "b"}, {"vox-cast": "progress"}, {"litany": "s", "offerings": ["", "{{rite.name}}"],
+		"tongue": "sh", "patience": "1s", "reversion": ""}, {"vox-cast": "success"}`), true},
+	{"edict false beside aspects", scripture(`, "edict": false`, `{"incantation": {"on": "a", "*": "b"}}`), true},
+	{"edict false alone", `{"pattern": "Mark I", "edict": false}`, false},
+	{"edict beside aspects", scripture(`, "edict": true`, ``), false},
+	{"edict beside empty aspects", `{"pattern": "Mark I", "edict": true, "aspects": []}`, false},
+	{"edict no boolean", `{"pattern": "Mark I", "edict": "yes"}`, false},
+	{"edict no boolean beside aspects", scripture(`, "edict": 1`, ``), false},
+	{"edict null", `{"pattern": "Mark I", "edict": null}`, false},
+	{"edict keeps a sanctum", edictStep(`{"sanctum": "v", "scripture": ""}`), false},
+	{"edict transcribes", edictStep(`{"transcription": "v", "scripture": null}`), false},
+	{"edict tethers", edictStep(`{"tether": "t", "anchor": "a"}`), false},
+	{"edict auspex", edict(`, "auspex": "cat x"`, ``), false},
+	{"edict auspex long", edict(`, "auspex": {"rite": "cat x"}`, ``), false},
+	{"edict incantation map", edictStep(`{"incantation": {"on": "a"}}`), false},
+	{"edict incantation fallback only", edictStep(`{"incantation": {"*": "a"}}`), false},
+	{"edict scroll map", edictStep(`{"litany": {"*": "s"}}`), false},
+	{"edict offering map", edictStep(`{"litany": "s", "offerings": ["a", {"*": "b"}]}`), false},
+	{"edict reversion map", edictStep(`{"incantation": "a", "reversion": {"*": ""}}`), false},
+	{"edict patience map", edictStep(`{"incantation": "a", "patience": {"*": "1s"}}`), false},
+	{"edict tongue map", edictStep(`{"litany": "s", "tongue": {"*": "sh"}}`), false},
+	{"edict rite tongue map", edict(`, "tongue": {"*": "sh"}`, ``), false},
+	{"edict decrees map", edict(`, "inscriptions": {"m": {"decrees": {"*": "x"}}}`, ``), false},
+	{"edict decrees empty map", edict(`, "inscriptions": {"m": {"decrees": {}}}`, ``), false},
+}
+
+// beyondTheSchema are heresies of an edict that only the librarium can
+// tell, each with the reason no schema can: the librarium denounces them,
+// the schema lets them pass. Should the schema ever learn to judge one, it
+// belongs among the judgements instead.
+var beyondTheSchema = []struct{ name, scripture, why string }{
+	{"edict speaks aspect", edictStep(`{"incantation": "echo {{aspect}}"}`),
+		"placeholders are words within a string, which a schema does not read"},
+	{"edict speaks former", edictStep(`{"incantation": "a", "reversion": "echo {{former}}"}`),
+		"placeholders are words within a string, which a schema does not read"},
+	{"edict speaks aspect in an offering", edictStep(`{"litany": "s", "offerings": ["~/{{aspect}}"]}`),
+		"placeholders are words within a string, which a schema does not read"},
+}
+
+func TestRiteSchema_LeavesBeyondItWhatOnlyTheLibrariumTells(t *testing.T) {
+	s := compile(t, Rite)
+	for _, c := range beyondTheSchema {
+		t.Run(c.name, func(t *testing.T) {
+			if c.why == "" {
+				t.Fatal("a heresy beyond the schema must say why")
+			}
+			if _, fs := librarium.Parse("r", "/lib/rites/r.json", []byte(c.scripture)); !fs.Heretical() {
+				t.Fatalf("the librarium finds %s pure", c.scripture)
+			}
+			if err := validate(t, s, []byte(c.scripture)); err != nil {
+				t.Fatalf("the schema judges %s after all (%v); judge it among the judgements", c.scripture, err)
+			}
+		})
+	}
 }
 
 // patiences are spans as the librarium reads them: pure when greater than

@@ -6,8 +6,11 @@ themes of a visage. The list is never discovered from halls or vessels and
 never asked of the faithful while the rite is performed; what is not written
 here does not exist for the rite.
 
-The list must not be empty, for a rite without aspects can never be invoked,
-and no aspect may be named twice. An aspect's name must begin with a letter
+The list must not be empty, for a rite of aspects without aspects can never
+be invoked, and no aspect may be named twice. A rite that brings the machine
+into no aspect at all is no rite of aspects but an edict: it bears
+"edict": true in place of "aspects", and a rite bearing both, or neither, is
+heresy. An aspect's name must begin with a letter
 or digit and continue only with letters, digits, ".", "_" or "-"; the "*"
 is no aspect but the fallback of aspect maps, serving every aspect not named
 there.
@@ -21,9 +24,10 @@ without. An aspect-map key that names no declared aspect is heresy.
 At invocation the aspect being invoked is spoken as {{aspect}} and in the
 environment as SERVITOR_ASPECT; the aspect the rite stood in before is
 {{former}} and SERVITOR_FORMER_ASPECT. Which aspect a rite stands in now is
-divined from its omens, as the augury tells.
+divined from its omens, as the augury tells. An edict knows none of these.
 
-Kindred passages: aspect-maps, invoke, augury, omens, standing, placeholders
+Kindred passages: aspect-maps, edict, invoke, augury, omens, standing,
+placeholders
 
 Exempla:
   "aspects": ["default", "finii", "porpl"]

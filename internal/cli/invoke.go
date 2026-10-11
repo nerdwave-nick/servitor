@@ -56,6 +56,9 @@ func (a *app) unfitRite(name string) error {
 }
 
 func (a *app) newRiteCmd(r *librarium.Rite, foresee, silence *bool) *cobra.Command {
+	if r.Edict {
+		return a.newEdictCmd(r)
+	}
 	short := r.Purpose
 	if short == "" {
 		short = "Invoke one of the aspects " + strings.Join(r.Aspects, "|")
@@ -82,12 +85,47 @@ func (a *app) newRiteCmd(r *librarium.Rite, foresee, silence *bool) *cobra.Comma
 			return a.invoke(cmd, r, args[0], *foresee, *silence)
 		},
 	}
+	inscriptionRunes(cmd, r)
+	return cmd
+}
+
+// newEdictCmd is the ritual of the edict r. It bears the edict's
+// inscriptions as runes, yet refuses every invocation: this servitor
+// cannot yet proclaim an edict, and it never performs one in part.
+func (a *app) newEdictCmd(r *librarium.Rite) *cobra.Command {
+	short := r.Purpose
+	if short == "" {
+		short = "Proclaim the edict " + r.Name
+	}
+	cmd := &cobra.Command{
+		Use:     r.Name,
+		Short:   short,
+		Long:    riteLong(r),
+		Example: riteExample(r),
+		Args: func(*cobra.Command, []string) error {
+			return fmt.Errorf("the edict %q bears no aspect and is proclaimed whole, yet this servitor has "+
+				"not yet been taught the rite of proclaiming an edict; not one verse of its liturgy is "+
+				"performed", r.Name)
+		},
+		ValidArgsFunction: cobra.NoFileCompletions,
+		RunE:              func(*cobra.Command, []string) error { return nil },
+	}
+	inscriptionRunes(cmd, r)
+	return cmd
+}
+
+// inscriptionRunes gives the ritual of r a rune for each of its
+// inscriptions, completing the words it decrees.
+func inscriptionRunes(cmd *cobra.Command, r *librarium.Rite) {
 	for _, in := range r.Inscriptions {
 		usage := in.Purpose
 		if usage == "" {
 			usage = "inscription " + in.Key
 		}
-		if in.Mandatory {
+		switch {
+		case in.Mandatory && r.Edict:
+			usage += " (mandatory, unless the edict decrees it)"
+		case in.Mandatory:
 			usage += " (mandatory, unless the aspect decrees it)"
 		}
 		cmd.Flags().Var(wordRune(new(string), "", "word"), in.Key, usage)
@@ -95,7 +133,6 @@ func (a *app) newRiteCmd(r *librarium.Rite, foresee, silence *bool) *cobra.Comma
 			return decreeCompletions(in), cobra.ShellCompDirectiveNoFileComp
 		})
 	}
-	return cmd
 }
 
 // invoke performs (or foresees) the rite r into aspect, heeding an
@@ -149,7 +186,12 @@ func riteLong(r *librarium.Rite) string {
 	if r.Purpose != "" {
 		b.WriteString(r.Purpose + "\n\n")
 	}
-	fmt.Fprintf(&b, "Aspects: %s\nRecorded in: %s\n\nLiturgy:\n", strings.Join(r.Aspects, ", "), r.Path)
+	if r.Edict {
+		b.WriteString("Edict: proclaimed whole, bearing no aspect\n")
+	} else {
+		fmt.Fprintf(&b, "Aspects: %s\n", strings.Join(r.Aspects, ", "))
+	}
+	fmt.Fprintf(&b, "Recorded in: %s\n\nLiturgy:\n", r.Path)
 	for i, step := range r.Liturgy {
 		fmt.Fprintf(&b, "  verse %d · %s %s\n", i+1, step.Kind().Key(), stepWords(step))
 	}
@@ -159,8 +201,8 @@ func riteLong(r *librarium.Rite) string {
 // stepWords is what a step's own key holds, as written.
 func stepWords(step librarium.Step) string {
 	written := func(m librarium.AspectMap[string]) string {
-		if v, ok := m.For(librarium.Fallback); ok && m.IsUniform() {
-			return v
+		if m.IsUniform() {
+			return m.Entries()[0].Value
 		}
 		return "(per aspect)"
 	}
@@ -182,7 +224,10 @@ func stepWords(step librarium.Step) string {
 }
 
 func riteExample(r *librarium.Rite) string {
-	ex := "  servitor invoke " + r.Name + " " + r.Aspects[0]
+	ex := "  servitor invoke " + r.Name
+	if len(r.Aspects) > 0 {
+		ex += " " + r.Aspects[0]
+	}
 	if keys := r.InscriptionKeys(); len(keys) > 0 {
 		ex += " --" + keys[0] + " <value>"
 	}

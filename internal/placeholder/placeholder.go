@@ -4,6 +4,8 @@
 // In a rite (RiteMode) the marks are {{aspect}}, {{former}}, {{rite.name}}
 // and {{inscription.<key>}}. Vox-cast tidings (VoxCastMode) may additionally
 // speak {{heresy}}, {{step}}, {{steps}}, {{step.kind}} and {{step.target}}.
+// The words of an edict (Scope.Edict) bear no aspect: {{aspect}} and
+// {{former}} are heresy there.
 // {{{{ is a literal {{; a lone }} is literal. Every other mark, an inscription
 // the rite never declared, and a mark that is never closed are heresies; they
 // are never rendered empty.
@@ -33,6 +35,9 @@ const (
 type Scope struct {
 	Mode         Mode
 	Inscriptions []string // keys declared under the rite's inscriptions
+	// Edict marks the words of an edict, which bears no aspect: {{aspect}}
+	// and {{former}} are heresy there.
+	Edict bool
 }
 
 // Values are what the marks are illuminated with during one invocation.
@@ -115,9 +120,13 @@ const inscriptionPrefix = "inscription."
 // resolve gives the value of one mark, or the kind of heresy it commits.
 func (s Scope) resolve(name string, v Values) (string, Kind, bool) {
 	switch name {
-	case "aspect":
-		return v.Aspect, 0, true
-	case "former":
+	case "aspect", "former":
+		if s.Edict {
+			return "", Aspectless, false
+		}
+		if name == "aspect" {
+			return v.Aspect, 0, true
+		}
 		return v.Former, 0, true
 	case "rite.name":
 		return v.Rite, 0, true
@@ -156,7 +165,7 @@ func (t Tidings) resolve(name string) (string, bool) {
 }
 
 func (s Scope) heresy(kind Kind, text string, off int, mark, name string) Heresy {
-	return Heresy{Kind: kind, Pos: locate(text, off), Mark: mark, Name: name, Mode: s.Mode}
+	return Heresy{Kind: kind, Pos: locate(text, off), Mark: mark, Name: name, Mode: s.Mode, Edict: s.Edict}
 }
 
 // locate turns a byte offset into a position with line and byte column.

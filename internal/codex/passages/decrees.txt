@@ -7,6 +7,9 @@ serving every aspect not named. Unlike the aspect maps of the steps, decrees
 may leave aspects without a word; such an invocation is simply uninscribed,
 unless the inscription is mandatory.
 
+An edict bears no aspect, so its decrees are a single plain word, never an
+aspect map; that word is inscribed whenever the invocation gives none.
+
 A rune given to the invocation outranks the decree; a rune given the empty
 word clears it. Decrees are never illuminated: placeholders written in them
 are kept as written.
@@ -15,7 +18,7 @@ Completion offers the decreed words when the rune of the inscription is
 written, each with the aspects that decree it, and the inquisition notes as
 an impurity a mandatory inscription that some aspect does not decree.
 
-Kindred passages: inscriptions, mandatory, aspect-maps, invoke
+Kindred passages: inscriptions, mandatory, aspect-maps, invoke, edict
 
 Exempla:
   "inscriptions": {

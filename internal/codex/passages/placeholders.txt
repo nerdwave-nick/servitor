@@ -13,6 +13,10 @@ These marks are known in every word of a rite:
   {{inscription.<key>}}   the inscription of that key, from its rune or its
                           decree; empty when neither gives it
 
+An edict bears no aspect, so in its words {{aspect}} and {{former}} are
+heresy; {{rite.name}} and {{inscription.<key>}} serve it as they serve every
+rite.
+
 The tidings a vox-cast sends are drawn from the servitor's own embedded
 lists of tidings, and those alone speak the further marks of the invocation:
 {{heresy}} (why it fell), {{step}} (the verse just performed), {{steps}}
@@ -36,14 +40,17 @@ mark admits no spaces within its braces. To inscribe a literal {{, write
 Incantations, litanies and the auspex also receive the same knowledge through
 the environment: SERVITOR_ASPECT, SERVITOR_FORMER_ASPECT, SERVITOR_RITE, and
 for every declared inscription SERVITOR_INSCRIPTION_<KEY> — the key in
-capitals, each "-" and "." made "_" (empty when unset). Prefer these over
+capitals, each "-" and "." made "_" (empty when unset). An edict's
+incantations and litanies receive no SERVITOR_ASPECT and no
+SERVITOR_FORMER_ASPECT. Prefer these over
 placeholders within the words a tongue will speak: a placeholder pastes its
 value into the words before the tongue reads them, so a quote, a "$" or a
 ";" within an inscription would be interpreted by the tongue as part of the
 command. A variable of the environment is read by the tongue as one word,
 untouched, when written within double quotes.
 
-Kindred passages: aspect-maps, inscriptions, illuminate, incantation, vox-cast
+Kindred passages: aspect-maps, inscriptions, illuminate, incantation, vox-cast,
+edict
 
 Exempla:
   {"sanctum": "~/.config/niri/util.kdl",

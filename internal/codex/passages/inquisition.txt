@@ -9,9 +9,11 @@ the Inquisition.
 
 Heresies must be purged, for a heretical rite cannot be invoked: malformed
 scripture, unknown keys, a missing or foreign pattern, aspects empty,
-repeated or unworthily named, aspect maps naming aspects never declared, an
-aspect left without a value and without "*", unknown placeholders and
-inscriptions never declared, missing tomes, a null scripture in a sanctum, a
+repeated or unworthily named, a rite bearing both "aspects" and
+"edict": true or neither, aspect maps naming aspects never declared, an
+aspect left without a value and without "*", an edict holding a sanctum,
+transcription, tether, auspex, aspect map, {{aspect}} or {{former}}, unknown
+placeholders and inscriptions never declared, missing tomes, a null scripture in a sanctum, a
 vox-cast that is neither "progress" nor "success", a ward claimed twice in one
 vessel, a rite recorded in two scriptures, heretical settings, and sanctums
 whose markers are broken.

@@ -11,7 +11,9 @@ import (
 var (
 	rite = Scope{Mode: RiteMode, Inscriptions: []string{"reason", "mode"}}
 	vox  = Scope{Mode: VoxCastMode, Inscriptions: []string{"reason", "mode"}}
-	vals = Values{
+	// edict is the scope of the words of an edict, which bears no aspect.
+	edict = Scope{Mode: RiteMode, Edict: true, Inscriptions: []string{"reason", "mode"}}
+	vals  = Values{
 		Aspect: "porpl", Former: "default", Rite: "theme",
 		Inscriptions: map[string]string{"reason": "gaming remnant"},
 		Tidings:      Tidings{Heresy: "the vessel is sealed", Step: 2, Steps: 5, StepKind: "tether", StepTarget: "~/current-theme"},
@@ -116,6 +118,13 @@ func TestCheck_Heresies(t *testing.T) {
 			{Kind: Unclosed, Pos: Position{0, 1, 1}, Mark: "{{", Name: "", Mode: RiteMode}}},
 		{"byte column after multibyte", rite, "→{{x}}", Heresies{
 			{Kind: Unknown, Pos: Position{3, 1, 4}, Mark: "{{x}}", Name: "x", Mode: RiteMode}}},
+		{"clean edict", edict, "{{rite.name}} {{inscription.reason}} {{{{aspect}}", nil},
+		{"aspect in an edict", edict, "x {{aspect}}", Heresies{
+			{Kind: Aspectless, Pos: Position{2, 1, 3}, Mark: "{{aspect}}", Name: "aspect", Mode: RiteMode, Edict: true}}},
+		{"former in an edict", edict, "{{former}}", Heresies{
+			{Kind: Aspectless, Pos: Position{0, 1, 1}, Mark: "{{former}}", Name: "former", Mode: RiteMode, Edict: true}}},
+		{"former in the tidings of an edict", Scope{Mode: VoxCastMode, Edict: true}, "{{step}} {{former}}", Heresies{
+			{Kind: Aspectless, Pos: Position{9, 1, 10}, Mark: "{{former}}", Name: "former", Mode: VoxCastMode, Edict: true}}},
 		{"several in order", rite, "{{a}} {{aspect}}\n{{b}} {{c", Heresies{
 			{Kind: Unknown, Pos: Position{0, 1, 1}, Mark: "{{a}}", Name: "a", Mode: RiteMode},
 			{Kind: Unknown, Pos: Position{17, 2, 1}, Mark: "{{b}}", Name: "b", Mode: RiteMode},
@@ -164,6 +173,9 @@ func TestHeresy_Denunciations(t *testing.T) {
 		{"reserved for vox-casts", rite, "{{steps}}", []string{"{{steps}}", "vox-cast"}},
 		{"undeclared", rite, "{{inscription.reasn}}", []string{"{{inscription.reasn}}", `"reasn"`, "inscriptions"}},
 		{"unclosed", rite, "{{aspect", []string{"{{", "}}", "{{{{"}},
+		{"aspect in an edict", edict, "{{aspect}}", []string{"{{aspect}}", "edict", "bears no aspect", "{{rite.name}}", "{{inscription.<key>}}"}},
+		{"former in an edict", edict, "{{former}}", []string{"{{former}}", "edict", "former aspect"}},
+		{"unknown in an edict", edict, "{{stat}}", []string{"{{stat}}", "the words of an edict", "{{rite.name}}", "{{inscription.<key>}}"}},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -181,6 +193,9 @@ func TestHeresy_Denunciations(t *testing.T) {
 				if strings.Contains(strings.ToLower(msg), p) {
 					t.Errorf("denunciation %q speaks the profane %q", msg, p)
 				}
+			}
+			if c.name == "unknown in an edict" && (strings.Contains(msg, "{{aspect}}") || strings.Contains(msg, "{{former}}")) {
+				t.Errorf("denunciation %q offers an edict the marks of an aspect", msg)
 			}
 			if want := "1:1: " + msg; hs[0].Error() != want {
 				t.Errorf("Error() = %q, want %q", hs[0].Error(), want)

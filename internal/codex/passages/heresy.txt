@@ -7,9 +7,12 @@ and forgiven: the rite may still be invoked, but the servitor bids the scribe
 take heed.
 
 Heresies of the scripture: malformed JSONC; unknown keys; a missing or
-foreign pattern; aspects empty, repeated or unworthily named; aspect-map keys
-that name no declared aspect, and an aspect left without value and without
-"*"; unknown placeholders and undeclared inscriptions; tomes that cannot be
+foreign pattern; aspects empty, repeated or unworthily named; a rite bearing
+both "aspects" and "edict": true, or neither; aspect-map keys that name no
+declared aspect, and an aspect left without value and without "*"; in an
+edict, a sanctum, transcription or tether, an auspex, any aspect map, and
+the marks {{aspect}} and {{former}}; unknown placeholders and undeclared
+inscriptions; tomes that cannot be
 found; a sanctum whose scripture is null; a vox-cast that is neither
 "progress" nor "success"; a ward claimed twice within one vessel; two
 scriptures recorded for one rite; heretical settings; and a vessel whose

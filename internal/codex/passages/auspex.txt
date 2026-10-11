@@ -21,13 +21,16 @@ SERVITOR_ASPECT and {{aspect}} name the aspect being invoked; when an augury
 or census asks it outside of one, they are empty. Placeholders may be spoken
 in its words.
 
+An edict bears no auspex: it stands in no aspect, so there is nothing to
+divine, and an auspex written in an edict is heresy.
+
 The augury, the census and the inquisition awaken the auspex. Completion
 never does, so that a Tab is answered at once, and neither does --foresee,
 which touches nothing at all. Where the auspex agrees with the omens of the
 steps on an aspect the data-slate did not record, the rite is desecrated —
 changed by other hands — which is noted, not condemned.
 
-Kindred passages: omens, standing, augury, patience, tongue, aspects
+Kindred passages: omens, standing, augury, patience, tongue, aspects, edict
 
 Exempla:
   "auspex": "makoctl mode | grep -q do-not-disturb && echo on || echo off"

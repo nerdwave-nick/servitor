@@ -14,6 +14,12 @@
 // scroll, each of its offerings, every reversion, and an inscription's
 // decrees. Everything else holds one value for all aspects.
 //
+// A rite either declares its aspects or is an edict ("edict": true): a rite
+// without aspects, proclaimed whole. An edict holds only incantations,
+// litanies and vox-casts, bears no auspex, writes every value plainly (no
+// aspect map, not even one keyed by "*" alone) and never speaks {{aspect}}
+// or {{former}}.
+//
 // Placeholders are examined in every step string: vessels, tether names,
 // anchors, commands, scrolls, offerings, reversions, inline scripture, tome
 // paths and the auspex. Wards, glyphs, tongues, seals, patience, decrees and
@@ -47,8 +53,11 @@ type Rite struct {
 	// editors. The servitor heeds it not, but keeps it when writing.
 	Schema string
 
-	Purpose      string
-	Aspects      []string
+	Purpose string
+	Aspects []string // nil for an edict
+	// Edict marks a rite without aspects ("edict": true): it is proclaimed
+	// whole and never brought into an aspect.
+	Edict        bool
 	Inscriptions []Inscription // in the order written
 	Auspex       *Auspex       // nil when the rite has none
 	Tongue       string        // "" when the rite names none
@@ -131,7 +140,7 @@ func (r *Rite) InscriptionKeys() []string {
 
 // Scope is the placeholder scope of the rite's step strings.
 func (r *Rite) Scope() placeholder.Scope {
-	return placeholder.Scope{Mode: placeholder.RiteMode, Inscriptions: r.InscriptionKeys()}
+	return placeholder.Scope{Mode: placeholder.RiteMode, Inscriptions: r.InscriptionKeys(), Edict: r.Edict}
 }
 
 // Dir is the directory the rite's scripture lies in; relative tomes and

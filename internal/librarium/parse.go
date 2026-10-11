@@ -16,7 +16,7 @@ const SchemaKey = "$schema"
 
 // Keys of the objects of a Mark I scripture, in the order of the codex.
 var (
-	RiteKeys        = []string{"pattern", "purpose", "aspects", "inscriptions", "auspex", "tongue", "liturgy", SchemaKey}
+	RiteKeys        = []string{"pattern", "purpose", "aspects", "edict", "inscriptions", "auspex", "tongue", "liturgy", SchemaKey}
 	InscriptionKeys = []string{"purpose", "mandatory", "decrees"}
 	AuspexKeys      = []string{"rite", "patience"}
 	TomeKeys        = []string{"tome", "illuminate"}
@@ -78,19 +78,19 @@ func (d *decoder) decodeRite(root *hujson.Value) *Rite {
 	if m, ok := fs.get("purpose"); ok {
 		r.Purpose, _ = d.str(m.val, `the "purpose" of a rite`)
 	}
-	m, ok := fs.get("aspects")
-	if !ok {
-		d.heresy(root, "the rite declares no \"aspects\"; list every aspect the rite can bring the machine "+
-			"into, for a rite without aspects can never be invoked")
-	} else {
-		d.decodeAspects(m.val)
-	}
+	d.decodeAspectsOrEdict(root, fs)
 	if m, ok := fs.get("inscriptions"); ok {
 		d.decodeInscriptions(m.val)
 	}
 	d.scope = r.Scope()
 	if m, ok := fs.get("auspex"); ok {
-		d.decodeAuspex(m.val)
+		if r.Edict {
+			d.heresy(m.val, "an edict bears no \"auspex\": an auspex divines which aspect the machine stands "+
+				"in, yet an edict brings the machine into no aspect and is only ever proclaimed whole, so there "+
+				"is nothing for it to divine — strike the auspex")
+		} else {
+			d.decodeAuspex(m.val)
+		}
 	}
 	if m, ok := fs.get("tongue"); ok {
 		r.Tongue, _ = d.word(m.val, `the "tongue" of a rite`)
@@ -154,6 +154,36 @@ func elderLament(obj *hujson.Object) string {
 		"or strike it from the Librarium", strings.Join(found, " and "), Pattern)
 }
 
+// decodeAspectsOrEdict reads the aspects of the rite or its marker as an
+// edict: a rite bears exactly one of "aspects" and "edict": true, and
+// "edict": false is as if unwritten.
+func (d *decoder) decodeAspectsOrEdict(root *hujson.Value, fs fields) {
+	e, hasEdict := fs.get("edict")
+	malformed := false
+	if hasEdict {
+		if lit, ok := literal(e.val); ok && (lit.Kind() == 't' || lit.Kind() == 'f') {
+			d.rite.Edict = lit.Bool()
+		} else {
+			d.wrongForm(e.val, `the "edict" of a rite`, "true or false")
+			malformed = true
+		}
+	}
+	a, hasAspects := fs.get("aspects")
+	switch {
+	case d.rite.Edict && hasAspects:
+		d.heresy(e.val, "the rite bears both \"aspects\" and \"edict\": true, yet a rite either brings the "+
+			"machine into one of its aspects or is an edict, proclaimed whole and bearing no aspect at all — "+
+			"never both; strike \"aspects\" to keep an edict, or strike \"edict\" to keep its aspects")
+	case hasAspects:
+		d.decodeAspects(a.val)
+	case !d.rite.Edict && !malformed:
+		d.heresy(root, "the rite declares neither \"aspects\" nor \"edict\": true; list under \"aspects\" "+
+			"every aspect the rite can bring the machine into, or, should it bring the machine into no "+
+			"aspect at all and only ever be proclaimed whole, mark it an edict with \"edict\": true — a rite "+
+			"of neither can never be invoked")
+	}
+}
+
 func (d *decoder) decodeAspects(v *hujson.Value) {
 	arr, ok := v.Value.(*hujson.Array)
 	if !ok {
@@ -162,7 +192,8 @@ func (d *decoder) decodeAspects(v *hujson.Value) {
 	}
 	if len(arr.Elements) == 0 {
 		d.heresy(v, "the rite declares no aspects; list every aspect the rite can bring the machine into, "+
-			"for a rite without aspects can never be invoked")
+			"or strike \"aspects\" and mark it an edict with \"edict\": true should it bring the machine "+
+			"into none, for a rite without aspects can never be invoked")
 	}
 	for i := range arr.Elements {
 		e := &arr.Elements[i]

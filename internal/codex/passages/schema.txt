@@ -30,12 +30,23 @@ cannot tell whether an aspect map names only declared aspects and serves
 them all, whether a placeholder is known, or whether a tome stands where it
 is named. The Inquisition alone judges these.
 
+The schema of a rite knows the two forms of a rite: one of aspects, which
+demands "aspects", and the edict, marked "edict": true, which bears no
+"aspects" and no auspex, holds only incantations, litanies and vox-casts,
+and writes its commands, scrolls, offerings, reversions and decrees plainly.
+That an edict's words speak no {{aspect}} nor {{former}} is again for the
+Inquisition alone.
+
 Kindred passages: expound, inquisition, rite, pattern, aspect-maps
 
 Exempla:
   {"$schema": "https://raw.githubusercontent.com/nerdwave-nick/servitor/main/schema/rite.schema.json",
    "pattern": "Mark I",
    "aspects": ["on", "off"]}
+
+  {"$schema": "https://raw.githubusercontent.com/nerdwave-nick/servitor/main/schema/rite.schema.json",
+   "pattern": "Mark I",
+   "edict": true}
 
   servitor expound --schema > ~/.config/servitor/rite.schema.json
   servitor expound --schema settings
