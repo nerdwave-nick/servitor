@@ -7,9 +7,11 @@ static: on every Tab it asks the servitor itself, so it always knows the
 rites of the Librarium as they stand now.
 
 It offers the rituals; the rites of the Librarium, each with its purpose;
-the aspects of a rite, the aspect it stands in marked as the current aspect;
+the aspects of a rite, the aspect it stands in marked as the current aspect
+(an edict, proclaimed by its name alone, is offered none);
 the inscription runes of a rite, each with its purpose, and the values its
-decrees grant, each naming the aspects that decree it; the keys of an
+decrees grant, each naming the aspects that decree it (or the edict, whose
+one decree serves it alone); the keys of an
 augury; the aspects for --is; the rites for the Inquisition; and every topic
 of the codex for expound, each with its summing line. The rune --librarium
 completes halls, and --chronicle the names of scripture-files.

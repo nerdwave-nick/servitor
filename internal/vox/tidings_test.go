@@ -3,6 +3,7 @@ package vox
 import (
 	"errors"
 	"regexp"
+	"slices"
 	"strings"
 	"testing"
 	"unicode/utf8"
@@ -185,5 +186,81 @@ func TestCompose_DrawsByPick(t *testing.T) {
 	want, _ := placeholder.Scope{Mode: placeholder.VoxCastMode}.Render(list[len(list)-1], v)
 	if m.Body != want {
 		t.Fatalf("body %q, want %q", m.Body, want)
+	}
+}
+
+// TestEdictTemplates_AboutFifteenNamingTheEdictAndNoAspect: an edict's
+// vox-casts name it "the edict {{rite.name}}" and never speak an aspect.
+func TestEdictTemplates_AboutFifteenNamingTheEdictAndNoAspect(t *testing.T) {
+	edictScope := placeholder.Scope{Mode: placeholder.VoxCastMode, Edict: true}
+	aspectless := regexp.MustCompile(`(?i)«|»|→|\baspects?\b|\{\{former\}\}`)
+	for _, tid := range allTidings {
+		list := edictTemplates[tid]
+		if len(list) < 12 || len(list) > 20 {
+			t.Errorf("edict %s holds %d templates, not about fifteen", tid, len(list))
+		}
+		seen := map[string]bool{}
+		for _, tmpl := range list {
+			if seen[tmpl] || slices.Contains(templates[tid], tmpl) {
+				t.Errorf("edict %s holds %q twice, or as a rite's", tid, tmpl)
+			}
+			seen[tmpl] = true
+			if hs := edictScope.Check(tmpl); len(hs) > 0 {
+				t.Errorf("edict %s template %q is heretical: %v", tid, tmpl, hs)
+			}
+			grimdark(t, tmpl)
+			if m := aspectless.FindString(tmpl); m != "" {
+				t.Errorf("edict %s template %q speaks %q", tid, tmpl, m)
+			}
+			if n := utf8.RuneCountInString(tmpl); n > longest[tid] {
+				t.Errorf("edict %s template %q holds %d characters, more than %d", tid, tmpl, n, longest[tid])
+			}
+			named := strings.Count(strings.ToLower(tmpl), "the edict {{rite.name}}")
+			if named == 0 || named != strings.Count(tmpl, "{{rite.name}}") {
+				t.Errorf("edict %s template %q names the edict not as \"the edict {{rite.name}}\"", tid, tmpl)
+			}
+			switch tid {
+			case invocation.Progress:
+				if !strings.Contains(tmpl, "{{step.kind}}") || strings.Contains(tmpl, "{{step.target}}") {
+					t.Errorf("edict progress template %q does not describe the step before alone", tmpl)
+				}
+			case invocation.Failure:
+				if !strings.HasSuffix(tmpl, ": {{heresy}}") {
+					t.Errorf("edict failure template %q does not end in the heresy", tmpl)
+				}
+			}
+		}
+	}
+}
+
+func TestCompose_AnEdictSpeaksNoAspect(t *testing.T) {
+	aspectless := regexp.MustCompile(`(?i)«|»|→|\baspects?\b`)
+	outcomes := map[invocation.Tidings]*invocation.Outcome{
+		invocation.Failure: {Verdict: invocation.Faltered, Reversions: []invocation.Reversion{
+			{Verse: invocation.Verse{Number: 1}, Heresy: errors.New("x")}}},
+	}
+	for _, tid := range allTidings {
+		for i := range edictTemplates[tid] {
+			v := values(1, 2, "incantation", "grim", "it ended bearing the death-mark 3")
+			v.Aspect, v.Former, v.Rite = "", "", "screenshot"
+			m := Compose(invocation.Proclamation{Tidings: tid, Edict: true, Values: v, Outcome: outcomes[tid]},
+				func(int) int { return i })
+			if m.Summary != "screenshot" || strings.Contains(m.Body, "{{") ||
+				!strings.Contains(strings.ToLower(m.Flavour), "the edict screenshot") {
+				t.Errorf("edict %s template %d composed %+v", tid, i, m)
+			}
+			if w := aspectless.FindString(m.Summary + "\n" + m.Body); w != "" {
+				t.Errorf("edict %s template %d speaks %q: %+v", tid, i, w, m)
+			}
+			if tid == invocation.Failure && !strings.HasSuffix(m.Body, "the edict lies corrupted.") {
+				t.Errorf("edict failure tells not how the edict lies: %q", m.Body)
+			}
+		}
+	}
+	v := values(0, 2, "", "", "")
+	v.Aspect, v.Former, v.Rite = "", "", "screenshot"
+	if m := Compose(invocation.Proclamation{Tidings: invocation.Progress, Edict: true, Values: v}, first); m.Summary != "screenshot" ||
+		aspectless.MatchString(m.Body) {
+		t.Errorf("the awakening of an edict composed %+v", m)
 	}
 }

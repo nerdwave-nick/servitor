@@ -39,7 +39,11 @@ func former(res rituals.Result) string {
 
 // printForesight tells what an invocation would do.
 func printForesight(w io.Writer, res rituals.Result) {
-	fmt.Fprintf(w, "+++ Foreseen: the rite %s, %s → %s +++\n", res.Rite.Name, former(res), res.Options.Aspect)
+	if res.Rite.Edict {
+		fmt.Fprintf(w, "+++ Foreseen: the edict %s +++\n", res.Rite.Name)
+	} else {
+		fmt.Fprintf(w, "+++ Foreseen: the rite %s, %s → %s +++\n", res.Rite.Name, former(res), res.Options.Aspect)
+	}
 	for _, f := range res.Foresight {
 		fmt.Fprintln(w, verseName(res.Rite, f.Verse))
 		switch {
@@ -114,9 +118,13 @@ func quoteArgv(argv []string) string {
 }
 
 // forbidden is the lament of an invocation the pre-flight refused.
-func forbidden(rite, aspect string, hs invocation.Heresies) error {
+func forbidden(r *librarium.Rite, aspect string, hs invocation.Heresies) error {
 	var b strings.Builder
-	fmt.Fprintf(&b, "the pre-flight forbids the invocation of %q into %q; nothing was touched:", rite, aspect)
+	if r.Edict {
+		fmt.Fprintf(&b, "the pre-flight forbids the proclaiming of the edict %q; nothing was touched:", r.Name)
+	} else {
+		fmt.Fprintf(&b, "the pre-flight forbids the invocation of %q into %q; nothing was touched:", r.Name, aspect)
+	}
 	for _, h := range hs {
 		b.WriteString("\n  " + h.Error())
 	}
@@ -128,7 +136,11 @@ func forbidden(rite, aspect string, hs invocation.Heresies) error {
 func fallen(r *librarium.Rite, out invocation.Outcome) error {
 	var b strings.Builder
 	f := out.Fell
-	fmt.Fprintf(&b, "the rite %q fell at %s: %v", r.Name, verseName(r, f.Verse), f.Heresy)
+	kind := "rite"
+	if r.Edict {
+		kind = "edict"
+	}
+	fmt.Fprintf(&b, "the %s %q fell at %s: %v", kind, r.Name, verseName(r, f.Verse), f.Heresy)
 	words(&b, "its last words", f.Output)
 	for _, rv := range out.Reversions {
 		if rv.Heresy == nil {
@@ -139,7 +151,8 @@ func fallen(r *librarium.Rite, out invocation.Outcome) error {
 		words(&b, "the words of its reversion", rv.Output)
 	}
 	if out.Verdict == invocation.Faltered {
-		b.WriteString("\nThe reversion faltered; the rite lies corrupted. Summon the Inquisition, and mend by hand what remains.")
+		b.WriteString("\nThe reversion faltered; the " + kind + " lies corrupted. Summon the Inquisition, and mend by hand " +
+			"what remains.")
 	} else {
 		b.WriteString("\nEvery deed is undone; the machine stands as it stood before.")
 	}

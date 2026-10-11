@@ -1,0 +1,21 @@
+# +++ Vox-casts of a proclaimed edict +++
+# One template per line; blank lines and lines starting with "#" are ignored.
+# An edict bears no aspect: each line names it "the edict {{rite.name}}" and
+# speaks of it obeyed, never of an aspect. Keep each line short: one
+# sentence, or two.
+
+The edict {{rite.name}} is proclaimed, and the machine obeys.
+Ave Omnissiah! The edict {{rite.name}} is fulfilled.
+Binharic hymns resound: the edict {{rite.name}} is done.
+The machine spirit heeds the edict {{rite.name}}.
+Every verse is sung; the edict {{rite.name}} is carried out.
+Glory to the Machine God! The edict {{rite.name}} is obeyed.
+The tech-priests rejoice; the edict {{rite.name}} is fulfilled.
+The servo-skulls bear the tidings: the edict {{rite.name}} is done.
+No heresy was found; the edict {{rite.name}} is consummated.
+The Omnissiah's will is done: the edict {{rite.name}} is heeded.
+Let the data-stacks record the edict {{rite.name}}, kept in faith.
+The cogitator's lamps glow green: the edict {{rite.name}} is done.
+The servitor has laboured well; the edict {{rite.name}} is fulfilled.
+The litanies fall silent; the edict {{rite.name}} has been heard.
+Praise be! The edict {{rite.name}} rings through the noosphere.

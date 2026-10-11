@@ -140,3 +140,42 @@ func TestRecord_WritesTheSlateOfAnInvocation(t *testing.T) {
 		t.Errorf("got  %s\nwant %s", data, want)
 	}
 }
+
+func TestRecord_AnEdictsSlateBearsNoAspect(t *testing.T) {
+	opts := invocation.Options{Edict: true,
+		Inscriptions: map[string]string{"region": "full"}, Recorded: map[string]string{"region": "window"}}
+	for _, tc := range []struct {
+		verdict invocation.Verdict
+		want    string
+	}{
+		{invocation.Triumph, `{"inscriptions":{"region":"full"},"last_rite":{"verdict":"triumph","at":"2026-10-10T13:30:00Z"}}`},
+		{invocation.Reverted, `{"inscriptions":{"region":"window"},"last_rite":{"verdict":"reverted","at":"2026-10-10T13:30:00Z"}}`},
+		{invocation.Faltered, `{"inscriptions":{"region":"window"},"last_rite":{"verdict":"faltered","at":"2026-10-10T13:30:00Z"}}`},
+	} {
+		t.Run(string(tc.verdict), func(t *testing.T) {
+			env, _ := stateEnv(t)
+			if err := Record(env, "capture", invocation.Outcome{Verdict: tc.verdict}, opts, noon); err != nil {
+				t.Fatal(err)
+			}
+			data, _ := os.ReadFile(SlatePath(env, "capture"))
+			if string(data) != tc.want+"\n" {
+				t.Errorf("got  %s\nwant %s", data, tc.want)
+			}
+			s, err := ReadSlate(env, "capture")
+			if err != nil || s == nil || s.Aspect != "" || s.LastRite.Verdict != tc.verdict {
+				t.Errorf("read back %+v, %v", s, err)
+			}
+		})
+	}
+}
+
+func TestRecord_ARitesSlateKeepsItsAspectEvenUnknown(t *testing.T) {
+	env, _ := stateEnv(t)
+	if err := Record(env, "mouse", invocation.Outcome{Verdict: invocation.Reverted}, invocation.Options{Aspect: "on"}, noon); err != nil {
+		t.Fatal(err)
+	}
+	data, _ := os.ReadFile(SlatePath(env, "mouse"))
+	if want := `{"aspect":"","inscriptions":{},"last_rite":{"verdict":"reverted","at":"2026-10-10T13:30:00Z"}}` + "\n"; string(data) != want {
+		t.Errorf("got  %s\nwant %s", data, want)
+	}
+}

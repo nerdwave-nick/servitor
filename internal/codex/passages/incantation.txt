@@ -13,7 +13,9 @@ nothing offered upon their input. Their environment is the servitor's own,
 anointed with SERVITOR_ASPECT (the aspect invoked), SERVITOR_FORMER_ASPECT
 (the aspect before it, empty when unknown), SERVITOR_RITE and one
 SERVITOR_INSCRIPTION_<KEY> for every inscription the rite declares (the key
-in capitals, every "-" and "." made "_"). Prefer these names to
+in capitals, every "-" and "." made "_"). An edict's words hear neither
+SERVITOR_ASPECT nor SERVITOR_FORMER_ASPECT, not even those of an enclosing
+invocation; SERVITOR_RITE and the inscriptions alone. Prefer these names to
 {{inscription.<key>}} within the words: a placeholder is pasted into the
 words before the tongue hears them, so a quotation mark, a "$" or a ";" in an
 inscription would be read by the tongue as its own command, while a name of

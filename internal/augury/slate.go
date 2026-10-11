@@ -21,14 +21,30 @@ const SlatesDir = "data-slates"
 // Slate is a rite's data-slate: what the servitor last did with it. It is
 // written by the invoking servitor after each invocation, never by a step.
 type Slate struct {
+	// Edict marks the slate of an edict, which is written without aspect.
+	// It is never read back: the rite tells whether it is an edict.
+	Edict bool `json:"-"`
 	// Aspect is the aspect the last invocation left the rite in: the aspect
 	// invoked after triumph, the former aspect after a failure; "" when not
-	// known.
+	// known, and for an edict.
 	Aspect string `json:"aspect"`
 	// Inscriptions are those of that aspect.
 	Inscriptions map[string]string `json:"inscriptions"`
 	// LastRite is how the last invocation ended.
 	LastRite *LastRite `json:"last_rite"`
+}
+
+// MarshalJSON writes the slate as the codex shows it; an edict's bears no
+// "aspect" key.
+func (s Slate) MarshalJSON() ([]byte, error) {
+	if !s.Edict {
+		type plain Slate
+		return json.Marshal(plain(s))
+	}
+	return json.Marshal(struct {
+		Inscriptions map[string]string `json:"inscriptions"`
+		LastRite     *LastRite         `json:"last_rite"`
+	}{s.Inscriptions, s.LastRite})
 }
 
 // LastRite is how an invocation ended, and when.
@@ -104,10 +120,11 @@ func WriteSlate(env librarium.Environment, rite string, s Slate) (err error) {
 // SlateOf is the data-slate an invocation performed with opts leaves: after
 // triumph the aspect invoked and its inscriptions; after a failure the
 // former aspect and the inscriptions recorded before, which the reversion
-// meant to restore. The verdict is kept with the moment at, in UTC to the
+// meant to restore. An edict's slate keeps its inscriptions alike, but no
+// aspect. The verdict is kept with the moment at, in UTC to the
 // second.
 func SlateOf(out invocation.Outcome, opts invocation.Options, at time.Time) Slate {
-	s := Slate{Aspect: opts.Former, Inscriptions: maps.Clone(opts.Recorded),
+	s := Slate{Edict: opts.Edict, Aspect: opts.Former, Inscriptions: maps.Clone(opts.Recorded),
 		LastRite: &LastRite{Verdict: out.Verdict, At: at.UTC().Truncate(time.Second)}}
 	if out.Verdict == invocation.Triumph {
 		s.Aspect, s.Inscriptions = opts.Aspect, maps.Clone(opts.Inscriptions)

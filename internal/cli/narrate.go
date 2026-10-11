@@ -121,13 +121,18 @@ func (n *narration) end(out *invocation.Outcome) {
 	}
 	if n.closing == "" {
 		opts := n.res.Options
-		n.closing = vox.Compose(invocation.Proclamation{Tidings: invocation.Success,
+		n.closing = vox.Compose(invocation.Proclamation{Tidings: invocation.Success, Edict: n.res.Rite.Edict,
 			Values: placeholder.Values{Rite: n.res.Rite.Name, Aspect: opts.Aspect, Former: opts.Former}}, n.pick).Flavour
 	}
 	fmt.Fprintln(n.w, "✠ "+n.closing)
 }
 
+// header names the rite and its turning, or the edict alone.
 func (n *narration) header() {
+	if n.res.Rite.Edict {
+		fmt.Fprintf(n.w, "+++ %s · edict +++\n", n.res.Rite.Name)
+		return
+	}
 	fmt.Fprintf(n.w, "+++ %s · %s → %s +++\n", n.res.Rite.Name, former(n.res), n.res.Options.Aspect)
 }
 

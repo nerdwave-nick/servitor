@@ -1,0 +1,21 @@
+# +++ Vox-casts of an edict's fall +++
+# One template per line; blank lines and lines starting with "#" are ignored.
+# Each names the edict "the edict {{rite.name}}", never an aspect, and ends
+# in ": {{heresy}}"; {{step.kind}} and {{step.target}} name the fallen step.
+# The herald adds how the reversion went.
+
+Heresy! The edict {{rite.name}} fell at the {{step.kind}}: {{heresy}}
+The machine spirit rejects the edict {{rite.name}}: {{heresy}}
+Woe! The edict {{rite.name}} breaks at the {{step.kind}}: {{heresy}}
+The Omnissiah turns from the edict {{rite.name}}: {{heresy}}
+Sound the klaxons, for the edict {{rite.name}} has fallen: {{heresy}}
+A blight upon the edict {{rite.name}}: {{heresy}}
+The tech-priests weep; the edict {{rite.name}} is undone: {{heresy}}
+Scrapcode in the machine! The edict {{rite.name}} fell: {{heresy}}
+The cogitator's lamps burn red for the edict {{rite.name}}: {{heresy}}
+Rust and ruin! The edict {{rite.name}} falls: {{heresy}}
+The machine refuses the edict {{rite.name}}. Know this: {{heresy}}
+Rot at {{step.target}} halts the edict {{rite.name}}: {{heresy}}
+The noosphere screams; the edict {{rite.name}} is unheard: {{heresy}}
+Penitence is due; the edict {{rite.name}} was not obeyed: {{heresy}}
+Sparks and smoke; the edict {{rite.name}} is silenced: {{heresy}}

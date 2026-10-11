@@ -132,7 +132,7 @@ func (p *preflight) spoken(k librarium.Kind, sp Speech) performer {
 		speech: sp,
 		litany: k == librarium.KindLitany,
 		dir:    p.rite.Dir(),
-		env:    environ(p.rite.Dir(), p.values, p.rite.InscriptionKeys()),
+		env:    environ(p.rite.Dir(), p.rite.Edict, p.values, p.rite.InscriptionKeys()),
 	}
 }
 

@@ -117,15 +117,23 @@ const (
 // environ is the environment of the servitor with the invocation's own
 // variables set: the aspect, the former aspect, the rite and every declared
 // inscription (empty when unset). Inscriptions inherited from an enclosing
-// invocation are cast out, so a command sees only its own rite's.
-func environ(dir string, v placeholder.Values, keys []string) []string {
+// invocation are cast out, so a command sees only its own rite's. An edict
+// bears no aspect: its commands see neither aspect nor former aspect, not
+// even those of an enclosing invocation.
+func environ(dir string, edict bool, v placeholder.Values, keys []string) []string {
 	var env []string
 	for _, kv := range os.Environ() {
-		if !strings.HasPrefix(kv, envInscriptionPrefix) {
+		inherited := strings.HasPrefix(kv, envInscriptionPrefix) ||
+			edict && (strings.HasPrefix(kv, envAspect+"=") || strings.HasPrefix(kv, envFormerAspect+"="))
+		if !inherited {
 			env = append(env, kv)
 		}
 	}
-	env = append(env, "PWD="+dir, envAspect+"="+v.Aspect, envFormerAspect+"="+v.Former, envRite+"="+v.Rite)
+	env = append(env, "PWD="+dir)
+	if !edict {
+		env = append(env, envAspect+"="+v.Aspect, envFormerAspect+"="+v.Former)
+	}
+	env = append(env, envRite+"="+v.Rite)
 	for _, k := range keys {
 		env = append(env, inscriptionVariable(k)+"="+v.Inscriptions[k])
 	}

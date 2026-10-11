@@ -1,4 +1,5 @@
-// Package invocation performs a rite of pattern Mark I into one aspect.
+// Package invocation performs a rite of pattern Mark I into one aspect, or
+// proclaims an edict, which bears none.
 //
 // Prepare runs the pre-flight: it renders every placeholder, reads every
 // tome afresh, and examines every vessel and tether, without changing
@@ -30,8 +31,12 @@ import (
 // Options are what one invocation is performed with. The caller resolves
 // them; the invocation reads no settings, runes or data-slates itself.
 type Options struct {
-	Aspect       string            // the aspect to invoke
-	Former       string            // the aspect before; "" when unknown
+	Aspect string // the aspect to invoke; "" for an edict
+	Former string // the aspect before; "" when unknown, and for an edict
+	// Edict tells that the invocation proclaims an edict, which bears no
+	// aspect: the data-slate and the chronicle record it so. It must agree
+	// with the rite's own mark (librarium.Rite.Edict).
+	Edict        bool
 	Inscriptions map[string]string // the inscriptions of this invocation, already resolved
 	// Recorded are the inscriptions on the data-slate, with which earlier
 	// invocations illuminated their scripture; a transcription recognises
@@ -82,12 +87,8 @@ type Invocation struct {
 // cannot be performed. r must not be heretical.
 func Prepare(r *librarium.Rite, opts Options) (*Invocation, error) {
 	inv := &Invocation{rite: r, opts: opts}
-	if !r.HasAspect(opts.Aspect) {
-		inv.heresies = Heresies{{Finding: librarium.Finding{
-			Severity: librarium.Heresy, Scripture: r.Path, Rite: r.Name, Position: r.Locate("/aspects"),
-			Message: fmt.Sprintf("the rite %q knows no aspect %q; it may be invoked only into %s",
-				r.Name, opts.Aspect, quoteAll(r.Aspects)),
-		}}}
+	if h := unfit(r, opts); h != nil {
+		inv.heresies = Heresies{*h}
 		return inv, inv.heresies
 	}
 	p := &preflight{rite: r, opts: opts, world: newShadow(), values: values(r, opts, opts.Inscriptions)}
@@ -104,6 +105,25 @@ func Prepare(r *librarium.Rite, opts Options) (*Invocation, error) {
 		return inv, inv.heresies
 	}
 	return inv, nil
+}
+
+// unfit denounces options that do not fit r: an aspect r does not know, or
+// any aspect at all for an edict, which is proclaimed by its name alone.
+func unfit(r *librarium.Rite, opts Options) *Heresy {
+	h := func(ptr, message string) *Heresy {
+		return &Heresy{Finding: librarium.Finding{
+			Severity: librarium.Heresy, Scripture: r.Path, Rite: r.Name, Position: r.Locate(ptr), Message: message,
+		}}
+	}
+	switch {
+	case r.Edict && (!opts.Edict || opts.Aspect != "" || opts.Former != ""):
+		return h("/edict", fmt.Sprintf("the edict %q bears no aspect and is proclaimed whole, by its name alone; "+
+			"no aspect may be invoked upon it", r.Name))
+	case !r.Edict && (opts.Edict || !r.HasAspect(opts.Aspect)):
+		return h("/aspects", fmt.Sprintf("the rite %q knows no aspect %q; it may be invoked only into %s",
+			r.Name, opts.Aspect, quoteAll(r.Aspects)))
+	}
+	return nil
 }
 
 // values are the placeholder values of an invocation of r.
@@ -140,7 +160,7 @@ func (inv *Invocation) PerformContext(ctx context.Context) (Outcome, error) {
 		return Outcome{}, ErrPerformed
 	}
 	inv.performed = true
-	c := newCrier(inv.opts.Herald, values(inv.rite, inv.opts, inv.opts.Inscriptions), inv.steps)
+	c := newCrier(inv.opts.Herald, inv.rite.Edict, values(inv.rite, inv.opts, inv.opts.Inscriptions), inv.steps)
 	return performAll(ctx, inv.steps, c), nil
 }
 

@@ -4,16 +4,19 @@ When the liturgy is done, the servitor passes judgement upon the invocation,
 and that verdict is inscribed on the rite's data-slate and in the chronicle.
 Three verdicts are known to the codex:
 
-  triumph    every step was performed; the rite stands in the aspect invoked
+  triumph    every step was performed; the rite stands in the aspect invoked,
+             or the edict is obeyed
   reverted   a step fell, and every step already performed was undone; the
              machine stands as it stood before
   faltered   a step fell, and at least one reversion fell too; the machine
-             stands half in one aspect and half in another
+             stands half in one aspect and half in another, or half
+             touched by an edict
 
 A reverted or faltered invocation ends with the servitor's lament — the step
 that fell, its last words, and how each reversion went — and the invoke
 ritual exits 1. A faltered verdict leaves the rite corrupted until it is
-invoked anew, for no single aspect can be trusted to stand.
+invoked anew, for no single aspect can be trusted to stand; an edict lies
+corrupted alike, until it is proclaimed again.
 
 The verdict is kept with its hour as "last_rite": {"verdict", "at"}, the
 hour in UTC to the second. The augury and the census speak it for every

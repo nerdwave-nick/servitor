@@ -14,7 +14,11 @@ instead, exactly as a true invocation would recite them.
 Nothing is performed. No vessel or tether is touched, no command is spoken,
 not even the rite's auspex is awakened; no vox-cast is sent, the data-slate
 is not written and the chronicle is not added to. The former aspect shown is
-read from the omens of the steps and the data-slate alone.
+read from the omens of the steps and the data-slate alone. An edict is
+foreseen alike, its header naming the edict alone, for it has no aspect to
+leave or to enter:
+
+  +++ Foreseen: the edict screenshot +++
 
 Foresee before every invocation you are not certain of, and before invoking
 a rite whose scripture was newly amended.
@@ -24,3 +28,4 @@ Kindred passages: invoke, pre-flight, silence, auspex, chronicle
 Exempla:
   servitor invoke theme porpl --foresee
   servitor invoke mouse-autohide-toggle on -f --reason "gaming remnant"
+  servitor invoke screenshot -f --region full

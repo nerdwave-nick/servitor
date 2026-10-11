@@ -18,7 +18,7 @@ import (
 // Message is one vox-cast, composed and ready to be sent.
 type Message struct {
 	Tidings invocation.Tidings
-	Summary string // the rite and the aspect invoked
+	Summary string // the rite and the aspect invoked; an edict's name alone
 	Flavour string // the template drawn, illuminated
 	Body    string // the flavour and what follows it; lines are joined by "\n"
 	Percent int    // progress only: the share of real steps performed
@@ -31,6 +31,12 @@ var (
 	successFile string
 	//go:embed failure.txt
 	failureFile string
+	//go:embed edict-progress.txt
+	edictProgressFile string
+	//go:embed edict-success.txt
+	edictSuccessFile string
+	//go:embed edict-failure.txt
+	edictFailureFile string
 )
 
 // templates are the embedded template lists by tidings.
@@ -38,6 +44,14 @@ var templates = map[invocation.Tidings][]string{
 	invocation.Progress: parseTemplates("progress.txt", progressFile),
 	invocation.Success:  parseTemplates("success.txt", successFile),
 	invocation.Failure:  parseTemplates("failure.txt", failureFile),
+}
+
+// edictTemplates are the embedded template lists of an edict by tidings:
+// they name the edict and speak no aspect.
+var edictTemplates = map[invocation.Tidings][]string{
+	invocation.Progress: parseTemplates("edict-progress.txt", edictProgressFile),
+	invocation.Success:  parseTemplates("edict-success.txt", edictSuccessFile),
+	invocation.Failure:  parseTemplates("edict-failure.txt", edictFailureFile),
 }
 
 // parseTemplates takes one template per line, ignoring blank lines and
@@ -56,8 +70,12 @@ func parseTemplates(name, s string) []string {
 	return out
 }
 
-// voxScope illuminates the templates; they speak no inscriptions.
-var voxScope = placeholder.Scope{Mode: placeholder.VoxCastMode}
+// voxScope illuminates the templates; they speak no inscriptions. An
+// edict's speak no aspect either.
+var (
+	voxScope   = placeholder.Scope{Mode: placeholder.VoxCastMode}
+	edictScope = placeholder.Scope{Mode: placeholder.VoxCastMode, Edict: true}
+)
 
 // awakening is the progress told before any real step was performed, when
 // there is no step before to describe.
@@ -66,18 +84,25 @@ const awakening = "The machine spirit stirs; the liturgy begins."
 // Compose draws a template for p's tidings with pick (which returns an
 // index below n) and illuminates it, the aspect written «aspect». The body
 // of progress ends in "step x / n", that of failure in how the reversion
-// went.
+// went. An edict's vox-cast is drawn from its own templates, and neither it
+// nor its summary speaks an aspect.
 func Compose(p invocation.Proclamation, pick func(n int) int) Message {
-	list := templates[p.Tidings]
+	list, scope := templates[p.Tidings], voxScope
+	if p.Edict {
+		list, scope = edictTemplates[p.Tidings], edictScope
+	}
 	tmpl := list[pick(len(list))]
 	tid := p.Values.Tidings
 	if p.Tidings == invocation.Progress && tid.Step == 0 {
 		tmpl = awakening
 	}
-	v := p.Values
-	v.Aspect = "«" + v.Aspect + "»"
-	body := illuminate(tmpl, v)
-	m := Message{Tidings: p.Tidings, Summary: p.Values.Rite + " → " + p.Values.Aspect, Flavour: body}
+	v, summary := p.Values, p.Values.Rite
+	if !p.Edict {
+		v.Aspect = "«" + v.Aspect + "»"
+		summary += " → " + p.Values.Aspect
+	}
+	body := illuminate(scope, tmpl, v)
+	m := Message{Tidings: p.Tidings, Summary: summary, Flavour: body}
 	switch p.Tidings {
 	case invocation.Progress:
 		m.Percent = 100
@@ -86,7 +111,7 @@ func Compose(p invocation.Proclamation, pick func(n int) int) Message {
 		}
 		body += fmt.Sprintf("\nstep %d / %d", tid.Step, tid.Steps)
 	case invocation.Failure:
-		body += "\n" + reversion(p.Outcome)
+		body += "\n" + reversion(p.Outcome, p.Edict)
 	}
 	m.Body = body
 	return m
@@ -94,8 +119,8 @@ func Compose(p invocation.Proclamation, pick func(n int) int) Message {
 
 // illuminate renders a template; one that would not render is spoken as
 // written rather than lost (the tests forbid such templates).
-func illuminate(tmpl string, v placeholder.Values) string {
-	out, err := voxScope.Render(tmpl, v)
+func illuminate(scope placeholder.Scope, tmpl string, v placeholder.Values) string {
+	out, err := scope.Render(tmpl, v)
 	if err != nil {
 		return tmpl
 	}
@@ -103,7 +128,7 @@ func illuminate(tmpl string, v placeholder.Values) string {
 }
 
 // reversion tells how the reversion of a fallen invocation went.
-func reversion(out *invocation.Outcome) string {
+func reversion(out *invocation.Outcome, edict bool) string {
 	if out == nil || out.Verdict != invocation.Faltered {
 		return "Every deed is undone; the machine stands as it stood before."
 	}
@@ -113,5 +138,9 @@ func reversion(out *invocation.Outcome) string {
 			fallen = append(fallen, fmt.Sprintf("verse %d", r.Number))
 		}
 	}
-	return "The reversion faltered at " + strings.Join(fallen, ", ") + "; the rite lies corrupted."
+	lies := "the rite lies corrupted."
+	if edict {
+		lies = "the edict lies corrupted."
+	}
+	return "The reversion faltered at " + strings.Join(fallen, ", ") + "; " + lies
 }

@@ -9,7 +9,8 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/librarium"
 )
 
-// Petition asks for one invocation.
+// Petition asks for one invocation: of a rite into Aspect, or of an edict,
+// which takes no aspect (Aspect "").
 type Petition struct {
 	Rite, Aspect string
 	// Runes are the inscription runes as written (--<key> value); a rune
@@ -32,11 +33,12 @@ type Petition struct {
 type Result struct {
 	Rite *librarium.Rite // nil when no such rite may be invoked
 	// Options are those the invocation was prepared with: the aspect, the
-	// former aspect read by augury, the inscriptions resolved, those on the
-	// data-slate, and the orders.
+	// former aspect read by augury (neither for an edict), the inscriptions
+	// resolved, those on the data-slate, and the orders.
 	Options invocation.Options
 	// Former is how the rite stood before: when Options.Former is empty it
 	// tells whether the rite lay dormant or its aspect could not be read.
+	// It is empty for an edict, whose aspect is never read.
 	Former    augury.Standing
 	Foresight []invocation.Foresight // what every step that passed the pre-flight would do
 	Outcome   *invocation.Outcome    // nil when foreseen or refused
@@ -63,11 +65,22 @@ func (s *Servitor) Invoke(ctx context.Context, p Petition) (Result, error) {
 		return res, err
 	}
 	env, orders := s.env(), s.Orders()
-	former, lament := augury.Augur(r, augury.Options{Target: p.Aspect, ForgoAuspex: p.Foresee, Orders: orders, Env: env})
-	res.lament(lament)
-	res.Former = former.Standing
-	res.Options = invocation.Options{Aspect: p.Aspect, Former: former.Aspect, Inscriptions: inscriptions,
-		Recorded: former.Inscriptions, Orders: orders, Herald: p.Herald}
+	res.Options = invocation.Options{Aspect: p.Aspect, Edict: r.Edict, Inscriptions: inscriptions, Orders: orders,
+		Herald: p.Herald}
+	if r.Edict {
+		// An edict stands in no aspect to be read: only the inscriptions
+		// on its data-slate are wanted.
+		slate, lament := augury.ReadSlate(env, r.Name)
+		res.lament(lament)
+		if slate != nil {
+			res.Options.Recorded = slate.Inscriptions
+		}
+	} else {
+		former, lament := augury.Augur(r, augury.Options{Target: p.Aspect, ForgoAuspex: p.Foresee, Orders: orders, Env: env})
+		res.lament(lament)
+		res.Former = former.Standing
+		res.Options.Former, res.Options.Recorded = former.Aspect, former.Inscriptions
+	}
 	inv, err := invocation.Prepare(r, res.Options)
 	res.Foresight = inv.Foresee()
 	if err != nil || p.Foresee {

@@ -1,0 +1,21 @@
+# +++ Vox-casts of an edict's progress +++
+# One template per line; blank lines and lines starting with "#" are ignored.
+# Each describes the kind of the real step performed last ({{step.kind}})
+# and names the edict "the edict {{rite.name}}", never an aspect; the herald
+# adds the count of steps itself.
+
+The {{step.kind}} is done; the edict {{rite.name}} advances.
+Incense burns; the edict {{rite.name}} passes its {{step.kind}}.
+The {{step.kind}} of the edict {{rite.name}} is accepted.
+Verse fulfilled: the {{step.kind}} serves the edict {{rite.name}}.
+Tech-priests nod at the {{step.kind}} of the edict {{rite.name}}.
+The edict {{rite.name}} proceeds past its {{step.kind}}.
+Blessed be the {{step.kind}}; the edict {{rite.name}} goes on.
+The vox hums; the edict {{rite.name}} keeps its {{step.kind}}.
+Cogs turn past the {{step.kind}} of the edict {{rite.name}}.
+A servo-skull notes the {{step.kind}} of the edict {{rite.name}}.
+A verse more: the {{step.kind}} of the edict {{rite.name}} holds.
+The machine obeys the {{step.kind}} of the edict {{rite.name}}.
+Oils anoint the {{step.kind}}; the edict {{rite.name}} goes on.
+The edict {{rite.name}} speaks through its {{step.kind}}.
+Hymns echo; the {{step.kind}} of the edict {{rite.name}} is whole.

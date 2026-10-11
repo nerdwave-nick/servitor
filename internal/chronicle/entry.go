@@ -14,8 +14,9 @@ import (
 type Entry struct {
 	At           time.Time          `json:"at"` // RFC 3339, whole seconds, UTC
 	Rite         string             `json:"rite"`
-	Aspect       string             `json:"aspect"`
-	Former       string             `json:"former,omitempty"` // "" when the former aspect was unknown
+	Edict        bool               `json:"edict,omitzero"`   // an edict was proclaimed
+	Aspect       string             `json:"aspect,omitempty"` // "" only for an edict
+	Former       string             `json:"former,omitempty"` // "" when the former aspect was unknown, and for an edict
 	Inscriptions map[string]string  `json:"inscriptions"`
 	Verdict      invocation.Verdict `json:"verdict"`
 	FellAt       *Verse             `json:"fell_at,omitempty"` // nil when no step fell
@@ -46,6 +47,7 @@ func New(at time.Time, rite string, opts invocation.Options, out invocation.Outc
 	e := Entry{
 		At:           at.UTC().Truncate(time.Second),
 		Rite:         rite,
+		Edict:        opts.Edict,
 		Aspect:       opts.Aspect,
 		Former:       opts.Former,
 		Inscriptions: map[string]string{},
