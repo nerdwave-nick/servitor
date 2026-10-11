@@ -7,10 +7,13 @@ the index of the codex instead.
 
 On its left the cogitator lists every rite of the Librarium with the glyph
 of its standing and the aspect it stands in — an edict, which stands in none,
-with its standing alone; on its right it reveals the
-chosen rite: its purpose, its aspects with the current one marked, its
-inscriptions and where its scripture is recorded. Heretical rites are shown
-too, with the heresy that taints them.
+with its standing alone, beside the mark ❢ of an edict; on its right it
+reveals the chosen rite: its purpose, its aspects with the current one marked,
+its standing, its last rite, its inscriptions, its liturgy with the omen of
+every verse, its auspex and where its scripture is recorded. An edict shows
+its nature in place of aspects, and its liturgy without omens, for it reveals
+none and knows no auspex. Heretical rites are shown too, with the heresy that
+taints them.
 
 From the shrine the faithful choose a rite (j and k, or the arrows; g and G
 for the first and last), invoke it with enter, cycle it to its next aspect
@@ -22,13 +25,24 @@ with r, and retreat with q. The key ? opens the codex itself: above it stands
 the cogitator's own catalogue of keys, below it the index of every passage;
 enter recites the chosen passage, as servitor expound would.
 
+An edict is never proclaimed on a single key, for it may cast the machine
+down. Upon an edict, enter and space alike open its invoke screen, which
+offers no aspect to choose: it asks first for the edict's inscriptions, when
+it bears any, each written beforehand with its one plain decree, and then
+asks whether the edict shall be proclaimed. A second enter proclaims it,
+performing its whole liturgy anew; p foresees it, and esc retreats with
+nothing performed. While it is proclaimed, its panel, the tidings of its
+triumph and the lament of its fall name the edict alone, never a former
+aspect and an aspect invoked.
+
 The key h unrolls the chronicle across the whole screen: every invocation
 of the current chronicle and of the one rotated before it, newest first, a
 line each with its moment, its rite, the former aspect and the aspect
-invoked, and its verdict. It opens already filtered to the rite chosen in
-the list; / rewrites the filter, which seeks the rite, either aspect and the
-verdict, and esc while writing casts the filter away so that every entry is
-shown. enter reads the chosen entry whole: its inscriptions, the verse it
+invoked — or, for an edict, the mark ❢ edict in their place — and its
+verdict. It opens already filtered to the rite chosen in the list; /
+rewrites the filter, which seeks the rite, either aspect and the verdict, or
+the word edict for every proclaiming of an edict, and esc while writing
+casts the filter away so that every entry is shown. enter reads the chosen entry whole: its inscriptions, the verse it
 fell at and the heresy that felled it, and the verdict upon every
 reversion. esc returns to the chronicle, and from there to the rites. The
 cogitator reads the chronicle that the rune --chronicle, the environment or
