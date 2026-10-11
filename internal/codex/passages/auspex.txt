@@ -26,11 +26,28 @@ divine, and an auspex written in an edict is heresy.
 
 The augury, the census and the inquisition awaken the auspex. Completion
 never does, so that a Tab is answered at once, and neither does --foresee,
-which touches nothing at all. Where the auspex agrees with the omens of the
-steps on an aspect the data-slate did not record, the rite is desecrated —
-changed by other hands — which is noted, not condemned.
+which touches nothing at all; the census and the augury spare it when given
+--spare-auspex. Where the auspex agrees with the omens of the steps on an
+aspect the data-slate did not record, the rite is desecrated — changed by
+other hands — which is noted, not condemned.
 
-Kindred passages: omens, standing, augury, patience, tongue, aspects, edict
+What the auspex gave is told in the binharic of every augury and of every
+rite of the census, under the key "auspex":
+
+  ""         the rite keeps no auspex, is an edict, or is heretical
+  "forgone"  the auspex was spared at the faithful's behest (--spare-auspex)
+  "heeded"   the auspex named one of the rite's aspects, and its omen stands
+             among the omens
+  "mute"     the auspex fell, outlasted its patience, or named no declared
+             aspect, and gave no omen
+
+A mute auspex is thus never mistaken for a rite that keeps none. The aspect
+and the standing are judged by the agreement of whatever omens there are,
+heeded or not; the key only tells what the auspex lent them. It is no omen:
+within "omens" the auspex's own omen still bears "auspex": true.
+
+Kindred passages: omens, standing, augury, census, spare-auspex, patience,
+tongue, aspects, edict
 
 Exempla:
   "auspex": "makoctl mode | grep -q do-not-disturb && echo on || echo off"
@@ -38,3 +55,4 @@ Exempla:
   "auspex": {"rite": "darkman get", "patience": "5s"}
 
   servitor augury do-not-disturb aspect
+  servitor augury do-not-disturb | jq -r .auspex

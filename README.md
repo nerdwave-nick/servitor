@@ -471,8 +471,8 @@ servitor ✠ the edict "screenshot" bears no aspect and is proclaimed by its nam
 |---|---|
 | `servitor invoke <rite> <aspect> [--<key> <word>] [-f] [-s]` | Perform an aspect of a rite. |
 | `servitor invoke <edict> [--<key> <word>] [-f] [-s]` | Proclaim an edict, its whole liturgy anew. |
-| `servitor augury <rite> [key] [--is <aspect>]` | Read how a rite stands, the aspect it bears (an edict bears none) and its inscriptions. |
-| `servitor census [--binharic]` | Every rite with its aspect, standing, aspects, last rite and purpose. |
+| `servitor augury <rite> [key] [--is <aspect>] [--spare-auspex]` | Read how a rite stands, the aspect it bears (an edict bears none) and its inscriptions. |
+| `servitor census [--binharic] [--spare-auspex]` | Every rite with its aspect, standing, aspects, last rite and purpose. |
 | `servitor inquisition [rite…] [--binharic] [--spare-vessels]` | Denounce heresy in rites, settings and vessels. |
 | `servitor cogitator` | Awaken the interactive shrine; `servitor` alone does so at a terminal. |
 | `servitor expound [topic] [--schema [rite\|settings]]` | Recite a passage of the codex, or its index. |
@@ -552,9 +552,21 @@ servitor census --binharic | jq -r '.[] | select(.standing | IN("performed", "pr
 ```
 
 In binharic every rite bears `rite`, `edict`, `aspect`, `standing`,
-`aspects`, `purpose`, `desecrated`, `last_rite` and `recorded_in`, the
-scripture it was read from. An edict bears `"edict": true`, an empty
+`auspex`, `aspects`, `purpose`, `desecrated`, `last_rite` and `recorded_in`,
+the scripture it was read from. An edict bears `"edict": true`, an empty
 `aspect` and `"aspects": []`.
+
+`auspex`, in the census and the augury alike, tells what the rite's auspex
+gave: `""` when it keeps none (an edict or a heretical rite neither),
+`"heeded"` when it named an aspect, `"mute"` when it fell, outlasted its
+patience or named no declared aspect, and `"forgone"` under `--spare-auspex`,
+which awakens no auspex and answers at once from the other omens and the
+data-slate:
+
+```sh
+servitor census --binharic --spare-auspex
+servitor augury do-not-disturb --spare-auspex | jq -r .aspect
+```
 
 ### Inquisition
 

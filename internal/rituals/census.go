@@ -10,6 +10,7 @@ type Entry struct {
 	Edict      bool             `json:"edict"` // an edict bears no aspect: its aspect is "", its aspects []
 	Aspect     string           `json:"aspect"`
 	Standing   augury.Standing  `json:"standing"`
+	Auspex     augury.Heed      `json:"auspex"` // what the auspex gave
 	Aspects    []string         `json:"aspects"`
 	Purpose    string           `json:"purpose"`
 	Desecrated bool             `json:"desecrated"`
@@ -31,8 +32,9 @@ func (s *Servitor) Census(forgoAuspex bool) (entries []Entry, laments []error) {
 		if r.Lament != nil {
 			laments = append(laments, r.Lament)
 		}
-		e := Entry{Rite: name, Edict: r.Edict, Aspect: r.Aspect, Standing: r.Standing, Aspects: []string{},
-			Desecrated: r.Desecrated, LastRite: r.LastRite, RecordedIn: s.Librarium.Scriptures[name][0]}
+		e := Entry{Rite: name, Edict: r.Edict, Aspect: r.Aspect, Standing: r.Standing, Auspex: r.Auspex,
+			Aspects: []string{}, Desecrated: r.Desecrated, LastRite: r.LastRite,
+			RecordedIn: s.Librarium.Scriptures[name][0]}
 		if r.Rite != nil {
 			e.Purpose = r.Rite.Purpose
 			if !r.Rite.Edict {

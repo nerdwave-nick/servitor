@@ -16,6 +16,7 @@ import (
 
 func (a *app) newAuguryCmd() *cobra.Command {
 	var is string
+	var spareAuspex bool
 	cmd := &cobra.Command{
 		Use:   "augury <rite> [key]",
 		Short: "Perform an augury: read the standing and inscriptions of a rite or edict, and a rite's aspect",
@@ -28,7 +29,7 @@ func (a *app) newAuguryCmd() *cobra.Command {
 		},
 		ValidArgsFunction: a.completeAuguryArgs,
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := augur(cmd, a.servitor(cmd), args, is); err != nil {
+			if err := augur(cmd, a.servitor(cmd), args, is, spareAuspex); err != nil {
 				var ee *ExitError
 				if errors.As(err, &ee) {
 					return err
@@ -39,6 +40,7 @@ func (a *app) newAuguryCmd() *cobra.Command {
 		},
 	}
 	cmd.Flags().Var(wordRune(&is, "", "aspect"), "is", "exit 0 if the rite stands in this aspect, 1 otherwise")
+	spareAuspexRune(cmd, &spareAuspex)
 	_ = cmd.RegisterFlagCompletionFunc("is", func(_ *cobra.Command, args []string, _ string) ([]cobra.Completion, cobra.ShellCompDirective) {
 		if len(args) > 0 {
 			if r := a.lib.Rites[args[0]]; r != nil && !r.Edict {
@@ -54,8 +56,9 @@ func (a *app) newAuguryCmd() *cobra.Command {
 }
 
 // augur reads the rite args[0] and speaks its JSON, the value of the key
-// args[1], or — for is — answers by exit code alone.
-func augur(cmd *cobra.Command, s *rituals.Servitor, args []string, is string) error {
+// args[1], or — for is — answers by exit code alone. spareAuspex leaves the
+// rite's auspex unawakened.
+func augur(cmd *cobra.Command, s *rituals.Servitor, args []string, is string, spareAuspex bool) error {
 	name := args[0]
 	if is != "" {
 		if len(args) > 1 {
@@ -74,7 +77,7 @@ func augur(cmd *cobra.Command, s *rituals.Servitor, args []string, is string) er
 			return unknownAspect(r, is)
 		}
 	}
-	reading, err := s.Augur(name, false)
+	reading, err := s.Augur(name, spareAuspex)
 	if err != nil {
 		return err
 	}

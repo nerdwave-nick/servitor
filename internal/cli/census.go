@@ -12,13 +12,13 @@ import (
 )
 
 func (a *app) newCensusCmd() *cobra.Command {
-	var binharic bool
+	var binharic, spareAuspex bool
 	cmd := &cobra.Command{
 		Use:   "census",
 		Short: "Take a census of all rites and how they stand",
 		Args:  unknownRitual,
 		RunE: func(cmd *cobra.Command, _ []string) error {
-			entries, laments := a.servitor(cmd).Census(false)
+			entries, laments := a.servitor(cmd).Census(spareAuspex)
 			for _, l := range laments {
 				fmt.Fprintln(cmd.ErrOrStderr(), "servitor ✠ "+l.Error())
 			}
@@ -39,6 +39,7 @@ func (a *app) newCensusCmd() *cobra.Command {
 		},
 	}
 	binharicRunes(cmd, &binharic, "render the census in binharic for lesser machines")
+	spareAuspexRune(cmd, &spareAuspex)
 	return cmd
 }
 
@@ -63,6 +64,12 @@ func lastRite(l *augury.LastRite) string {
 		return "·"
 	}
 	return string(l.Verdict) + " " + l.At.Local().Format("2006-01-02 15:04")
+}
+
+// spareAuspexRune registers --spare-auspex on cmd.
+func spareAuspexRune(cmd *cobra.Command, v *bool) {
+	cmd.Flags().BoolVar(v, "spare-auspex", false,
+		"awaken no auspex: answer at once from the other omens and the data-slate")
 }
 
 // binharicRunes registers --binharic and its hidden alias --json on cmd.
