@@ -1,4 +1,4 @@
-Invoke an aspect of a rite and perform its liturgy, verse by verse
+Invoke an aspect of a rite, or proclaim an edict, verse by verse
 
 Invocation is the servitor's foremost ritual. Name a rite and one of its
 aspects, and the servitor brings the machine into that aspect by performing
@@ -6,6 +6,12 @@ the rite's liturgy — its sanctums, transcriptions, tethers, incantations,
 litanies and vox-casts — one step after another, exactly in the order
 written. Every rite of the Librarium stands beneath this ritual as a ritual
 of its own, so the faithful write: servitor invoke <rite> <aspect>.
+
+An edict knows no aspect and is proclaimed by its name alone: servitor
+invoke <edict>. Any word written after its name is refused before a verse
+is performed, for an edict bears no aspect. Every invocation of an edict
+performs its whole liturgy anew; nothing is passed over because it was
+performed before.
 
 First comes the pre-flight, which touches nothing: every placeholder is
 illuminated, every tome read afresh, every vessel, tether and tongue weighed,
@@ -23,8 +29,8 @@ no further step begins, and every deed is undone; a second interrupt during
 the reversions is not heeded, so that the reversions may finish.
 
 Each inscription the rite declares becomes a rune of its own, --<key>
-<value>, which outranks the rite's decree for that aspect; an empty word
-clears it. A mandatory inscription that neither rune nor decree supplies
+<value>, which outranks the rite's decree for that aspect (or the edict's
+one decree); an empty word clears it. A mandatory inscription that neither rune nor decree supplies
 forbids the invocation. The rune --foresee (-f) reveals everything the
 invocation would do and performs none of it; --silence (-s) withholds the
 report, save the vox-casts the rite asks for.
@@ -43,6 +49,14 @@ rite's success vox-cast or, should it have none, from the same litany:
     ✔ verse 2 · incantation niri msg action do-screen-transition
   ✠ The Omnissiah is pleased: the rite now bears the aspect «on».
 
+An edict's header names the edict alone, with no turning of aspects, and its
+closing line names the edict, never an aspect:
+
+  ❯ servitor invoke screenshot
+  +++ screenshot · edict +++
+    ✔ verse 1 · incantation grim -g "$(slurp)" ~/pictures/full.png
+  ✠ The edict screenshot is proclaimed, and the machine obeys.
+
 The closing words are drawn at random. Roused without a terminal — from a
 hotkey or a launcher — the servitor sends the vox-casts to the desktop
 instead, and tells the same report once the rite has triumphed. Should a
@@ -55,7 +69,8 @@ forbade, or one merely foreseen, is neither chronicled nor recorded on the
 data-slate, for nothing was performed.
 
 The servitor exits 0 upon triumph, and 1 when the invocation was forbidden,
-the rite or aspect is unknown, or a step fell.
+the rite or aspect is unknown, a word was written after an edict's name, or
+a step fell.
 
 A rite's scripture, kept in <Librarium>/rites/<name>.json, may read thus:
 
@@ -73,9 +88,11 @@ A rite's scripture, kept in <Librarium>/rites/<name>.json, may read thus:
     ]
   }
 
-Kindred passages: rite, liturgy, pre-flight, reversion, inscriptions, verdicts
+Kindred passages: rite, edict, liturgy, pre-flight, reversion, inscriptions,
+verdicts
 
 Exempla:
   servitor invoke mouse-autohide-toggle on --reason "gaming remnant"
   servitor invoke mouse-autohide-toggle off --foresee
   servitor invoke theme "$(printf 'default\nfinii\nporpl\n' | fuzzel --dmenu)"
+  servitor invoke screenshot --region full

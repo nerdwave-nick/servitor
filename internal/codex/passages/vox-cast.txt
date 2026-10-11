@@ -8,13 +8,18 @@ holds which tidings to proclaim, and the codex knows but two:
               liturgy has come, counting only the steps that act upon the
               machine (a progress cast before any such step tells that the
               liturgy begins)
-  "success"   proclaims the triumph of the rite and the aspect it now bears
+  "success"   proclaims the triumph of the rite and the aspect it now bears,
+              or that an edict is obeyed
 
 Tidings of failure need no step: should a step fall, the servitor proclaims
 the heresy, the fallen step and how the reversion went, unbidden. The words
 themselves are drawn at random from the servitor's own litanies of progress,
 triumph and lament, and speak of the aspect, written «aspect», and of the
-step's own key; a rite does not write them.
+step's own key; a rite does not write them. An edict's vox-casts are drawn
+from litanies of their own, which name "the edict" and its name and never
+speak an aspect:
+
+  ✠ The edict screenshot is proclaimed, and the machine obeys.
 
 Where the tidings are heard depends on whence the servitor was roused. With
 a controlling terminal, each vox-cast is told in its place within the
@@ -29,8 +34,8 @@ line. A fall is told by the lament alone.
 
 Without one — invoked from a hotkey or a launcher — every vox-cast of the
 invocation becomes one missive upon the desktop through notify-send, headed
-by the rite and its aspect ("theme → porpl") and replaced in place by the
-next: progress tells "step x / n" and lingers until the rite ends, triumph
+by the rite and its aspect ("theme → porpl"), or by an edict's name alone
+("screenshot"), and replaced in place by the next: progress tells "step x / n" and lingers until the rite ends, triumph
 fades as the desktop wills, and a fall is proclaimed with critical urgency
 so that it cannot pass unseen. Should notify-send be absent or fall silent,
 the servitor stays silent too; a vox-cast never fails an invocation. The

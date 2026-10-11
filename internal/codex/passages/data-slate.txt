@@ -14,6 +14,10 @@ liturgy, never by hand — and it holds three things:
   inscriptions   the inscriptions of that aspect, from runes and decrees
   last_rite      the verdict of the invocation and its hour, "at"
 
+An edict stands in no aspect, so its data-slate holds only the inscriptions
+and last_rite: the inscriptions it was proclaimed with after a triumph,
+those recorded before after a fall.
+
 The data-slate is the servitor's memory, not its eyes. It names the aspect
 only when no omen can be read — a rite whose liturgy holds only incantations
 and litanies, and no auspex. Where omens speak and agree on an aspect the
@@ -37,3 +41,6 @@ Exempla:
    "last_rite": {"verdict": "triumph", "at": "2026-10-10T13:30:00Z"}}
 
   servitor augury mouse-autohide-toggle reason
+
+  {"inscriptions": {"region": "full"},
+   "last_rite": {"verdict": "triumph", "at": "2026-10-10T13:31:00Z"}}

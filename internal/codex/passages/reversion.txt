@@ -4,7 +4,8 @@ Should a step fall — its death-mark not 0, its patience run out, or the
 invocation halted at its master's command — the servitor does not leave the
 machine half-changed. It reverts: every step already performed is undone in
 reverse order, from the fallen step back to the first, so that the machine
-returns to its former aspect.
+returns to its former aspect — or, for an edict, to how it stood before the
+edict was proclaimed.
 
 Sanctums, transcriptions and tethers revert themselves, for the servitor
 captured what stood before it changed them: a sanctum and a transcribed
@@ -16,13 +17,16 @@ not know what their words did. Under "reversion" such a step carries the
 words that undo it — one line, spoken in the step's tongue, under the
 step's patience, in the rite's hall, with the same environment as the step.
 They may differ per aspect as an aspect map, and {{former}} (and
-SERVITOR_FORMER_ASPECT) name the aspect the machine is to return to. The
+SERVITOR_FORMER_ASPECT) name the aspect the machine is to return to. An
+edict knows no former aspect: its reversion is written once, plainly, and
+undoes by its words alone. The
 reversion of the fallen step itself is spoken too, for it may have done half
 its work. A step without reversion reverts nothing.
 
 A reversion that falls does not stop the others; every one is attempted and
 its outcome told. When all succeed the verdict is reverted; when any falls,
-the verdict is faltered, and the rite will likely show corrupted. A halt
+the verdict is faltered, and the rite — or the edict — will likely show
+corrupted. A halt
 from the terminal never halts the reversions. When foreseeing, the reversion
 each step would speak is shown.
 
@@ -40,3 +44,7 @@ Exempla:
 
   {"litany": "hooks/apply-theme", "offerings": ["{{aspect}}"],
    "reversion": "hooks/apply-theme \"$SERVITOR_FORMER_ASPECT\""}
+
+  // in an edict: the words that undo it stand on their own
+  {"incantation": "systemctl --user stop syncthing",
+   "reversion": "systemctl --user start syncthing"}
