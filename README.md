@@ -34,6 +34,28 @@ the codex is the whole of the law.
 
 The forge requires Go 1.27 or newer.
 
+### By pacman
+
+Exalted verses are performed only by the servitor at `/usr/bin/servitor`,
+owned by root and writable by none but root. On Arch Linux, pacman installs it
+so. From a checkout of this repository:
+
+```sh
+cd packaging/arch
+makepkg -si
+servitor --version
+```
+
+The PKGBUILD forges the checkout as it stands, with
+`-buildmode=pie -trimpath -mod=readonly`, and puts it to its trials
+(`go test`) before pacman takes it. The package holds `/usr/bin/servitor` and
+the completion litanies for bash, zsh and fish, so the engraving below is not
+needed. After each pull, forge and install anew with `makepkg -si`.
+
+### By the Go forge alone
+
+A servitor forged by Go alone performs every rite that holds no exalted verse.
+
 ```sh
 go install github.com/nerdwave-nick/servitor@latest
 # or, from a checkout of this repository:
