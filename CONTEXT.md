@@ -108,6 +108,12 @@ as its master sanctioned it, by a short-lived exalted servitor raised for the on
 invocation, so that a single proof of the master serves every exalted verse of it and
 no other. Any step but a vox-cast may be exalted. Key: `exalted`.
 
+**Relics**:
+The scriptures an exalted incantation or litany reads beside its scroll, named by their
+place in the rite's hall. Their words become part of the sanction, and the exalted
+servitor lays them beside the verse in its own hall, so that it never reads them from
+where the invoker may still alter them. Key: `relics`.
+
 **Vox-cast**:
 A step that sends word of the invocation's progress or triumph to the user; tidings of
 failure are vox-cast without being asked. Key: `vox-cast`.
@@ -184,6 +190,12 @@ stands *sanctioned* while its exalted verses match its sanction, *lapsed* once t
 have changed, *unsanctioned* when it has none; a sanction whose rite is gone or holds no
 exalted verse is *forsaken*. Ritual: `servitor sanction <rite>`, or alone to list every
 sanction.
+
+**Sigil**:
+The mark that seals a sanction: drawn from every word of a rite's exalted verses, so that
+any change to them yields another. The servitor names it when it asks for the master's
+proof, in the chronicle and in the list of sanctions; a rite whose sigil no longer matches
+its sanction has lapsed. Key: `sigil`.
 
 **Abjure**:
 Withdrawing a sanction, so that the rite's exalted verses are performed no more until
