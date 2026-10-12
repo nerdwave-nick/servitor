@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	"path/filepath"
 
 	"golang.org/x/sys/unix"
 )
@@ -33,9 +34,10 @@ type former struct {
 // place before it. An act that fails returns none, unless it was done and
 // only its hall could not be made durable.
 type Memory struct {
-	g      Ground
-	path   string // the place itself, its bonds already followed
-	former former
+	g       Ground
+	path    string // the place itself, its bonds already followed
+	former  former
+	changed bool
 }
 
 // Read reads the scroll at path, following its bonds, at most Capacity
@@ -78,7 +80,7 @@ func (g Ground) Transcribe(path string, scripture []byte, seal *fs.FileMode) (*M
 	if err := inscribe(p, scripture, owner, mode, f.form == absent); err != nil {
 		return nil, lament(p.path(), err)
 	}
-	return p.remember(g, f)
+	return p.remember(g, f, true)
 }
 
 // Strike removes the vessel at path, following its bonds; an absent vessel
@@ -96,7 +98,7 @@ func (g Ground) Strike(path string) (*Memory, error) {
 	if err != nil {
 		return nil, lament(p.path(), err)
 	}
-	return p.remember(g, f)
+	return p.remember(g, f, f.form != absent)
 }
 
 // Revert raises again exactly what stood at the place before the act:
@@ -127,8 +129,8 @@ func (m *Memory) Revert() error {
 // remember is the memory of an act done at the place over what stood there
 // before, once its hall is made durable. When it could not be, the memory
 // comes with the error all the same: the act was done and may be reverted.
-func (p *place) remember(g Ground, f former) (*Memory, error) {
-	return &Memory{g: g, path: p.path(), former: f}, lament(p.path(), p.settle())
+func (p *place) remember(g Ground, f former, changed bool) (*Memory, error) {
+	return &Memory{g: g, path: p.path(), former: f, changed: changed}, lament(p.path(), p.settle())
 }
 
 // former reads what stands at the place: nothing, or a scroll of one name
@@ -294,4 +296,22 @@ func unixSeal(m fs.FileMode) uint32 {
 		s |= unix.S_ISVTX
 	}
 	return s
+}
+
+// Changed reports whether the act changed what stood at its place: a bond
+// bound anew to the anchor it held, or a place struck where nothing stood,
+// changed nothing.
+func (m *Memory) Changed() bool { return m.changed }
+
+// Resolve is the place path names within the ground, where the act upon it
+// truly lands: every bond of its halls followed, its last name kept. A path
+// the walk cannot follow, whose hall is absent or fails the rule, is kept as
+// written, made clean.
+func (g Ground) Resolve(path string) string {
+	p, err := g.walk(path, itself)
+	if err != nil {
+		return filepath.Clean(path)
+	}
+	defer p.close()
+	return p.path()
 }

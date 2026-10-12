@@ -63,6 +63,10 @@ type doom string
 
 func (d doom) Error() string { return string(d) }
 
+// Is makes a vessel that is not to be found fs.ErrNotExist, as the machine's
+// own absence is.
+func (d doom) Is(target error) bool { return d == errMissing && target == fs.ErrNotExist }
+
 const (
 	errAstray      doom = "does not begin at the root"
 	errUnsovereign doom = "is a hall the root does not own"

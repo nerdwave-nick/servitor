@@ -24,12 +24,13 @@ func (g Ground) Bind(name, anchor string, zeal bool) (*Memory, error) {
 	if err := g.hallowed(p, anchor); err != nil {
 		return nil, err
 	}
-	if f.form != bond || f.anchor != anchor {
+	changed := f.form != bond || f.anchor != anchor
+	if changed {
 		if err := lay(p, anchor, f.form == absent); err != nil {
 			return nil, lament(p.path(), err)
 		}
 	}
-	return p.remember(g, f)
+	return p.remember(g, f, changed)
 }
 
 // Unbind strikes the bond at name; an absent name stays absent. A scroll
@@ -48,7 +49,7 @@ func (g Ground) Unbind(name string, zeal bool) (*Memory, error) {
 	if err != nil {
 		return nil, lament(p.path(), err)
 	}
-	return p.remember(g, f)
+	return p.remember(g, f, f.form != absent)
 }
 
 // displaced reads what stands at the name of a tether, which gives way to
