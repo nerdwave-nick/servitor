@@ -24,9 +24,14 @@ recited by its own shebang needs no tongue, unless it carries a reversion.
 The tongue of exalted speech is fixed when its master sanctions it, as the
 program the tongue names from the root. The exalted servitor speaks it only
 if that program is owned by the root, written by none but the root, and
-reached through halls the root alone may write; it is spoken as "<tongue>
---noprofile --norc", so that no scripture of the root's home is read before
-the words.
+reached through halls the root alone may write, and only if it is one of
+the tongues exalted speech knows how to bid read no scripture of its own as
+it awakens, judged by the last name of the program it truly is: bash, spoken
+as "bash --noprofile --norc"; zsh, as "zsh -f"; fish, as "fish --no-config";
+sh and dash as they are, for neither reads any when it is not interactive,
+and ENV never reaches them. Any other tongue of an exalted verse is heresy,
+and the exalted servitor refuses it; the pre-flight refuses it before any
+proof is asked. Where /bin/sh is bash, sh is spoken as bash.
 
 Kindred passages: incantation, litany, reversion, auspex, patience,
 exalted-servitor

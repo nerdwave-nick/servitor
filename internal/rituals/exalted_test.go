@@ -141,3 +141,59 @@ func TestInquire_TheRelicsAndScrollsOfExaltedVerses(t *testing.T) {
 		t.Errorf("found %d, expected %d:\n%v", len(fs), len(expect), fs)
 	}
 }
+
+// TestInquire_ExaltedSpeechKnowsItsTongues: exalted speech is spoken only in
+// the tongues it knows how to bid read no scripture of their own — bash,
+// zsh, fish, sh and dash, by the name of the program each truly is. Any
+// other tongue of an exalted incantation or litany, named by the step, the
+// rite or the settings, is heresy; a common verse may speak it.
+func TestInquire_ExaltedSpeechKnowsItsTongues(t *testing.T) {
+	fx := newFixture(t)
+	bin := t.TempDir()
+	for _, name := range []string{"python3", "zsh"} {
+		fx.write(bin, name, "#!/bin/sh\n")
+		if err := os.Chmod(filepath.Join(bin, name), 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := os.Symlink("python3", filepath.Join(bin, "shell")); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("PATH", bin+string(os.PathListSeparator)+os.Getenv("PATH"))
+	fx.rite("tongues", `{"pattern": "Mark I", "aspects": ["on", "off"], "liturgy": [
+	  {"incantation": "print(1)", "tongue": "python3", "exalted": true},
+	  {"incantation": "print(2)", "tongue": "python3"},
+	  {"incantation": "echo 3", "tongue": "zsh", "exalted": true},
+	  {"incantation": "echo 4", "tongue": "shell", "exalted": true},
+	  {"litany": "tongues.json", "tongue": "python3", "exalted": true},
+	  {"incantation": "echo 6", "exalted": true}
+	]}`)
+	fx.rite("rite-tongue", `{"pattern": "Mark I", "aspects": ["on"], "tongue": "python3",
+	  "liturgy": [{"incantation": "print(1)", "exalted": true}]}`)
+
+	fs := inquire(t, fx.servitor(), true)
+	for _, e := range []struct {
+		rite, words string
+		line, col   int
+	}{
+		{"tongues", "the tongue python3 of verse 1 is python3", 2, 42},
+		{"tongues", "the tongue shell of verse 4 is python3", 5, 40},
+		{"tongues", "the tongue python3 of verse 5 is python3", 6, 41},
+		{"rite-tongue", "the tongue python3 of verse 1 is python3", 1, 52},
+	} {
+		got := denounced(fs, e.rite, librarium.Heresy, e.words, librarium.ExaltedTongueNames)
+		if len(got) != 1 {
+			t.Errorf("%s %q: found %d in\n%v", e.rite, e.words, len(got), fs)
+			continue
+		}
+		if f := got[0]; f.Line != e.line || f.Column != e.col {
+			t.Errorf("%q found at %d:%d, want %d:%d", e.words, f.Line, f.Column, e.line, e.col)
+		}
+	}
+	if got := denounced(fs, "", librarium.Heresy); len(got) != 0 {
+		t.Errorf("found beyond the rites: %v", got)
+	}
+	if n := len(denounced(fs, "tongues", librarium.Heresy, "is never spoken")); n != 3 {
+		t.Errorf("found %d heresies of tongues in\n%v", n, fs)
+	}
+}

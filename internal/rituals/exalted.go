@@ -6,6 +6,7 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -82,6 +83,36 @@ func (e *examiner) exaltation() {
 		for j, relic := range u.Relics {
 			e.relic(i, j, relic)
 		}
+		if u.Exalted {
+			e.exaltedTongue(i, u.Tongue)
+		}
+	}
+}
+
+// exaltedTongue denounces the tongue of the exalted speech at index i, named
+// by the step, the rite or the settings, when the program it truly is is
+// none of the tongues exalted speech knows. A tongue spoken nowhere is
+// noted by the machine.
+func (e *examiner) exaltedTongue(i int, tongue string) {
+	ptr := field(i, "tongue")
+	switch {
+	case tongue == "" && e.rite.Tongue != "":
+		ptr = "/tongue"
+	case tongue == "" && e.orders.Tongue != "":
+		ptr = field(i, "exalted") // the settings speak for the step
+	}
+	t := e.tongueOf(tongue)
+	program, err := exec.LookPath(t)
+	if err == nil {
+		program, err = filepath.EvalSymlinks(program)
+	}
+	if err != nil {
+		return
+	}
+	if _, known := librarium.ExaltedTongue(program); !known {
+		e.note(librarium.Heresy, ptr, "the tongue %s of verse %d is %s, which exalted speech is never spoken in: "+
+			"it knows only %s, each bidden to read no scripture of its own as it awakens — name one of them as "+
+			"the \"tongue\" of the step", t, i+1, filepath.Base(program), librarium.ExaltedTongueNames)
 	}
 }
 

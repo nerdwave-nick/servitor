@@ -92,13 +92,14 @@ func (w Speech) prepare(s Sitting) (*speaker, map[string]relic, error) {
 	if err != nil {
 		return nil, nil, err
 	}
-	sp := &speaker{env: env, programs: map[string]string{}, scrolls: map[int]string{}}
+	sp := &speaker{env: env, programs: map[string]string{}, biddings: map[string][]string{},
+		scrolls: map[int]string{}}
 	laid := map[string]relic{}
 	for _, v := range s.Plan.Liturgy {
 		if v.Kind != librarium.KindIncantation && v.Kind != librarium.KindLitany {
 			continue
 		}
-		if err := sp.judge(w.Tongues, v.Verse, v.Tongue); err != nil {
+		if err := sp.tongue(w.Tongues, v.Verse, v.Tongue); err != nil {
 			return nil, nil, err
 		}
 		for _, r := range v.Relics {
@@ -252,8 +253,8 @@ func fill(hall string, laid map[string]relic) error {
 // errNoTongue is the program of a tongue that does not begin at the root.
 var errNoTongue = errors.New("does not begin at the root")
 
-// judge judges the program of tongue by the trusted-path rule, once, and
-// keeps where it is awakened from.
+// judge judges the program of tongue (or of an interpreter) by the
+// trusted-path rule, once, and keeps where it is awakened from.
 func (sp *speaker) judge(g hallowed.Ground, verse int, tongue string) error {
 	if _, ok := sp.programs[tongue]; ok {
 		return nil
@@ -267,6 +268,36 @@ func (sp *speaker) judge(g hallowed.Ground, verse int, tongue string) error {
 	}
 	sp.programs[tongue] = filepath.Join(g.Root, program)
 	return nil
+}
+
+// tongue judges the program of the tongue of verse as judge does, and as
+// one of the tongues exalted speech knows, by the name of the program it
+// truly is; it keeps how that program is bidden to read no scripture of its
+// own.
+func (sp *speaker) tongue(g hallowed.Ground, verse int, tongue string) error {
+	if err := sp.judge(g, verse, tongue); err != nil {
+		return err
+	}
+	program := sp.programs[tongue]
+	bidding, known := librarium.ExaltedTongue(program)
+	if !known {
+		return fmt.Errorf("the tongue %s of verse %d is %s, which exalted speech is never spoken in: it knows "+
+			"only %s, each bidden to read no scripture of its own as it awakens", tongue, verse,
+			filepath.Base(program), librarium.ExaltedTongueNames)
+	}
+	sp.biddings[program] = bidding
+	return nil
+}
+
+// spoken is how the program of the tongue of v is awakened, and bidden to
+// read no scripture of its own.
+func (sp *speaker) spoken(v sanction.Verse) ([]string, error) {
+	program := sp.programs[v.Tongue]
+	bidding, ok := sp.biddings[program]
+	if program == "" || !ok {
+		return nil, fmt.Errorf("the tongue of verse %d was never judged", v.Verse)
+	}
+	return append([]string{program}, bidding...), nil
 }
 
 // scroll names the scroll of a litany to be laid in the working hall: under
