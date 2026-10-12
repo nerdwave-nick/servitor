@@ -42,28 +42,57 @@ type voice struct {
 
 // speak runs the command to its end and returns what it uttered.
 func (v voice) speak(halt context.Context) (string, error) {
-	ctx, cancel := context.WithTimeout(halt, v.patience)
+	return Utter(halt, Utterance{Argv: v.argv, Dir: v.dir, Env: v.env, Patience: v.patience})
+}
+
+// Utterance is one command as the servitor speaks it: its words, the hall
+// and the whole environment it is spoken in, and its patience.
+type Utterance struct {
+	Argv     []string
+	Dir      string
+	Env      []string
+	Patience time.Duration
+	// Session speaks the command in a session of its own, which it leads
+	// with its process group: the exalted servitor's speech, which no
+	// terminal may reach.
+	Session bool
+	// Summoned, when set, is told the process group of the command once it
+	// is awakened, so that whatever it leaves behind may be slain later.
+	Summoned func(pgid int)
+}
+
+// Utter speaks u to its end, as every command of a rite is spoken, and
+// returns its last words; the error is the grimdark words of how it fell,
+// nil for triumph. halt slays it, as the master's halt does.
+func Utter(halt context.Context, u Utterance) (string, error) {
+	ctx, cancel := context.WithTimeout(halt, u.Patience)
 	defer cancel()
-	cmd := exec.CommandContext(ctx, v.argv[0], v.argv[1:]...)
-	cmd.Dir, cmd.Env = v.dir, v.env
-	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true}
+	cmd := exec.CommandContext(ctx, u.Argv[0], u.Argv[1:]...)
+	cmd.Dir, cmd.Env = u.Dir, u.Env
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: !u.Session, Setsid: u.Session}
 	cmd.Cancel = func() error { return syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL) }
 	cmd.WaitDelay = linger
 	var out echo
 	cmd.Stdout, cmd.Stderr = &out, &out
-	err := cmd.Run()
-	return string(out.b), v.judge(ctx, err)
+	err := cmd.Start()
+	if err == nil {
+		if u.Summoned != nil {
+			u.Summoned(cmd.Process.Pid)
+		}
+		err = cmd.Wait()
+	}
+	return string(out.b), u.judge(ctx, err)
 }
 
 // judge speaks the grimdark words for how a command ended; nil is triumph.
-func (v voice) judge(ctx context.Context, err error) error {
+func (u Utterance) judge(ctx context.Context, err error) error {
 	var exit *exec.ExitError
 	switch {
 	case errors.Is(ctx.Err(), context.Canceled):
 		return errHalted
 	case errors.Is(ctx.Err(), context.DeadlineExceeded):
 		return fmt.Errorf("its patience of %v ran out, and the servitor slew it together with every process "+
-			"it had summoned", v.patience)
+			"it had summoned", u.Patience)
 	case err == nil, errors.Is(err, exec.ErrWaitDelay):
 		return nil
 	case errors.As(err, &exit) && exit.Exited():
@@ -73,7 +102,7 @@ func (v voice) judge(ctx context.Context, err error) error {
 			return fmt.Errorf("it was struck down by the signal %q before it could end", ws.Signal())
 		}
 	}
-	return fmt.Errorf("it could not be awakened: %w", lament(v.argv[0], unwrapStart(err)))
+	return fmt.Errorf("it could not be awakened: %w", lament(u.Argv[0], unwrapStart(err)))
 }
 
 // errHalted is the heresy of a step the master halted, or would have begun
