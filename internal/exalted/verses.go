@@ -118,8 +118,9 @@ func (s *session) sanctum(v sanction.Verse) (Reply, *hallowed.Memory, error) {
 
 // transcription transcribes the scripture of the verse, or strikes its
 // vessel. A standing vessel gives way only when it holds the scripture of
-// an aspect of the sanction, or with zeal; one that already holds the
-// scripture is not touched.
+// an aspect of the sanction, or with zeal, and takes the seal of the verse
+// as every transcription does; one that already holds the scripture under
+// that seal is not touched.
 func (s *session) transcription(v sanction.Verse) (Reply, *hallowed.Memory, error) {
 	before, absent, err := s.read(v.Target)
 	if err != nil {
@@ -142,10 +143,7 @@ func (s *session) transcription(v sanction.Verse) (Reply, *hallowed.Memory, erro
 		return r, mem, err
 	}
 	r.After = seen(v.Scripture)
-	if !absent && string(before) == string(v.Scripture) {
-		return r, nil, nil
-	}
-	mem, err := s.cfg.Ground.Transcribe(v.Target, v.Scripture, v.Seal)
+	mem, err := s.cfg.Ground.Transcribe(v.Target, v.Scripture, v.Seal) // changes nothing that stands as decreed
 	return r, mem, err
 }
 

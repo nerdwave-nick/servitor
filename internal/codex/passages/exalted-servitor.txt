@@ -45,7 +45,8 @@ the last one performed, finish, abort. A word out of its order, or a second
 plan, is refused, and ends the session. Of a vessel it tells only whether it
 changed, its size and its SHA-256, never its scripture. Its vessels and
 tethers are walked from the root through halls the root alone may write, and
-transcribed atomically, keeping their owner and seal.
+transcribed atomically, keeping their owner, and their seal unless the verse
+decrees one, as every transcription does.
 
 Exalted incantations and litanies it speaks itself, in a working hall of its
 own: /run/servitor/<sigil>/, raised afresh for the session, the root's and
