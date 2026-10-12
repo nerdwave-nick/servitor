@@ -32,3 +32,6 @@ require (
 	golang.org/x/sync v0.22.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 )
+
+// makepkg leaves its halls beneath packaging/arch; pkg/ there cannot be read.
+ignore ./packaging
