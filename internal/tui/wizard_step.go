@@ -52,6 +52,7 @@ func (w *wizard) essencePage(m *model) tea.Cmd {
 		f.addChoice("vox-cast", "Tidings", []string{librarium.VoxProgress, librarium.VoxSuccess}, sd.fixed["vox-cast"],
 			"progress tells of the step before it; success proclaims triumph and belongs last.")
 	}
+	addExaltation(f, sd)
 	if hasFurther(k) {
 		f.addToggle("further", "Further rites", sd.further, furtherHints[k])
 	}
@@ -61,9 +62,12 @@ func (w *wizard) essencePage(m *model) tea.Cmd {
 func (w *wizard) keepEssence() {
 	f := w.form
 	for _, fl := range f.fields {
-		if fl.key == "further" {
+		switch fl.key {
+		case "further":
 			w.work.further = fl.on
-		} else {
+		case "relics":
+			w.work.relics = keptRelics(fl.value(), w.work.relics)
+		default:
 			w.work.fixed[fl.key] = strings.TrimSpace(fl.value())
 		}
 	}

@@ -23,8 +23,9 @@ type stepDraft struct {
 	command   varied[string] // an incantation's command or a litany's scroll
 	reversion varied[string]
 	offerings varied[[]string]
-	// relics are those of an exalted incantation or litany, kept as read;
-	// the wizard writes them back unchanged, and "exalted" stands in fixed.
+	// relics are those of an incantation or litany, written on its essence
+	// page while it is exalted ("exalted" stands in fixed) and kept while
+	// it is not, yet written into the scripture only while it is.
 	relics []string
 }
 
@@ -134,10 +135,14 @@ func (sd stepDraft) toStep(aspects []string) librarium.Step {
 }
 
 // utterance is what an incantation or litany speaks with; a reversion
-// that reverts nothing for every aspect stays unwritten.
+// that reverts nothing for every aspect stays unwritten, and so do the
+// relics of speech that is not exalted.
 func (sd stepDraft) utterance(aspects []string) librarium.Utterance {
 	u := librarium.Utterance{Tongue: sd.fixed["tongue"], Reversion: sd.reversion.toMap(aspects),
-		Exalted: sd.fixed["exalted"] == "true", Relics: sd.relics}
+		Exalted: sd.fixed["exalted"] == "true"}
+	if u.Exalted {
+		u.Relics = sd.relics // relics are borne by exalted speech alone
+	}
 	u.Patience, _ = time.ParseDuration(sd.fixed["patience"])
 	if r := u.Reversion; r.IsUniform() && r.Entries()[0].Value == "" {
 		u.Reversion = librarium.AspectMap[string]{}

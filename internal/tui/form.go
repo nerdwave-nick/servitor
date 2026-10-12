@@ -121,6 +121,16 @@ func (f *form) get(key string) string {
 	return ""
 }
 
+// has reports whether the form bears a field with key.
+func (f *form) has(key string) bool {
+	for _, fl := range f.fields {
+		if fl.key == key {
+			return true
+		}
+	}
+	return false
+}
+
 func (f *form) setWidth(w int) {
 	f.width = w
 	for _, fl := range f.fields {

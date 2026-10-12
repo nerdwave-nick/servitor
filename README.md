@@ -777,7 +777,11 @@ Inquisition before anything is written. A heretical rite cannot be sealed.
 An edict is asked no aspects and no auspex, each of its inscriptions takes
 one plain decree, its steps are only incantations, litanies and vox-casts,
 and their values are written once, on a single page; amended or replicated,
-an edict stays an edict. In forms, `tab`/`↑↓` move between fields, `enter`
+an edict stays an edict. Every step but a vox-cast may be declared an
+exalted verse on its first page, where an exalted incantation or litany
+names its relics, one per line; amended or replicated, a rite keeps its
+exalted verses and their relics, and the cogitator still performs none of
+them with its invoker's authority. In forms, `tab`/`↑↓` move between fields, `enter`
 advances, `ctrl+s` seals the page and `esc` steps back.
 
 ## The codex

@@ -89,6 +89,9 @@ func (w *wizard) update(m *model, msg tea.Msg) (screen, tea.Cmd) {
 	if edict := w.form.get("edict") == natureEdict; w.page == pageRite && edict != w.d.edict {
 		return w, w.turnNature(m, edict)
 	}
+	if w.page == pageEssence && bearsRelics(w.work.kind) && (w.form.get("exalted") == "true") != w.form.has("relics") {
+		return w, w.turnExaltation(m)
+	}
 	if w.page == pageEssence && w.work.kind == librarium.KindSanctum {
 		// The glyphs follow the vessel's extension unless spoken.
 		glyph, closing := librarium.DefaultGlyphs(w.form.get("sanctum"))
