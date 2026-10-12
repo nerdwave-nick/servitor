@@ -55,6 +55,8 @@ needed. After each pull, forge and install anew with `makepkg -si`.
 ### By the Go forge alone
 
 A servitor forged by Go alone performs every rite that holds no exalted verse.
+For exalted verses it rouses the servitor installed by pacman, and only while
+both speak one protocol; otherwise it bids you install the servitor anew.
 
 ```sh
 go install github.com/nerdwave-nick/servitor@latest

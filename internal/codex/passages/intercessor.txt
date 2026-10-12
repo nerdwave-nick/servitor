@@ -13,12 +13,32 @@ names it:
   "run0"    run0 alone
   "pkexec"  pkexec alone
 
-An intercessor named but missing from the machine refuses the invocation.
-Any other value is heresy, denounced by the inquisition with its place; doas
-is never called upon. No rune and no variable of the environment outranks
-the settings here.
+An intercessor named but missing from the PATH refuses the invocation with
+the death-mark 2, and no other is called upon in its stead. Any other value
+is heresy, denounced by the inquisition with its place; doas is never called
+upon. No rune and no variable of the environment outranks the settings here.
+Without a terminal, sudo asks for the master's proof only through a helper
+its master laid outside the servitor, so "auto" passes it by.
 
-Kindred passages: exalted, invoke, librarium
+The intercessor always raises the servitor installed at /usr/bin/servitor,
+never the servitor that asks, and the servitor calls upon none unless that
+one stands where the root alone may write: owned by the root, written by
+none but the root, it and every hall above it. Otherwise the invocation is
+refused with the death-mark 2, before any proof is asked; install the
+servitor anew from its package (makepkg -si). No settings spare this
+judgement. Each intercessor is called upon with these words alone, the
+sigil cut to its first twelve letters, or eight in the name of run0's unit:
+
+  sudo -k -p "servitor: authenticate to perform <rite> (sigil <sigil>): " \
+    -- /usr/bin/servitor __exalt <rite> <sigil> [<aspect>]
+  run0 --unit=servitor-<rite>-<sigil8> --pipe --chdir=/ \
+    /usr/bin/servitor __exalt <rite> <sigil> [<aspect>]
+  pkexec /usr/bin/servitor __exalt <rite> <sigil> [<aspect>]
+
+sudo forgets every proof given before (-k), so that each invocation asks
+anew; pkexec asks through the stock action of the machine.
+
+Kindred passages: exalted, exalted-servitor, invoke, librarium
 
 Exempla:
   // servitor.json

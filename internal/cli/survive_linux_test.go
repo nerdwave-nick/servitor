@@ -20,13 +20,16 @@ func TestMain(m *testing.M) {
 	// The servitor serves the faithful in every test, whoever runs them;
 	// asRoot lends it the machine's own authority.
 	geteuid = func() int { return 1000 }
+	tearDown := enshrineTrials()
 	switch os.Getenv(awakenAs) {
 	case "servitor":
 		os.Exit(Execute(os.Args[1:], os.Stdout, os.Stderr))
 	case "caller":
 		os.Exit(beCaller(os.Args[1:]))
 	}
-	os.Exit(m.Run())
+	code := m.Run()
+	tearDown()
+	os.Exit(code)
 }
 
 // servitorProcess prepares the servitor as a process of its own upon the
