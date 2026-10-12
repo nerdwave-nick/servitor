@@ -33,6 +33,10 @@ const DefaultRoot = "/var/lib/servitor/sanctions"
 // limit is how much of a sanction the store reads.
 const limit = 64 << 20
 
+// UnitCap is the most bytes the canonical JSON of a unit may hold to be
+// sanctioned, so that its sanction, a little longer, is read whole.
+const UnitCap = limit - 1<<20
+
 // Store is the store of one master's sanctions: <Root>/<UID>/<rite>.json.
 // A Store without Root holds none. Reading it changes nothing.
 type Store struct {
