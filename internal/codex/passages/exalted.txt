@@ -39,8 +39,8 @@ beside it that is not among its relics, and a program the machine guards by
 an intercessor of its own (systemctl, hostnamectl, …) called by a verse that
 is not exalted beside exalted ones.
 
-Kindred passages: sanction, sigil, relics, intercessor, incantation, litany,
-transcription, invoke
+Kindred passages: sanction, sigil, relics, intercessor, exalted-servitor,
+incantation, litany, transcription, invoke
 
 Exempla:
   {"incantation": {"on": "sysctl -wq kernel.split_lock_mitigate=0",
