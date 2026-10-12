@@ -20,6 +20,16 @@ leave or to enter:
 
   +++ Foreseen: the edict screenshot +++
 
+Foresight never exalts: no proof is asked and the exalted servitor is never
+raised. The foresight of a rite with exalted verses first tells how their
+plan for the aspect stands towards its sanction — sanctioned under its
+sigil, or unsanctioned or lapsed, naming servitor sanction <rite> — and
+marks each exalted verse ✠ after its name. A vessel of an exalted verse its
+invoker may not read is foreseen by its owner, seal and size, and for a
+transcription by the SHA-256 of the scripture it shall hold, with "contents
+hidden — change unknown", never as undisturbed; the bound name of an exalted
+tether its invoker may not behold, alike.
+
 Foresight is heeded even of a servitor roused as root, which refuses every
 true invocation; under sudo it foresees upon the Librarium and the vessels of
 the one who spoke sudo, and writes nothing.
@@ -27,7 +37,8 @@ the one who spoke sudo, and writes nothing.
 Foresee before every invocation you are not certain of, and before invoking
 a rite whose scripture was newly amended.
 
-Kindred passages: invoke, pre-flight, silence, auspex, chronicle
+Kindred passages: invoke, pre-flight, silence, auspex, chronicle, exalted,
+sanction
 
 Exempla:
   servitor invoke theme porpl --foresee

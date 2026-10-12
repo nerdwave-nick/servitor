@@ -1,7 +1,9 @@
 package cli
 
 import (
+	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -22,9 +24,10 @@ const enshrinedHall = "SERVITOR_TEST_ENSHRINED"
 // process awakened by the trials finds the hall they laid, and tears down
 // nothing.
 func enshrineTrials() func() {
+	rituals.Summon = unsummoned
 	if dir := os.Getenv(enshrinedHall); dir != "" {
 		w := intercessor.Machine()
-		w.Ground = trialGround(dir)
+		w.Ground, w.LookPath = trialGround(dir), noIntercessor
 		rituals.Intercession = w
 		return func() {}
 	}
@@ -41,6 +44,16 @@ func enshrineTrials() func() {
 	return func() { _ = os.RemoveAll(dir) }
 }
 
+// noIntercessor finds no intercessor: the trials never call upon sudo, run0
+// or pkexec of the machine.
+func noIntercessor(string) (string, error) { return "", exec.ErrNotFound }
+
+// unsummoned refuses to raise anything: an exalted servitor is raised in
+// the trials only by a summoner of their own.
+func unsummoned(cmd *exec.Cmd, _ *os.File) (func() error, error) {
+	return nil, fmt.Errorf("the trials never call upon %s", cmd.Path)
+}
+
 // trialGround is the ground in the hall root, where the invoker of the
 // trials stands in for the root.
 func trialGround(root string) hallowed.Ground {
@@ -49,10 +62,12 @@ func trialGround(root string) hallowed.Ground {
 }
 
 // enshrine lays a servitor installed as the root's in the hall root, and
-// returns the world that finds it there.
+// returns the world that finds it there, and finds no intercessor of the
+// machine: the trials call upon stub intercessors of their own alone.
 func enshrine(root string) (intercessor.World, error) {
 	w := intercessor.Machine()
 	w.Ground = trialGround(root)
+	w.LookPath = noIntercessor
 	if err := os.Chmod(root, 0o755); err != nil {
 		return w, err
 	}

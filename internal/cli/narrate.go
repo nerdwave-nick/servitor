@@ -79,9 +79,18 @@ func (n *narration) Performed(v invocation.Verse, _, _ int) {
 // with the count of real steps and the first success closes the report;
 // the fall is left to the lament. The awaiting of dominion, told before the
 // header, is a line of its own that silence withholds; without a terminal
-// only the desktop hears it.
+// only the desktop hears it. That the exalted verses await the master's
+// proof is a line of its own upon a terminal alone, which silence
+// withholds; the desktop never hears it.
 func (n *narration) Proclaim(p invocation.Proclamation) {
 	m := vox.Compose(p, n.pick)
+	if p.Tidings == invocation.Exaltation {
+		// told upon a terminal alone: elsewhere the intercessor's own dialog speaks
+		if n.live && !n.silence {
+			fmt.Fprintln(n.w, "⋯ "+m.Flavour)
+		}
+		return
+	}
 	closed := n.closing != ""
 	if p.Tidings == invocation.Success && !closed {
 		n.closing = m.Flavour

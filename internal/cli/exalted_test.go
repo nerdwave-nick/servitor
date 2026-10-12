@@ -20,11 +20,12 @@ const splitLockJSON = `{
   ]
 }`
 
-// TestInvoke_ExaltedVersesAreRefused: invoking a rite or proclaiming an
-// edict that holds an exalted verse exits 2 before anything is touched —
-// no vessel, no speech, no dominion, no chronicle — and the binharic
-// forbiddance names the exalted verse; --foresee still reveals it.
-func TestInvoke_ExaltedVersesAreRefused(t *testing.T) {
+// TestInvoke_UnsanctionedExaltedVersesAreRefused: invoking a rite or
+// proclaiming an edict whose exalted verses were never sanctioned exits 2
+// before anything is touched — no proof, no vessel, no speech, no dominion,
+// no chronicle — and the binharic forbiddance names the exalted verse;
+// --foresee still reveals it.
+func TestInvoke_UnsanctionedExaltedVersesAreRefused(t *testing.T) {
 	e := newEnv(t)
 	e.addRite("rites/split-lock.json", splitLockJSON)
 	e.addRite("rites/reboot.json", `{"pattern": "Mark I", "edict": true, "liturgy": [

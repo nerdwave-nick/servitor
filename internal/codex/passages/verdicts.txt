@@ -27,7 +27,10 @@ chronicle keeps the verdict of every invocation, with "fell_at" and
 "reversions" for those that fell.
 
 An invocation refused in its pre-flight performed nothing and earns no
-verdict: neither its data-slate nor the chronicle is touched. The same holds
+verdict: neither its data-slate nor the chronicle is touched. So too an
+invocation whose exalted verses were refused before any proof, or whose
+proof was dismissed (death-mark 2). Exalted verses are judged with the rest:
+the verdict tells their reversions among the common ones. The same holds
 for an invocation only foreseen. An invocation halted by its master's
 interrupt is reverted like any other that fell, and judged accordingly.
 

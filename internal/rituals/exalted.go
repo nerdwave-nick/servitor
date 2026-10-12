@@ -10,50 +10,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/nerdwave-nick/servitor/internal/invocation"
 	"github.com/nerdwave-nick/servitor/internal/librarium"
-	"github.com/nerdwave-nick/servitor/internal/sanction"
 )
-
-// unexalted refuses the invocation of a rite holding exalted verses, with a
-// heresy for each of them that names the rite's standing towards its
-// sanction: no exalted verse is ever performed with its invoker's
-// authority, and this servitor cannot yet raise an exalted servitor to
-// perform one from a sanction — so even a sanctioned rite is refused. It is
-// the one gate of that refusal, passed before anything of the rite is
-// touched; foresight never reaches it.
-func (s *Servitor) unexalted(r *librarium.Rite) error {
-	verses := r.ExaltedVerses()
-	if len(verses) == 0 {
-		return nil
-	}
-	var standing string
-	switch st, _, _ := s.standing(r.Name, r); st {
-	case sanction.Sanctioned:
-		standing = fmt.Sprintf("though the rite %q stands sanctioned, this servitor cannot yet raise the exalted "+
-			"servitor to perform it from its sanction", r.Name)
-	case sanction.Lapsed:
-		standing = fmt.Sprintf("the sanction of the rite %q has lapsed, for its exalted verses are no longer those "+
-			"its master sanctioned — sanction them anew: servitor sanction %s", r.Name, r.Name)
-	default:
-		standing = fmt.Sprintf("the rite %q stands unsanctioned, for its master never sanctioned its exalted "+
-			"verses — sanction them: servitor sanction %s", r.Name, r.Name)
-	}
-	var hs invocation.Heresies
-	for _, verse := range verses {
-		hs = append(hs, invocation.Heresy{Verse: verse, Finding: librarium.Finding{
-			Severity: librarium.Heresy, Scripture: r.Path, Rite: r.Name,
-			Position: r.Locate(fmt.Sprintf("/liturgy/%d/exalted", verse-1)),
-			Message: fmt.Sprintf("verse %d is exalted: it is performed with the machine's own authority alone, by an "+
-				"exalted servitor from the sanction of its master; %s — not one verse of %q was performed",
-				verse, standing, r.Name),
-		}})
-	}
-	if len(hs) > 0 {
-		return hs
-	}
-	return nil
-}
 
 // scrollLimit is how much of a scroll the inquisition reads.
 const scrollLimit = 1 << 20

@@ -154,3 +154,29 @@ func TestVerse_ReadsWhatItCannotName(t *testing.T) {
 		})
 	}
 }
+
+// TestEntry_NamesTheIntercessorAndTheSigilOfExaltedVerses: the line of an
+// invocation with exalted verses names, last, the intercessor that vouched
+// for its master and the first twelve letters of the sigil of the plan the
+// exalted servitor performed; it reads back whole.
+func TestEntry_NamesTheIntercessorAndTheSigilOfExaltedVerses(t *testing.T) {
+	e := New(moment, "split-lock", invocation.Options{Aspect: "on", Former: "off"},
+		invocation.Outcome{Verdict: invocation.Reverted,
+			Fell:       &invocation.Fall{Verse: verse(2, librarium.KindIncantation, "exit 1"), Heresy: errors.New("fell")},
+			Reversions: []invocation.Reversion{{Verse: verse(1, librarium.KindIncantation, "sysctl -w x=1")}}})
+	e.Intercessor, e.Sigil = "sudo", "4f0c2a9e1b7d"
+	line, err := json.Marshal(e)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := `{"at":"2026-10-10T13:30:00Z","rite":"split-lock","aspect":"on","former":"off","inscriptions":{},` +
+		`"verdict":"reverted","fell_at":{"verse":2,"incantation":"exit 1"},"heresy":"fell",` +
+		`"reversions":[{"verse":1,"verdict":"triumph"}],"intercessor":"sudo","sigil":"4f0c2a9e1b7d"}`
+	if string(line) != want {
+		t.Fatalf("line\n got %s\nwant %s", line, want)
+	}
+	var back Entry
+	if err := json.Unmarshal(line, &back); err != nil || !reflect.DeepEqual(back, e) {
+		t.Fatalf("read back %#v, %v", back, err)
+	}
+}

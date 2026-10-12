@@ -7,6 +7,8 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/chronicle"
 	"github.com/nerdwave-nick/servitor/internal/invocation"
 	"github.com/nerdwave-nick/servitor/internal/librarium"
+	"github.com/nerdwave-nick/servitor/internal/placeholder"
+	"github.com/nerdwave-nick/servitor/internal/sanction"
 )
 
 // Petition asks for one invocation: of a rite into Aspect, or of an edict,
@@ -23,10 +25,15 @@ type Petition struct {
 	// caller raises it and lets it rest afterwards.
 	Herald invocation.Herald
 	// Commence, when not nil, is told once the pre-flight has passed and the
-	// liturgy is about to be performed, with the result so far: the rite,
-	// the options and how the rite stood before. It is never told of an
+	// liturgy is about to be performed (the exalted servitor raised, for a
+	// rite with exalted verses), with the result so far: the rite, the
+	// options and how the rite stood before. It is never told of an
 	// invocation refused or foreseen.
 	Commence func(Result)
+	// Exaltation is how the exalted servitor is raised to perform the
+	// exalted verses of the rite; nil refuses a rite holding any. The
+	// command line lends one; the cogitator lends none yet.
+	Exaltation *Exaltation
 }
 
 // Result is what came of a petition.
@@ -50,15 +57,31 @@ type Result struct {
 	// a data-slate that could not be read or kept, a chronicle that could
 	// not be written.
 	Laments []error
+	// Sanction is how the plan of the exalted verses for the aspect stands
+	// towards their sanction, and Sigil the whole sigil of that plan; both
+	// are empty for a rite without exalted verses, and when the plan
+	// cannot be drawn. Intercessor names the intercessor that vouches for
+	// the master of a performance with exalted verses.
+	Sanction    sanction.Standing
+	Sigil       string
+	Intercessor string
 }
 
 // Invoke performs the petition, or foresees it. The error tells why
 // nothing was performed: *Unrecorded, *Heretical, invocation.Heresies of
 // the inscriptions or the pre-flight (the result's Foresight is filled for
-// the steps that passed) or of the exalted verses of a rite, which are
-// never performed (see unexalted), or *Forsaken. A performance that fell is no
-// error: its Outcome tells the verdict. Only performances are kept on the
-// data-slate and in the chronicle; a refused or foreseen invocation is not.
+// the steps that passed) or of exalted verses that may not be performed
+// (see exaltation), *Forsaken, or a refusal before any exalted verse: no
+// dominion held, no intercessor found, *Dismissed, *Spurned or
+// *exalted.Mismatch. A performance that fell is no error: its Outcome tells
+// the verdict. Only performances are kept on the data-slate and in the
+// chronicle; a refused or foreseen invocation is not.
+//
+// The exalted verses of a rite are never performed by the invoker's
+// servitor: after the pre-flight, one exalted servitor is raised through
+// the intercessor (one proof of the master), the herald hearing the
+// tidings invocation.Exaltation before, and performs and reverts them in
+// their turn among the common verses, from the sanction of their master.
 //
 // An invocation that is not foreseen is held Steadfast throughout: the
 // departure of the one who invoked it neither halts it nor leaves it half
@@ -75,15 +98,19 @@ func (s *Servitor) Invoke(ctx context.Context, p Petition) (Result, error) {
 		return Result{}, err
 	}
 	res := Result{Rite: r}
-	if !p.Foresee {
-		if err := s.unexalted(r); err != nil {
-			res.Options = invocation.Options{Aspect: p.Aspect, Edict: r.Edict}
-			return res, err
-		}
+	exalting, err := s.exaltation(r, p, &res)
+	if err != nil {
+		res.Options = invocation.Options{Aspect: p.Aspect, Edict: r.Edict}
+		return res, err
 	}
 	inscriptions, err := invocation.ResolveInscriptions(r, p.Aspect, p.Runes)
 	if err != nil {
 		return res, err
+	}
+	if exalting != nil {
+		if hs := unspeakable(r, inscriptions); len(hs) > 0 {
+			return res, hs
+		}
 	}
 	var held *dominions
 	if !p.Foresee {
@@ -104,13 +131,32 @@ func (s *Servitor) Invoke(ctx context.Context, p Petition) (Result, error) {
 		}
 		inv, err = s.prepare(r, p, inscriptions, &res)
 	}
+	if err == nil {
+		err = held.amiss()
+	}
 	if err != nil || p.Foresee {
 		return res, err
+	}
+	var (
+		x invocation.Exalter
+		e *exalter
+	)
+	if exalting != nil {
+		if e, err = s.exalt(r, p, &res, exalting); err != nil {
+			return res, err
+		}
+		x = e
 	}
 	if p.Commence != nil {
 		p.Commence(res)
 	}
-	out, err := inv.PerformContext(ctx)
+	out, err := inv.PerformExalted(ctx, x)
+	if e != nil {
+		if err != nil {
+			e.abandon()
+		}
+		res.Laments = append(res.Laments, e.laments...)
+	}
 	if err != nil {
 		return res, err
 	}
@@ -118,9 +164,23 @@ func (s *Servitor) Invoke(ctx context.Context, p Petition) (Result, error) {
 	at := s.now()
 	res.lament(augury.Record(s.env(), r.Name, out, res.Options, at))
 	entry := chronicle.New(at, r.Name, res.Options, out)
+	if exalting != nil {
+		entry.Intercessor, entry.Sigil = exalting.intercessor.Name, short(exalting.sigil)
+	}
 	res.Entry = &entry
 	res.lament(chronicle.Append(res.Options.Orders.Chronicle, entry))
 	return res, nil
+}
+
+// exalt tells the herald that the exalted verses await the master's proof
+// and raises the exalted servitor through the intercessor.
+func (s *Servitor) exalt(r *librarium.Rite, p Petition, res *Result, x *exaltedPlan) (*exalter, error) {
+	if p.Herald != nil {
+		p.Herald.Proclaim(invocation.Proclamation{Tidings: invocation.Exaltation, Edict: r.Edict,
+			Values: placeholder.Values{Rite: r.Name, Aspect: res.Options.Aspect}, Intercessor: x.intercessor.Name,
+			Sigil: short(x.sigil)})
+	}
+	return s.raise(r, res, x, p.Exaltation.summoner())
 }
 
 // prepare reads how the rite stands, or for an edict the inscriptions on

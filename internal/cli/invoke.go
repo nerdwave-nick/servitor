@@ -183,7 +183,8 @@ func (a *app) invoke(cmd *cobra.Command, r *librarium.Rite, aspect string, ir in
 		}
 	}
 	s := a.servitor(cmd)
-	p := rituals.Petition{Rite: r.Name, Aspect: aspect, Runes: runes, Foresee: ir.foresee}
+	p := rituals.Petition{Rite: r.Name, Aspect: aspect, Runes: runes, Foresee: ir.foresee,
+		Exaltation: &rituals.Exaltation{}}
 	var told *narration
 	if !ir.foresee {
 		w := cmd.OutOrStdout()

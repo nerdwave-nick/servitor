@@ -29,10 +29,18 @@ stands nowhere for some aspect.
 Should the invocation fall, the reversion restores the binding exactly as it
 was found — rebound to its former anchor, or unbound if none stood before.
 
+Exalted ("exalted": true), the tether is bound by the exalted servitor from
+the sanction of its master, never by the servitor: its name must begin at
+the root, beneath none of /proc, /sys and /dev, and its anchor must be
+reached through halls the root alone may write — a tether from /etc into
+the invoker's home is heresy, and an exalted transcription is the remedy. A
+name its invoker may not behold is foreseen with its change unknown. The
+exalted servitor rebinds or unbinds it should the invocation fall.
+
 An edict may bind no tether: the anchor a tether leads to bears witness to
 an aspect, and an edict bears none. A tether in an edict's liturgy is heresy.
 
-Kindred passages: anchor, zeal, omens, aspect-maps, placeholders, edict
+Kindred passages: anchor, zeal, omens, aspect-maps, placeholders, edict, exalted
 
 Exempla:
   {"tether": "~/.local/share/nfluff/current-theme",

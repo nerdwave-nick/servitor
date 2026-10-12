@@ -17,6 +17,8 @@ func spoken(tmpl string) *regexp.Regexp {
 	re = strings.ReplaceAll(re, regexp.QuoteMeta("{{aspect}}"), "«[^»]+»")
 	re = strings.ReplaceAll(re, regexp.QuoteMeta("{{step.kind}}"), "(sanctum|transcription|tether|incantation|litany)")
 	re = strings.ReplaceAll(re, regexp.QuoteMeta("{{rite.name}}"), `[\w.-]+`)
+	re = strings.ReplaceAll(re, regexp.QuoteMeta("{{intercessor}}"), "(sudo|run0|pkexec)")
+	re = strings.ReplaceAll(re, regexp.QuoteMeta("{{sigil}}"), "[0-9a-f]{12}")
 	return regexp.MustCompile("^" + re + "$")
 }
 
@@ -31,7 +33,7 @@ func drawn(tid invocation.Tidings, words string) bool {
 
 // TestScriptures_ShowTheVoxCastsAsTheyAreTold: every closing, progress and
 // awaiting line the README and the codex show is one the servitor could
-// tell.
+// tell: an awaiting of dominion, or of the master's proof.
 func TestScriptures_ShowTheVoxCastsAsTheyAreTold(t *testing.T) {
 	paths, _ := filepath.Glob("../codex/passages/*.txt")
 	paths = append(paths, "../../README.md")
@@ -59,7 +61,7 @@ func TestScriptures_ShowTheVoxCastsAsTheyAreTold(t *testing.T) {
 				}
 			} else if m := awaiting.FindStringSubmatch(line); m != nil {
 				awaited++
-				if !drawn(invocation.Dominion, m[1]) {
+				if !drawn(invocation.Dominion, m[1]) && !drawn(invocation.Exaltation, m[1]) {
 					t.Errorf("%s shows an awaiting of dominion never told: %q", path, line)
 				}
 			}

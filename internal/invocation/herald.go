@@ -54,6 +54,12 @@ const (
 	// unbidden, once, before the pre-flight, and never when the dominion
 	// is free at once. Its Values bear the rite and the aspect invoked.
 	Dominion Tidings = "dominion"
+	// Exaltation: the exalted verses of the invocation await the master's
+	// proof, which the intercessor demands before the exalted servitor is
+	// raised; told unbidden, once, after the pre-flight and before the
+	// first verse. Its Values bear the rite and the aspect invoked, and
+	// the Proclamation names the Intercessor and the Sigil.
+	Exaltation Tidings = "exaltation"
 )
 
 // Proclamation is what a herald hears.
@@ -76,6 +82,10 @@ type Proclamation struct {
 	// Outcome is the invocation's outcome on failure, with its verdict and
 	// every reversion; nil otherwise.
 	Outcome *Outcome
+	// Intercessor and Sigil name, for Exaltation alone, the intercessor
+	// that demands the master's proof and the first twelve letters of the
+	// sigil of the plan the exalted servitor performs.
+	Intercessor, Sigil string
 }
 
 // crier counts the real steps of a performance and tells the herald.

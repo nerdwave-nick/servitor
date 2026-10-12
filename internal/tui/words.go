@@ -46,6 +46,13 @@ func foreseen(f invocation.Foresight) []string {
 }
 
 func foreseenVessel(c invocation.VesselChange) []string {
+	if c.Hidden {
+		out := []string{"  contents hidden — change unknown"}
+		if c.Digest != "" {
+			out = append(out, "  it shall hold the scripture of SHA-256 "+c.Digest)
+		}
+		return out
+	}
 	var out []string
 	switch {
 	case !c.Changed():
@@ -70,6 +77,8 @@ func foreseenTether(c invocation.TetherChange) []string {
 	}
 	var out []string
 	switch {
+	case c.Hidden:
+		return []string{"  what stands at the name is hidden — change unknown"}
 	case !c.Changed():
 		return []string{"  the tether stays bound to " + to}
 	case to == "":

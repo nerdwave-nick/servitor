@@ -39,8 +39,9 @@ the servitor is roused from a hotkey, and their input is empty.
 An incantation yields no omen. Should the invocation fall, its "reversion" is
 spoken in the same tongue to undo what it did.
 
-An exalted incantation is spoken by the exalted servitor, with the machine's
-own authority, as its master sanctioned it: "<tongue> -c <words>", its
+An exalted incantation is spoken by the exalted servitor in its turn among
+the common verses, with the machine's own authority, as its master
+sanctioned it, never as the scripture stands now: "<tongue> -c <words>", its
 tongue bidden to read no scripture of its own (bash, zsh, fish, sh or dash
 alone; see tongue), in a working hall of its own holding its relics, never
 in the rite's hall. Its environment is no longer the servitor's: it hears

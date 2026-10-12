@@ -24,6 +24,12 @@ type Entry struct {
 	// Reversions are the steps undone, from the fallen step back to the
 	// first.
 	Reversions []Reversion `json:"reversions,omitempty"`
+	// Intercessor and Sigil name, for an invocation with exalted verses
+	// alone, the intercessor that vouched for its master and the first
+	// twelve letters of the sigil of the plan the exalted servitor
+	// performed.
+	Intercessor string `json:"intercessor,omitempty"`
+	Sigil       string `json:"sigil,omitempty"`
 }
 
 // Verse names a step as the chronicle writes it: its verse and its own key

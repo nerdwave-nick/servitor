@@ -7,7 +7,11 @@ binharic to the chronicle: when it happened, the rite, the aspect invoked and
 the former aspect, the inscriptions it carried, its verdict, and for a fallen
 invocation the verse it fell at, the heresy that felled it and the verdict of
 every reversion. The line of an edict names no aspect and no former aspect; it
-bears "edict": true in their stead, and all else alike. An invocation the
+bears "edict": true in their stead, and all else alike. The line of an
+invocation with exalted verses names, last, the intercessor that vouched for
+its master ("intercessor") and the first twelve letters of the sigil of the
+plan the exalted servitor performed ("sigil"); a proof dismissed performed
+nothing, and is not chronicled. An invocation the
 pre-flight forbade, or one merely foreseen, performed nothing and is not
 chronicled.
 
@@ -43,6 +47,10 @@ Exempla:
 
   {"at": "2026-10-10T13:31:00Z", "rite": "screenshot", "edict": true,
    "inscriptions": {"region": "full"}, "verdict": "triumph"}
+
+  {"at": "2026-10-12T21:04:00Z", "rite": "split-lock", "aspect": "on",
+   "former": "off", "inscriptions": {}, "verdict": "triumph",
+   "intercessor": "sudo", "sigil": "4f0c2a9e1b7d"}
 
   servitor invoke theme porpl --chronicle ~/chronicles/theme.jsonl
 

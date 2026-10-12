@@ -782,8 +782,10 @@ and their values are written once, on a single page; amended or replicated,
 an edict stays an edict. Every step but a vox-cast may be declared an
 exalted verse on its first page, where an exalted incantation or litany
 names its relics, one per line; amended or replicated, a rite keeps its
-exalted verses and their relics, and the cogitator still performs none of
-them with its invoker's authority. In forms, `tab`/`↑↓` move between fields, `enter`
+exalted verses and their relics. The cogitator performs none of them with
+its invoker's authority and lends no intercessor yet, so it refuses an
+exalted rite even when sanctioned; invoke such a rite at a terminal, where
+one proof of the master raises the exalted servitor. In forms, `tab`/`↑↓` move between fields, `enter`
 advances, `ctrl+s` seals the page and `esc` steps back.
 
 ## The codex

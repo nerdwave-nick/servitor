@@ -39,6 +39,14 @@ commands, replaced in place by the vox-casts that follow. Dominion free at
 once is never spoken of. An interrupt (Ctrl-C) or SIGTERM ends the waiting,
 and nothing is touched.
 
+A rite with exalted verses is never performed without dominion: should its
+dominion not be held at all, or its vessels shift with every seizing, it is
+refused with the death-mark 2 before anything is touched. Its exalted
+servitor then seizes a dominion of its own before the first verse, beneath
+/run/servitor/dominions/: rites/<uid>-<rite>, and vessels/<sha256> for every
+exalted vessel and bound name, waiting as every invocation waits; one it
+cannot hold refuses the invocation, and nothing is touched.
+
 The places of dominion lie beneath $XDG_STATE_HOME/servitor/dominions/: one
 empty place for each rite, rites/<rite>, and one for each vessel and
 tethered name, vessels/<the sha256 of the path where it truly dwells>,
@@ -51,7 +59,7 @@ census or the inquisition. None of them ever waits, whatever invocation is
 being performed.
 
 Kindred passages: invoke, cogitator, foresee, augury, census, inquisition,
-vox, silence, binharic, vessel, sanctum, ward, tether
+vox, silence, binharic, vessel, sanctum, ward, tether, exalted-servitor
 
 Exempla:
   ❯ servitor invoke theme porpl

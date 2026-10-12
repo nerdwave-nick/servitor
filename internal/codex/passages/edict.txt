@@ -27,6 +27,11 @@ a decree of one plain word, "tongue", and the reversion, patience, tongue and
 offerings of its incantations and litanies. Should the servitor write an
 edict's scripture anew, it keeps "edict": true and never writes "aspects".
 
+An edict may exalt its incantations and litanies: the exalted servitor,
+roused with no aspect, performs them from the sanction of its master, one
+proof asked at every proclaiming, as the passage on exaltation tells. Its
+sanction holds one plan, whose sigil is that of the whole unit.
+
 An edict yields no omen, so it is judged by the verdict of its last
 invocation alone: dormant until first proclaimed, proclaimed after a triumph
 or a reversion, corrupted after a faltered invocation until it is proclaimed
@@ -35,7 +40,7 @@ an aspect; the census marks it "edict": true, with no aspects. The
 Inquisition weighs its scrolls and tongues once, as it bears no aspect.
 
 Kindred passages: rite, aspects, liturgy, incantation, litany, vox-cast,
-invoke, heresy, standing, augury, census
+invoke, heresy, standing, augury, census, exalted
 
 Exempla:
   // <Librarium>/rites/screenshot.json

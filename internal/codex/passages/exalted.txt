@@ -25,13 +25,21 @@ by exalted incantations, never as vessels. Scriptures that exalted speech
 reads beside its scroll are named among its relics.
 
 No exalted verse is performed without the sanction of its master, laid with
-servitor sanction <rite> and withdrawn with servitor abjure <rite>. This
-servitor cannot yet raise the exalted servitor to perform exalted verses, so
-the invocation of a rite holding them is refused before anything is touched,
-its death-mark 2, whatever its standing towards its sanction; the refusal
-names that standing, and for a rite unsanctioned or lapsed the ritual that
-sanctions it: servitor sanction <rite>. --foresee still reveals what it
-would do, and never exalts.
+servitor sanction <rite> and withdrawn with servitor abjure <rite>, and none
+is ever performed by the servitor that invokes it. Invoked, the rite's
+pre-flight compares the sigil of its exalted verses for the aspect with the
+sanction: unsanctioned or lapsed, the invocation is refused before any proof
+is asked, its death-mark 2, and the words name servitor sanction <rite>.
+Sanctioned, the intercessor asks the master's proof once, after the
+pre-flight, and raises one exalted servitor, which performs each exalted
+verse in its turn among the common verses, from the sanctioned copy alone,
+and reverts them, should the invocation fall, among the common reversions,
+without a second proof. A proof dismissed touches nothing (death-mark 2,
+no chronicle). The chronicle names the intercessor and the sigil.
+--foresee reveals what it would do, marks each exalted verse ✠ and tells the
+sanction standing, and never exalts. The cogitator lends no intercessor yet:
+it refuses exalted verses, even sanctioned, before anything is touched —
+invoke them at a terminal.
 
 The inquisition notes the impurities of exaltation: sudo, run0, pkexec or
 doas within words that are not exalted (write "exalted": true instead),
@@ -41,7 +49,7 @@ an intercessor of its own (systemctl, hostnamectl, …) called by a verse that
 is not exalted beside exalted ones.
 
 Kindred passages: sanction, abjure, sigil, relics, intercessor, exalted-servitor,
-incantation, litany, transcription, invoke
+incantation, litany, transcription, invoke, foresee, dominion
 
 Exempla:
   {"incantation": {"on": "sysctl -wq kernel.split_lock_mitigate=0",

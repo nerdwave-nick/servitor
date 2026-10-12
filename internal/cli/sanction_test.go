@@ -209,15 +209,16 @@ func TestCensus_TellsTheSanctionOfEveryRite(t *testing.T) {
 	}
 }
 
-// TestInvoke_TheRefusalNamesTheStanding: the refusal of an exalted rite
-// names its standing and the ritual of the sanction; even a sanctioned rite
-// is refused, and nothing is touched.
+// TestInvoke_TheRefusalNamesTheStanding: the invocation of an exalted rite
+// unsanctioned or lapsed is refused before any proof is asked, naming its
+// standing and the ritual of the sanction; a sanctioned rite is refused
+// only when no intercessor can vouch for its master. Nothing is touched.
 func TestInvoke_TheRefusalNamesTheStanding(t *testing.T) {
 	e, _ := sanctuary(t)
 	for rite, words := range map[string]string{
 		"fresh":      "stands unsanctioned",
 		"lapsing":    "has lapsed",
-		"split-lock": "stands sanctioned",
+		"split-lock": "no intercessor is found",
 	} {
 		out, errOut, code := e.run("invoke", rite, "on")
 		if code != 2 || out != "" || !strings.Contains(errOut, words) || !strings.Contains(errOut, "nothing was touched") ||

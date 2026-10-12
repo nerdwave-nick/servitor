@@ -32,11 +32,26 @@ Should the invocation fall, the reversion restores the vessel exactly as it
 was found — its former scripture and seal — or strikes it again if it did
 not stand before.
 
+Exalted ("exalted": true), the transcription is performed by the exalted
+servitor from the sanction of its master, never by the servitor: its vessel
+must begin at the root, beneath none of /proc, /sys and /dev, and is walked
+through halls the root alone may write; a vessel of one name only, bearing
+no extended attributes, is written whole, keeping its owner, and its seal
+unless "seal" decrees one; a vessel it brings into being belongs to the
+root. A standing vessel gives way only to the scripture of an aspect of the
+sanction, or to zeal. Its invoker may be forbidden to read the vessel: the
+pre-flight then plans it with its change unknown, and foresight tells its
+owner, seal and size and the SHA-256 of the scripture it shall hold,
+"contents hidden — change unknown". The exalted servitor reverts it should
+the invocation fall, and tells of it only sizes and SHA-256 sums, never its
+scripture.
+
 An edict may perform no transcription: a transcribed vessel bears the
 scripture of one aspect and reveals that aspect thereafter, and an edict
 bears none. A transcription in an edict's liturgy is heresy.
 
-Kindred passages: scripture, seal, zeal, tome, illuminate, vessel, omens, edict
+Kindred passages: scripture, seal, zeal, tome, illuminate, vessel, omens, edict,
+exalted
 
 Exempla:
   {"transcription": "~/.config/foot/theme.ini",
