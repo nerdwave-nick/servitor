@@ -32,7 +32,7 @@ type Petition struct {
 	Commence func(Result)
 	// Exaltation is how the exalted servitor is raised to perform the
 	// exalted verses of the rite; nil refuses a rite holding any. The
-	// command line lends one; the cogitator lends none yet.
+	// command line lends one, and the cogitator one of its own.
 	Exaltation *Exaltation
 }
 

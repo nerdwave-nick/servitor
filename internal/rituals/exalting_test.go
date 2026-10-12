@@ -393,7 +393,7 @@ func TestInvoke_AFallRevertsBothKindsWithOneProof(t *testing.T) {
 }
 
 // TestInvoke_RefusalsTouchNothing: an exalted rite unsanctioned or lapsed,
-// lent no intercessor (the cogitator), bearing a rune for an inscription
+// lent no intercessor, bearing a rune for an inscription
 // spliced into its exalted words or a word exalted speech may not hear, or
 // whose dominion cannot be held, is refused before any proof is asked; a
 // proof the master dismissed, an intercessor nowhere to be found, and an

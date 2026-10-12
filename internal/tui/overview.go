@@ -11,6 +11,7 @@ import (
 
 	"github.com/nerdwave-nick/servitor/internal/augury"
 	"github.com/nerdwave-nick/servitor/internal/librarium"
+	"github.com/nerdwave-nick/servitor/internal/sanction"
 )
 
 func (m *model) updateOverview(msg tea.Msg) tea.Cmd {
@@ -54,6 +55,11 @@ func (m *model) updateOverview(msg tea.Msg) tea.Cmd {
 		m.screen = newChronicleScreen(m, nameOf(r))
 	case "n":
 		return m.openWizard(newRiteDraft())
+	case "s":
+		if r == nil {
+			return m.notify(toastInfo, "No rite is chosen. Consecrate one with n.")
+		}
+		m.openSanction(r)
 	case "enter", "space", "e", "c", "d", "o":
 		return m.rowAction(k.String(), r)
 	}
@@ -209,6 +215,9 @@ func (m *model) listView(w, h int) string {
 		case r.reading.Aspect != "":
 			state = t.accent.Render(r.reading.Aspect)
 		}
+		if mark := m.sanctionGlyph(r.sanction); mark != "" {
+			state += " " + mark
+		}
 		name := truncate(r.name, w-lipgloss.Width(state)-5)
 		gap := max(1, w-3-lipgloss.Width(name)-lipgloss.Width(state))
 		line := " " + glyph + " " + name + strings.Repeat(" ", gap) + state
@@ -218,6 +227,23 @@ func (m *model) listView(w, h int) string {
 		lines = append(lines, line)
 	}
 	return strings.Join(lines, "\n")
+}
+
+// sanctionGlyph is the colored mark of a sanction standing, as the census
+// marks it; a rite without exalted verses or sanction bears none.
+func (m *model) sanctionGlyph(s sanction.Standing) string {
+	t := m.t
+	switch s {
+	case sanction.Sanctioned:
+		return t.ok.Render("✠")
+	case sanction.Lapsed:
+		return t.danger.Render("☓")
+	case sanction.Unsanctioned:
+		return t.warn.Render("○")
+	case sanction.Forsaken:
+		return t.dim.Render("†")
+	}
+	return ""
 }
 
 // standingGlyph returns the colored glyph and name of a standing.

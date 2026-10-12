@@ -37,9 +37,8 @@ and reverts them, should the invocation fall, among the common reversions,
 without a second proof. A proof dismissed touches nothing (death-mark 2,
 no chronicle). The chronicle names the intercessor and the sigil.
 --foresee reveals what it would do, marks each exalted verse ✠ and tells the
-sanction standing, and never exalts. The cogitator lends no intercessor yet:
-it refuses exalted verses, even sanctioned, before anything is touched —
-invoke them at a terminal.
+sanction standing, and never exalts. The cogitator performs them alike,
+lending sudo its terminal while it asks, and sanctions and abjures with s.
 
 The inquisition notes the impurities of exaltation: sudo, run0, pkexec or
 doas within words that are not exalted (write "exalted": true instead),
@@ -49,7 +48,7 @@ an intercessor of its own (systemctl, hostnamectl, …) called by a verse that
 is not exalted beside exalted ones.
 
 Kindred passages: sanction, abjure, sigil, relics, intercessor, exalted-servitor,
-incantation, litany, transcription, invoke, foresee, dominion
+incantation, litany, transcription, invoke, foresee, dominion, cogitator
 
 Exempla:
   {"incantation": {"on": "sysctl -wq kernel.split_lock_mitigate=0",

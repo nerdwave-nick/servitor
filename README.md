@@ -744,7 +744,10 @@ their standing; on the right the chosen rite's purpose, aspects (the current
 one marked), standing, last rite, inscriptions, its liturgy with one omen per
 step, and where its scripture is recorded; a Thought for the Day below. An
 edict bears the mark `❢` beside its standing, shows its nature in place of
-aspects, and its liturgy without omens.
+aspects, and its liturgy without omens. A rite with exalted verses bears the
+mark of its sanction beside its aspect — `✠` sanctioned, `☓` lapsed, `○`
+unsanctioned, `†` a forsaken sanction — tells it beneath its standing, and
+marks each exalted verse `✠`.
 
 | Key | Rite |
 |---|---|
@@ -755,6 +758,7 @@ aspects, and its liturgy without omens.
 | `e` | amend the rite |
 | `c` | replicate the rite |
 | `d` | excommunicate the rite: `y` strikes its scripture, `p` its sanctums as well |
+| `s` | the sanction: the exalted verses as they would be sanctioned, or what changed since; `enter` sanctions them with one proof, `a` abjures the sanction |
 | `o` | open the scripture in `$EDITOR` |
 | `i` | summon the Inquisition |
 | `O` | the words of the last invocation |
@@ -769,6 +773,15 @@ verse being performed; the words of incantations and litanies are captured,
 never printed, and a fall opens its lament with every reversion and the last
 words of the fallen step.
 
+Exalted verses are performed by the exalted servitor alone, raised with one
+proof of the master after the pre-flight, as at a terminal. sudo is lent the
+terminal while it asks and gives it back once the exalted servitor answers;
+run0 and pkexec are called upon apart from the terminal, so the graphical
+agent of the desktop asks, and after each act through run0 the cogitator
+speaks `run0 -k`. A refusal before any verse — a sanction lapsed or never
+laid, no intercessor, the servitor not installed, a proof dismissed — is shown
+as a heresy with the words the intercessor spoke, and nothing is touched.
+
 The consecration wizard (`n`, `e`, `c`) leads a rite through three stations:
 the **Rite** (name, purpose, its nature, a rite of aspects or an edict, then
 aspects, inscriptions, auspex), the **Liturgy** (`a` adds a step of any
@@ -782,10 +795,7 @@ and their values are written once, on a single page; amended or replicated,
 an edict stays an edict. Every step but a vox-cast may be declared an
 exalted verse on its first page, where an exalted incantation or litany
 names its relics, one per line; amended or replicated, a rite keeps its
-exalted verses and their relics. The cogitator performs none of them with
-its invoker's authority and lends no intercessor yet, so it refuses an
-exalted rite even when sanctioned; invoke such a rite at a terminal, where
-one proof of the master raises the exalted servitor. In forms, `tab`/`↑↓` move between fields, `enter`
+exalted verses and their relics. In forms, `tab`/`↑↓` move between fields, `enter`
 advances, `ctrl+s` seals the page and `esc` steps back.
 
 ## The codex

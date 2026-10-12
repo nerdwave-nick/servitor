@@ -57,7 +57,15 @@ sanction of a rite or every sanction (--all), the words are alike:
 sudo forgets every proof given before (-k), so that each invocation asks
 anew; pkexec asks through the stock action of the machine.
 
-Kindred passages: exalted, exalted-servitor, invoke, sanction, abjure, librarium
+In the cogitator, sudo is lent the terminal while it asks, and the cogitator
+takes it back once the exalted servitor answers; run0 and pkexec are called
+upon in a session of their own, so that the graphical agent asks, and after
+every act that called upon run0 the cogitator speaks these words, so that
+the next act asks anew:
+
+  run0 -k
+
+Kindred passages: exalted, exalted-servitor, invoke, sanction, abjure, cogitator, librarium
 
 Exempla:
   // servitor.json

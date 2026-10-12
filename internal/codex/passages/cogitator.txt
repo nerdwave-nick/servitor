@@ -15,6 +15,14 @@ its nature in place of aspects, and its liturgy without omens, for it reveals
 none and knows no auspex. Heretical rites are shown too, with the heresy that
 taints them.
 
+A rite holding exalted verses bears the mark of its sanction beside its
+aspect, as the census marks it: ✠ sanctioned, ☓ lapsed, ○ unsanctioned; a
+rite whose sanction is forsaken bears †, and a rite without exalted verses or
+sanction bears none. The chosen rite tells its sanction beneath its standing —
+the sigil and the hour it was sanctioned, the sigil it lapsed from, or what s
+does about it — and its liturgy marks every exalted verse ✠, as foresight,
+the running panel and the lament of a fall do.
+
 Roused as root, the servitor awakens no cogitator, for the cogitator performs,
 and the servitor performs nothing with the machine's own authority: it refuses
 with the death-mark 2. The census, the augury and the Inquisition still read.
@@ -22,7 +30,8 @@ with the death-mark 2. The census, the augury and the Inquisition still read.
 From the shrine the faithful choose a rite (j and k, or the arrows; g and G
 for the first and last), invoke it with enter, cycle it to its next aspect
 with space, consecrate a new rite with n, amend one with e, replicate one
-with c, excommunicate one with d, open its scripture in $EDITOR with o,
+with c, excommunicate one with d, sanction its exalted verses or abjure its
+sanction with s, open its scripture in $EDITOR with o,
 summon the Inquisition with i, hear the words of the last invocation with O,
 read the chronicle with h, filter the rites with /, re-read the Librarium
 with r, and retreat with q. The key ? opens the codex itself: above it stands
@@ -82,12 +91,36 @@ it has become — a sanctum, transcription or tether it still holds must first
 be cast out. The Seal judges exaltation too — an exalted vessel that does
 not begin at the root, {{former}} within exalted words, a relic outside the
 rite's hall or nowhere to be found beside it — and a rite amended or
-replicated keeps every exalted verse and its relics. The wizard consecrates
-exalted verses, yet the cogitator performs none with its invoker's
-authority, and lends no intercessor to raise the exalted servitor yet: the
-invocation of a rite holding exalted verses, even sanctioned, is refused
-before anything is touched — invoke it at a terminal, where one proof of
-the master raises the exalted servitor.
+replicated keeps every exalted verse and its relics.
+
+The key s opens the sanction of the chosen rite, for the cogitator attends
+as a terminal does and its master beholds what they sanction. It shows the
+exalted verses as they would be sanctioned, every aspect beneath its own
+sigil and the whole beneath one, or, when a sanction stands, only what
+changed since — the lines lost marked "-", those gained "+" — beneath the
+sigil it bore; when nothing changed it says so, and asks no proof. enter
+then asks the intercessor for the one proof that lays the sanction, and a
+asks for the one that abjures the sanction kept under the rite's name, a
+forsaken one too; esc retreats with nothing asked. A rite that holds heresy
+or no exalted verse offers nothing to sanction, and the screen tells why.
+
+The cogitator performs exalted verses as every invocation does, and never
+with its invoker's authority: after the pre-flight, one exalted servitor is
+raised through the intercessor with one proof of the master, and it alone
+performs each exalted verse in its turn among the common ones. When the
+intercessor is sudo, the cogitator lends it the terminal while it asks for
+the master's proof, and takes it back once the exalted servitor first
+answers; the words between them never leave their channel. run0 and pkexec
+are called upon in a session of their own, where no terminal is theirs to
+ask at, so that the graphical agent of the desktop asks; once an act that
+called upon run0 has ended, the cogitator speaks run0 -k, so that the next
+asks anew. What the intercessor and the exalted servitor speak is kept,
+never printed upon the shrine: a refusal before any verse — a sanction that
+lapsed or was never laid, no intercessor found, the servitor not installed
+as the root's at /usr/bin/servitor, a proof dismissed, an exalted servitor
+of another forging or one that refuses — is shown as a heresy with those
+words, and nothing is touched; the lament of a fall shows the last words
+that exalted speech uttered, and O shows every word, as for any verse.
 
 Know that the cogitator lends no terminal to the words a rite speaks. As in
 every invocation, an incantation or litany is given nothing to hear and its
@@ -99,7 +132,7 @@ out. Interactive commands are not supported within the cogitator: invoke such
 rites from a terminal, or write their commands so that they ask nothing.
 
 Kindred passages: invoke, inquisition, expound, standing, librarium, chronicle,
-detached
+detached, exalted, sanction, abjure, intercessor
 
 Exempla:
   servitor

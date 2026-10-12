@@ -3,6 +3,8 @@ package tui
 import (
 	"os"
 	"strings"
+
+	"github.com/nerdwave-nick/servitor/internal/sanction"
 )
 
 var userHome = os.UserHomeDir
@@ -23,6 +25,7 @@ var overviewBindings = []binding{
 	{"e", "amend", true},
 	{"c", "replicate", false},
 	{"d", "excommunicate", true},
+	{"s", "sanction the exalted verses, or abjure the sanction", false},
 	{"o", "open in $EDITOR", false},
 	{"i", "inquisition", false},
 	{"O", "words of the last invocation", false},
@@ -56,6 +59,13 @@ func (m *model) keyHints() string {
 			text = alt
 		}
 		pairs = append(pairs, [2]string{strings.Fields(b.keys)[0], text})
+	}
+	switch {
+	case r == nil:
+	case r.sanction == sanction.Forsaken:
+		pairs = append([][2]string{{"s", "abjure"}}, pairs...)
+	case r.sanction == sanction.Unsanctioned || r.sanction == sanction.Lapsed:
+		pairs = append([][2]string{{"s", "sanction"}}, pairs...) // a rite that awaits its sanction
 	}
 	return m.hint(pairs)
 }
