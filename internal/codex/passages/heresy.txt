@@ -14,15 +14,28 @@ sanctum, transcription or tether, an auspex, any aspect map, and the marks
 {{aspect}} and {{former}}; unknown placeholders and undeclared inscriptions;
 tomes that cannot be found; a sanctum whose scripture is null; a vox-cast that
 is neither "progress" nor "success"; a ward claimed twice within one vessel;
-two scriptures recorded for one rite; heretical settings; and a vessel whose
-sanctum markers are broken, which no invocation could rewrite.
+two scriptures recorded for one rite; heretical settings; a vessel whose
+sanctum markers are broken, which no invocation could rewrite; and the
+heresies of exaltation — "exalted" upon a vox-cast or not true or false,
+relics upon a verse that is not exalted, lying beyond the rite's hall or not
+to be found, {{former}}
+in exalted words, an exalted vessel not rooted or beneath /proc, /sys or
+/dev, an exalted tether anchored in the invoker's halls, exalted speech in a
+tongue the exalted servitor does not know, and an "intercessor" in the
+settings that is none of auto, sudo, run0 and pkexec.
 
 Impurities: a tongue spoken nowhere on this machine; a vessel missing whose
 sanctum may not consecrate it; an anchor that stands nowhere for some aspect;
 the scroll of an edict's litany that stands nowhere, for no step of an
 edict can write it; a mandatory inscription without a decree for some
 aspect; a "success" vox-cast that is not the last step; a tainted sanctum;
-a desecrated rite.
+a desecrated rite; an exalted rite unsanctioned or lapsed, and a forsaken
+sanction; sudo, run0, pkexec or doas in words that are not exalted; exalted
+speech reaching into the invoker's home, or for scripture beside it that is
+not among its relics; a program that asks a proof of its own (systemctl,
+hostnamectl, …) in a verse that is not exalted beside exalted ones; and
+/usr/bin/servitor missing or not the root's while a rite holds exalted
+verses.
 
 Every judgement carries its place — scripture:line:column — and a verbose
 denunciation of what is amiss and how it may be purged. The inquisition
@@ -34,7 +47,7 @@ Librarium itself), "judgement" (heresy or impurity) and "denunciation".
 A heresy found in the pre-flight of an invocation halts it before any step
 is performed; heresies spoken there are the same the inquisition would speak.
 
-Kindred passages: inquisition, pre-flight, standing, spare-vessels, binharic
+Kindred passages: inquisition, pre-flight, standing, spare-vessels, binharic, exalted, sanction
 
 Exempla:
   servitor inquisition

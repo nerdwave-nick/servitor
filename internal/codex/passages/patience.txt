@@ -15,9 +15,11 @@ out of patience simply gives no omen.
 
 Patience written in the settings serves every incantation and litany of the
 Librarium that names none; it never sways the auspex. A patience the
-servitor cannot read is heresy.
+servitor cannot read is heresy. The patience of an exalted incantation or
+litany, wherever it was written, is part of its sanction: changing it, in the
+step or in the settings, lapses the sanction.
 
-Kindred passages: incantation, litany, auspex, reversion, tongue
+Kindred passages: incantation, litany, auspex, reversion, tongue, sanction
 
 Exempla:
   // on a step

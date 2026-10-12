@@ -19,10 +19,14 @@ every tome as well and denounces the missing. A tome is set down verbatim
 unless illuminated; an illuminated tome with an unknown placeholder is
 heresy located at its own line and column.
 
+The tome of an exalted sanctum or transcription is read in the pre-flight
+all the same, and its words are part of the sanction: amending it lapses the
+sanction until the master sanctions the rite anew.
+
 The augury reads tomes too, to judge which aspect a vessel holds; changing a
 tome after an invocation makes the vessel no longer match its aspect.
 
-Kindred passages: scripture, illuminate, placeholders, sanctum, transcription
+Kindred passages: scripture, illuminate, placeholders, sanctum, transcription, sanction
 
 Exempla:
   {"transcription": "~/.config/alacritty/colors.toml",

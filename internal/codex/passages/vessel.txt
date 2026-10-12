@@ -27,7 +27,12 @@ transcription replaces a vessel only when it holds the scripture of one of
 the rite's aspects — or when the step burns with zeal. No copy of a vessel is
 kept beyond the reversion of the invocation itself.
 
-Kindred passages: sanctum, transcription, consecrate, seal, zeal, tether, dominion
+The vessel of an exalted sanctum or transcription is written by the exalted
+servitor alone, as its master sanctioned it: its path must begin at the root
+once illuminated, may not lie beneath /proc, /sys or /dev, and every hall
+along it must be the root's and written by none but the root.
+
+Kindred passages: sanctum, transcription, consecrate, seal, zeal, tether, dominion, exalted
 
 Exempla:
   {"sanctum": "~/.config/niri/util.kdl",
