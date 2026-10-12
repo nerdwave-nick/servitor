@@ -15,6 +15,10 @@
 // hall receives the scripture, the owner and the seal of the vessel it
 // replaces, and is renamed into its place. Each act remembers what stood
 // before it, in memory only, so that it can be undone exactly.
+//
+// The same rule judges the installed servitor itself (Enshrined), and the
+// scroll the exalted servitor runs from (EnshrinedSelf): the root's own, and
+// written by none but it.
 package hallowed
 
 import (
