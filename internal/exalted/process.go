@@ -22,13 +22,18 @@ const (
 // ignored are the signals of the terminal the exalted servitor ignores: an
 // interrupt, a hang-up or a stop of its invoker's terminal never cuts a
 // verse in half. SIGTERM alone ends it, as an abort.
+//
+// They are heard and let fall rather than ignored by the machine, for an
+// ignored signal stays ignored across exec: what exalted speech summons
+// must heed them as ever (a pipe that closes, a child it interrupts).
 var ignored = []os.Signal{syscall.SIGHUP, syscall.SIGINT, syscall.SIGQUIT, syscall.SIGTSTP, syscall.SIGTTIN,
 	syscall.SIGTTOU, syscall.SIGPIPE}
 
 // harden makes the exalted servitor's own process its own, whatever its
 // invoker and intercessor left it: it dwells at the root of the machine with
 // umask 022, dumps no core, bears limits of its own, lets no descriptor
-// above 2 pass to what it summons, and ignores the signals of the terminal.
+// above 2 pass to what it summons, and lets the signals of the terminal
+// fall unheeded.
 func harden() error {
 	if err := os.Chdir("/"); err != nil {
 		return err
@@ -46,7 +51,7 @@ func harden() error {
 	if err := sealDescriptors(); err != nil {
 		return err
 	}
-	signal.Ignore(ignored...)
+	signal.Notify(make(chan os.Signal, 1), ignored...) // heard by none: each falls unheeded
 	return nil
 }
 
