@@ -1,11 +1,13 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
 	"text/tabwriter"
 
 	"github.com/spf13/cobra"
 
+	"github.com/nerdwave-nick/servitor/internal/rituals"
 	"github.com/nerdwave-nick/servitor/internal/sanction"
 )
 
@@ -13,7 +15,7 @@ func (a *app) newSanctionCmd() *cobra.Command {
 	var binharic bool
 	cmd := &cobra.Command{
 		Use:   "sanction [rite]",
-		Short: "List the sanctions of your rites' exalted verses, and how each stands",
+		Short: "Sanction the exalted verses of a rite with one proof, or list the sanctions and how each stands",
 		Args: func(_ *cobra.Command, args []string) error {
 			if len(args) > 1 {
 				return &ExitError{Code: 2, Err: fmt.Errorf("the sanction names at most one rite, yet %d words were "+
@@ -36,15 +38,72 @@ func (a *app) newSanctionCmd() *cobra.Command {
 				return err
 			}
 			if len(args) == 1 {
-				return refused(fmt.Errorf("%s is refused, and nothing was written: this servitor cannot yet raise "+
-					"the exalted servitor that lays a sanction where only the machine's own authority writes — "+
-					"`servitor sanction` alone lists the sanctions already laid", deed))
+				if binharic {
+					return refused(fmt.Errorf("%s is refused: its master beholds what they sanction, and the "+
+						"sanctioning knows no binharic; speak it without --binharic", deed))
+				}
+				return a.sanctify(cmd, args[0])
 			}
 			return a.listSanctions(cmd, binharic)
 		},
 	}
 	binharicRunes(cmd, &binharic, "list the sanctions in binharic for lesser machines")
 	return cmd
+}
+
+// sanctify sanctions the exalted verses of the rite name: it shows its
+// master the unit, or its difference from the sanction that stands, naming
+// the sigil, and asks the intercessor for the one proof that lays it. An
+// unchanged unit is told and asks no proof; a sanctioning no terminal
+// attends is refused.
+func (a *app) sanctify(cmd *cobra.Command, name string) error {
+	sv := a.servitor(cmd)
+	o, err := sv.Offer(name)
+	if err != nil {
+		return refused(err)
+	}
+	out := cmd.OutOrStdout()
+	if o.Lament != nil {
+		fmt.Fprintln(cmd.ErrOrStderr(), "servitor ✠ "+o.Lament.Error())
+	}
+	if o.Unchanged() {
+		fmt.Fprintf(out, "✠ The exalted verses of %q stand sanctioned already under the sigil %s; nothing is "+
+			"sanctioned anew.\n", name, sanction.Short(o.Sigil()))
+		return nil
+	}
+	x := rituals.Exaltation{Attended: rituals.Intercession.Attended()}
+	if !x.Attended {
+		return refused(&rituals.Unattended{Rite: name})
+	}
+	if o.Kept == nil {
+		fmt.Fprintf(out, "✠ The exalted verses of %q, offered for sanction under the sigil %s:\n\n", name, o.Sigil())
+	} else {
+		fmt.Fprintf(out, "✠ The exalted verses of %q changed since they were sanctioned under the sigil %s; offered "+
+			"anew under the sigil %s:\n\n", name, sanction.Short(o.Kept.Sigil), o.Sigil())
+	}
+	for _, line := range o.Shown() {
+		fmt.Fprintln(out, line)
+	}
+	fmt.Fprintf(out, "\n⋯ The intercessor asks the master's proof; the proof is the sanction.\n")
+	if err := sv.Sanction(o, x); err != nil {
+		return proven(err)
+	}
+	fmt.Fprintf(out, "✠ The exalted verses of %q stand sanctioned under the sigil %s.\n", name,
+		sanction.Short(o.Sigil()))
+	return nil
+}
+
+// proven ends a ritual that asked the intercessor for the master's proof:
+// a proof dismissed or failed, or an abjuring that fell midway, bears the
+// death-mark 1; every other lament is a refusal before anything was
+// written, the death-mark 2.
+func proven(err error) error {
+	var dismissed *rituals.Dismissed
+	var fallen *rituals.Fallen
+	if errors.As(err, &dismissed) || errors.As(err, &fallen) {
+		return &ExitError{Code: 1, Err: err}
+	}
+	return refused(err)
 }
 
 // listSanctions speaks every sanction of the master: rite, standing, sigil

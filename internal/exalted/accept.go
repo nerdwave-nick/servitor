@@ -153,13 +153,17 @@ func (s *session) heedable() error {
 // forbiddenHalls are where no exalted vessel lies.
 var forbiddenHalls = []string{"/proc", "/sys", "/dev"}
 
-// performable checks every verse of the plan: a vessel or bound name begins
-// at the root, beneath none of the forbidden halls, and speech has a voice.
-func (s *session) performable() error {
-	for _, v := range s.plan.Liturgy {
+// performable checks every verse of the plan.
+func (s *session) performable() error { return performable(s.plan, s.cfg.Voice != nil) }
+
+// performable checks every verse of plan: a vessel or bound name begins at
+// the root, beneath none of the forbidden halls, and speech has a voice
+// (voiced).
+func performable(plan sanction.Plan, voiced bool) error {
+	for _, v := range plan.Liturgy {
 		switch v.Kind {
 		case librarium.KindIncantation, librarium.KindLitany:
-			if s.cfg.Voice == nil {
+			if !voiced {
 				return fmt.Errorf("verse %d is exalted %s, which this exalted servitor was lent no voice to speak; "+
 					"nothing was touched", v.Verse, v.Kind.Key())
 			}
@@ -231,10 +235,7 @@ func (s *session) seize() error {
 
 // lendVoice raises the speech of the session when its plan holds speech.
 func (s *session) lendVoice() error {
-	speaks := slices.ContainsFunc(s.plan.Liturgy, func(v sanction.Verse) bool {
-		return v.Kind == librarium.KindIncantation || v.Kind == librarium.KindLitany
-	})
-	if !speaks {
+	if !speaks(s.plan) {
 		return nil
 	}
 	sp, err := s.cfg.Voice(Sitting{UID: s.uid, Sanction: s.sn, Plan: s.plan, Sigil: s.hs.Sigil,
@@ -244,4 +245,11 @@ func (s *session) lendVoice() error {
 	}
 	s.speaker = sp
 	return nil
+}
+
+// speaks tells whether plan holds an exalted incantation or litany.
+func speaks(plan sanction.Plan) bool {
+	return slices.ContainsFunc(plan.Liturgy, func(v sanction.Verse) bool {
+		return v.Kind == librarium.KindIncantation || v.Kind == librarium.KindLitany
+	})
 }

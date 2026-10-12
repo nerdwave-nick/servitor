@@ -9,12 +9,15 @@ import (
 
 // Entry is one act of the exalted servitor, as its journal keeps it.
 type Entry struct {
-	UID     int
-	Rite    string
-	Aspect  string // "" for an edict
-	Verse   int    // 0 for an act of the session itself
-	Sigil   string // the first twelve letters
-	Deed    string // accept, perform, revert, finish, abort or fall
+	UID    int
+	Rite   string
+	Aspect string // "" for an edict
+	Verse  int    // 0 for an act of the session itself
+	Sigil  string // the first twelve letters
+	// Former is the sigil a sanction replaced (its first twelve letters),
+	// "none" or "unreadable"; only a sanctioning tells it.
+	Former  string
+	Deed    string // accept, perform, revert, finish, abort, fall, sanction or abjure
 	Verdict Verdict
 	Lament  string // why it was refused, fell or faltered
 }
@@ -29,7 +32,11 @@ func (e Entry) String() string {
 	if e.Verse > 0 {
 		fmt.Fprintf(&b, " verse=%d", e.Verse)
 	}
-	fmt.Fprintf(&b, " sigil=%s deed=%s verdict=%s", e.Sigil, e.Deed, e.Verdict)
+	fmt.Fprintf(&b, " sigil=%s", e.Sigil)
+	if e.Former != "" {
+		fmt.Fprintf(&b, " former=%s", e.Former)
+	}
+	fmt.Fprintf(&b, " deed=%s verdict=%s", e.Deed, e.Verdict)
 	if e.Lament != "" {
 		fmt.Fprintf(&b, " lament=%s", strconv.Quote(e.Lament))
 	}

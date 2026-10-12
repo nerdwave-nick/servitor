@@ -76,10 +76,30 @@ what it summons heeds them as ever. Each of
 its acts is kept in the journal of the machine: uid, rite, aspect, verse,
 sigil and verdict.
 
-Kindred passages: exalted, sanction, sigil, relics, intercessor, dominion,
-tongue, verdicts
+Roused as "__exalt --sanction <rite> <sigil>", where the sigil is the first
+twelve letters of the sigil of the whole unit, it keeps the store of
+sanctions instead, for the master at the other end of the channel, never
+for one argv names. The first line names the protocol, the master, the
+rite, the whole sigil and how many bytes the unit holds; the unit follows
+in its canonical form, in lines of at most 512 KiB of it each (written in
+base64), at most 63 MiB in all. The unit must bear the sigil both name, be
+the master's and of the rite argv names, and pass every rule an invocation
+holds its plan to: every vessel and bound name from the root and beneath
+none of /proc, /sys and /dev, every tongue, shebang, relic and variable of
+its speech as exalted speech would judge them, raising nothing. Only then
+is it laid, in the store opened as it is read, following no tether. Roused
+as "__exalt --abjure <rite>" or "__exalt --abjure --all", it hears one line
+naming the protocol, the master and the rite, or every rite, and strikes
+those sanctions. Either way it answers once, naming its protocol, and
+journals what it laid (with the sigil it replaced, "none" or "unreadable")
+or struck; whatever it refuses leaves the store as it stood, its death-mark
+2.
+
+Kindred passages: exalted, sanction, abjure, sigil, relics, intercessor,
+dominion, tongue, verdicts
 
 Exempla:
   journalctl -t servitor
   … servitor: uid=1000 rite="split-lock" aspect="on" verse=1 sigil=4f0c2a9e1b7d deed=perform verdict=triumph
   … servitor: uid=1000 rite="split-lock" aspect="on" sigil=4f0c2a9e1b7d deed=finish verdict=finished
+  … servitor: uid=1000 rite="split-lock" sigil=d66ec48808fd former=none deed=sanction verdict=sanctioned

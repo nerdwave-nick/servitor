@@ -1,4 +1,4 @@
-List the sanctions of exalted verses, and how each rite stands towards its own
+Sanction the exalted verses of a rite with one proof, or list the sanctions and how each stands
 
 No exalted verse is performed but as its master sanctioned it. A sanction is
 a copy of a rite's exalted verses laid where only the machine's own
@@ -35,19 +35,49 @@ list. A forsaken sanction belongs to no rite of the census: the census
 laments it apart, and the list names it. A heretical rite whose sanction
 is kept has lapsed.
 
-Spoken with a rite, the ritual sanctions its exalted verses with one proof
-of the master; this servitor cannot yet lay a sanction, and refuses it with
-the death-mark 2, writing nothing. Roused as root the ritual is refused in
-every form, its death-mark 2: sanctions are the master's, laid and read as
-themselves.
+Spoken with a rite, the ritual sanctions its exalted verses. The
+Inquisition comes first: a rite holding any heresy is refused, and so is a
+rite unrecorded or holding no exalted verse, for there is nothing to
+sanction — should a sanction still be kept under its name, the words say it
+is forsaken and how it is abjured. Then the servitor shows its master the
+whole of what would be sanctioned, every aspect under its own sigil and the
+whole under one, every exalted verse with every word, path, seal, tongue,
+patience, scroll, relic and scripture it holds; or, when a sanction stands,
+only what changed since: the lines it lost marked "-", those it gained "+",
+amid a few that stayed, beneath the sigil it bore and the sigil it bears
+now. Scripture that is not words, or bears signs a terminal would heed
+rather than show, is told by its size and SHA-256 alone. When nothing
+changed, the servitor says so and stops, its death-mark 0, asking no proof.
+
+The master must behold what they sanction: without a terminal (or the
+cogitator) the sanctioning is refused, its death-mark 2. Otherwise the
+intercessor asks for the master's proof, once, and that proof is the
+sanction itself — no other question is asked. The exalted servitor it
+raises hears the unit, checks its sigil against the words that roused it,
+judges it by the rules of every invocation, and lays it in the store: on
+first use it raises /var/lib/servitor and sanctions/, the root's and sealed
+0755, and <uid>/, the root's and of the master's group, sealed 0750; the
+sanction itself is the root's and of the master's group, sealed 0640, strict
+JSON, written whole beside its place and set there at once, so that no
+reader ever finds half of it. It journals the master's uid, the rite, the
+sigil and the sigil it replaced. A proof dismissed or failed ends the
+sanctioning with the death-mark 1, and nothing is written; an intercessor
+nowhere to be found, a servitor installed amiss or of another forging, and
+everything the exalted servitor refuses bear 2, and nothing is written. The
+sanctioning knows no binharic: spoken with --binharic, it is refused with 2.
+
+Roused as root the ritual is refused in every form, its death-mark 2:
+sanctions are the master's, laid and read as themselves.
 
 The inquisition notes as impurities an exalted rite that stands unsanctioned
 or whose sanction lapsed, and every forsaken sanction; --spare-vessels
 spares them.
 
-Kindred passages: sigil, exalted, relics, census, augury, inquisition, invoke
+Kindred passages: abjure, sigil, exalted, relics, intercessor, exalted-servitor, census, augury,
+inquisition, invoke
 
 Exempla:
+  servitor sanction split-lock
   servitor sanction
   servitor sanction --binharic | jq -r '.[] | select(.standing != "sanctioned") | .rite'
   servitor augury split-lock sanction

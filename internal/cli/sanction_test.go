@@ -130,21 +130,13 @@ func TestSanction_NoneLaid(t *testing.T) {
 	grimdark(t, errOut)
 }
 
-// TestSanction_ARiteIsNotYetSanctioned: the sanctioning of a rite is refused
-// with the death-mark 2, and nothing is written; as root, every form of the
-// ritual is refused.
-func TestSanction_ARiteIsNotYetSanctioned(t *testing.T) {
+// TestSanction_AsRootIsRefused: as root, every form of the ritual is
+// refused with the death-mark 2, and nothing is written; more than one rite
+// is refused as well.
+func TestSanction_AsRootIsRefused(t *testing.T) {
 	e := newEnv(t)
 	st := e.sanctions()
 	e.addRite("rites/split-lock.json", splitLockJSON)
-	out, errOut, code := e.run("sanction", "split-lock")
-	if code != 2 || out != "" || !strings.Contains(errOut, `the sanctioning of the rite "split-lock" is refused`) {
-		t.Errorf("exit %d\nstdout: %s\nstderr: %s", code, out, errOut)
-	}
-	grimdark(t, errOut)
-	if entries, _ := os.ReadDir(st.Root); len(entries) != 0 {
-		t.Errorf("the store was written: %v", entries)
-	}
 	if _, _, code := e.run("sanction", "a", "b"); code != 2 {
 		t.Errorf("two rites: exit %d", code)
 	}
@@ -154,6 +146,9 @@ func TestSanction_ARiteIsNotYetSanctioned(t *testing.T) {
 		if code != 2 || out != "" || !strings.Contains(errOut, "the machine's own authority") {
 			t.Errorf("servitor %v as root: exit %d\nstdout: %s\nstderr: %s", args, code, out, errOut)
 		}
+	}
+	if entries, _ := os.ReadDir(st.Root); len(entries) != 0 {
+		t.Errorf("the store was written: %v", entries)
 	}
 }
 

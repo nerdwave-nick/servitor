@@ -17,6 +17,16 @@
 // performed, in reverse. Vessels and tethers are acted upon through package
 // hallowed; exalted speech is lent by a Voice. Every act is journaled as
 // the root's.
+//
+// Roused with SanctionWord or AbjureWord after its Mode, the exalted
+// servitor keeps the root's store of sanctions instead, for the master at
+// the other end of the channel: it hears the unit to be sanctioned
+// (Sanctioning, then the unit's canonical JSON in Parts — Channel.Offer
+// speaks them), checks its sigil against argv, judges it as every
+// invocation judges its plans, and lays it in the store (sanction.Store.Lay);
+// or it hears an Abjuring and strikes the sanction it names, or every
+// sanction of the master. It answers once, naming its protocol, and
+// journals what it laid or struck.
 package exalted
 
 import (
@@ -24,6 +34,8 @@ import (
 	"io"
 	"os"
 	"os/signal"
+	"os/user"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -32,7 +44,9 @@ import (
 )
 
 // Mode is the hidden word that rouses the exalted servitor:
-// servitor __exalt <rite> <sigil12> [<aspect>]. It is never listed.
+// servitor __exalt <rite> <sigil12> [<aspect>] to perform, or with the
+// words of keeping (SanctionWord, AbjureWord) to keep the store. It is never
+// listed.
 const Mode = "__exalt"
 
 // The death-marks of the exalted servitor, as an invocation's.
@@ -73,6 +87,15 @@ type Config struct {
 	Voice Voice
 	// Lament hears the words of a refusal that reaches no invoker.
 	Lament io.Writer
+	// Kin finds the primary group of a master, to whom the master's hall of
+	// sanctions and every sanction in it belong; the store's own halls
+	// belong to the Lord of Ground.
+	Kin func(uid int) (gid int, err error)
+	// Now tells the hour a sanction is laid; nil is time.Now.
+	Now func() time.Time
+	// Weigh judges the speech of a plan as Voice would, raising nothing,
+	// before a sanction holding it is laid; nil judges none.
+	Weigh func(Sitting) error
 }
 
 // DominionRoot is where the root-side places of dominion lie.
@@ -91,7 +114,20 @@ func Machine() Config {
 		Idle:      10 * time.Minute,
 		Voice:     MachineSpeech().Voice,
 		Lament:    os.Stderr,
+		Kin:       primaryGroup,
+		Now:       time.Now,
+		Weigh:     MachineSpeech().Weigh,
 	}
+}
+
+// primaryGroup is the primary group of the faithful of uid, as the machine
+// knows them.
+func primaryGroup(uid int) (int, error) {
+	u, err := user.LookupId(strconv.Itoa(uid))
+	if err != nil {
+		return -1, err
+	}
+	return strconv.Atoi(u.Gid)
 }
 
 // Rouse is the exalted servitor roused by argv (after Mode) upon the

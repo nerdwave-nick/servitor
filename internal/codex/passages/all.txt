@@ -1,0 +1,12 @@
+Abjure every sanction laid for you at once
+
+The rune --all is given to the ritual abjure, in place of the name of a rite.
+It withdraws every sanction laid for you, forsaken ones among them, with one
+proof of the master; each sanction struck is told. When none is laid, the
+abjuring is refused before any proof, its death-mark 2. --all beside the name
+of a rite is refused alike.
+
+Kindred passages: abjure, sanction
+
+Exempla:
+  servitor abjure --all

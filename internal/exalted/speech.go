@@ -68,9 +68,29 @@ var (
 // hall sealed 0700 holding the relics and scrolls of the plan. Whatever it
 // refuses, nothing is touched and no hall is left.
 func (w Speech) Voice(s Sitting) (Speaker, error) {
-	env, err := w.environ(s)
+	sp, laid, err := w.prepare(s)
 	if err != nil {
 		return nil, err
+	}
+	if sp.hall, err = w.raise(s.Sigil, laid); err != nil {
+		return nil, err
+	}
+	return sp, nil
+}
+
+// Weigh judges the speech of a sitting as Voice does — its environment,
+// every tongue and shebang, every relic and scroll — and raises nothing.
+func (w Speech) Weigh(s Sitting) error {
+	_, _, err := w.prepare(s)
+	return err
+}
+
+// prepare judges the speech of a sitting and readies its speaker, and what
+// is to be laid in its working hall, which it does not raise.
+func (w Speech) prepare(s Sitting) (*speaker, map[string]relic, error) {
+	env, err := w.environ(s)
+	if err != nil {
+		return nil, nil, err
 	}
 	sp := &speaker{env: env, programs: map[string]string{}, scrolls: map[int]string{}}
 	laid := map[string]relic{}
@@ -79,23 +99,20 @@ func (w Speech) Voice(s Sitting) (Speaker, error) {
 			continue
 		}
 		if err := sp.judge(w.Tongues, v.Verse, v.Tongue); err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 		for _, r := range v.Relics {
 			if err := lay(laid, v.Verse, r.Relic, r.Scripture, 0o600); err != nil {
-				return nil, err
+				return nil, nil, err
 			}
 		}
 		if v.Kind == librarium.KindLitany {
 			if err := sp.scroll(w.Tongues, laid, v); err != nil {
-				return nil, err
+				return nil, nil, err
 			}
 		}
 	}
-	if sp.hall, err = w.raise(s.Sigil, laid); err != nil {
-		return nil, err
-	}
-	return sp, nil
+	return sp, laid, nil
 }
 
 // environ is the whole environment of the session's speech: PATH and HOME
