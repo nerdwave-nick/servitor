@@ -12,6 +12,12 @@ and bears the death-mark 2. It is never listed among the rituals, and it
 never reads the Librarium, the settings, the data-slates or the chronicle of
 the one who invokes it, nor the home that sudo names.
 
+Before it hears a word, it judges the scroll it truly runs from, as the
+machine names it in /proc/self/exe: the root's own, written by none but the
+root, it and every hall above it, and the very scroll that stands at that
+name. A servitor that breaks this rule refuses, touches nothing and bids its
+master install the servitor anew.
+
 It hears the invoker's servitor over one channel alone: a socketpair upon its
 descriptors 0 and 1, in strict JSON lines of at most 1 MiB, every member
 known. The first line names the protocol, the master, the rite, the aspect
@@ -19,7 +25,10 @@ and the whole sigil; each must agree with the words that roused it, and the
 master with the uid the machine knows at the other end of the channel (or
 with SUDO_UID, when sudo lays pipes between them). A servitor forged anew
 that speaks another protocol than the one installed is refused: install the
-servitor anew, so that both are of one forging. The words given at
+servitor anew, so that both are of one forging. Whether it accepts the
+first line or refuses it, its answer names the protocol it speaks, so that a
+servitor forged anew knows an installed servitor of another forging, refuses
+with the death-mark 2 and bids the same. The words given at
 invocation, the former aspect and the runes of inscriptions, travel in that
 first line too, at most 4 KiB each, never bearing a NUL or a newline.
 

@@ -78,7 +78,7 @@ func (s *session) refuse(why error) int {
 	if s.cfg.Lament != nil {
 		fmt.Fprintln(s.cfg.Lament, "servitor ✠ "+why.Error())
 	}
-	_ = s.reply(Reply{To: "handshake", Verdict: Refused, Lament: why.Error()})
+	_ = s.reply(Reply{To: "handshake", Verdict: Refused, Protocol: Protocol, Lament: why.Error()})
 	return markRefused
 }
 

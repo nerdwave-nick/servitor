@@ -104,9 +104,14 @@ func newShrine(t *testing.T, u *sanction.Unit) *shrine {
 		u = hallowUnit()
 	}
 	sh := &shrine{t: t, ground: t.TempDir(), journal: &ledger{}, unit: u}
-	for _, hall := range []string{"/etc/sysctl.d", "/usr/share/hallow"} {
+	for _, hall := range []string{"/etc/sysctl.d", "/usr/share/hallow", "/usr/bin"} {
 		must(t, os.MkdirAll(sh.at(hall), 0o755))
 	}
+	// The servitor installed in the ground, and the bond that names it as
+	// /proc/self/exe names the scroll the exalted servitor runs from.
+	sh.scroll("/usr/bin/servitor", "\x7fELF", 0o755)
+	self := filepath.Join(t.TempDir(), "exe")
+	must(t, os.Symlink(sh.at("/usr/bin/servitor"), self))
 	sh.scroll("/etc/hallow.conf", original, 0o600)
 	sh.scroll("/usr/share/hallow/on", "on", 0o644)
 	sh.scroll("/usr/share/hallow/off", "off", 0o644)
@@ -120,6 +125,7 @@ func newShrine(t *testing.T, u *sanction.Unit) *shrine {
 		Sovereign: mine,
 		Ground: hallowed.Ground{Root: sh.ground, Sovereign: mine,
 			Lord: hallowed.Owner{UID: uint32(me), GID: uint32(os.Getgid())}},
+		Self:      self,
 		Dominions: filepath.Join(t.TempDir(), "dominions"),
 		Journal:   sh.journal,
 		Lament:    io.Discard,
