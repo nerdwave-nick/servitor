@@ -4,20 +4,22 @@ import (
 	"context"
 
 	"github.com/nerdwave-nick/servitor/internal/augury"
+	"github.com/nerdwave-nick/servitor/internal/sanction"
 )
 
 // Entry is one rite of the census; it marshals as the census's binharic.
 type Entry struct {
-	Rite       string           `json:"rite"`
-	Edict      bool             `json:"edict"` // an edict bears no aspect: its aspect is "", its aspects []
-	Aspect     string           `json:"aspect"`
-	Standing   augury.Standing  `json:"standing"`
-	Auspex     augury.Heed      `json:"auspex"` // what the auspex gave
-	Aspects    []string         `json:"aspects"`
-	Purpose    string           `json:"purpose"`
-	Desecrated bool             `json:"desecrated"`
-	LastRite   *augury.LastRite `json:"last_rite"`
-	RecordedIn string           `json:"recorded_in"` // the rite's scripture; the first, when recorded twice
+	Rite       string            `json:"rite"`
+	Edict      bool              `json:"edict"` // an edict bears no aspect: its aspect is "", its aspects []
+	Aspect     string            `json:"aspect"`
+	Standing   augury.Standing   `json:"standing"`
+	Sanction   sanction.Standing `json:"sanction"` // how it stands towards its sanction
+	Auspex     augury.Heed       `json:"auspex"`   // what the auspex gave
+	Aspects    []string          `json:"aspects"`
+	Purpose    string            `json:"purpose"`
+	Desecrated bool              `json:"desecrated"`
+	LastRite   *augury.LastRite  `json:"last_rite"`
+	RecordedIn string            `json:"recorded_in"` // the rite's scripture; the first, when recorded twice
 	// Canon are the inscriptions the rite declares, as the augury speaks
 	// them; [] for a heretical rite.
 	Canon []augury.Declaration `json:"canon"`
@@ -26,7 +28,8 @@ type Entry struct {
 // Census reads every rite of the Librarium, heretical or not, by name. It
 // augurs them together, at most maxAuspexes auspexes awake at once.
 // forgoAuspex leaves every auspex unawakened. Laments are data-slates
-// that could not be read, in the order of their rites.
+// and sanctions that could not be read, in the order of their rites, then
+// every forsaken sanction (*ForsakenSanction).
 func (s *Servitor) Census(forgoAuspex bool) (entries []Entry, laments []error) {
 	entries = []Entry{}
 	for _, a := range s.read(context.Background(), s.Librarium.Names(), forgoAuspex) {
@@ -37,12 +40,12 @@ func (s *Servitor) Census(forgoAuspex bool) (entries []Entry, laments []error) {
 			entries = append(entries, *a.entry)
 		}
 	}
-	return entries, laments
+	return entries, append(laments, s.forsaken()...)
 }
 
 // entry is the census entry of the rite name read as r.
 func (s *Servitor) entry(name string, r Reading) Entry {
-	e := Entry{Rite: name, Edict: r.Edict, Aspect: r.Aspect, Standing: r.Standing, Auspex: r.Auspex,
+	e := Entry{Rite: name, Edict: r.Edict, Aspect: r.Aspect, Standing: r.Standing, Sanction: r.Sanction, Auspex: r.Auspex,
 		Aspects: []string{}, Desecrated: r.Desecrated, LastRite: r.LastRite,
 		RecordedIn: s.Librarium.Scriptures[name][0], Canon: []augury.Declaration{}}
 	if r.Rite != nil {

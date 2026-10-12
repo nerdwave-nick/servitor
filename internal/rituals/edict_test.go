@@ -119,7 +119,7 @@ func TestAugur_AnEdictAnswersItsStandingAndInscriptionsAlone(t *testing.T) {
 	if err != nil || !r.Edict || r.Standing != augury.Proclaimed {
 		t.Fatalf("augury %+v, %v", r, err)
 	}
-	if got := Keys(r.Rite); !slices.Equal(got, []string{"standing", "region"}) {
+	if got := Keys(r.Rite); !slices.Equal(got, []string{"standing", "sanction", "region"}) {
 		t.Errorf("an edict's keys are %v", got)
 	}
 	for key, want := range map[string]string{"standing": "proclaimed", "region": "window"} {

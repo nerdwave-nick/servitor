@@ -50,7 +50,7 @@ const (
 
 var (
 	// Rituals are the servitor's rituals, in the order of the codex.
-	Rituals = []string{"invoke", "augury", "census", "inquisition", "cogitator", "expound", "completion"}
+	Rituals = []string{"invoke", "augury", "census", "inquisition", "sanction", "cogitator", "expound", "completion"}
 	// Runes are the servitor's own runes (without their dashes), in the
 	// order of the codex. A rite's inscription runes are its own.
 	Runes = []string{"librarium", "chronicle", "foresee", "silence", "is", "binharic", "spare-vessels",

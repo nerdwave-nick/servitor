@@ -16,7 +16,8 @@ Without a key, the augury speaks one object in binharic, for other machines
 to read:
 
   {"rite": "theme", "edict": false, "aspect": "porpl",
-   "standing": "performed", "auspex": "heeded", "desecrated": false,
+   "standing": "performed", "sanction": "", "auspex": "heeded",
+   "desecrated": false,
    "inscriptions": {"reason": "gaming remnant"},
    "canon": [{"key": "reason", "purpose": "why the visage was changed",
               "mandatory": false, "decrees": {}, "decree": null}],
@@ -29,27 +30,30 @@ The key "former", naming the aspect the data-slate recorded, appears only
 when the rite is desecrated. The key "auspex" tells what the rite's auspex
 gave: "" when it keeps none, "heeded", "mute", or "forgone" when the rune
 --spare-auspex left it unawakened; the passage on the auspex tells all.
+The key "sanction" tells how the rite stands towards the sanction of its
+exalted verses: "sanctioned", "lapsed", "unsanctioned", or "" for a rite
+that holds no exalted verse; the passage on the sanction tells all.
 The key "canon" holds every inscription the rite declares, in written order,
 with its purpose, whether it is mandatory and its decrees; "inscriptions"
 holds the words the data-slate keeps. A heretical rite's canon is [], and
 the passage on the canon tells all.
 
 The augury of an edict bears "edict": true and only its standing, its
-auspex (always "", for it keeps none), its inscriptions, its canon and its
+sanction, its auspex (always "", for it keeps none), its inscriptions, its canon and its
 last rite — never aspect, desecrated, former, omens or taint:
 
   {"rite": "screenshot", "edict": true, "standing": "proclaimed",
-   "auspex": "", "inscriptions": {"region": "full"},
+   "sanction": "", "auspex": "", "inscriptions": {"region": "full"},
    "canon": [{"key": "region", "purpose": "the slurp geometry",
               "mandatory": false, "decrees": {}, "decree": "full"}],
    "last_rite": {"verdict": "triumph", "at": "2026-10-10T13:31:00Z"}}
 
 With a key, the augury speaks that single value and nothing more: aspect,
-standing, desecrated, former, or any inscription the rite declares (an empty
-line when it is uninscribed). Should an inscription bear the name of one of
-the first four, the augury's own value is spoken; the inscription is still
-read in the binharic object. An edict answers its standing and its
-inscriptions alone: asked for its aspect, desecrated or former, it is refused
+standing, desecrated, former, sanction, or any inscription the rite declares
+(an empty line when it is uninscribed). Should an inscription bear the name
+of one of the first five, the augury's own value is spoken; the inscription
+is still read in the binharic object. An edict answers its standing, its
+sanction and its inscriptions alone: asked for its aspect, desecrated or former, it is refused
 with a heresy, for it bears no aspect.
 
 With the rune --spare-auspex, the augury awakens no auspex and answers at
@@ -67,7 +71,7 @@ an unknown rite or key, an aspect the rite knows not, a key given beside
 former or --is, or a malformed rune.
 
 Kindred passages: is, spare-auspex, omens, standing, data-slate,
-inscriptions, canon, auspex, edict
+inscriptions, canon, auspex, edict, sanction
 
 Exempla:
   servitor augury theme
@@ -77,4 +81,5 @@ Exempla:
   servitor augury theme | jq -r '.canon[].key'
   servitor augury mouse --is on && echo "the cursor is veiled"
   servitor augury screenshot standing
+  servitor augury split-lock sanction
   servitor augury do-not-disturb --spare-auspex

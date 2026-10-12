@@ -50,7 +50,7 @@ func TestAugury_SpeaksTheJSONOfTheCodex(t *testing.T) {
 	e := newEnv(t)
 	e.mustRun("invoke", "mouse-autohide-toggle", "on", "-s", "--reason", "gaming remnant")
 	out := e.mustRun("augury", "mouse-autohide-toggle")
-	want := regexp.MustCompile(`^\{\n  "rite": "mouse-autohide-toggle",\n  "edict": false,\n  "aspect": "on",\n  "standing": "performed",\n` +
+	want := regexp.MustCompile(`^\{\n  "rite": "mouse-autohide-toggle",\n  "edict": false,\n  "aspect": "on",\n  "standing": "performed",\n  "sanction": "",\n` +
 		`  "auspex": "",\n  "desecrated": false,\n  "inscriptions": \{\n    "example-key": "example-value",\n    "reason": "gaming remnant"\n  \},\n` +
 		`  "canon": \[\n    \{\n      "key": "reason",\n      "purpose": "why the rite was invoked",\n      "mandatory": false,\n` +
 		`      "decrees": \{\},\n      "decree": null\n    \},\n    \{\n      "key": "example-key",\n      "purpose": "",\n` +

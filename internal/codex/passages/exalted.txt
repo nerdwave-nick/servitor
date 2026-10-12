@@ -24,10 +24,13 @@ may not lie beneath /proc, /sys or /dev: the knobs of the kernel are written
 by exalted incantations, never as vessels. Scriptures that exalted speech
 reads beside its scroll are named among its relics.
 
-No exalted verse is performed without the sanction of its master. Until it
-is given, the invocation of a rite holding exalted verses is refused before
-anything is touched, its death-mark 2; --foresee still reveals what it would
-do, and never exalts.
+No exalted verse is performed without the sanction of its master. This
+servitor cannot yet raise the exalted servitor, so the invocation of a rite
+holding exalted verses is refused before anything is touched, its
+death-mark 2, whatever its standing towards its sanction; the refusal names
+that standing, and for a rite unsanctioned or lapsed the ritual that
+sanctions it: servitor sanction <rite>. --foresee still reveals what it
+would do, and never exalts.
 
 The inquisition notes the impurities of exaltation: sudo, run0, pkexec or
 doas within words that are not exalted (write "exalted": true instead),
@@ -36,7 +39,8 @@ beside it that is not among its relics, and a program the machine guards by
 an intercessor of its own (systemctl, hostnamectl, …) called by a verse that
 is not exalted beside exalted ones.
 
-Kindred passages: relics, intercessor, incantation, litany, transcription, invoke
+Kindred passages: sanction, sigil, relics, intercessor, incantation, litany,
+transcription, invoke
 
 Exempla:
   {"incantation": {"on": "sysctl -wq kernel.split_lock_mitigate=0",

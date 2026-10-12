@@ -10,7 +10,7 @@ import (
 type Heralding struct {
 	Entry  *Entry // the rite as it stands, whole; nil for a lament
 	Rite   string // the rite a lament concerns
-	Lament error  // a data-slate that could not be read
+	Lament error  // a data-slate or sanction that could not be read, or a forsaken sanction
 }
 
 // Vigil keeps the census as a vigil, telling it as it is learnt. tell
@@ -19,7 +19,7 @@ type Heralding struct {
 // told as the census reads it. Then tell hears every awaited rite once
 // more, whole, in the order their auspexes settle, as the census reads it.
 // A data-slate that cannot be read is lamented before its rite is first
-// told. forgoAuspex leaves every auspex unawakened, so every rite is told
+// told, and every forsaken sanction before the first rite. forgoAuspex leaves every auspex unawakened, so every rite is told
 // once.
 //
 // The auspexes are awakened together as the census awakens them. When ctx
@@ -28,6 +28,9 @@ type Heralding struct {
 // caller's goroutine, one heralding at a time.
 func (s *Servitor) Vigil(ctx context.Context, forgoAuspex bool, tell func(Heralding)) {
 	names := s.Librarium.Names()
+	for _, f := range s.forsaken() {
+		tell(Heralding{Rite: f.(*ForsakenSanction).Rite, Lament: f})
+	}
 	var awaited []string
 	for _, a := range s.read(ctx, names, true) {
 		if ctx.Err() != nil {

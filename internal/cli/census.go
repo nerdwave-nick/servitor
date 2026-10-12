@@ -35,7 +35,7 @@ func (a *app) newCensusCmd() *cobra.Command {
 			tw := tabwriter.NewWriter(cmd.OutOrStdout(), 0, 4, 2, ' ', 0)
 			fmt.Fprintln(tw, "RITE\tASPECT\tSTANDING\tASPECTS\tLAST RITE\tPURPOSE")
 			for _, e := range entries {
-				fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%s\t%s\n", e.Rite, orDot(e.Aspect), standing(e),
+				fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%s\t%s\n", marked(e), orDot(e.Aspect), standing(e),
 					orDot(strings.Join(e.Aspects, "|")), lastRite(e.LastRite), e.Purpose)
 			}
 			return tw.Flush()
@@ -46,6 +46,15 @@ func (a *app) newCensusCmd() *cobra.Command {
 	cmd.Flags().BoolVar(&vigil, "vigil", false,
 		"keep vigil: tell every rite at once in binharic, one line each, and again as each auspex settles")
 	return cmd
+}
+
+// marked is the rite's name, followed by the glyph of its standing towards
+// its sanction when it holds exalted verses.
+func marked(e rituals.Entry) string {
+	if g := sanctionGlyph(e.Sanction); g != "" {
+		return e.Rite + " " + g
+	}
+	return e.Rite
 }
 
 func orDot(s string) string {

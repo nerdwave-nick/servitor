@@ -14,7 +14,7 @@ import (
 type Reading struct {
 	augury.Augury
 	Rite   *librarium.Rite // nil when the rite is heretical
-	Lament error           // a data-slate that could not be read; the augury stands
+	Lament error           // a data-slate or sanction that could not be read; the augury stands
 }
 
 // Augur reads the augury of the rite name. A heretical rite is read from
@@ -29,28 +29,32 @@ func (s *Servitor) augur(ctx context.Context, name string, forgoAuspex bool) (Re
 	r, err := s.Rite(name)
 	opts := augury.Options{ForgoAuspex: forgoAuspex, Orders: s.Orders(), Env: s.env()}
 	var heretical *Heretical
+	var a augury.Augury
+	var lament error
 	switch {
 	case errors.As(err, &heretical):
-		a, lament := augury.Heretic(name, opts)
-		return Reading{Augury: a, Lament: lament}, nil
+		a, lament = augury.Heretic(name, opts)
 	case err != nil:
 		return Reading{}, err
+	default:
+		a, lament = augury.AugurContext(ctx, r, opts)
 	}
-	a, lament := augury.AugurContext(ctx, r, opts)
-	return Reading{Augury: a, Rite: r, Lament: lament}, nil
+	var unread error
+	a.Sanction, _, unread = s.standing(name, r)
+	return Reading{Augury: a, Rite: r, Lament: errors.Join(lament, unread)}, nil
 }
 
 // Signs are the keys an augury answers besides the rite's inscriptions;
 // an inscription bearing the name of a sign is read through the binharic
 // augury alone.
-var Signs = []string{"aspect", "standing", "desecrated", "former"}
+var Signs = []string{"aspect", "standing", "desecrated", "former", "sanction"}
 
 // edictSigns are the signs an edict answers: it bears no aspect, so it is
 // neither desecrated nor knows a former one.
-var edictSigns = []string{"standing"}
+var edictSigns = []string{"standing", "sanction"}
 
 // SignsOf are the signs the augury of r answers: Signs, or for an edict its
-// standing alone. A heretical rite (nil) answers Signs.
+// standing and sanction alone. A heretical rite (nil) answers Signs.
 func SignsOf(r *librarium.Rite) []string {
 	if r != nil && r.Edict {
 		return edictSigns
@@ -67,7 +71,7 @@ func Keys(r *librarium.Rite) []string {
 // Value is what the reading holds under key — a sign, else an inscription
 // ("" when not inscribed); ok is false for a key the rite knows not. A
 // heretical rite answers the inscriptions its data-slate holds. An edict
-// answers no sign but its standing.
+// answers no sign but its standing and sanction.
 func (r Reading) Value(key string) (value string, ok bool) {
 	if r.Edict && slices.Contains(Signs, key) && !slices.Contains(edictSigns, key) {
 		return "", false
@@ -81,6 +85,8 @@ func (r Reading) Value(key string) (value string, ok bool) {
 		return strconv.FormatBool(r.Desecrated), true
 	case "former":
 		return r.Former, true
+	case "sanction":
+		return string(r.Sanction), true
 	}
 	if r.Rite != nil {
 		if _, declared := r.Rite.Inscription(key); !declared {
