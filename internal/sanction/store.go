@@ -66,6 +66,13 @@ func (s Store) Read(rite string) (*Sanction, error) {
 	if err != nil {
 		return nil, fmt.Errorf("the sanction of %q at %s cannot be read: %w", rite, p, err)
 	}
+	return s.parse(data, rite)
+}
+
+// parse reads data, laid at the place of the rite's sanction, strictly as
+// a true sanction of the rite and master.
+func (s Store) parse(data []byte, rite string) (*Sanction, error) {
+	p := s.Path(rite)
 	var sn Sanction
 	if err := json.Unmarshal(data, &sn, json.RejectUnknownMembers(true)); err != nil {
 		return nil, fmt.Errorf("the sanction of %q at %s is corrupt beyond reading: %v", rite, p, err)
