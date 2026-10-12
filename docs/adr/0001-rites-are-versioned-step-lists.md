@@ -69,4 +69,4 @@ rite file declares its format as a pattern, `"pattern": "Mark I"`.
 
 - Elevated steps (sudo/pkexec/run0) are **out of scope** for this pattern; the
   research in `docs/research/elevation-tools.md` and the tracker map hold the work
-  done so far.
+  done so far. *(Superseded by ADR 0007: exalted steps are performed from a sanction.)*

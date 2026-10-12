@@ -43,6 +43,12 @@ domain and the code; never add plain words or plain glosses to anything a user r
 | force overwrite | zeal | `zeal` (alias `force`) |
 | symlink step / target | tether / anchor | `tether`, `anchor` |
 | shell command step | incantation | `incantation` |
+| elevated step (runs as root) | exalted | step key `"exalted": true` |
+| root helper process (one per invocation) | exalted servitor | hidden mode of the root-owned `/usr/bin/servitor` |
+| approve elevated steps (root-owned copy) | sanction | `servitor sanction [<rite>]`; `/var/lib/servitor/sanctions/<uid>/<rite>.json` |
+| revoke an approval | abjure | `servitor abjure <rite>` / `--all` |
+| approval matches / changed / missing / leftover | sanctioned / lapsed / unsanctioned / forsaken | sanction standing in census and augury |
+| elevation tool (sudo / run0 / pkexec) | intercessor | settings `intercessor`: `auto` / `sudo` / `run0` / `pkexec` |
 | script file step | litany | `litany` |
 | script arguments | offerings | `offerings` (list; templated; aspect map; leading `~/` or lone `~` → home; no other shell parsing) |
 | shell | tongue | `tongue` (default bash) |

@@ -102,6 +102,12 @@ exactly as written, placeholders filled and a leading `~/` borne to the invoker'
 A litany receives nothing it is not offered.
 Key: `offerings`.
 
+**Exalted**:
+A step performed not with its invoker's authority but with the machine's own — and only
+as its master sanctioned it, by a short-lived exalted servitor raised for the one
+invocation, so that a single proof of the master serves every exalted verse of it and
+no other. Any step but a vox-cast may be exalted. Key: `exalted`.
+
 **Vox-cast**:
 A step that sends word of the invocation's progress or triumph to the user; tidings of
 failure are vox-cast without being asked. Key: `vox-cast`.
@@ -168,7 +174,25 @@ The place where rites are kept (`rites/`) together with the settings. Rune
 
 **Settings**:
 The servitor's standing orders in the Librarium's `servitor.json`: `pattern`,
-`tongue`, `chronicle`, `vox`, `patience`.
+`tongue`, `chronicle`, `vox`, `patience`, `intercessor`.
+
+**Sanction**:
+The master's leave for a rite's exalted verses: the servitor shows them, resolved for
+every aspect, the master proves themselves once, and a sanctioned copy is laid where only
+the machine itself may write. Exalted verses are performed from that copy alone. A rite
+stands *sanctioned* while its exalted verses match its sanction, *lapsed* once they
+have changed, *unsanctioned* when it has none; a sanction whose rite is gone or holds no
+exalted verse is *forsaken*. Ritual: `servitor sanction <rite>`, or alone to list every
+sanction.
+
+**Abjure**:
+Withdrawing a sanction, so that the rite's exalted verses are performed no more until
+sanctioned anew. Ritual: `servitor abjure <rite>`, or `--all`.
+
+**Intercessor**:
+The one who vouches for the master before an exalted servitor is raised — `sudo`,
+`run0` or `pkexec`, or `auto` to let the servitor choose by whether a terminal attends
+the invocation. Settings key `intercessor`.
 
 **Chronicle**:
 The record of every invocation ever performed, readable in the cogitator. Key and rune
