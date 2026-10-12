@@ -58,8 +58,8 @@ func TestWizard_ConsecrateAThemeRite(t *testing.T) {
 	h.keys("a")
 	h.mustShow("§ sanctum", "¶ transcription", "↣ tether", "» incantation", "≡ litany", "✉ vox-cast")
 	h.keys("4")
-	h.mustShow("» incantation", "Further rites")
-	h.keys("enter")
+	h.mustShow("» incantation", "Exalted verse", "Further rites")
+	h.keys("enter", "enter") // past the exaltation, which stays unspoken
 	h.mustShow(`Command for aspect "dark"`, "Same command for every aspect")
 	h.typeText("echo {{aspect}} >> " + filepath.Join(d, "transitions"))
 	h.keys("ctrl+s")
@@ -74,7 +74,7 @@ func TestWizard_ConsecrateAThemeRite(t *testing.T) {
 	h.keys("ctrl+s")
 	h.mustShow("2 ↣ ")
 
-	h.keys("a", "5", "space", "ctrl+s") // unveil the further rites of the litany
+	h.keys("a", "5", "tab", "space", "ctrl+s") // unveil the further rites of the litany
 	h.mustShow("Tongue", "Patience")
 	h.keys("tab")
 	h.typeText("5s")

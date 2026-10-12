@@ -67,7 +67,11 @@ value once, under "*", for every aspect that speaks none of its own. An edict
 speaks the command or scroll of a step, its offerings and its reversion once,
 on a single page, and is offered no such choice. Patience, seal, tongue, zeal,
 reversion and offerings rest under the further rites, unveiled only when
-needed. At the Seal the rite stands as the scripture it will become, judged by
+needed. Upon its essence, every step but a vox-cast may be declared an
+exalted verse, performed with the machine's own authority from the sanction
+of its master; an exalted incantation or litany names its relics there, one
+per line, and lays them down once it is no longer exalted, for relics are
+borne by exalted speech alone. At the Seal the rite stands as the scripture it will become, judged by
 the Inquisition: heresy forbids the sealing, and the comments of an amended
 scripture are foretold to be lost, for the servitor writes it anew. Once
 sealed, the scripture is read back and must yield the very rite the wizard
@@ -75,7 +79,12 @@ holds. An edict amended or replicated stays an edict, sealed with "edict":
 true and never with aspects; a rite declared an edict, or an edict declared a
 rite of aspects, is sealed only once the Inquisition finds no heresy in what
 it has become — a sanctum, transcription or tether it still holds must first
-be cast out.
+be cast out. The Seal judges exaltation too — an exalted vessel that does
+not begin at the root, {{former}} within exalted words, a relic outside the
+rite's hall or nowhere to be found beside it — and a rite amended or
+replicated keeps every exalted verse and its relics. The wizard consecrates
+exalted verses, yet the cogitator performs none with its invoker's
+authority: their invocation is refused before anything is touched.
 
 Know that the cogitator lends no terminal to the words a rite speaks. As in
 every invocation, an incantation or litany is given nothing to hear and its
