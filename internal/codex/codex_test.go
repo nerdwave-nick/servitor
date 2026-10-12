@@ -196,7 +196,7 @@ var plainWords = regexp.MustCompile(`(?i)\b(` + strings.Join([]string{
 	`tui`, `documentation`, `dry[ -]run`, `quiet`, `timestamps?`, `file mode`, `target file`,
 	`step index`, `comment (prefix|suffix)`, `file content`, `force`, `flags?`, `subcommands?`,
 	`arguments?`, `errors?`, `warnings?`, `verify`, `logs?`, `results?`, `help`, `locks?`,
-	`approvals?`, `digests?`,
+	`approvals?`, `digests?`, `revok(e|es|ed|ing)`,
 }, "|") + `)\b`)
 
 // names are the machine's own words — paths (~/.config/niri/config.kdl) and

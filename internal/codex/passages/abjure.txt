@@ -1,0 +1,28 @@
+Withdraw the sanction of a rite's exalted verses, or every sanction, with one proof
+
+A sanction stands until it is abjured. Spoken with a rite, the ritual
+withdraws the sanction laid for that rite; spoken with --all, every sanction
+laid for you. Its exalted verses are performed no more until they are
+sanctioned anew, and the rite stands unsanctioned.
+
+The intercessor asks for the master's proof, once, whatever is abjured, and
+the exalted servitor it raises strikes each sanction from the store where
+only the machine's own authority writes, and journals the master's uid, the
+rite and the sigil of each. A forsaken sanction — whose rite is gone, or
+holds no exalted verse — is abjured as any other, and needs no rite of the
+Librarium. No terminal need attend: the intercessor chooses as for every
+proof.
+
+Each sanction struck is told upon stdout. A rite whose sanction is not laid,
+--all when none is, or words that name no rite, two rites, or a rite beside
+--all, are refused before any proof, the death-mark 2. A proof dismissed or
+failed strikes nothing and bears 1; an intercessor nowhere to be found, a
+servitor installed amiss, and whatever the exalted servitor refuses bear 2.
+Roused as root the ritual is refused, its death-mark 2.
+
+Kindred passages: sanction, all, sigil, exalted, intercessor, exalted-servitor
+
+Exempla:
+  servitor abjure split-lock
+  servitor abjure --all
+  servitor sanction --binharic | jq -r '.[] | select(.standing == "forsaken") | .rite' | xargs -rn1 servitor abjure

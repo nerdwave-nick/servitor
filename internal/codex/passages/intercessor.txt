@@ -2,7 +2,8 @@ Who vouches for the master before an exalted servitor is raised, written in the 
 
 An exalted verse is performed with the machine's own authority, and the
 machine lends it only to its master proven. The intercessor is the one who
-asks for that proof, once for every invocation holding exalted verses. In the
+asks for that proof, once for every invocation holding exalted verses, once
+for every sanctioning and once for every abjuring. In the
 settings, servitor.json beside the rites of the Librarium, "intercessor"
 names it:
 
@@ -35,10 +36,28 @@ sigil cut to its first twelve letters, or eight in the name of run0's unit:
     /usr/bin/servitor __exalt <rite> <sigil> [<aspect>]
   pkexec /usr/bin/servitor __exalt <rite> <sigil> [<aspect>]
 
+To sanction a rite, the sigil being that of its whole unit, or to abjure the
+sanction of a rite or every sanction (--all), the words are alike:
+
+  sudo -k -p "servitor: authenticate to sanction <rite> (sigil <sigil>): " \
+    -- /usr/bin/servitor __exalt --sanction <rite> <sigil>
+  sudo -k -p "servitor: authenticate to abjure the sanction of <rite>: " \
+    -- /usr/bin/servitor __exalt --abjure <rite>
+  sudo -k -p "servitor: authenticate to abjure every sanction: " \
+    -- /usr/bin/servitor __exalt --abjure --all
+  run0 --unit=servitor-sanction-<rite>-<sigil8> --pipe --chdir=/ \
+    /usr/bin/servitor __exalt --sanction <rite> <sigil>
+  run0 --unit=servitor-abjure-<rite> --pipe --chdir=/ \
+    /usr/bin/servitor __exalt --abjure <rite>
+  run0 --unit=servitor-abjure --pipe --chdir=/ \
+    /usr/bin/servitor __exalt --abjure --all
+  pkexec /usr/bin/servitor __exalt --sanction <rite> <sigil>
+  pkexec /usr/bin/servitor __exalt --abjure <rite> | --all
+
 sudo forgets every proof given before (-k), so that each invocation asks
 anew; pkexec asks through the stock action of the machine.
 
-Kindred passages: exalted, exalted-servitor, invoke, librarium
+Kindred passages: exalted, exalted-servitor, invoke, sanction, abjure, librarium
 
 Exempla:
   // servitor.json

@@ -24,11 +24,12 @@ may not lie beneath /proc, /sys or /dev: the knobs of the kernel are written
 by exalted incantations, never as vessels. Scriptures that exalted speech
 reads beside its scroll are named among its relics.
 
-No exalted verse is performed without the sanction of its master. This
-servitor cannot yet raise the exalted servitor, so the invocation of a rite
-holding exalted verses is refused before anything is touched, its
-death-mark 2, whatever its standing towards its sanction; the refusal names
-that standing, and for a rite unsanctioned or lapsed the ritual that
+No exalted verse is performed without the sanction of its master, laid with
+servitor sanction <rite> and withdrawn with servitor abjure <rite>. This
+servitor cannot yet raise the exalted servitor to perform exalted verses, so
+the invocation of a rite holding them is refused before anything is touched,
+its death-mark 2, whatever its standing towards its sanction; the refusal
+names that standing, and for a rite unsanctioned or lapsed the ritual that
 sanctions it: servitor sanction <rite>. --foresee still reveals what it
 would do, and never exalts.
 
@@ -39,7 +40,7 @@ beside it that is not among its relics, and a program the machine guards by
 an intercessor of its own (systemctl, hostnamectl, …) called by a verse that
 is not exalted beside exalted ones.
 
-Kindred passages: sanction, sigil, relics, intercessor, exalted-servitor,
+Kindred passages: sanction, abjure, sigil, relics, intercessor, exalted-servitor,
 incantation, litany, transcription, invoke
 
 Exempla:

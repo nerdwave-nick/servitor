@@ -100,7 +100,7 @@ func newRoot(args []string, stdout, stderr io.Writer) (*cobra.Command, *app) {
 	root.SetFlagErrorFunc(func(cmd *cobra.Command, err error) error {
 		return fmt.Errorf("%s\n%s", runeError(err), liturgyHint(cmd))
 	})
-	root.AddCommand(a.newInvokeCmd(), a.newAuguryCmd(), a.newCensusCmd(), a.newInquisitionCmd(), a.newSanctionCmd(),
+	root.AddCommand(a.newInvokeCmd(), a.newAuguryCmd(), a.newCensusCmd(), a.newInquisitionCmd(), a.newSanctionCmd(), a.newAbjureCmd(),
 		a.newTUICmd(), a.newExpoundCmd())
 	root.SetHelpCommand(newHelpCmd())
 	root.SetHelpFunc(a.lore(root.HelpFunc()))
