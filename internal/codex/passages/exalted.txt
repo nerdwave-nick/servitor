@@ -1,0 +1,47 @@
+A step performed with the machine's own authority, from a sanction
+
+Some steps reach beyond what their invoker may touch: the knobs of the
+kernel beneath /sys, sysctl, the scriptures of /etc, the units of the
+machine itself. Write "exalted": true upon such a step, and it is performed
+not with its invoker's authority but with the machine's own, by an exalted
+servitor raised for that one invocation — and only as its master sanctioned
+it. Every other verse is performed as ever, with the invoker's authority.
+
+Any step but a vox-cast may be exalted, in rites and edicts alike (an edict
+exalts its incantations and litanies). "exalted" is true for every aspect or
+for none, never an aspect map; false is as if unwritten.
+
+The words of an exalted verse are fixed when its master sanctions them:
+commands, reversions, vessels, anchors, offerings, and scripture inline or
+illuminated from a tome. {{aspect}}, {{rite.name}} and an inscription taken
+from its decrees may be spliced into them; {{former}} may not, nor a
+mandatory inscription that some aspect does not decree, for their words are
+given only at invocation. Exalted speech hears them from its environment
+instead: "$SERVITOR_FORMER_ASPECT" and "$SERVITOR_INSCRIPTION_<KEY>".
+
+An exalted vessel or bound name must begin at the root once rendered, and
+may not lie beneath /proc, /sys or /dev: the knobs of the kernel are written
+by exalted incantations, never as vessels. Scriptures that exalted speech
+reads beside its scroll are named among its relics.
+
+No exalted verse is performed without the sanction of its master. Until it
+is given, the invocation of a rite holding exalted verses is refused before
+anything is touched, its death-mark 2; --foresee still reveals what it would
+do, and never exalts.
+
+The inquisition notes the impurities of exaltation: sudo, run0, pkexec or
+doas within words that are not exalted (write "exalted": true instead),
+exalted speech reaching into the invoker's home ($HOME, ~) or for scripture
+beside it that is not among its relics, and a program the machine guards by
+an intercessor of its own (systemctl, hostnamectl, …) called by a verse that
+is not exalted beside exalted ones.
+
+Kindred passages: relics, intercessor, incantation, litany, transcription, invoke
+
+Exempla:
+  {"incantation": {"on": "sysctl -wq kernel.split_lock_mitigate=0",
+                   "*":  "sysctl -wq kernel.split_lock_mitigate=1"},
+   "exalted": true}
+
+  {"transcription": "/etc/sysctl.d/90-{{rite.name}}.conf", "exalted": true,
+   "scripture": "kernel.split_lock_mitigate = 0"}

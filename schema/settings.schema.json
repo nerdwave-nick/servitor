@@ -30,6 +30,11 @@
       "$ref": "#/$defs/patience",
       "default": "30s"
     },
+    "intercessor": {
+      "description": "Who vouches for the master before an exalted servitor is raised for the exalted verses of an invocation: \"auto\" lets the servitor choose by whether a terminal attends the invocation (sudo, else run0, else pkexec with a terminal; run0, else pkexec without), while \"sudo\", \"run0\" or \"pkexec\" calls upon that one alone.",
+      "enum": ["auto", "sudo", "run0", "pkexec"],
+      "default": "auto"
+    },
     "$schema": {
       "description": "The schema these orders are written against, for the editors of the faithful. The servitor accepts it and heeds it not.",
       "type": "string"

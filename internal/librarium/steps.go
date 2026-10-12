@@ -42,6 +42,7 @@ type Sanctum struct {
 	ClosingGlyph string // see Glyphs
 	Consecrate   bool
 	Scripture    AspectMap[Scripture]
+	Exalted      bool // performed with the machine's own authority
 }
 
 // Transcription writes a whole vessel anew, or removes it.
@@ -50,6 +51,7 @@ type Transcription struct {
 	Scripture AspectMap[Scripture] // Null removes the vessel
 	Seal      *fs.FileMode         // nil when not written
 	Zeal      bool                 // written as "zeal" or its alias "force"
+	Exalted   bool                 // performed with the machine's own authority
 }
 
 // Anchor is where a tether leads; Null unbinds it.
@@ -60,9 +62,10 @@ type Anchor struct {
 
 // Tether binds a name to an anchor.
 type Tether struct {
-	Name   string
-	Anchor AspectMap[Anchor]
-	Zeal   bool
+	Name    string
+	Anchor  AspectMap[Anchor]
+	Zeal    bool
+	Exalted bool // performed with the machine's own authority
 }
 
 // Utterance holds what incantations and litanies share.
@@ -70,6 +73,10 @@ type Utterance struct {
 	Tongue    string            // "" when the step names none
 	Patience  time.Duration     // 0 when not written
 	Reversion AspectMap[string] // zero when not written; "" reverts nothing
+	Exalted   bool              // spoken with the machine's own authority
+	// Relics are the scriptures the exalted speech reads beside its
+	// scroll, as written: paths within the rite's hall. Nil when unwritten.
+	Relics []string
 }
 
 // Incantation speaks one line of command in a tongue.

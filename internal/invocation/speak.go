@@ -135,14 +135,7 @@ func environ(dir string, edict bool, v placeholder.Values, keys []string) []stri
 	}
 	env = append(env, envRite+"="+v.Rite)
 	for _, k := range keys {
-		env = append(env, inscriptionVariable(k)+"="+v.Inscriptions[k])
+		env = append(env, placeholder.InscriptionVariable(k)+"="+v.Inscriptions[k])
 	}
 	return env
-}
-
-// inscriptionVariable names the variable of the environment that carries
-// the inscription key: SERVITOR_INSCRIPTION_ and the key in capitals, every
-// "-" and "." made "_".
-func inscriptionVariable(key string) string {
-	return envInscriptionPrefix + strings.ToUpper(strings.NewReplacer("-", "_", ".", "_").Replace(key))
 }

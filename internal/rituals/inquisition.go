@@ -18,7 +18,9 @@ import (
 //
 // Beyond the findings of the Librarium itself, the tomes of every rite are
 // opened (a missing tome, or a placeholder an illuminated tome cannot
-// fill, is heresy). The machine yields impurities — a tongue spoken
+// fill, is heresy), and so are the relics of its exalted verses (a relic
+// that is no scripture within the rite's hall is heresy) and the scrolls of
+// its litanies (whose words bear the impurities of exaltation). The machine yields impurities — a tongue spoken
 // nowhere, a vessel missing that its sanctum may not consecrate, an anchor
 // missing for some aspect, an edict's scroll missing, a tainted sanctum, a
 // desecrated rite — and heresy for a vessel whose sanctum markers are
@@ -45,6 +47,7 @@ func (s *Servitor) Inquire(names []string, spareVessels bool) (librarium.Finding
 		}
 		e := &examiner{rite: r, orders: orders, seen: map[string]bool{}}
 		e.tomes()
+		e.exaltation()
 		if !spareVessels {
 			e.machine()
 			e.omens(s)
@@ -136,15 +139,15 @@ func (e *examiner) tomes() {
 			}
 			p, ok := e.path(aspect, sc.Tome)
 			if ok && e.once("tome "+p) {
-				e.tome(mapField(i, "scripture", m, aspect)+"/tome", p, sc.Illuminate)
+				e.tome(mapField(i, "scripture", m, aspect)+"/tome", p, sc.Illuminate, e.rite.ScopeOf(step))
 			}
 		}
 	}
 }
 
 // tome opens the tome at p, written at ptr, and examines its placeholders
-// when it is illuminated.
-func (e *examiner) tome(ptr, p string, illuminate bool) {
+// within scope when it is illuminated.
+func (e *examiner) tome(ptr, p string, illuminate bool, scope placeholder.Scope) {
 	data, err := os.ReadFile(p)
 	switch {
 	case errors.Is(err, fs.ErrNotExist):
@@ -163,7 +166,7 @@ func (e *examiner) tome(ptr, p string, illuminate bool) {
 	if !illuminate {
 		return
 	}
-	for _, h := range e.rite.Scope().Check(string(data)) {
+	for _, h := range scope.Check(string(data)) {
 		e.found = append(e.found, librarium.Finding{Severity: librarium.Heresy, Scripture: p, Rite: e.rite.Name,
 			Position: librarium.Position{Line: h.Pos.Line, Column: h.Pos.Column},
 			Message:  "within the illuminated tome: " + h.Message()})

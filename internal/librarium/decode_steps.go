@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/fs"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"unicode"
@@ -12,11 +13,11 @@ import (
 )
 
 var stepKeys = map[Kind][]string{
-	KindSanctum:       {"sanctum", "ward", "glyph", "closing-glyph", "consecrate", "scripture"},
-	KindTranscription: {"transcription", "scripture", "seal", "zeal", "force"},
-	KindTether:        {"tether", "anchor", "zeal", "force"},
-	KindIncantation:   {"incantation", "tongue", "patience", "reversion"},
-	KindLitany:        {"litany", "offerings", "tongue", "patience", "reversion"},
+	KindSanctum:       {"sanctum", "ward", "glyph", "closing-glyph", "consecrate", "scripture", "exalted"},
+	KindTranscription: {"transcription", "scripture", "seal", "zeal", "force", "exalted"},
+	KindTether:        {"tether", "anchor", "zeal", "force", "exalted"},
+	KindIncantation:   {"incantation", "tongue", "patience", "reversion", "exalted", "relics"},
+	KindLitany:        {"litany", "offerings", "tongue", "patience", "reversion", "exalted", "relics"},
 	KindVoxCast:       {"vox-cast"},
 }
 
@@ -75,22 +76,41 @@ func (d *decoder) decodeStep(v *hujson.Value, verse int) Step {
 			"incantations, litanies and vox-casts", verse, why)
 	}
 	what := fmt.Sprintf("the %s of verse %d", kind.Key(), verse)
-	fs, _ := d.object(v, what, stepKeys[kind])
-	st := stepDecoder{d: d, v: v, fs: fs, what: what}
-	own, _ := fs.get(kind.Key())
-	switch kind {
-	case KindSanctum:
-		return st.sanctum(own.val)
-	case KindTranscription:
-		return st.transcription(own.val)
-	case KindTether:
-		return st.tether(own.val)
-	case KindIncantation:
-		return &Incantation{Command: st.commands(own.val, what), Utterance: st.utterance()}
-	case KindLitany:
-		return st.litany(own.val)
+	known := stepKeys[kind]
+	if kind == KindVoxCast {
+		known = append(slices.Clone(known), "exalted") // denounced in its own words below
 	}
-	return st.voxCast(own.val)
+	fs, _ := d.object(v, what, known)
+	st := stepDecoder{d: d, v: v, fs: fs, what: what, kind: kind, verse: verse}
+	st.exalted = st.exaltation()
+	if st.exalted {
+		// The words of an exalted verse are fixed at its sanction.
+		common := d.scope
+		d.scope = d.rite.ExaltedScope()
+		defer func() { d.scope = common }()
+	}
+	own, _ := fs.get(kind.Key())
+	step := st.decode(own.val)
+	if st.exalted {
+		st.rooted(step, own.val)
+	}
+	return step
+}
+
+func (s stepDecoder) decode(own *hujson.Value) Step {
+	switch s.kind {
+	case KindSanctum:
+		return s.sanctum(own)
+	case KindTranscription:
+		return s.transcription(own)
+	case KindTether:
+		return s.tether(own)
+	case KindIncantation:
+		return &Incantation{Command: s.commands(own, s.what), Utterance: s.utterance()}
+	case KindLitany:
+		return s.litany(own)
+	}
+	return s.voxCast(own)
 }
 
 func keysOfKinds() []string {
@@ -103,10 +123,13 @@ func keysOfKinds() []string {
 
 // stepDecoder decodes the fields of one step.
 type stepDecoder struct {
-	d    *decoder
-	v    *hujson.Value
-	fs   fields
-	what string
+	d       *decoder
+	v       *hujson.Value
+	fs      fields
+	what    string
+	kind    Kind
+	verse   int
+	exalted bool
 }
 
 func (s stepDecoder) field(key string) string { return fmt.Sprintf("the %q of %s", key, s.what) }
@@ -121,7 +144,7 @@ func (s stepDecoder) required(key, why string) (member, bool) {
 }
 
 func (s stepDecoder) sanctum(own *hujson.Value) *Sanctum {
-	st := &Sanctum{}
+	st := &Sanctum{Exalted: s.exalted}
 	st.Vessel, _ = s.d.templated(own, s.what+"'s vessel", false)
 	if m, ok := s.fs.get("ward"); ok {
 		if st.Ward, ok = s.d.str(m.val, s.field("ward")); ok &&
@@ -157,7 +180,7 @@ func (s stepDecoder) sanctum(own *hujson.Value) *Sanctum {
 }
 
 func (s stepDecoder) transcription(own *hujson.Value) *Transcription {
-	st := &Transcription{Zeal: s.zeal()}
+	st := &Transcription{Zeal: s.zeal(), Exalted: s.exalted}
 	st.Vessel, _ = s.d.templated(own, s.what+"'s vessel", false)
 	if m, ok := s.required("scripture", "a transcription must declare the scripture of its vessel for "+
 		"each aspect, or null where the vessel shall not be"); ok {
@@ -170,7 +193,7 @@ func (s stepDecoder) transcription(own *hujson.Value) *Transcription {
 }
 
 func (s stepDecoder) tether(own *hujson.Value) *Tether {
-	st := &Tether{Zeal: s.zeal()}
+	st := &Tether{Zeal: s.zeal(), Exalted: s.exalted}
 	st.Name, _ = s.d.templated(own, s.what+"'s bound name", false)
 	if m, ok := s.required("anchor", "a tether must declare where it leads for each aspect, or null where "+
 		"it shall be unbound"); ok {
@@ -223,7 +246,7 @@ func (s stepDecoder) text(mayBeEmpty bool) func(*hujson.Value, string) (string, 
 }
 
 func (s stepDecoder) utterance() Utterance {
-	var u Utterance
+	u := Utterance{Exalted: s.exalted, Relics: s.relics()}
 	if m, ok := s.fs.get("tongue"); ok {
 		u.Tongue, _ = s.d.word(m.val, s.field("tongue"))
 	}

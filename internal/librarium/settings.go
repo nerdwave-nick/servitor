@@ -15,7 +15,7 @@ import (
 const SettingsName = "servitor.json"
 
 // SettingsKeys are the keys of the settings, in the order of the codex.
-var SettingsKeys = []string{"pattern", "tongue", "chronicle", "vox", "patience", SchemaKey}
+var SettingsKeys = []string{"pattern", "tongue", "chronicle", "vox", "patience", "intercessor", SchemaKey}
 
 // The vox of the settings: whether tidings reach the desktop.
 const (
@@ -37,6 +37,9 @@ type Settings struct {
 	Chronicle string        // as written; "" when not written
 	Vox       string        // one of Voxes, or "" when not written
 	Patience  time.Duration // 0 when not written
+	// Intercessor is one of Intercessors, or "" when not written. It is
+	// judged, yet no invocation heeds it so far.
+	Intercessor string
 }
 
 // SettingsPath returns where the settings of the Librarium dir are kept.
@@ -107,6 +110,9 @@ func (d *decoder) decodeSettings(root *hujson.Value, s *Settings) {
 	if m, ok := fs.get("patience"); ok {
 		s.Patience = d.patience(m.val, `the "patience" of the settings`)
 	}
+	if m, ok := fs.get("intercessor"); ok {
+		s.Intercessor = d.intercessor(m.val)
+	}
 }
 
 // vox decodes the vox of the settings; "" when heretical.
@@ -122,5 +128,32 @@ func (d *decoder) vox(v *hujson.Value) string {
 		"hears through notify-send only an invocation roused without a terminal, %q, that it hears every "+
 		"invocation, a terminal or none, or %q, that the desktop stays silent (a terminal still hears the "+
 		"report)", s, VoxAuto, VoxNotifySend, VoxOff)
+	return ""
+}
+
+// The intercessors of the settings: who vouches for the master before an
+// exalted servitor is raised.
+const (
+	IntercessorAuto   = "auto" // chosen by whether a terminal attends the invocation
+	IntercessorSudo   = "sudo"
+	IntercessorRun0   = "run0"
+	IntercessorPkexec = "pkexec"
+)
+
+// Intercessors are the intercessors the settings may name.
+var Intercessors = []string{IntercessorAuto, IntercessorSudo, IntercessorRun0, IntercessorPkexec}
+
+// intercessor decodes the intercessor of the settings; "" when heretical.
+func (d *decoder) intercessor(v *hujson.Value) string {
+	s, ok := d.str(v, `the "intercessor" of the settings`)
+	if !ok {
+		return ""
+	}
+	if slices.Contains(Intercessors, s) {
+		return s
+	}
+	d.heresy(v, "%q is no intercessor the codex knows; the \"intercessor\" of the settings must be %q, that "+
+		"the servitor chooses one by whether a terminal attends the invocation, or %q, %q or %q, that it calls "+
+		"upon that one alone", s, IntercessorAuto, IntercessorSudo, IntercessorRun0, IntercessorPkexec)
 	return ""
 }

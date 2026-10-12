@@ -18,6 +18,9 @@ const (
 	Unclosed
 	// Aspectless is {{aspect}} or {{former}} in the words of an edict.
 	Aspectless
+	// Fleeting is {{former}}, or an inscription that only its rune may
+	// fill, in the words of an exalted verse.
+	Fleeting
 )
 
 // Position locates a heresy within the words it was found in.
@@ -49,6 +52,8 @@ func (h Heresy) Message() string {
 	case Unclosed:
 		return "a mark is opened with {{ but never sealed with }}; an open mark is a breach " +
 			"through which corruption seeps into the rite. To inscribe a literal {{, write {{{{"
+	case Fleeting:
+		return h.fleeting()
 	case Aspectless:
 		which := "the aspect being invoked"
 		if h.Name == "former" {
@@ -105,4 +110,28 @@ func (hs Heresies) Error() string {
 		lines[i] = h.Error()
 	}
 	return strings.Join(lines, "\n")
+}
+
+// InscriptionVariable names the variable of the environment that carries
+// the inscription key: SERVITOR_INSCRIPTION_ and the key in capitals, every
+// "-" and "." made "_".
+func InscriptionVariable(key string) string {
+	return "SERVITOR_INSCRIPTION_" + strings.ToUpper(strings.NewReplacer("-", "_", ".", "_").Replace(key))
+}
+
+// fleeting denounces a word given only at invocation in the words of an
+// exalted verse, naming the variable that bears it to exalted speech.
+func (h Heresy) fleeting() string {
+	const fixed = "yet the words of an exalted verse are fixed when its master sanctions them, and nothing given " +
+		"at invocation is spliced into them"
+	if h.Name == "former" {
+		return fmt.Sprintf("%s names the aspect the machine stood in before, a word known only at invocation, %s; "+
+			"exalted speech hears it only from its environment — speak it as \"$SERVITOR_FORMER_ASPECT\"",
+			h.Mark, fixed)
+	}
+	key := strings.TrimPrefix(h.Name, inscriptionPrefix)
+	return fmt.Sprintf("%s calls upon the inscription %q, which is mandatory yet not decreed for every "+
+		"invocation, so that its word may come from its rune alone, %s; an inscription is spliced into exalted "+
+		"words from its decrees alone — decree it for every aspect, or speak it as \"$%s\"",
+		h.Mark, key, fixed, InscriptionVariable(key))
 }
