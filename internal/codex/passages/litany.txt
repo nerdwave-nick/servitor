@@ -35,8 +35,20 @@ unsupported: neither the cogitator nor a hotkey lends them a terminal.
 Its "reversion" is not a scroll but one line of words, spoken in the tongue
 should the invocation fall. A litany yields no omen.
 
+An exalted litany is recited by the exalted servitor from the scroll its
+master sanctioned, never from the scroll as it stands now: the scroll is
+laid in a working hall of its own beside its relics, under the name it is
+written by (or its last name, when it lies beyond the rite's hall). A scroll
+whose first line names an interpreter ("#!/usr/bin/bash -e") is recited by
+that interpreter, which must be a program of the root like any tongue;
+every other through "<tongue> --noprofile --norc". It hears
+PATH=/usr/local/sbin:/usr/local/bin:/usr/bin, HOME=/root, the locale and the
+SERVITOR_ variables alone. What it leaves behind is slain when the
+invocation ends; a root process meant to last belongs in a unit of the
+machine ("systemd-run --unit=…").
+
 Kindred passages: offerings, incantation, tongue, patience, reversion,
-placeholders
+placeholders, relics, exalted
 
 Exempla:
   {"litany": "scripts/change-theme",

@@ -36,19 +36,39 @@ the last one performed, finish, abort. A word out of its order, or a second
 plan, is refused, and ends the session. Of a vessel it tells only whether it
 changed, its size and its SHA-256, never its scripture. Its vessels and
 tethers are walked from the root through halls the root alone may write, and
-transcribed atomically, keeping their owner and seal. Exalted speech is not
-yet granted it: a plan holding an exalted incantation or litany is refused
-before anything is touched.
+transcribed atomically, keeping their owner and seal.
+
+Exalted incantations and litanies it speaks itself, in a working hall of its
+own: /run/servitor/<sigil>/, raised afresh for the session, the root's and
+sealed 0700, holding the relics of the plan under their own names and the
+scroll of each litany. Its tongue must begin at the root and be a program
+the root owns and alone may write, reached through halls the root alone may
+write; it is spoken as "<tongue> --noprofile --norc", and a scroll whose
+first line names an interpreter is recited by that interpreter, judged
+alike. Speech hears no environment but what the exalted servitor grants:
+PATH=/usr/local/sbin:/usr/local/bin:/usr/bin, HOME=/root, LANG and LC_* when
+they truly name a locale, SERVITOR_RITE, SERVITOR_ASPECT,
+SERVITOR_FORMER_ASPECT (never for an edict) and SERVITOR_INSCRIPTION_<KEY>.
+Each verse is spoken in a session and process group of its own, its input
+empty, under its patience; when it runs out, the servitor slays the verse
+with every process it summoned. Reversions are spoken by the exalted
+servitor too, in the same hall. The last 64 KiB of what speech utters
+return to the invoker's servitor, so that the lament of a fallen verse can
+show them. When the session ends, however it ends, every process its speech
+left behind is slain and the working hall is cast down: a root process meant
+to last belongs in a unit of the machine (systemd-run --unit=…).
 
 Should its invoker fall before finish (the channel ends, ten minutes pass
 without a word, or SIGTERM reaches it), it reverts every verse it performed,
 from the last back to the first, and ends. It dwells at the root of the
 machine with umask 022, dumps no core, lets no descriptor pass to what it
-summons, and heeds no interrupt, hang-up or halt of the terminal. Each of
+summons, and heeds no interrupt, hang-up or halt of the terminal — though
+what it summons heeds them as ever. Each of
 its acts is kept in the journal of the machine: uid, rite, aspect, verse,
 sigil and verdict.
 
-Kindred passages: exalted, sanction, sigil, intercessor, dominion, verdicts
+Kindred passages: exalted, sanction, sigil, relics, intercessor, dominion,
+tongue, verdicts
 
 Exempla:
   journalctl -t servitor

@@ -81,6 +81,7 @@ func Machine() Config {
 		Ground:    hallowed.Machine,
 		Dominions: DominionRoot,
 		Idle:      10 * time.Minute,
+		Voice:     MachineSpeech().Voice,
 		Lament:    os.Stderr,
 	}
 }

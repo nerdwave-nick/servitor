@@ -21,7 +21,15 @@ invocation will speak; a tongue spoken nowhere on this machine refuses the
 invocation, and the inquisition notes it as an impurity. A litany that is
 recited by its own shebang needs no tongue, unless it carries a reversion.
 
-Kindred passages: incantation, litany, reversion, auspex, patience
+The tongue of exalted speech is fixed when its master sanctions it, as the
+program the tongue names from the root. The exalted servitor speaks it only
+if that program is owned by the root, written by none but the root, and
+reached through halls the root alone may write; it is spoken as "<tongue>
+--noprofile --norc", so that no scripture of the root's home is read before
+the words.
+
+Kindred passages: incantation, litany, reversion, auspex, patience,
+exalted-servitor
 
 Exempla:
   // on a step

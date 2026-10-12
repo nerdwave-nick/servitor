@@ -22,6 +22,10 @@ knows no former aspect: its reversion is written once, plainly, and undoes by
 its words alone. The reversion of the fallen step itself is spoken too, for it
 may have done half its work. A step without reversion reverts nothing.
 
+The reversion of an exalted incantation or litany is spoken by the exalted
+servitor, with the machine's authority, in its working hall and with the
+environment of exalted speech; it asks for no second proof of the master.
+
 A reversion that falls does not stop the others; every one is attempted and
 its outcome told. When all succeed the verdict is reverted; when any falls,
 the verdict is faltered, and the rite — or the edict — will likely show
