@@ -293,3 +293,39 @@ func TestKeeping_CallsEachIntercessorWithItsExactWords(t *testing.T) {
 		})
 	}
 }
+
+// TestForgetting_BidsRun0AloneForget: every command names the intercessor
+// it calls upon. After an act that called upon run0 the cogitator bids it
+// forget the master's proof with the exact words run0 -k; sudo forgets as
+// it is called (-k) and pkexec keeps none, so they are bidden nothing.
+func TestForgetting_BidsRun0AloneForget(t *testing.T) {
+	w, bin := world(t, true, "sudo", "run0", "pkexec")
+	for _, name := range []string{"sudo", "run0", "pkexec"} {
+		i, err := w.Find(name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, cmd := range []*exec.Cmd{i.Command(rite, sigil, aspect), i.Sanction(rite, sigil), i.Abjure(rite),
+			i.Abjure("")} {
+			if got := Named(cmd); got != name {
+				t.Errorf("%q names %q, want %q", cmd.Args, got, name)
+			}
+			f := Forgetting(cmd)
+			if name != "run0" {
+				if f != nil {
+					t.Errorf("%s is bidden forget: %q", name, f.Args)
+				}
+				continue
+			}
+			if f == nil {
+				t.Fatalf("run0 is not bidden forget after %q", cmd.Args)
+			}
+			if got, want := called(t, f), []string{filepath.Join(bin, "run0"), "-k"}; !slices.Equal(got, want) {
+				t.Errorf("run0 is bidden forget as %q, want %q", got, want)
+			}
+		}
+	}
+	if Named(&exec.Cmd{}) != "" || Forgetting(&exec.Cmd{}) != nil {
+		t.Error("a command calling upon no intercessor names one")
+	}
+}

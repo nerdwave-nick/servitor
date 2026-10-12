@@ -180,7 +180,7 @@ func (s *Servitor) exalt(r *librarium.Rite, p Petition, res *Result, x *exaltedP
 			Values: placeholder.Values{Rite: r.Name, Aspect: res.Options.Aspect}, Intercessor: x.intercessor.Name,
 			Sigil: short(x.sigil)})
 	}
-	return s.raise(r, res, x, p.Exaltation.summoner())
+	return s.raise(r, res, x, *p.Exaltation)
 }
 
 // prepare reads how the rite stands, or for an edict the inscriptions on

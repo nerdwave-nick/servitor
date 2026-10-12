@@ -137,7 +137,7 @@ func (s *Servitor) Sanction(o *Offering, x Exaltation) error {
 		return fmt.Errorf("%s is refused, and nothing was written: %w", deed, err)
 	}
 	uid := s.sanctions().UID
-	r, err := exalt(deed, i.Name, i.Sanction(o.Unit.Rite, o.Sigil()), x.summoner(),
+	r, err := exalt(deed, i.Name, i.Sanction(o.Unit.Rite, o.Sigil()), x,
 		func(ch *exalted.Channel) error { return ch.Offer(uid, o.Unit) })
 	if err != nil {
 		return err
