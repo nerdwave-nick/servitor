@@ -196,7 +196,8 @@ var plainWords = regexp.MustCompile(`(?i)\b(` + strings.Join([]string{
 	`tui`, `documentation`, `dry[ -]run`, `quiet`, `timestamps?`, `file mode`, `target file`,
 	`step index`, `comment (prefix|suffix)`, `file content`, `force`, `flags?`, `subcommands?`,
 	`arguments?`, `errors?`, `warnings?`, `verify`, `logs?`, `results?`, `help`, `locks?`,
-	`approvals?`, `digests?`, `revok(e|es|ed|ing)`,
+	`approv(e|es|ed|ing|als?)`, `digests?`, `revok(e|es|ed|ing)`, `elevat(e|es|ed|ing|ion)`, `superusers?`,
+	`privileged`, `privileges?`,
 }, "|") + `)\b`)
 
 // names are the machine's own words — paths (~/.config/niri/config.kdl) and
@@ -257,13 +258,15 @@ func TestScripturesOfTheFaithful_SpeakNoPlainGloss(t *testing.T) {
 
 func TestPlainWords_DenyGlossesButNotOrdinaryWords(t *testing.T) {
 	for _, plain := range []string{"the config", "a symlink", "dry run", "Shell", "status", "the --json rune", "force", "a dry-run", "a lock",
-		"an approval", "the digest"} {
+		"an approval", "the digest", "elevate", "an elevated step", "elevation", "approve", "approved", "revoked",
+		"the superuser", "privileged"} {
 		if plainWord(plain) == "" {
 			t.Errorf("%q passes the guard", plain)
 		}
 	}
 	for _, fine := range []string{"scripture", "statement", "a list of lines", "the step", "SERVITOR_STATE", "$XDG_STATE_HOME", "binharic",
-		"~/.config/niri/config.kdl", "$XDG_CONFIG_HOME", "niri msg action load-config-file"} {
+		"~/.config/niri/config.kdl", "$XDG_CONFIG_HOME", "niri msg action load-config-file",
+		"a path that does not begin at the root", "owned by the root"} {
 		if plainWord(fine) != "" {
 			t.Errorf("%q is denied, yet ordinary", fine)
 		}
