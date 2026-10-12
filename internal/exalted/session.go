@@ -1,6 +1,7 @@
 package exalted
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
@@ -65,6 +66,9 @@ func Serve(args []string, in *os.File, out io.Writer, cfg Config) int {
 		return s.refuse(fmt.Errorf("the exalted servitor bears the machine's authority only as the servitor installed "+
 			"where the root alone may write, yet the scroll it runs from breaks that rule: %v — install the servitor "+
 			"anew from its package (makepkg -si); nothing was touched", err))
+	}
+	if len(args) > 0 && (args[0] == SanctionWord || args[0] == AbjureWord) {
+		return s.keep(args, in)
 	}
 	a, err := parseArgv(args)
 	if err != nil {
@@ -214,7 +218,10 @@ func (s *session) record(e Entry) {
 	if s.cfg.Journal == nil {
 		return
 	}
-	e.UID, e.Rite, e.Aspect, e.Sigil = s.uid, s.argv.rite, s.argv.aspect, s.argv.sigil
+	e.UID, e.Aspect = s.uid, s.argv.aspect
+	if e.Rite == "" {
+		e.Rite, e.Sigil = s.argv.rite, cmp.Or(e.Sigil, s.argv.sigil)
+	}
 	if err := s.cfg.Journal.Record(e); err != nil && s.cfg.Lament != nil {
 		fmt.Fprintln(s.cfg.Lament, "servitor ✠ the journal of the machine refuses an act: "+e.String())
 	}

@@ -53,6 +53,10 @@ const (
 	Faltered Verdict = "faltered"
 	// Finished: the session ends, and what was performed is kept.
 	Finished Verdict = "finished"
+	// Sanctioned: the sanction was laid in the store.
+	Sanctioned Verdict = "sanctioned"
+	// Abjured: the sanctions named in Abjured were struck from the store.
+	Abjured Verdict = "abjured"
 )
 
 // Reply is the exalted servitor's answer to one line. It never carries the
@@ -63,7 +67,7 @@ type Reply struct {
 	To       string  `json:"to"`
 	Verdict  Verdict `json:"verdict"`
 	Verse    int     `json:"verse,omitzero"`
-	Protocol int     `json:"protocol,omitzero"` // upon acceptance
+	Protocol int     `json:"protocol,omitzero"` // in every answer to the first line
 	// Verses are the exalted verses of the plan, in written order, upon
 	// acceptance.
 	Verses []int `json:"verses,omitzero"`
@@ -79,6 +83,8 @@ type Reply struct {
 	// Reversions are the reversions of an abort, from the last verse
 	// performed back to the first.
 	Reversions []Reply `json:"reversions,omitzero"`
+	// Abjured names the rites whose sanctions an abjuring struck, in order.
+	Abjured []string `json:"abjured,omitzero"`
 }
 
 // Seen is what the exalted servitor tells of a vessel: its size and the

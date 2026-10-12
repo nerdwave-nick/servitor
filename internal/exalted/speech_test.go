@@ -386,3 +386,21 @@ func TestMachine_LendsExaltedSpeech(t *testing.T) {
 		t.Fatal("the exalted servitor of the machine has no voice")
 	}
 }
+
+// TestSpeech_WeighsWithoutRaising: the speech of a plan is weighed by the
+// rules of Voice before it is sanctioned, and no working hall is raised.
+func TestSpeech_WeighsWithoutRaising(t *testing.T) {
+	u := speakingUnit(incantation(t, 1, "echo weighed"))
+	sh := speakingShrine(t, u)
+	sitting := Sitting{UID: me, Sanction: sanction.New(u, time.Time{}), Plan: u.Aspects[0], Sigil: sh.sigil("on")}
+	if err := sh.speech().Weigh(sitting); err != nil {
+		t.Errorf("Weigh = %v", err)
+	}
+	sitting.Plan.Liturgy[0].Tongue = "bash"
+	if err := sh.speech().Weigh(sitting); err == nil || !strings.Contains(err.Error(), "begin at the root") {
+		t.Errorf("Weigh of a tongue spoken from no root = %v", err)
+	}
+	if _, err := os.Lstat(filepath.Join(sh.ground, "run")); !errors.Is(err, fs.ErrNotExist) {
+		t.Errorf("a hall was raised: %v", err)
+	}
+}

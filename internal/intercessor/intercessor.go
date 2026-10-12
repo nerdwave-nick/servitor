@@ -9,7 +9,9 @@
 // else pkexec when a terminal attends (/dev/tty opens), and run0, else
 // pkexec, when none does; a value of its own calls upon that one alone.
 // Command speaks the exact words that raise the exalted servitor through
-// it. Every lament of Find is a refusal before anything was touched.
+// it for an invocation, Sanction and Abjure those that raise it to keep the
+// store of sanctions. Every lament of Find is a refusal before anything was
+// touched.
 package intercessor
 
 import (
@@ -120,20 +122,57 @@ func (w World) Find(setting string) (*Intercessor, error) {
 // that sudo would read in its prompt. The caller lays the channel upon it.
 func (i *Intercessor) Command(rite, sigil, aspect string) *exec.Cmd {
 	short := sanction.Short(sigil)
-	exalt := []string{i.servitor, exalted.Mode, rite, short}
+	exalt := []string{rite, short}
 	if aspect != "" {
 		exalt = append(exalt, aspect)
 	}
+	return i.call(fmt.Sprintf("perform %s (sigil %s)", rite, short),
+		fmt.Sprintf("servitor-%s-%s", rite, short[:min(8, len(short))]), exalt)
+}
+
+// Sanction is the intercessor called upon to raise the exalted servitor
+// that sanctions the unit of the rite bearing sigil (the unit's whole
+// sigil, which it cuts as Command does). Its words are exact:
+//
+//	sudo -k -p "servitor: authenticate to sanction <rite> (sigil <sigil12>): " -- <servitor> __exalt --sanction <rite> <sigil12>
+//	run0 --unit=servitor-sanction-<rite>-<sigil8> --pipe --chdir=/ <servitor> __exalt --sanction <rite> <sigil12>
+//	pkexec <servitor> __exalt --sanction <rite> <sigil12>
+func (i *Intercessor) Sanction(rite, sigil string) *exec.Cmd {
+	short := sanction.Short(sigil)
+	return i.call(fmt.Sprintf("sanction %s (sigil %s)", rite, short),
+		fmt.Sprintf("servitor-sanction-%s-%s", rite, short[:min(8, len(short))]),
+		[]string{exalted.SanctionWord, rite, short})
+}
+
+// Abjure is the intercessor called upon to raise the exalted servitor that
+// abjures the sanction of the rite, or every sanction when rite is "". Its
+// words are exact:
+//
+//	sudo -k -p "servitor: authenticate to abjure the sanction of <rite>: " -- <servitor> __exalt --abjure <rite>
+//	sudo -k -p "servitor: authenticate to abjure every sanction: " -- <servitor> __exalt --abjure --all
+//	run0 --unit=servitor-abjure-<rite> --pipe --chdir=/ <servitor> __exalt --abjure <rite>
+//	run0 --unit=servitor-abjure --pipe --chdir=/ <servitor> __exalt --abjure --all
+//	pkexec <servitor> __exalt --abjure <rite> | --all
+func (i *Intercessor) Abjure(rite string) *exec.Cmd {
+	if rite == "" {
+		return i.call("abjure every sanction", "servitor-abjure", []string{exalted.AbjureWord, exalted.AllWord})
+	}
+	return i.call("abjure the sanction of "+rite, "servitor-abjure-"+rite, []string{exalted.AbjureWord, rite})
+}
+
+// call is the intercessor called upon to raise the exalted servitor with
+// the words exalt after its Mode: sudo asking the master's proof "to
+// <deed>", run0 in the unit of the machine named unit.
+func (i *Intercessor) call(deed, unit string, exalt []string) *exec.Cmd {
 	var args []string
 	switch i.Name {
 	case librarium.IntercessorSudo:
-		args = []string{"-k", "-p", fmt.Sprintf("servitor: authenticate to perform %s (sigil %s): ", rite, short),
-			"--"}
+		args = []string{"-k", "-p", "servitor: authenticate to " + deed + ": ", "--"}
 	case librarium.IntercessorRun0:
-		args = []string{fmt.Sprintf("--unit=servitor-%s-%s", rite, short[:min(8, len(short))]), "--pipe",
-			"--chdir=/"}
+		args = []string{"--unit=" + unit, "--pipe", "--chdir=/"}
 	}
-	return &exec.Cmd{Path: i.Path, Args: append(append([]string{i.Name}, args...), exalt...)}
+	args = append(append(append([]string{i.Name}, args...), i.servitor, exalted.Mode), exalt...)
+	return &exec.Cmd{Path: i.Path, Args: args}
 }
 
 // Absent is the lament of an intercessor nowhere to be found upon the PATH.

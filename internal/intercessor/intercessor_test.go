@@ -255,3 +255,41 @@ func must(t *testing.T, err error) {
 		t.Fatal(err)
 	}
 }
+
+// TestKeeping_CallsEachIntercessorWithItsExactWords: each intercessor is
+// called with its exact words to raise the exalted servitor that sanctions
+// a rite under the sigil of its unit, or abjures the sanction of a rite, or
+// every sanction.
+func TestKeeping_CallsEachIntercessorWithItsExactWords(t *testing.T) {
+	sanctioning := []string{"/usr/bin/servitor", "__exalt", "--sanction", rite, "4f0c2a9e1b7d"}
+	abjuring := []string{"/usr/bin/servitor", "__exalt", "--abjure", rite}
+	everything := []string{"/usr/bin/servitor", "__exalt", "--abjure", "--all"}
+	for name, want := range map[string][3][]string{
+		"sudo": {
+			append([]string{"-k", "-p", "servitor: authenticate to sanction split-lock (sigil 4f0c2a9e1b7d): ", "--"},
+				sanctioning...),
+			append([]string{"-k", "-p", "servitor: authenticate to abjure the sanction of split-lock: ", "--"},
+				abjuring...),
+			append([]string{"-k", "-p", "servitor: authenticate to abjure every sanction: ", "--"}, everything...),
+		},
+		"run0": {
+			append([]string{"--unit=servitor-sanction-split-lock-4f0c2a9e", "--pipe", "--chdir=/"}, sanctioning...),
+			append([]string{"--unit=servitor-abjure-split-lock", "--pipe", "--chdir=/"}, abjuring...),
+			append([]string{"--unit=servitor-abjure", "--pipe", "--chdir=/"}, everything...),
+		},
+		"pkexec": {sanctioning, abjuring, everything},
+	} {
+		t.Run(name, func(t *testing.T) {
+			w, _ := world(t, true, name)
+			i, err := w.Find(name)
+			if err != nil {
+				t.Fatal(err)
+			}
+			for n, cmd := range []*exec.Cmd{i.Sanction(rite, sigil), i.Abjure(rite), i.Abjure("")} {
+				if got, exp := called(t, cmd), append([]string{i.Path}, want[n]...); !slices.Equal(got, exp) {
+					t.Errorf("called as\n%q, want\n%q", got, exp)
+				}
+			}
+		})
+	}
+}
