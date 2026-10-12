@@ -95,34 +95,46 @@ const (
 func (s Scope) illuminate(text string, v Values) (string, Heresies) {
 	var b strings.Builder
 	var hs Heresies
+	unclosed := walk(text, func(at int, mark, name string) {
+		if val, kind, ok := s.resolve(name, v); ok {
+			b.WriteString(val)
+		} else {
+			hs = append(hs, s.heresy(kind, text, at, mark, name))
+		}
+	}, func(literal string) { b.WriteString(literal) })
+	if unclosed >= 0 {
+		hs = append(hs, s.heresy(Unclosed, text, unclosed, opening, ""))
+	}
+	return b.String(), hs
+}
+
+// walk tells every mark of text, with its offset, to mark and every literal
+// between them to literal, in the order written. It returns the offset of a
+// mark never closed, after which nothing is told; -1 when every mark closes.
+func walk(text string, mark func(at int, mark, name string), literal func(string)) int {
 	for i := 0; i < len(text); {
 		j := strings.Index(text[i:], opening)
 		if j < 0 {
-			b.WriteString(text[i:])
+			literal(text[i:])
 			break
 		}
-		b.WriteString(text[i : i+j])
+		literal(text[i : i+j])
 		i += j
 		if strings.HasPrefix(text[i:], escape) {
-			b.WriteString(opening)
+			literal(opening)
 			i += len(escape)
 			continue
 		}
 		k := strings.Index(text[i+len(opening):], closing)
 		if k < 0 {
-			hs = append(hs, s.heresy(Unclosed, text, i, opening, ""))
-			break
+			return i
 		}
 		name := text[i+len(opening) : i+len(opening)+k]
-		mark := text[i : i+len(opening)+k+len(closing)]
-		if val, kind, ok := s.resolve(name, v); ok {
-			b.WriteString(val)
-		} else {
-			hs = append(hs, s.heresy(kind, text, i, mark, name))
-		}
-		i += len(mark)
+		m := text[i : i+len(opening)+k+len(closing)]
+		mark(i, m, name)
+		i += len(m)
 	}
-	return b.String(), hs
+	return -1
 }
 
 const inscriptionPrefix = "inscription."
@@ -190,4 +202,18 @@ func locate(text string, off int) Position {
 	line := strings.Count(before, "\n") + 1
 	col := off - (strings.LastIndexByte(before, '\n') + 1) + 1
 	return Position{Offset: off, Line: line, Column: col}
+}
+
+// Spliced names the declared inscriptions whose marks text speaks, once
+// each, in the order first spoken. Escaped marks and marks never closed
+// splice nothing.
+func (s Scope) Spliced(text string) []string {
+	var keys []string
+	walk(text, func(_ int, _, name string) {
+		key, ok := strings.CutPrefix(name, inscriptionPrefix)
+		if ok && slices.Contains(s.Inscriptions, key) && !slices.Contains(keys, key) {
+			keys = append(keys, key)
+		}
+	}, func(string) {})
+	return keys
 }
