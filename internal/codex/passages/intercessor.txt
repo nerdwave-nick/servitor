@@ -1,0 +1,25 @@
+Who vouches for the master before an exalted servitor is raised, written in the settings
+
+An exalted verse is performed with the machine's own authority, and the
+machine lends it only to its master proven. The intercessor is the one who
+asks for that proof, once for every invocation holding exalted verses. In the
+settings, servitor.json beside the rites of the Librarium, "intercessor"
+names it:
+
+  "auto"    the servitor chooses by whether a terminal attends the
+            invocation: sudo, else run0, else pkexec at a terminal; run0,
+            else pkexec without one (this is the default)
+  "sudo"    sudo alone
+  "run0"    run0 alone
+  "pkexec"  pkexec alone
+
+An intercessor named but missing from the machine refuses the invocation.
+Any other value is heresy, denounced by the inquisition with its place; doas
+is never called upon. No rune and no variable of the environment outranks
+the settings here.
+
+Kindred passages: exalted, invoke, librarium
+
+Exempla:
+  // servitor.json
+  {"pattern": "Mark I", "intercessor": "run0"}

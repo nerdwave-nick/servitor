@@ -18,12 +18,14 @@ func TestParseSettings_ReadsEveryKeyOfJSONC(t *testing.T) {
   "chronicle": "~/chronicle.jsonl",
   "vox": "off",
   "patience": "1m30s",       /* for the slow machine spirits */
+  "intercessor": "run0",
 }`
 	s, fs := ParseSettings(settingsPath, []byte(scripture))
 	if len(fs) != 0 {
 		t.Fatalf("findings:\n%v", fs)
 	}
-	want := Settings{Path: settingsPath, Tongue: "zsh", Chronicle: "~/chronicle.jsonl", Vox: VoxOff, Patience: 90 * time.Second}
+	want := Settings{Path: settingsPath, Tongue: "zsh", Chronicle: "~/chronicle.jsonl", Vox: VoxOff, Patience: 90 * time.Second,
+		Intercessor: IntercessorRun0}
 	if *s != want {
 		t.Fatalf("settings %+v, want %+v", *s, want)
 	}
@@ -46,7 +48,7 @@ var settingsHeresies = []struct {
 	{"pattern no string", `{"pattern": 1}`, "numerals of the old tongue", `1}`},
 	{"pattern unknown mark", `{"pattern": "Mark II"}`, `forged to read only "Mark I"`, `"Mark II"`},
 	{"unknown key", `{"pattern": "Mark I", "shell": "zsh"}`,
-		`the key "shell" is not written in the codex for the settings; strike it, or write one of the keys the codex knows there: "pattern", "tongue", "chronicle", "vox", "patience", "$schema"`, `"shell"`},
+		`the key "shell" is not written in the codex for the settings; strike it, or write one of the keys the codex knows there: "pattern", "tongue", "chronicle", "vox", "patience", "intercessor", "$schema"`, `"shell"`},
 	{"key twice", `{"pattern": "Mark I", "vox": "off", "vox": "off"}`, `the key "vox" is written twice`, `"vox": "off"}`},
 	{"patience unreadable", `{"pattern": "Mark I", "patience": "soon"}`, `"soon" is no measure of patience the servitor understands; the "patience" of the settings`, `"soon"`},
 	{"patience nothing", `{"pattern": "Mark I", "patience": "0s"}`, `"0s" is no measure of patience`, `"0s"`},
@@ -54,6 +56,8 @@ var settingsHeresies = []struct {
 	{"patience number", `{"pattern": "Mark I", "patience": 30}`, `the "patience" of the settings must be written as a string`, `30}`},
 	{"vox unknown", `{"pattern": "Mark I", "vox": "loud"}`, `"loud" is no vox the codex knows; the "vox" of the settings must be "auto"`, `"loud"`},
 	{"vox boolean", `{"pattern": "Mark I", "vox": false}`, `the "vox" of the settings must be written as a string`, `false}`},
+	{"intercessor unknown", `{"pattern": "Mark I", "intercessor": "doas"}`, `"doas" is no intercessor the codex knows; the "intercessor" of the settings must be "auto"`, `"doas"`},
+	{"intercessor boolean", `{"pattern": "Mark I", "intercessor": true}`, `the "intercessor" of the settings must be written as a string`, `true}`},
 	{"tongue empty", `{"pattern": "Mark I", "tongue": " "}`, `the "tongue" of the settings may not be empty`, `" "`},
 	{"chronicle empty", `{"pattern": "Mark I", "chronicle": ""}`, `the "chronicle" of the settings may not be empty`, `""`},
 	{"chronicle list", `{"pattern": "Mark I", "chronicle": ["a"]}`, `the "chronicle" of the settings must be written as a string`, `["a"]`},

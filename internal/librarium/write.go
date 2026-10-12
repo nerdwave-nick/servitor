@@ -131,6 +131,7 @@ func (w *writer) step(s Step) {
 		w.flag("consecrate", s.Consecrate)
 		w.str("scripture")
 		writeMap(w, s.Scripture, w.scripture)
+		w.flag("exalted", s.Exalted)
 	case *Transcription:
 		w.field("transcription", s.Vessel)
 		w.str("scripture")
@@ -139,11 +140,13 @@ func (w *writer) step(s Step) {
 			w.field("seal", fmt.Sprintf("%04o", uint32(*s.Seal)))
 		}
 		w.flag("zeal", s.Zeal)
+		w.flag("exalted", s.Exalted)
 	case *Tether:
 		w.field("tether", s.Name)
 		w.str("anchor")
 		writeMap(w, s.Anchor, w.anchor)
 		w.flag("zeal", s.Zeal)
+		w.flag("exalted", s.Exalted)
 	case *Incantation:
 		w.str("incantation")
 		writeMap(w, s.Command, w.str)
@@ -178,6 +181,11 @@ func (w *writer) utterance(u Utterance) {
 	if !u.Reversion.IsZero() {
 		w.str("reversion")
 		writeMap(w, u.Reversion, w.str)
+	}
+	w.flag("exalted", u.Exalted)
+	if u.Relics != nil {
+		w.str("relics")
+		w.strings(u.Relics)
 	}
 }
 

@@ -55,7 +55,8 @@ type Result struct {
 // Invoke performs the petition, or foresees it. The error tells why
 // nothing was performed: *Unrecorded, *Heretical, invocation.Heresies of
 // the inscriptions or the pre-flight (the result's Foresight is filled for
-// the steps that passed), or *Forsaken. A performance that fell is no
+// the steps that passed) or of the exalted verses of a rite, which are
+// never performed (see unexalted), or *Forsaken. A performance that fell is no
 // error: its Outcome tells the verdict. Only performances are kept on the
 // data-slate and in the chronicle; a refused or foreseen invocation is not.
 //
@@ -74,6 +75,12 @@ func (s *Servitor) Invoke(ctx context.Context, p Petition) (Result, error) {
 		return Result{}, err
 	}
 	res := Result{Rite: r}
+	if !p.Foresee {
+		if err := unexalted(r); err != nil {
+			res.Options = invocation.Options{Aspect: p.Aspect, Edict: r.Edict}
+			return res, err
+		}
+	}
 	inscriptions, err := invocation.ResolveInscriptions(r, p.Aspect, p.Runes)
 	if err != nil {
 		return res, err

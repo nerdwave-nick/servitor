@@ -1,0 +1,27 @@
+The scriptures an exalted incantation or litany reads beside its scroll
+
+Exalted speech is never spoken where its invoker keeps it. The exalted
+servitor speaks it in a hall of its own, fresh for the invocation, so that
+no hand but the machine's may alter what it reads between the sanction and
+the speaking. Whatever the speech reads beside it — a list, a lesser scroll
+it sources, the words of a tuning — must therefore be named under "relics".
+
+"relics" is a list of paths, each reckoned from the hall where the rite's
+scripture is kept and lying within it; a path that begins at the root, or
+climbs out of that hall, is heresy. Their words are sealed into the sanction
+beside the verse, and the exalted servitor lays each under the same name in
+its own hall before the speech begins, where "./<name>" finds it.
+
+Only an exalted incantation or litany bears relics; on any other step they
+are heresy. A relic that cannot be found is heresy too, denounced by the
+inquisition. Exalted speech that names "./<name>", or sources a scripture,
+not among its relics is an impurity.
+
+Kindred passages: exalted, litany, incantation
+
+Exempla:
+  {"litany": "scrolls/governor", "exalted": true,
+   "relics": ["scrolls/governor.conf"]}
+
+  {"incantation": "source ./tuning.list && apply", "exalted": true,
+   "relics": ["tuning.list"]}

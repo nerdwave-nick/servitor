@@ -98,6 +98,7 @@ func (d *decoder) decodeRite(root *hujson.Value) *Rite {
 	if m, ok := fs.get("liturgy"); ok {
 		d.decodeLiturgy(m.val)
 	}
+	d.judgeSpeech()
 	return r
 }
 

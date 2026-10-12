@@ -6,6 +6,9 @@
 // speak {{heresy}}, {{step}}, {{steps}}, {{step.kind}} and {{step.target}}.
 // The words of an edict (Scope.Edict) bear no aspect: {{aspect}} and
 // {{former}} are heresy there.
+// The words of an exalted verse (Scope.Exalted) are fixed when its master
+// sanctions them: {{former}}, and an inscription only its rune may fill,
+// are heresy there.
 // {{{{ is a literal {{; a lone }} is literal. Every other mark, an inscription
 // the rite never declared, and a mark that is never closed are heresies; they
 // are never rendered empty.
@@ -38,6 +41,13 @@ type Scope struct {
 	// Edict marks the words of an edict, which bears no aspect: {{aspect}}
 	// and {{former}} are heresy there.
 	Edict bool
+	// Exalted marks the words of an exalted verse, which are fixed when its
+	// master sanctions them: {{former}} and the Fleeting inscriptions are
+	// heresy there.
+	Exalted bool
+	// Fleeting are the inscriptions whose word may come from their rune
+	// alone, at invocation: mandatory, yet not decreed for every aspect.
+	Fleeting []string
 }
 
 // Values are what the marks are illuminated with during one invocation.
@@ -127,6 +137,9 @@ func (s Scope) resolve(name string, v Values) (string, Kind, bool) {
 		if name == "aspect" {
 			return v.Aspect, 0, true
 		}
+		if s.Exalted {
+			return "", Fleeting, false
+		}
 		return v.Former, 0, true
 	case "rite.name":
 		return v.Rite, 0, true
@@ -134,6 +147,9 @@ func (s Scope) resolve(name string, v Values) (string, Kind, bool) {
 	if key, ok := strings.CutPrefix(name, inscriptionPrefix); ok && key != "" {
 		if !slices.Contains(s.Inscriptions, key) {
 			return "", Undeclared, false
+		}
+		if s.Exalted && slices.Contains(s.Fleeting, key) {
+			return "", Fleeting, false
 		}
 		return v.Inscriptions[key], 0, true
 	}

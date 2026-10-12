@@ -169,12 +169,32 @@ var judgements = []struct {
 	{"edict rite tongue map", edict(`, "tongue": {"*": "sh"}`, ``), false},
 	{"edict decrees map", edict(`, "inscriptions": {"m": {"decrees": {"*": "x"}}}`, ``), false},
 	{"edict decrees empty map", edict(`, "inscriptions": {"m": {"decrees": {}}}`, ``), false},
+
+	{"exalted steps", step(`{"sanctum": "/etc/v", "scripture": "", "exalted": true},
+		{"transcription": "/etc/{{aspect}}", "scripture": null, "exalted": true}, {"tether": "/etc/t", "anchor": "/usr/a", "exalted": true},
+		{"incantation": "sysctl -w a=1", "exalted": true, "relics": []}, {"litany": "s", "exalted": true, "relics": ["s.conf", "lib/a"]}`), true},
+	{"exalted false", step(`{"sanctum": "v", "scripture": "", "exalted": false}, {"tether": "t", "anchor": "a", "exalted": false}`), true},
+	{"exalted vox-cast", step(`{"vox-cast": "progress", "exalted": true}`), false},
+	{"exalted vox-cast false", step(`{"vox-cast": "progress", "exalted": false}`), false},
+	{"exalted no boolean", step(`{"incantation": "a", "exalted": "yes"}`), false},
+	{"exalted aspect map", step(`{"incantation": "a", "exalted": {"*": true}}`), false},
+	{"relics not exalted", step(`{"litany": "s", "relics": ["s.conf"]}`), false},
+	{"relics exalted false", step(`{"incantation": "a", "exalted": false, "relics": []}`), false},
+	{"relics on a sanctum", step(`{"sanctum": "/etc/v", "scripture": "", "exalted": true, "relics": []}`), false},
+	{"relics on a tether", step(`{"tether": "/etc/t", "anchor": "/usr/a", "exalted": true, "relics": []}`), false},
+	{"relics no list", step(`{"litany": "s", "exalted": true, "relics": "s.conf"}`), false},
+	{"relic number", step(`{"litany": "s", "exalted": true, "relics": [1]}`), false},
+	{"relic empty", step(`{"litany": "s", "exalted": true, "relics": [" "]}`), false},
+	{"relic from the root", step(`{"litany": "s", "exalted": true, "relics": ["/etc/s.conf"]}`), false},
+	{"edict exalted", edictStep(`{"incantation": "systemctl reboot", "exalted": true},
+		{"litany": "s", "exalted": true, "relics": ["s.list"]}, {"vox-cast": "success"}`), true},
+	{"edict relics not exalted", edictStep(`{"litany": "s", "relics": ["s.list"]}`), false},
 }
 
-// beyondTheSchema are heresies of an edict that only the librarium can
-// tell, each with the reason no schema can: the librarium denounces them,
-// the schema lets them pass. Should the schema ever learn to judge one, it
-// belongs among the judgements instead.
+// beyondTheSchema are heresies that only the librarium can tell, each with
+// the reason no schema can: the librarium denounces them, the schema lets
+// them pass. Should the schema ever learn to judge one, it belongs among
+// the judgements instead.
 var beyondTheSchema = []struct{ name, scripture, why string }{
 	{"edict speaks aspect", edictStep(`{"incantation": "echo {{aspect}}"}`),
 		"placeholders are words within a string, which a schema does not read"},
@@ -182,6 +202,19 @@ var beyondTheSchema = []struct{ name, scripture, why string }{
 		"placeholders are words within a string, which a schema does not read"},
 	{"edict speaks aspect in an offering", edictStep(`{"litany": "s", "offerings": ["~/{{aspect}}"]}`),
 		"placeholders are words within a string, which a schema does not read"},
+	{"exalted speaks former", step(`{"incantation": "echo {{former}}", "exalted": true}`),
+		"placeholders are words within a string, which a schema does not read"},
+	{"exalted speaks a fleeting inscription", scripture(`, "inscriptions": {"m": {"mandatory": true, "decrees": {"on": "a"}}}`,
+		`{"incantation": "echo {{inscription.m}}", "exalted": true}`),
+		"whether an inscription is decreed for every aspect is told by the aspects, beside the words that splice it"},
+	{"exalted vessel not rooted", step(`{"transcription": "{{aspect}}/x", "scripture": null, "exalted": true}`),
+		"a vessel is judged as it is rendered for each aspect, which a schema cannot do"},
+	{"exalted vessel of the kernel", step(`{"transcription": "/etc/../sys/x", "scripture": "1", "exalted": true}`),
+		"a vessel is judged as it is rendered and its path made plain, which a schema cannot do"},
+	{"relic above the hall", step(`{"litany": "s", "exalted": true, "relics": ["a/../../s.conf"]}`),
+		"a relic is judged once its path is made plain, which a schema cannot do"},
+	{"relic the hall itself", step(`{"litany": "s", "exalted": true, "relics": ["a/.."]}`),
+		"a relic is judged once its path is made plain, which a schema cannot do"},
 }
 
 func TestRiteSchema_LeavesBeyondItWhatOnlyTheLibrariumTells(t *testing.T) {
@@ -236,18 +269,25 @@ var settingsJudgements = map[string]bool{
 	`{"pattern": "Mark I"}`: true,
 	`{"$schema": "https://example.org/s.json", "pattern": "Mark I", "tongue": "zsh", "chronicle": "~/c.jsonl",
 	  "vox": "notify-send", "patience": "45s"}`: true,
-	`{"pattern": "Mark I", "vox": "off"}`:       true,
-	`{"pattern": "Mark I", "vox": "auto"}`:      true,
-	`{"tongue": "zsh"}`:                         false,
-	`{"pattern": "Mark II"}`:                    false,
-	`{"pattern": "Mark I", "shell": "zsh"}`:     false,
-	`{"pattern": "Mark I", "vox": "loud"}`:      false,
-	`{"pattern": "Mark I", "vox": false}`:       false,
-	`{"pattern": "Mark I", "tongue": ""}`:       false,
-	`{"pattern": "Mark I", "chronicle": " "}`:   false,
-	`{"pattern": "Mark I", "chronicle": ["a"]}`: false,
-	`{"pattern": "Mark I", "$schema": null}`:    false,
-	`{"pattern": "Mark I", "aspects": ["on"]}`:  false,
+	`{"pattern": "Mark I", "vox": "off"}`:            true,
+	`{"pattern": "Mark I", "vox": "auto"}`:           true,
+	`{"pattern": "Mark I", "intercessor": "auto"}`:   true,
+	`{"pattern": "Mark I", "intercessor": "sudo"}`:   true,
+	`{"pattern": "Mark I", "intercessor": "run0"}`:   true,
+	`{"pattern": "Mark I", "intercessor": "pkexec"}`: true,
+	`{"pattern": "Mark I", "intercessor": "doas"}`:   false,
+	`{"pattern": "Mark I", "intercessor": ""}`:       false,
+	`{"pattern": "Mark I", "intercessor": true}`:     false,
+	`{"tongue": "zsh"}`:                              false,
+	`{"pattern": "Mark II"}`:                         false,
+	`{"pattern": "Mark I", "shell": "zsh"}`:          false,
+	`{"pattern": "Mark I", "vox": "loud"}`:           false,
+	`{"pattern": "Mark I", "vox": false}`:            false,
+	`{"pattern": "Mark I", "tongue": ""}`:            false,
+	`{"pattern": "Mark I", "chronicle": " "}`:        false,
+	`{"pattern": "Mark I", "chronicle": ["a"]}`:      false,
+	`{"pattern": "Mark I", "$schema": null}`:         false,
+	`{"pattern": "Mark I", "aspects": ["on"]}`:       false,
 	`["Mark I"]`: false,
 }
 

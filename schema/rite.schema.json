@@ -30,7 +30,7 @@
         }
       },
       "liturgy": {
-        "description": "The liturgy of an edict: incantations, litanies and vox-casts alone, every word written plainly; it keeps no sanctum, transcribes no vessel and binds no tether.",
+        "description": "The liturgy of an edict: incantations, litanies and vox-casts alone, every word written plainly, the incantations and litanies exalted or not; it keeps no sanctum, transcribes no vessel and binds no tether.",
         "items": {
           "not": {"anyOf": [{"required": ["sanctum"]}, {"required": ["transcription"]}, {"required": ["tether"]}]},
           "properties": {
@@ -275,6 +275,21 @@
       "type": "boolean",
       "default": false
     },
+    "exalted": {
+      "description": "Whether the step is performed not with its invoker's authority but with the machine's own, by an exalted servitor from the sanction its master gave: true for every aspect or for none, never an aspect map. Its words are fixed at the sanction, so {{former}} and an inscription only its rune may fill are heresy within them; an exalted vessel or bound name begins at the root once rendered and lies not beneath /proc, /sys or /dev. False is as if unwritten.",
+      "type": "boolean",
+      "default": false
+    },
+    "relics": {
+      "description": "The scriptures exalted speech reads beside its scroll, each named by its place within the hall of the rite's scripture; their words are sealed into the sanction, and the exalted servitor lays them under the same names in a hall of its own. Only an exalted step bears relics.",
+      "type": "array",
+      "items": {
+        "description": "One relic: a path within the hall of the rite, never beginning at the root.",
+        "type": "string",
+        "pattern": "\\S",
+        "not": {"pattern": "^/"}
+      }
+    },
     "step": {
       "description": "One step of the liturgy, named by exactly one key of its kind.",
       "oneOf": [
@@ -319,6 +334,10 @@
         "scripture": {
           "description": "The scripture the sanctum keeps for each aspect.",
           "$ref": "#/$defs/sanctumScripture"
+        },
+        "exalted": {
+          "description": "Whether the sanctum is kept with the machine's own authority, from a sanction; its vessel then begins at the root.",
+          "$ref": "#/$defs/exalted"
         }
       }
     },
@@ -350,6 +369,10 @@
           "description": "The same leave as \"zeal\" under another name; write \"zeal\", never both.",
           "type": "boolean",
           "doNotSuggest": true
+        },
+        "exalted": {
+          "description": "Whether the step is performed with the machine's own authority, from a sanction; what it writes then begins at the root.",
+          "$ref": "#/$defs/exalted"
         }
       }
     },
@@ -376,6 +399,10 @@
           "description": "The same leave as \"zeal\" under another name; write \"zeal\", never both.",
           "type": "boolean",
           "doNotSuggest": true
+        },
+        "exalted": {
+          "description": "Whether the step is performed with the machine's own authority, from a sanction; what it writes then begins at the root.",
+          "$ref": "#/$defs/exalted"
         }
       }
     },
@@ -400,6 +427,21 @@
         "reversion": {
           "description": "The words that undo this incantation should the invocation fall, spoken in its tongue; {{former}} names the aspect to return to.",
           "$ref": "#/$defs/verses"
+        },
+        "exalted": {
+          "description": "Whether the incantation is spoken with the machine's own authority, from a sanction.",
+          "$ref": "#/$defs/exalted"
+        },
+        "relics": {
+          "description": "The scriptures the exalted incantation reads beside it.",
+          "$ref": "#/$defs/relics"
+        }
+      },
+      "dependentSchemas": {
+        "relics": {
+          "description": "Relics are borne only by a step that is exalted.",
+          "required": ["exalted"],
+          "properties": {"exalted": {"description": "A step bearing relics must be exalted.", "const": true}}
         }
       }
     },
@@ -429,6 +471,21 @@
         "reversion": {
           "description": "The words that undo this litany should the invocation fall, spoken in its tongue; {{former}} names the aspect to return to.",
           "$ref": "#/$defs/verses"
+        },
+        "exalted": {
+          "description": "Whether the litany is recited with the machine's own authority, from a sanction; the words of its scroll are sealed into the sanction.",
+          "$ref": "#/$defs/exalted"
+        },
+        "relics": {
+          "description": "The scriptures the scroll of the exalted litany reads beside it.",
+          "$ref": "#/$defs/relics"
+        }
+      },
+      "dependentSchemas": {
+        "relics": {
+          "description": "Relics are borne only by a step that is exalted.",
+          "required": ["exalted"],
+          "properties": {"exalted": {"description": "A step bearing relics must be exalted.", "const": true}}
         }
       }
     },

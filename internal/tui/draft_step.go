@@ -23,6 +23,9 @@ type stepDraft struct {
 	command   varied[string] // an incantation's command or a litany's scroll
 	reversion varied[string]
 	offerings varied[[]string]
+	// relics are those of an exalted incantation or litany, kept as read;
+	// the wizard writes them back unchanged, and "exalted" stands in fixed.
+	relics []string
 }
 
 // newStepDraft is a new step of kind k. Scripture differs per aspect
@@ -89,6 +92,7 @@ func stepFrom(s librarium.Step) stepDraft {
 	case *librarium.VoxCast:
 		f["vox-cast"] = s.Tidings
 	}
+	flag("exalted", librarium.IsExalted(s))
 	for _, k := range furtherKeys[sd.kind] {
 		sd.further = sd.further || f[k] != ""
 	}
@@ -102,21 +106,24 @@ func (sd *stepDraft) utteranceFrom(u librarium.Utterance) {
 	}
 	sd.reversion = variedFrom(u.Reversion)
 	sd.further = !u.Reversion.IsZero()
+	sd.relics = u.Relics
 }
 
 // toStep writes the step for a rite of aspects.
 func (sd stepDraft) toStep(aspects []string) librarium.Step {
 	f := sd.fixed
+	exalted := f["exalted"] == "true"
 	switch sd.kind {
 	case librarium.KindSanctum:
 		return &librarium.Sanctum{Vessel: f["sanctum"], Ward: f["ward"], Glyph: f["glyph"],
 			ClosingGlyph: f["closing-glyph"], Consecrate: f["consecrate"] == "true",
-			Scripture: sd.scripture.toMap(aspects)}
+			Scripture: sd.scripture.toMap(aspects), Exalted: exalted}
 	case librarium.KindTranscription:
 		return &librarium.Transcription{Vessel: f["transcription"], Scripture: sd.scripture.toMap(aspects),
-			Seal: parseSeal(f["seal"]), Zeal: f["zeal"] == "true"}
+			Seal: parseSeal(f["seal"]), Zeal: f["zeal"] == "true", Exalted: exalted}
 	case librarium.KindTether:
-		return &librarium.Tether{Name: f["tether"], Anchor: sd.anchor.toMap(aspects), Zeal: f["zeal"] == "true"}
+		return &librarium.Tether{Name: f["tether"], Anchor: sd.anchor.toMap(aspects), Zeal: f["zeal"] == "true",
+			Exalted: exalted}
 	case librarium.KindIncantation:
 		return &librarium.Incantation{Command: sd.command.toMap(aspects), Utterance: sd.utterance(aspects)}
 	case librarium.KindLitany:
@@ -129,7 +136,8 @@ func (sd stepDraft) toStep(aspects []string) librarium.Step {
 // utterance is what an incantation or litany speaks with; a reversion
 // that reverts nothing for every aspect stays unwritten.
 func (sd stepDraft) utterance(aspects []string) librarium.Utterance {
-	u := librarium.Utterance{Tongue: sd.fixed["tongue"], Reversion: sd.reversion.toMap(aspects)}
+	u := librarium.Utterance{Tongue: sd.fixed["tongue"], Reversion: sd.reversion.toMap(aspects),
+		Exalted: sd.fixed["exalted"] == "true", Relics: sd.relics}
 	u.Patience, _ = time.ParseDuration(sd.fixed["patience"])
 	if r := u.Reversion; r.IsUniform() && r.Entries()[0].Value == "" {
 		u.Reversion = librarium.AspectMap[string]{}
