@@ -69,7 +69,7 @@ The proposal bundles separate changes. They should be judged one by one:
 | A root-owned authoritative store **for every rite** | **Not needed for security**, and costly for the workflow. Against A1 it protects nothing an unprivileged rite could not do directly. Git/dotfiles editing becomes import/export with drift (§4). |
 | SQLite instead of files | **Not justified at this scale.** Tens of small documents, one writer, and plain files are diffable, auditable and need no new dependency (§4.4). |
 | Speed | **A daemon is not the lever.** 22 of servitor's 23 ms process start is one dependency's eager initialisation; with that fixed, an invoke takes about 6 ms (§2). Only auspex time remains, and a root daemon does not help with it. |
-| Simpler elevation | **Partly true, but for a narrow service only.** A socket-activated root service that executes only sanctioned exalted plans and authorises each invocation through polkit `auth_admin` removes the sudo/run0/pkexec matrix. It also closes a gap found here: under polkit 127, an authentication through run0 is kept, and other children of the same servitor process on a terminal can use it (§5.3). It costs a listening root endpoint and its own polkit integration. |
+| Simpler elevation | **Partly true, but for a narrow service only.** A socket-activated root service that executes only sanctioned exalted plans and authorises each invocation through polkit `auth_admin` removes the sudo/run0/pkexec matrix. (A run0 reuse gap inferred here on 2026-10-11 was refuted by a VM test on 2026-10-12, §5.3.) It costs a listening root endpoint and its own polkit integration. |
 | Easier creation | **A separate problem.** The cogitator already has a consecration wizard for creating, amending and replicating rites (§6). Storage location does not change how hard authoring is. |
 
 **Recommended shape** (inference, ranked):
@@ -79,7 +79,7 @@ The proposal bundles separate changes. They should be judged one by one:
 2. Exalted content stays under the sanctioned root-owned store, already decided.
 3. For the root side, choose between the decided per-invocation helper and a small
    socket-activated **exalted service** (polkit mechanism). §5.4 compares them. Either way
-   the run0 backend needs a fix: its kept authorisation is shareable by sibling processes (§5.3).
+   the decided backend order stands; a suspected run0 reuse gap was refuted in a VM (§5.3).
 4. Drop the dependency's start-up cost first. Then decide on any daemon from measurements.
    If live state or event push is still wanted, an optional **user** service
    (`systemd --user`) is the right home, not a root one.
@@ -333,7 +333,13 @@ asynchronous polkit call [src systemd v262; consult].
 Older mechanisms (hostnamed, PackageKit, udisks2, fwupd) use the system D-Bus with typed
 methods and polkit (elevation research §2).
 
-### 5.3 Correction: an authentication through run0 is kept, and siblings can use it
+### 5.3 run0 and kept authorisations (inference refuted by the VM, see the note)
+
+> **Correction (2026-10-12).** Verified in a VM with the same sudo, polkit 127 and systemd
+> 262: run0 left **nothing reusable** in any scenario. Siblings started like servitor's
+> steps were refused, and so was a shell's second run0. The inference below did not hold
+> in practice; the evidence is in `docs/research/elevation-verification.md`. The decided
+> `intercessor` order stands; `sudo -k` remains essential.
 
 - run0 starts a transient unit through PID 1. That is gated by
   `org.freedesktop.systemd1.manage-units`, which is **`auth_admin_keep`** for active
@@ -395,13 +401,13 @@ methods and polkit (elevation research §2).
 | Who may connect | whoever got through sudo/run0/pkexec | anyone (`0666`) — authorisation per request |
 | Authentication | delegated to three tools with different prompts, caching and TTY rules | one polkit action, `auth_admin`, no keep; servitor controls the policy |
 | Prompt text | sudo `-p`, run0 unit name, pkexec cmdline | `polkit.message` with details: rite, aspect, digest |
-| No-reuse guarantee | sudo `-k` yes; run0 kept for 5 min and shareable by sibling processes on a tty (§5.3); pkexec stock action yes | yes, by the shipped action (admins can still override with rules) |
+| No-reuse guarantee | sudo `-k` yes; run0 yes (verified in a VM, §5.3); pkexec at `auth_admin` yes | yes, by the shipped action (admins can still override with rules) |
 | Terminal-only sessions | sudo on the tty | client forks `pkttyagent --notify-fd N --fallback`, as systemd's tools do [src systemd v262 `src/shared/polkit-agent.c`] |
 | Hotkeys, no terminal | run0/pkexec via the graphical agent | the graphical agent |
 | Identity | `SO_PEERCRED` on socketpair, `SUDO_UID` | `SO_PEERCRED` + `SO_PEERPIDFD`; polkit `unix-process` subject with pidfd |
 | New code | helper mode, tool selection, socketpair through tools | listener, polkit client (godbus), unit files, action file, lifecycle/upgrade |
 | Root-safe file operations, plan validation, trusted-path rule | required | equally required |
-| Verification still open | socket through real sudo/run0 (one authentication) | polkit call with pidfd subject; pkttyagent handover in the cogitator |
+| Verification still open | done in a VM on 2026-10-12 (`elevation-verification.md`); graphical agent and host sudoers not covered | polkit call with pidfd subject; pkttyagent handover in the cogitator |
 
 Identity details for the service [consult; doc man-pages `unix.7`; src polkit 127
 `polkitsubject.c`, `polkitunixprocess.c`]:
@@ -417,7 +423,7 @@ Identity details for the service [consult; doc man-pages `unix.7`; src polkit 12
 *Inference:* an exalted service does not make the root side smaller. It still needs the
 typed plan, the trusted-path rule, fd-relative writes, the sanctioned store and runtime
 values only through the environment. What it removes is the **launcher matrix** (sudo,
-run0, pkexec, TTY detection, socketpair through each tool) and the run0 caching problem.
+run0, pkexec, TTY detection, socketpair through each tool).
 What it adds is a **listening root endpoint** and an unconditional polkit/D-Bus
 dependency. Both shapes can share one plan executor, so the choice can be deferred until
 the helper's tool verification is done [consult].
@@ -525,10 +531,8 @@ consultation].
 
 ## 9. Existing decisions this touches
 
-1. **Elevation backends:** under polkit 127, run0's kept authorisation can be used by other
-   children of the same servitor process on a terminal. That includes unexalted steps
-   (§5.3). run0 needs `Setsid` for steps or a detached helper, or the `intercessor` list
-   changes.
+1. **Elevation backends:** a suspected run0 reuse gap (§5.3) was refuted in a VM on
+   2026-10-12 (`docs/research/elevation-verification.md`); the decided order stands.
 2. **Dominion fails open** (§3.4). It must fail closed for exalted work, in a
    root-controlled namespace. For ordinary writes it is the owner's call.
 3. **The session digest** H(approved digest ‖ aspect ‖ values) *commits to* the runtime
