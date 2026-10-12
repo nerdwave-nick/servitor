@@ -15,6 +15,9 @@ of a ritual is followed by its invocation and its runes, as the servitor
 itself knows them, and the passage of invoke also names every rite of the
 Librarium.
 
+Roused as root by sudo, the servitor names the rites of the invoker's
+Librarium, as every reading ritual does.
+
 A topic the codex does not hold is denounced, and the topics that most
 resemble it are offered in its stead. Completion offers every topic of the
 index, each with its summing line.

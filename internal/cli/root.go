@@ -119,6 +119,9 @@ func (a *app) newTUICmd() *cobra.Command {
 // cogitator awakens the cogitator upon the Librarium, swayed by the runes
 // spoken to the ritual cmd.
 func (a *app) cogitator(cmd *cobra.Command) error {
+	if err := unexalted("the awakening of the cogitator"); err != nil {
+		return err
+	}
 	return runTUI(tui.Options{Dir: a.lib.Dir, Runes: runesOf(cmd)})
 }
 
@@ -149,6 +152,10 @@ func runeError(err error) string {
 
 // Execute runs the CLI and returns the process exit code.
 func Execute(args []string, stdout, stderr io.Writer) int {
+	if err := inheritInvokersWorld(); err != nil {
+		fmt.Fprintln(stderr, "servitor ✠ "+err.Error())
+		return markRefused
+	}
 	var completion bytes.Buffer
 	out := stdout
 	if isCompletionRequest(args) {

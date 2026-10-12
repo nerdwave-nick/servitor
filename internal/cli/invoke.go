@@ -171,6 +171,9 @@ func (a *app) invoke(cmd *cobra.Command, r *librarium.Rite, aspect string, ir in
 		return refused(errForeseenInBinharic)
 	}
 	if !ir.foresee {
+		if err := unexalted(invocationOf(r, aspect)); err != nil {
+			return err
+		}
 		a.relent = rituals.Steadfast()
 	}
 	runes := map[string]string{}
@@ -212,6 +215,15 @@ func (a *app) invoke(cmd *cobra.Command, r *librarium.Rite, aspect string, ir in
 		return nil
 	}
 	return judged(cmd.OutOrStdout(), r, res, ir.binharic)
+}
+
+// invocationOf names the invocation of r into aspect, or the proclaiming
+// of the edict r.
+func invocationOf(r *librarium.Rite, aspect string) string {
+	if r.Edict {
+		return fmt.Sprintf("the proclaiming of the edict %q", r.Name)
+	}
+	return fmt.Sprintf("the invocation of the rite %q into %q", r.Name, aspect)
 }
 
 func unknownAspect(r *librarium.Rite, aspect string) error {

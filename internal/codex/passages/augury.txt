@@ -8,6 +8,10 @@ sanctums. The augury changes nothing; it awakens the rite's auspex, should
 the rite keep one, but performs no step. An edict, which stands in no
 aspect, yields no omen: its augury is read from its data-slate alone.
 
+Roused as root by sudo, the augury reads the rite of the invoker's Librarium,
+with the invoker's vessels and data-slate, and writes nothing; the passage on
+the Librarium tells all.
+
 Without a key, the augury speaks one object in binharic, for other machines
 to read:
 
