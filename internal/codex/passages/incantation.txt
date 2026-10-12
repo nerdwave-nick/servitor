@@ -39,8 +39,17 @@ the servitor is roused from a hotkey, and their input is empty.
 An incantation yields no omen. Should the invocation fall, its "reversion" is
 spoken in the same tongue to undo what it did.
 
+An exalted incantation is spoken by the exalted servitor, with the machine's
+own authority, as its master sanctioned it: "<tongue> --noprofile --norc -c
+<words>", in a working hall of its own holding its relics, never in the
+rite's hall. Its environment is no longer the servitor's: it hears
+PATH=/usr/local/sbin:/usr/local/bin:/usr/bin, HOME=/root, the locale, and
+the SERVITOR_ variables above, nothing more. Children it sends into the
+background are slain when the invocation ends; a root process meant to last
+belongs in a unit of the machine ("systemd-run --unit=…").
+
 Kindred passages: tongue, patience, reversion, litany, placeholders,
-inscriptions
+inscriptions, exalted, exalted-servitor
 
 Exempla:
   {"incantation": "niri msg action do-screen-transition"}
@@ -55,3 +64,7 @@ Exempla:
    "patience": "5s"}
 
   {"incantation": "swaybg -i ~/walls/{{aspect}}.png >/dev/null 2>&1 &"}
+
+  // with the machine's authority; the lasting process dwells in a unit
+  {"incantation": "systemd-run --unit=servitor-fan-curve fancontrol", "exalted": true,
+   "reversion": "systemctl stop servitor-fan-curve"}

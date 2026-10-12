@@ -160,7 +160,7 @@ func (s *session) performable() error {
 		switch v.Kind {
 		case librarium.KindIncantation, librarium.KindLitany:
 			if s.cfg.Voice == nil {
-				return fmt.Errorf("verse %d is exalted %s, which this exalted servitor cannot yet speak; "+
+				return fmt.Errorf("verse %d is exalted %s, which this exalted servitor was lent no voice to speak; "+
 					"nothing was touched", v.Verse, v.Kind.Key())
 			}
 			continue
