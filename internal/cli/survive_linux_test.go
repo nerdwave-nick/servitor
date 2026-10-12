@@ -17,6 +17,9 @@ import (
 const awakenAs = "SERVITOR_TEST_AWAKEN_AS"
 
 func TestMain(m *testing.M) {
+	// The servitor serves the faithful in every test, whoever runs them;
+	// asRoot lends it the machine's own authority.
+	geteuid = func() int { return 1000 }
 	switch os.Getenv(awakenAs) {
 	case "servitor":
 		os.Exit(Execute(os.Args[1:], os.Stdout, os.Stderr))

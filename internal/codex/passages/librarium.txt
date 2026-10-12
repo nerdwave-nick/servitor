@@ -14,6 +14,16 @@ environment are expanded, and a relative path is reckoned from the hall the
 servitor was summoned in. Should the rune be spoken more than once, the last
 prevails.
 
+Roused as root by sudo, the servitor seeks the Librarium of the one who spoke
+sudo, never root's own: SUDO_USER names them, and their home is SUDO_HOME,
+else the home the machine records for SUDO_USER. Root's $XDG_CONFIG_HOME,
+$XDG_STATE_HOME and every other XDG_ variable are cast away and "~" is that
+home, so that the settings, the vessels, the data-slates and the chronicle are
+the invoker's too. Should that home not be found, the servitor reads nothing
+and bears the death-mark 2. Without SUDO_USER, root's own Librarium is read.
+As root the servitor only reads — foresight, augury, census, inquisition and
+expound — and writes nothing; every invocation, and the cogitator, is refused.
+
 Naming another Librarium changes everything at once: its rites, its settings
 and — where its settings name one — its chronicle.
 

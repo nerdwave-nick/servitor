@@ -82,6 +82,13 @@ before anything was touched (the pre-flight forbade it, the rite or aspect
 is unknown, a word was written after an edict's name, a rune was
 malformed), and 3 when it faltered.
 
+The servitor performs nothing with the machine's own authority. Roused as root
+— through sudo, run0 or pkexec, or by root itself — it refuses every
+invocation and every proclaiming with the death-mark 2 before anything is
+touched; only --foresee is still heeded. Rouse it as yourself. Under sudo the
+foresight reads the Librarium, the vessels and the data-slates of the one who
+spoke sudo, as the passage on the Librarium tells.
+
 A rite's scripture, kept in <Librarium>/rites/<name>.json, may read thus:
 
   {

@@ -14,6 +14,10 @@ data-slates. With the rune --vigil it tells every rite at once, line by
 line in binharic, and tells again each rite whose auspex was awaited as
 soon as it settles.
 
+Roused as root by sudo, the census reads the Librarium, the vessels and the
+data-slates of the one who spoke sudo, never root's, and writes nothing; the
+passage on the Librarium tells all.
+
 Spoken plainly, the census is a table with the columns RITE, ASPECT,
 STANDING, ASPECTS, LAST RITE and PURPOSE; a "·" marks what is not known. An
 edict bears a "·" for its aspect and its aspects, for it stands in none. A
@@ -38,6 +42,7 @@ Exempla:
   servitor census --binharic |
     jq -r '.[] | select(.standing != "performed") | .rite'
   servitor --librarium ~/dotfiles/servitor census
+  sudo servitor census
   servitor census --binharic --spare-auspex |
     jq -r '.[] | select(.auspex == "forgone") | .rite'
   servitor census --vigil | jq -c 'select(.herald == "rite")'

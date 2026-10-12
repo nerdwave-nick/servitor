@@ -7,6 +7,10 @@ scripture:line:column, so that the faithful may go straight to the offending
 word, and a verbose account of the sin and its penance. Nothing is changed by
 the Inquisition.
 
+Roused as root by sudo, the Inquisition examines the invoker's Librarium and
+the vessels of the invoker's home, never root's; the passage on the Librarium
+tells all.
+
 Heresies must be purged, for a heretical rite cannot be invoked: malformed
 scripture, unknown keys, a missing or foreign pattern, aspects empty, repeated
 or unworthily named, a rite bearing both "aspects" and "edict": true or
