@@ -11,6 +11,7 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/invocation"
 	"github.com/nerdwave-nick/servitor/internal/librarium"
 	"github.com/nerdwave-nick/servitor/internal/rituals"
+	"github.com/nerdwave-nick/servitor/internal/sanction"
 )
 
 // invokeScreen lets the user choose an aspect and inscribe the invocation
@@ -176,6 +177,9 @@ func (m *model) foresight(res rituals.Result, err error) string {
 	case err != nil:
 		return t.danger.Render(err.Error())
 	}
+	if line := m.foreseenSanction(res); line != "" {
+		b = append(b, line, "")
+	}
 	for _, f := range res.Foresight {
 		b = append(b, t.bold.Render(verseName(f.Verse)))
 		for _, line := range foreseen(f) {
@@ -190,4 +194,22 @@ func (m *model) foresight(res rituals.Result, err error) string {
 		}
 	}
 	return strings.Join(append(b, t.dim.Render("Nothing was performed.")), "\n")
+}
+
+// foreseenSanction tells how the exalted verses of a foreseen invocation
+// stand towards their sanction; "" for a rite without them.
+func (m *model) foreseenSanction(res rituals.Result) string {
+	t := m.t
+	switch res.Sanction {
+	case sanction.Sanctioned:
+		return t.ok.Render("✠ The exalted verses stand sanctioned under the sigil " + sanction.Short(res.Sigil) +
+			"; one proof of the master raises the exalted servitor that performs them.")
+	case sanction.Lapsed:
+		return t.danger.Render("☓ The sanction of the exalted verses has lapsed, and the invocation would be " +
+			"refused — sanction them anew with s.")
+	case sanction.Unsanctioned:
+		return t.warn.Render("○ The exalted verses stand unsanctioned, and the invocation would be refused — " +
+			"sanction them with s.")
+	}
+	return ""
 }

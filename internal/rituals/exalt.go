@@ -25,12 +25,17 @@ var Summon Summoner = summon
 
 // summon starts the intercessor upon the machine. Before it does, no other
 // process of the master may trace the servitor or read its memory any more
-// (PR_SET_DUMPABLE): the channel is the master's word to the root.
+// (PR_SET_DUMPABLE): the channel is the master's word to the root. The
+// intercessor speaks upon the servitor's own stderr, unless the caller
+// laid another upon cmd.
 func summon(cmd *exec.Cmd, end *os.File) (func() error, error) {
 	if err := unix.Prctl(unix.PR_SET_DUMPABLE, 0, 0, 0, 0); err != nil {
 		return nil, err
 	}
-	cmd.Stdin, cmd.Stdout, cmd.Stderr = end, end, os.Stderr
+	cmd.Stdin, cmd.Stdout = end, end
+	if cmd.Stderr == nil {
+		cmd.Stderr = os.Stderr
+	}
 	if err := cmd.Start(); err != nil {
 		return nil, err
 	}
@@ -46,6 +51,12 @@ func summon(cmd *exec.Cmd, end *os.File) (func() error, error) {
 type Exaltation struct {
 	Attended bool
 	Summon   Summoner
+	// Answered, when not nil, is told once the exalted servitor raised gave
+	// its first answer, or its channel ended before any: the intercessor
+	// asks the master for no proof any more. The cogitator then takes back
+	// the terminal it lent sudo. It is never told when no intercessor was
+	// called upon.
+	Answered func()
 }
 
 func (x Exaltation) summoner() Summoner {
@@ -84,28 +95,47 @@ func (s *Spurned) Error() string {
 // conduit is the channel of the invoker's servitor to an exalted servitor
 // raised through the intercessor, and what awaits the intercessor's end.
 type conduit struct {
-	ours  *os.File
-	ch    *exalted.Channel
-	wait  func() error
-	once  sync.Once
-	ended error // how the intercessor ended, once it did
+	ours     *os.File
+	ch       *exalted.Channel
+	wait     func() error
+	answered func() // told once the intercessor asks no more; may be nil
+	told     sync.Once
+	once     sync.Once
+	ended    error // how the intercessor ended, once it did
 }
 
 // raiseConduit lays a socketpair and raises the exalted servitor through
-// cmd upon its other end with summoner.
-func raiseConduit(deed, intercessor string, cmd *exec.Cmd, summoner Summoner) (*conduit, error) {
+// cmd upon its other end, as x summons it.
+func raiseConduit(deed, intercessor string, cmd *exec.Cmd, x Exaltation) (*conduit, error) {
 	fds, err := unix.Socketpair(unix.AF_UNIX, unix.SOCK_STREAM|unix.SOCK_CLOEXEC, 0)
 	if err != nil {
 		return nil, fmt.Errorf("%s is refused: no channel to the exalted servitor can be laid: %w", deed, err)
 	}
 	ours, theirs := os.NewFile(uintptr(fds[0]), "servitor"), os.NewFile(uintptr(fds[1]), "exalted servitor")
-	wait, err := summoner(cmd, theirs)
+	wait, err := x.summoner()(cmd, theirs)
 	_ = theirs.Close()
 	if err != nil {
 		_ = ours.Close()
 		return nil, fmt.Errorf("%s is refused: the intercessor %s cannot be called upon: %w", deed, intercessor, err)
 	}
-	return &conduit{ours: ours, ch: exalted.NewChannel(ours, ours), wait: wait}, nil
+	return &conduit{ours: ours, ch: exalted.NewChannel(ours, ours), wait: wait, answered: x.Answered}, nil
+}
+
+// answer hears the first answer of the exalted servitor; once it is heard,
+// or the channel ended before it, the intercessor asks the master no more.
+func (c *conduit) answer() (exalted.Reply, error) {
+	r, err := c.ch.Answer()
+	c.tell()
+	return r, err
+}
+
+// tell tells, once, that the intercessor asks the master no more.
+func (c *conduit) tell() {
+	c.told.Do(func() {
+		if c.answered != nil {
+			c.answered()
+		}
+	})
 }
 
 // silence lets the exalted servitor hear no more words, and the invoker's
@@ -113,28 +143,30 @@ func raiseConduit(deed, intercessor string, cmd *exec.Cmd, summoner Summoner) (*
 // hears the end of its channel.
 func (c *conduit) silence() { _ = unix.Shutdown(int(c.ours.Fd()), unix.SHUT_RDWR) }
 
-// end awaits the end of the intercessor, once, and closes the channel.
+// end awaits the end of the intercessor, once, and closes the channel; an
+// intercessor that ended asks the master no more.
 func (c *conduit) end() error {
 	c.once.Do(func() {
 		c.ended = c.wait()
 		_ = c.ours.Close()
+		c.tell()
 	})
 	return c.ended
 }
 
-// exalt raises the exalted servitor through cmd, speaks to it with speak,
-// and hears its one answer. The end of the channel before any answer is
-// *Dismissed when the intercessor ended amiss; an exalted servitor of
-// another protocol is *exalted.Mismatch.
-func exalt(deed, intercessor string, cmd *exec.Cmd, summoner Summoner, speak func(*exalted.Channel) error) (
+// exalt raises the exalted servitor through cmd as x summons it, speaks to
+// it with speak, and hears its one answer. The end of the channel before
+// any answer is *Dismissed when the intercessor ended amiss; an exalted
+// servitor of another protocol is *exalted.Mismatch.
+func exalt(deed, intercessor string, cmd *exec.Cmd, x Exaltation, speak func(*exalted.Channel) error) (
 	exalted.Reply, error) {
-	c, err := raiseConduit(deed, intercessor, cmd, summoner)
+	c, err := raiseConduit(deed, intercessor, cmd, x)
 	if err != nil {
 		return exalted.Reply{}, err
 	}
 	spoken := make(chan error, 1)
 	go func() { spoken <- speak(c.ch) }()
-	reply, err := c.ch.Answer()
+	reply, err := c.answer()
 	if err != nil {
 		c.silence()
 	}

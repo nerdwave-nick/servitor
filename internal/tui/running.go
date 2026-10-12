@@ -31,6 +31,9 @@ type (
 		// hungUp tells that the terminal hung up while the invocation was
 		// performed: the cogitator ends now that it has ended.
 		hungUp bool
+		// words are what the intercessor and the exalted servitor spoke
+		// upon stderr.
+		words string
 	}
 )
 
@@ -57,9 +60,17 @@ type runningScreen struct {
 	halting      bool
 }
 
+// isRunning tells that an invocation is performed, or that the
+// intercessor asks the master's proof for a sanctioning or an abjuring:
+// the cogitator does not end before it has ended.
 func (m *model) isRunning() bool {
-	_, ok := m.screen.(*runningScreen)
-	return ok
+	switch s := m.screen.(type) {
+	case *runningScreen:
+		return true
+	case *sanctionScreen:
+		return s.proving
+	}
+	return false
 }
 
 // invoke performs rite into aspect, inscribed by runes, in its own
@@ -71,6 +82,10 @@ func (m *model) isRunning() bool {
 // neither halts it nor ends the cogitator before it has ended. An
 // interrupt or SIGTERM sent to the cogitator halts and reverts it, as
 // ctrl+c does.
+//
+// Its exalted verses are performed by the exalted servitor alone, raised
+// through the cogitator's intercession; run0 is bidden forget the master's
+// proof once it has ended.
 func (m *model) invoke(r *librarium.Rite, aspect string, runes map[string]string) tea.Cmd {
 	ctx, halt := context.WithCancel(context.Background())
 	rs := &runningScreen{rite: r.Name, aspect: aspect, edict: r.Edict, halt: halt}
@@ -80,8 +95,9 @@ func (m *model) invoke(r *librarium.Rite, aspect string, runes map[string]string
 		}
 	}
 	m.screen = rs
-	s, send := m.s, m.send
-	p := rituals.Petition{Rite: r.Name, Aspect: aspect, Runes: runes, Herald: herald{send}}
+	s, send, c := m.s, m.send, m.intercede()
+	p := rituals.Petition{Rite: r.Name, Aspect: aspect, Runes: runes, Herald: herald{send},
+		Exaltation: c.exaltation()}
 	m.running.Add(1)
 	go func() {
 		defer m.running.Done()
@@ -90,7 +106,8 @@ func (m *model) invoke(r *librarium.Rite, aspect string, runes map[string]string
 		defer stop()
 		hangup := heedHangup()
 		res, err := s.Invoke(halted, p)
-		send(invokedMsg{res: res, err: err, hungUp: hangup()})
+		res.Laments = appendLament(res.Laments, c.forgotten())
+		send(invokedMsg{res: res, err: err, hungUp: hangup(), words: c.words.String()})
 	}()
 	return nil
 }
@@ -111,7 +128,10 @@ func heedHangup() (heard func() bool) {
 }
 
 // invoked ends the running panel: triumph is told in a toast, a fall or a
-// refusal in a modal.
+// refusal in a modal. A rite with exalted verses that is refused before
+// any verse — no intercessor found, the servitor not installed, a proof
+// dismissed, an exalted servitor of another forging or one that refused —
+// is told as a heresy, with the words its intercessor spoke.
 func (m *model) invoked(msg invokedMsg) tea.Cmd {
 	m.screen = nil
 	res, err := msg.res, msg.err
@@ -130,12 +150,24 @@ func (m *model) invoked(msg invokedMsg) tea.Cmd {
 		m.screen = newTextScreen("The pre-flight forbids the invocation",
 			m.t.text.Render(forbids+"; nothing was touched.")+"\n\n"+m.foresight(res, err))
 		return nil
+	case err != nil && res.Rite != nil && res.Rite.Exalted():
+		b := append([]string{m.t.danger.Render("✠ " + err.Error()), "", m.t.text.Render("Nothing was touched: " +
+			"not one verse of the " + riteNoun(edict) + " " + name + " was performed.")}, m.spoken(msg.words)...)
+		for _, l := range res.Laments {
+			b = append(b, m.t.warn.Render(l.Error()))
+		}
+		m.screen = newTextScreen("No exalted servitor was raised", strings.Join(b, "\n"))
+		return nil
 	case err != nil:
 		return m.notify(toastErr, err.Error())
 	}
 	m.last = &res
 	if out := res.Outcome; out.Verdict != invocation.Triumph {
-		m.screen = newTextScreen("The "+riteNoun(edict)+" "+name+" has fallen", m.fallen(*out, edict))
+		body := m.fallen(*out, edict)
+		if words := m.spoken(msg.words); words != nil {
+			body += "\n" + strings.Join(words, "\n")
+		}
+		m.screen = newTextScreen("The "+riteNoun(edict)+" "+name+" has fallen", body)
 		return nil
 	}
 	text := fmt.Sprintf("The rite %s is performed: %s → %s. The Omnissiah is pleased.", name,
@@ -195,6 +227,14 @@ func (s *runningScreen) view(m *model) string {
 
 func (s *runningScreen) hints(m *model) [][2]string {
 	return [][2]string{{"ctrl+c", "halt the " + riteNoun(s.edict)}}
+}
+
+// appendLament appends the lament err, when there is one.
+func appendLament(laments []error, err error) []error {
+	if err == nil {
+		return laments
+	}
+	return append(laments, err)
 }
 
 // progressBar is a bar of width cells filled for done of all; the step

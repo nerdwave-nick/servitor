@@ -14,6 +14,7 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/lexicon"
 	"github.com/nerdwave-nick/servitor/internal/librarium"
 	"github.com/nerdwave-nick/servitor/internal/rituals"
+	"github.com/nerdwave-nick/servitor/internal/sanction"
 )
 
 // Options configure the TUI.
@@ -37,6 +38,7 @@ func Run(opt Options) error {
 	p := tea.NewProgram(m, popts...)
 	m.send = p.Send
 	_, err := p.Run()
+	close(m.gone)
 	m.running.Wait() // a rite is never abandoned half performed
 	return err
 }
@@ -47,6 +49,11 @@ type row struct {
 	reading  rituals.Reading    // its augury; Rite is nil when it is heretical
 	heresies librarium.Findings // the heresies of a heretical rite
 	paths    []string           // its scriptures
+	// sanction is how the rite stands towards its sanction: as its augury
+	// tells, or forsaken when it holds no exalted verse yet a sanction is
+	// kept under its name; kept is that sanction as listed, if any.
+	sanction sanction.Standing
+	kept     *rituals.Sanctioned
 }
 
 // rite is the rite of the row, or nil when it is heretical.
@@ -99,14 +106,18 @@ type model struct {
 	toast   toast
 	thought int
 	screen  screen
-	running sync.WaitGroup // the invocation being performed, if any
+	running sync.WaitGroup // the invocation, sanctioning or abjuring being performed, if any
+	gone    chan struct{}  // closed once the cogitator has ended
+	// exec lends the terminal to a command, as tea.Exec does.
+	exec func(tea.ExecCommand, tea.ExecCallback) tea.Cmd
 }
 
 func newModel(dir string, runes librarium.Runes) *model {
 	f := textinput.New()
 	f.Prompt = "/ "
 	m := &model{dir: dir, runes: runes, t: newTheme(), filter: f, send: func(tea.Msg) {},
-		thought: int(time.Now().UnixNano() % int64(len(lexicon.Thoughts))), width: 100, height: 30}
+		thought: int(time.Now().UnixNano() % int64(len(lexicon.Thoughts))), width: 100, height: 30,
+		gone: make(chan struct{}), exec: tea.Exec}
 	m.reload("")
 	return m
 }
@@ -122,10 +133,19 @@ func (m *model) reload(selected string) {
 	}
 	m.s = rituals.Open(m.dir, m.runes)
 	lib := m.s.Librarium
+	kept := map[string]*rituals.Sanctioned{}
+	list, _ := m.s.ListSanctions() // a sanction that cannot be read lapses its rite in the augury
+	for i := range list {
+		kept[list[i].Rite] = &list[i]
+	}
 	m.all = m.all[:0]
 	for _, name := range lib.Names() {
 		reading, _ := m.s.Augur(name, false)
-		r := row{name: name, reading: reading, paths: lib.Scriptures[name]}
+		r := row{name: name, reading: reading, paths: lib.Scriptures[name], sanction: reading.Sanction,
+			kept: kept[name]}
+		if r.kept != nil && r.kept.Standing == sanction.Forsaken {
+			r.sanction = sanction.Forsaken
+		}
 		for _, f := range lib.Findings {
 			if f.Rite == name && f.Severity == librarium.Heresy {
 				r.heresies = append(r.heresies, f)
@@ -186,6 +206,13 @@ func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit // the terminal is gone; the rite has ended
 		}
 		return m, cmd
+	case provenMsg:
+		return m, m.proven(msg)
+	case lendMsg:
+		return m, m.lend(msg.l)
+	case reclaimedMsg:
+		msg.l.forgo(msg.err)
+		return m, nil
 	case tea.KeyPressMsg:
 		if msg.String() == "ctrl+c" && !m.isRunning() {
 			return m, tea.Quit

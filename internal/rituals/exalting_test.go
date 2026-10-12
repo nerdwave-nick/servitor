@@ -393,7 +393,7 @@ func TestInvoke_AFallRevertsBothKindsWithOneProof(t *testing.T) {
 }
 
 // TestInvoke_RefusalsTouchNothing: an exalted rite unsanctioned or lapsed,
-// lent no intercessor (the cogitator), bearing a rune for an inscription
+// lent no intercessor, bearing a rune for an inscription
 // spliced into its exalted words or a word exalted speech may not hear, or
 // whose dominion cannot be held, is refused before any proof is asked; a
 // proof the master dismissed, an intercessor nowhere to be found, and an
@@ -518,5 +518,42 @@ func TestInvoke_ForesightTellsTheSanction(t *testing.T) {
 	}
 	if len(tp.called()) != 0 || tp.said() != nil {
 		t.Error("foresight raised the exalted servitor")
+	}
+}
+
+// TestInvoke_TellsWhenTheExaltedServitorAnswers: an Exaltation that would
+// know when the intercessor asks the master no more (the cogitator, which
+// lends sudo its terminal) is told so once: when the exalted servitor first
+// answered, before any verse is performed, or when the channel ended
+// unanswered because the proof was dismissed. With no intercessor called
+// upon it is never told.
+func TestInvoke_TellsWhenTheExaltedServitorAnswers(t *testing.T) {
+	for _, c := range []struct {
+		name    string
+		present []string
+		spurn   bool
+		told    int
+	}{
+		{name: "vouched", present: []string{"sudo"}, told: 1},
+		{name: "dismissed", present: []string{"sudo"}, spurn: true, told: 1},
+		{name: "no intercessor"},
+	} {
+		t.Run(c.name, func(t *testing.T) {
+			tp := newTemple(t, c.present...)
+			tp.rite("hallow", hallow)
+			tp.sanctify("hallow")
+			tp.spurn = c.spurn
+			told := 0
+			var saidWhenTold []string
+			x := &Exaltation{Answered: func() { told++; saidWhenTold = tp.said() }}
+			res, err := tp.servitor().Invoke(context.Background(), Petition{Rite: "hallow", Aspect: "on",
+				Exaltation: x})
+			if c.name == "vouched" && (err != nil || res.Outcome == nil || res.Outcome.Verdict != invocation.Triumph) {
+				t.Fatalf("%v %+v", err, res.Outcome)
+			}
+			if told != c.told || saidWhenTold != nil {
+				t.Errorf("told %d times, the verses having said %q", told, saidWhenTold)
+			}
+		})
 	}
 }

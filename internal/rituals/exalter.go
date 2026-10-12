@@ -34,11 +34,12 @@ type exalter struct {
 // the former aspect and the words of the inscriptions. A proof the master
 // dismissed or failed is *Dismissed, an exalted servitor of another
 // forging *exalted.Mismatch, one that refused *Spurned; each is a refusal
-// before anything was touched.
-func (s *Servitor) raise(r *librarium.Rite, res *Result, x *exaltedPlan, summoner Summoner) (*exalter, error) {
+// before anything was touched. The exalted servitor is summoned as ex
+// summons it.
+func (s *Servitor) raise(r *librarium.Rite, res *Result, x *exaltedPlan, ex Exaltation) (*exalter, error) {
 	aspect := res.Options.Aspect
 	e := &exalter{deed: invocationOf(r, aspect), intercessor: x.intercessor.Name}
-	c, err := raiseConduit(e.deed, e.intercessor, x.intercessor.Command(r.Name, x.sigil, aspect), summoner)
+	c, err := raiseConduit(e.deed, e.intercessor, x.intercessor.Command(r.Name, x.sigil, aspect), ex)
 	if err != nil {
 		return nil, err
 	}
@@ -47,7 +48,7 @@ func (s *Servitor) raise(r *librarium.Rite, res *Result, x *exaltedPlan, summone
 	maps.Copy(inscriptions, res.Options.Inscriptions)
 	_ = c.ch.Send(exalted.Handshake{Protocol: exalted.Protocol, UID: s.sanctions().UID, Rite: r.Name, Aspect: aspect,
 		Sigil: x.sigil, Former: res.Options.Former, Inscriptions: inscriptions}) // an exalted servitor never raised answers nothing
-	reply, err := c.ch.Answer()
+	reply, err := c.answer()
 	if err != nil {
 		c.silence()
 		return nil, unanswered(e.deed, e.intercessor, err, c.end())

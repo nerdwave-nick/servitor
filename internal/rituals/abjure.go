@@ -61,7 +61,7 @@ func (s *Servitor) Abjure(name string, x Exaltation) ([]string, error) {
 		return nil, fmt.Errorf("%s is refused, and nothing was struck: %w", deed, err)
 	}
 	words := exalted.Abjuring{Protocol: exalted.Protocol, UID: store.UID, Rite: name, All: name == ""}
-	r, err := exalt(deed, i.Name, i.Abjure(name), x.summoner(),
+	r, err := exalt(deed, i.Name, i.Abjure(name), x,
 		func(ch *exalted.Channel) error { return ch.Send(words) })
 	switch {
 	case err != nil:

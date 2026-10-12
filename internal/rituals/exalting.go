@@ -66,7 +66,7 @@ func (s *Servitor) exaltation(r *librarium.Rite, p Petition, res *Result) (*exal
 	}
 	if p.Exaltation == nil {
 		return nil, unexalted(r, fmt.Sprintf("this invocation was lent no intercessor to raise the exalted servitor "+
-			"(the cogitator lends none yet) — invoke it at a terminal: servitor invoke %s", strings.TrimSpace(r.Name+
+			"— invoke it at a terminal: servitor invoke %s", strings.TrimSpace(r.Name+
 			" "+p.Aspect)))
 	}
 	i, err := Intercession.Find(s.Librarium.Settings.Intercessor)

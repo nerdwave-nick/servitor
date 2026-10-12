@@ -10,8 +10,9 @@
 // pkexec, when none does; a value of its own calls upon that one alone.
 // Command speaks the exact words that raise the exalted servitor through
 // it for an invocation, Sanction and Abjure those that raise it to keep the
-// store of sanctions. Every lament of Find is a refusal before anything was
-// touched.
+// store of sanctions, and Forgetting those that bid run0 forget the proof
+// once the cogitator's act through it has ended. Every lament of Find is a
+// refusal before anything was touched.
 package intercessor
 
 import (
@@ -212,3 +213,25 @@ func (u *Unenshrined) Error() string {
 }
 
 func (u *Unenshrined) Unwrap() error { return u.Err }
+
+// Named names the intercessor cmd calls upon ("" for none).
+func Named(cmd *exec.Cmd) string {
+	if len(cmd.Args) == 0 {
+		return ""
+	}
+	return cmd.Args[0]
+}
+
+// Forgetting is the intercessor cmd calls upon, bidden forget the proof
+// its master gave so that the next is asked anew. Its words are exact:
+//
+//	run0 -k
+//
+// sudo forgets as it is called (-k) and pkexec keeps no proof: they are
+// bidden nothing (nil).
+func Forgetting(cmd *exec.Cmd) *exec.Cmd {
+	if Named(cmd) != librarium.IntercessorRun0 {
+		return nil
+	}
+	return &exec.Cmd{Path: cmd.Path, Args: []string{librarium.IntercessorRun0, "-k"}}
+}

@@ -7,6 +7,7 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/augury"
 	"github.com/nerdwave-nick/servitor/internal/invocation"
 	"github.com/nerdwave-nick/servitor/internal/librarium"
+	"github.com/nerdwave-nick/servitor/internal/sanction"
 )
 
 const labelW = 13
@@ -40,7 +41,11 @@ func (m *model) detailView(w int) string {
 	if a.Desecrated {
 		line += t.dim.Render(" (the data-slate recorded " + a.Former + ")")
 	}
-	b = append(b, line, label("last rite")+m.lastRite(a.LastRite))
+	b = append(b, line)
+	if r.sanction != sanction.None {
+		b = append(b, label("sanction")+m.sanctionLine(r))
+	}
+	b = append(b, label("last rite")+m.lastRite(a.LastRite))
 	b = append(b, label("inscriptions")+m.inscriptionLine(rite, a))
 	b = append(b, "", label("liturgy"))
 	for _, l := range m.liturgy(rite, a) {
@@ -71,6 +76,30 @@ func (m *model) aspectsLine(rite *librarium.Rite, a augury.Augury, label func(st
 		}
 	}
 	return label("aspects") + strings.Join(aspects, "  ")
+}
+
+// sanctionLine tells how the rite stands towards its sanction, and what s
+// does about it.
+func (m *model) sanctionLine(r *row) string {
+	t := m.t
+	head := m.sanctionGlyph(r.sanction) + " " + string(r.sanction)
+	switch r.sanction {
+	case sanction.Sanctioned:
+		if r.kept != nil {
+			return head + t.dim.Render(" · sigil "+sanction.Short(r.kept.Sigil)+" · "+
+				r.kept.SanctionedAt.Local().Format("2006-01-02 15:04"))
+		}
+		return head
+	case sanction.Lapsed:
+		since := ""
+		if r.kept != nil {
+			since = " since sigil " + sanction.Short(r.kept.Sigil)
+		}
+		return head + t.dim.Render(since+" · s to sanction anew")
+	case sanction.Unsanctioned:
+		return head + t.dim.Render(" · s to sanction its exalted verses")
+	}
+	return head + t.dim.Render(" · no exalted verse — s, then a, to abjure")
 }
 
 func (m *model) lastRite(lr *augury.LastRite) string {
@@ -115,7 +144,8 @@ func (m *model) omenMark(o *augury.Omen, aspect string) string {
 }
 
 // liturgy is one line per step: its omen, verse, kind glyph and what its
-// own key holds. An edict reveals no omen, so its steps bear no mark.
+// own key holds, an exalted verse marked ✠. An edict reveals no omen, so
+// its steps bear no mark.
 func (m *model) liturgy(rite *librarium.Rite, a augury.Augury) []string {
 	t := m.t
 	omens, tainted := map[int]*augury.Omen{}, map[int]bool{}
@@ -128,8 +158,12 @@ func (m *model) liturgy(rite *librarium.Rite, a augury.Augury) []string {
 	lines := make([]string, len(rite.Liturgy))
 	for i, step := range rite.Liturgy {
 		o := omens[i+1]
+		glyph := kindGlyph(step.Kind())
+		if librarium.IsExalted(step) {
+			glyph += " ✠"
+		}
 		line := t.dim.Render(fmt.Sprintf("%d", i+1)) + " " +
-			t.accent.Render(kindGlyph(step.Kind())) + " " + t.text.Render(stepWords(step, a.Aspect))
+			t.accent.Render(glyph) + " " + t.text.Render(stepWords(step, a.Aspect))
 		if !rite.Edict {
 			line = m.omenMark(o, a.Aspect) + " " + line
 		}

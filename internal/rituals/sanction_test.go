@@ -287,8 +287,7 @@ func TestSanction_TheVigilLamentsTheForsakenFirst(t *testing.T) {
 // TestInvoke_TheRefusalNamesTheStanding: the invocation of an exalted rite
 // unsanctioned or lapsed is refused before any proof is asked, and the
 // refusal names the standing and the ritual of the sanction; a sanctioned
-// rite lent no intercessor (as the cogitator lends none yet) is refused
-// too. Nothing is touched.
+// rite lent no intercessor is refused too. Nothing is touched.
 func TestInvoke_TheRefusalNamesTheStanding(t *testing.T) {
 	sc := newSanctuary(t)
 	for rite, c := range map[string]struct {

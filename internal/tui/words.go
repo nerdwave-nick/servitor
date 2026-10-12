@@ -11,9 +11,14 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/librarium"
 )
 
-// verseName names a verse as "verse 2 · tether <target>".
+// verseName names a verse as "verse 2 · tether <target>", an exalted verse
+// as "verse 2 · tether ✠ <target>".
 func verseName(v invocation.Verse) string {
-	return strings.TrimSpace(fmt.Sprintf("verse %d · %s %s", v.Number, v.Kind.Key(), shortPath(v.Target)))
+	kind := v.Kind.Key()
+	if v.Exalted {
+		kind += " ✠"
+	}
+	return strings.TrimSpace(fmt.Sprintf("verse %d · %s %s", v.Number, kind, shortPath(v.Target)))
 }
 
 // riteNoun names what is invoked: an edict, or a rite.
