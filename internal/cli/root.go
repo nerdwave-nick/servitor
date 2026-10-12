@@ -14,6 +14,7 @@ import (
 	"github.com/charmbracelet/x/term"
 	"github.com/spf13/cobra"
 
+	"github.com/nerdwave-nick/servitor/internal/exalted"
 	"github.com/nerdwave-nick/servitor/internal/librarium"
 	"github.com/nerdwave-nick/servitor/internal/rituals"
 	"github.com/nerdwave-nick/servitor/internal/tui"
@@ -152,6 +153,12 @@ func runeError(err error) string {
 
 // Execute runs the CLI and returns the process exit code.
 func Execute(args []string, stdout, stderr io.Writer) int {
+	// The exalted servitor bears the machine's own authority by design: it
+	// is roused before the refusal of every ritual performed as root, and it
+	// never reads the world of the invoker sudo names, nor any Librarium.
+	if len(args) > 0 && args[0] == exalted.Mode {
+		return exalted.Rouse(args[1:], stderr)
+	}
 	if err := inheritInvokersWorld(); err != nil {
 		fmt.Fprintln(stderr, "servitor ✠ "+err.Error())
 		return markRefused

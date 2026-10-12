@@ -1,0 +1,56 @@
+The servitor roused with the machine's own authority to perform the exalted verses of one invocation
+
+The exalted servitor is no ritual of its own. It is the servitor installed at
+/usr/bin/servitor, roused by the intercessor for one invocation alone, as
+
+  /usr/bin/servitor __exalt <rite> <sigil> [<aspect>]
+
+where the sigil is the first twelve letters of the sigil of the plan it is to
+perform, and an edict names no aspect. It bears the machine's own authority,
+and refuses to begin without it: roused by hand it says so, touches nothing
+and bears the death-mark 2. It is never listed among the rituals, and it
+never reads the Librarium, the settings, the data-slates or the chronicle of
+the one who invokes it, nor the home that sudo names.
+
+It hears the invoker's servitor over one channel alone: a socketpair upon its
+descriptors 0 and 1, in strict JSON lines of at most 1 MiB, every member
+known. The first line names the protocol, the master, the rite, the aspect
+and the whole sigil; each must agree with the words that roused it, and the
+master with the uid the machine knows at the other end of the channel (or
+with SUDO_UID, when sudo lays pipes between them). A servitor forged anew
+that speaks another protocol than the one installed is refused: install the
+servitor anew, so that both are of one forging. The words given at
+invocation, the former aspect and the runes of inscriptions, travel in that
+first line too, at most 4 KiB each, never bearing a NUL or a newline.
+
+It then reads the sanction of the master from the root's store, following no
+tether and trusting nothing the root did not lay, and performs only the plan
+of that sanction that bears the sigil it was given: never the rite as the
+invoker holds it now. Before the first verse it seizes a dominion of its own
+beneath /run/servitor/dominions/, over the master's rite and over every
+exalted vessel and bound name, waiting as every invocation waits. A dominion
+it cannot hold refuses the invocation before anything is touched.
+
+Thereafter it hears four words alone: perform the next exalted verse, revert
+the last one performed, finish, abort. A word out of its order, or a second
+plan, is refused, and ends the session. Of a vessel it tells only whether it
+changed, its size and its SHA-256, never its scripture. Its vessels and
+tethers are walked from the root through halls the root alone may write, and
+transcribed atomically, keeping their owner and seal. Exalted speech is not
+yet granted it: a plan holding an exalted incantation or litany is refused
+before anything is touched.
+
+Should its invoker fall before finish (the channel ends, ten minutes pass
+without a word, or SIGTERM reaches it), it reverts every verse it performed,
+from the last back to the first, and ends. It dwells at the root of the
+machine with umask 022, dumps no core, lets no descriptor pass to what it
+summons, and heeds no interrupt, hang-up or halt of the terminal. Each of
+its acts is kept in the journal of the machine: uid, rite, aspect, verse,
+sigil and verdict.
+
+Kindred passages: exalted, sanction, sigil, intercessor, dominion, verdicts
+
+Exempla:
+  journalctl -t servitor
+  … servitor: uid=1000 rite="split-lock" aspect="on" verse=1 sigil=4f0c2a9e1b7d deed=perform verdict=triumph
+  … servitor: uid=1000 rite="split-lock" aspect="on" sigil=4f0c2a9e1b7d deed=finish verdict=finished
