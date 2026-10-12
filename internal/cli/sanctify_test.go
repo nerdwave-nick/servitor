@@ -117,8 +117,10 @@ func (e *env) raiseAltar(present ...string) *altar {
 	me := uint32(os.Getuid())
 	mine := func(uid uint32) bool { return uid == me }
 	a.cfg = exalted.Config{
-		Exalted:   func() bool { return true },
-		Getenv:    func(k string) (string, bool) { return map[string]string{"SUDO_UID": strconv.Itoa(int(me))}[k], k == "SUDO_UID" },
+		Exalted: func() bool { return true },
+		Getenv: func(k string) (string, bool) {
+			return map[string]string{"SUDO_UID": strconv.Itoa(int(me))}[k], k == "SUDO_UID"
+		},
 		Store:     rituals.SanctionRoot,
 		Sovereign: mine,
 		Ground:    hallowed.Ground{Root: w.Ground.Root, Sovereign: mine, Lord: hallowed.Owner{UID: me, GID: uint32(os.Getgid())}},
