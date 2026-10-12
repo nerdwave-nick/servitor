@@ -26,7 +26,9 @@ Impurities are noted but forgiven: tongues spoken nowhere on this machine,
 vessels missing without "consecrate", anchors missing for some aspect, the
 scroll of an edict's litany that stands nowhere, mandatory inscriptions
 without a decree for some aspect, a "success" vox-cast that is not the last
-step, tainted sanctums and desecrated rites.
+step, tainted sanctums, desecrated rites, an exalted rite that stands
+unsanctioned or whose sanction lapsed, and a forsaken sanction, found at
+the head of its sanction.
 
 To weigh the vessels, anchors and desecration, the Inquisition reads the
 omens of every rite and awakens its auspex. The machine is weighed for every
@@ -43,7 +45,8 @@ denunciation.
 The Inquisition exits 1 when any heresy was found, and 0 when only
 impurities, or nothing at all, were found.
 
-Kindred passages: heresy, spare-vessels, binharic, standing, census, pattern
+Kindred passages: heresy, spare-vessels, binharic, standing, census, pattern,
+sanction
 
 Exempla:
   servitor inquisition

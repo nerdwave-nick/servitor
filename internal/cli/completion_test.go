@@ -49,8 +49,8 @@ func TestCompletion_Callbacks(t *testing.T) {
 		{[]string{"invoke", "mouse-autohide-toggle", "on", "--reason", ""}, nil},
 		{[]string{"invoke", "unknown", ""}, nil},
 		{[]string{"augury", ""}, []string{"broken", "mouse-autohide-toggle", "theme"}},
-		{[]string{"augury", "mouse-autohide-toggle", ""}, []string{"aspect", "standing", "desecrated", "former", "reason", "example-key"}},
-		{[]string{"augury", "broken", ""}, []string{"aspect", "standing", "desecrated", "former"}},
+		{[]string{"augury", "mouse-autohide-toggle", ""}, []string{"aspect", "standing", "desecrated", "former", "sanction", "reason", "example-key"}},
+		{[]string{"augury", "broken", ""}, []string{"aspect", "standing", "desecrated", "former", "sanction"}},
 		{[]string{"augury", "theme", "--is", ""}, []string{"dark", "light", "auto"}},
 		{[]string{"inquisition", "theme", ""}, []string{"broken", "mouse-autohide-toggle"}},
 	}
@@ -105,7 +105,7 @@ func TestCompletion_LibrariumRune(t *testing.T) {
 func TestCompletion_Rituals(t *testing.T) {
 	e := newEnv(t)
 	got, _ := e.complete("")
-	want := []string{"augury", "census", "cogitator", "completion", "expound", "inquisition", "invoke"}
+	want := []string{"augury", "census", "cogitator", "completion", "expound", "inquisition", "invoke", "sanction"}
 	if !slices.Equal(got, want) {
 		t.Fatalf("rituals = %v, want %v", got, want)
 	}

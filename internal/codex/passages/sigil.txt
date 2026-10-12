@@ -1,0 +1,24 @@
+The mark that seals a sanction, drawn from every word of a rite's exalted verses
+
+A sigil is drawn from the sanction itself: everything the rite's exalted
+verses do, written in one canonical form (RFC 8785) and reduced by SHA-256
+to sixty-four letters. The same verses always yield the same sigil, and any
+change to them — a word of an exalted command or reversion, a vessel, an
+anchor, a seal, the tongue, the patience, a scroll, a relic, a tome or the
+decree of an inscription spliced into them — yields another.
+
+A rite bears one sigil for all its exalted verses, and one more for each
+aspect: the sigil of the sanction narrowed to that aspect alone. An edict,
+which bears no aspect, has but one. Common verses touch no sigil.
+
+A rite whose sigil no longer matches the sigil of its sanction has lapsed,
+and must be sanctioned anew before its exalted verses are performed. The
+first twelve letters name the sigil in the list of sanctions, in the proof
+the master is asked for and in the chronicle; the binharic list speaks it
+whole, under the key "sigil".
+
+Kindred passages: sanction, exalted, relics
+
+Exempla:
+  servitor sanction
+  servitor sanction --binharic | jq -r '.[] | "\(.rite) \(.sigil)"'

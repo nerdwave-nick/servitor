@@ -40,7 +40,11 @@ hands altered, each named by its verse; the augury of an edict speaks its
 "standing" alone among these. The census bears "standing" and "desecrated"
 for every rite, an edict's desecrated ever false.
 
-Kindred passages: omens, data-slate, augury, census, heresy, edict
+How a rite stands towards the sanction of its exalted verses — sanctioned,
+lapsed or unsanctioned — is told apart, under "sanction"; the passage on the
+sanction tells all.
+
+Kindred passages: omens, data-slate, augury, census, heresy, edict, sanction
 
 Exempla:
   servitor augury mouse-autohide-toggle standing

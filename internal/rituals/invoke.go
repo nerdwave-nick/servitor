@@ -76,7 +76,7 @@ func (s *Servitor) Invoke(ctx context.Context, p Petition) (Result, error) {
 	}
 	res := Result{Rite: r}
 	if !p.Foresee {
-		if err := unexalted(r); err != nil {
+		if err := s.unexalted(r); err != nil {
 			res.Options = invocation.Options{Aspect: p.Aspect, Edict: r.Edict}
 			return res, err
 		}

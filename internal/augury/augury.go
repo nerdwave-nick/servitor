@@ -27,6 +27,7 @@ import (
 
 	"github.com/nerdwave-nick/servitor/internal/invocation"
 	"github.com/nerdwave-nick/servitor/internal/librarium"
+	"github.com/nerdwave-nick/servitor/internal/sanction"
 )
 
 // Standing is how a rite stands.
@@ -66,10 +67,13 @@ const (
 // Augury is what the servitor reads of one rite; it marshals as the JSON of
 // `servitor augury`.
 type Augury struct {
-	Rite       string
-	Edict      bool   // the rite is an edict, which bears no aspect
-	Aspect     string // "" when unknown
-	Standing   Standing
+	Rite     string
+	Edict    bool   // the rite is an edict, which bears no aspect
+	Aspect   string // "" when unknown
+	Standing Standing
+	// Sanction is how the rite stands towards its sanction; the augury
+	// leaves it None, for its reader to judge.
+	Sanction   sanction.Standing
 	Auspex     Heed   // what the auspex gave; its omen, when heeded, stands among Omens
 	Desecrated bool   // the omens agree on an aspect the data-slate did not record
 	Former     string // the data-slate's aspect, when desecrated

@@ -1,0 +1,53 @@
+List the sanctions of exalted verses, and how each rite stands towards its own
+
+No exalted verse is performed but as its master sanctioned it. A sanction is
+a copy of a rite's exalted verses laid where only the machine's own
+authority writes, sealed by its sigil:
+
+  /var/lib/servitor/sanctions/<uid>/<rite>.json
+
+It holds everything those verses do, for every aspect (once for an edict):
+their verses with their words and reversions rendered, the tongue as the
+whole path of its program, their patience, the words of every scroll, relic,
+tome and transcribed scripture, seal and zeal, the decree of every
+inscription spliced into them, and the names of the variables their speech
+hears. Common verses are no part of it: changing a vox-cast, or an
+incantation that is not exalted, changes no sanction.
+
+Spoken alone, the ritual lists every sanction laid for you, by rite: its
+standing, its sigil, and the hour it was sanctioned. Spoken plainly it is a
+table with the columns RITE, STANDING, SIGIL (its first twelve letters) and
+SANCTIONED AT; with --binharic a list of objects bearing rite, standing,
+sigil (whole) and sanctioned_at. The list only reads, needs no proof of the
+master, and exits 0.
+
+Every rite stands towards its sanction in one of these ways, which the
+census and the augury tell under the key "sanction":
+
+  sanctioned    ✠  its exalted verses are those its master sanctioned
+  lapsed        ☓  they changed since, or can no longer be read whole
+  unsanctioned  ○  it holds exalted verses, yet no sanction
+  forsaken      †  a sanction whose rite is gone, or holds no exalted verse
+  ""               the rite holds no exalted verse and needs no sanction
+
+The glyphs mark the rites of the census table and the sanctions of the
+list. A forsaken sanction belongs to no rite of the census: the census
+laments it apart, and the list names it. A heretical rite whose sanction
+is kept has lapsed.
+
+Spoken with a rite, the ritual sanctions its exalted verses with one proof
+of the master; this servitor cannot yet lay a sanction, and refuses it with
+the death-mark 2, writing nothing. Roused as root the ritual is refused in
+every form, its death-mark 2: sanctions are the master's, laid and read as
+themselves.
+
+The inquisition notes as impurities an exalted rite that stands unsanctioned
+or whose sanction lapsed, and every forsaken sanction; --spare-vessels
+spares them.
+
+Kindred passages: sigil, exalted, relics, census, augury, inquisition, invoke
+
+Exempla:
+  servitor sanction
+  servitor sanction --binharic | jq -r '.[] | select(.standing != "sanctioned") | .rite'
+  servitor augury split-lock sanction

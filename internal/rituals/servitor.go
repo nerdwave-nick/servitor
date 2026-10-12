@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/nerdwave-nick/servitor/internal/librarium"
+	"github.com/nerdwave-nick/servitor/internal/sanction"
 )
 
 // Servitor performs rituals upon one Librarium.
@@ -28,6 +29,9 @@ type Servitor struct {
 	Env librarium.Environment
 	// Now tells the moment an invocation ends; nil is time.Now.
 	Now func() time.Time
+	// Sanctions is the store of the master's sanctions, which the servitor
+	// only reads; nil is the store at SanctionRoot of the uid it serves.
+	Sanctions *sanction.Store
 }
 
 // Open loads the Librarium at dir.

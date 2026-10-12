@@ -43,3 +43,18 @@ func TestInscriptionVariable_NamesTheKeyInCapitals(t *testing.T) {
 		}
 	}
 }
+
+// TestSpliced_NamesTheInscriptionsSpokenOnce: the inscriptions spliced into
+// words are named once each, in the order first spoken; escaped marks,
+// undeclared inscriptions and other marks are not.
+func TestSpliced_NamesTheInscriptionsSpokenOnce(t *testing.T) {
+	text := "{{inscription.mode}} {{{{inscription.reason}} {{aspect}} {{inscription.nonesuch}} " +
+		"{{inscription.reason}} {{inscription.mode}} {{inscription.reason"
+	got := exalted.Spliced(text)
+	if strings.Join(got, ",") != "mode,reason" {
+		t.Errorf("Spliced = %q, want mode, reason", got)
+	}
+	if got := exalted.Spliced("echo {{aspect}}"); len(got) != 0 {
+		t.Errorf("Spliced = %q, want none", got)
+	}
+}

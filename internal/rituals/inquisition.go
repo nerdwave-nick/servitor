@@ -23,7 +23,8 @@ import (
 // its litanies (whose words bear the impurities of exaltation). The machine yields impurities — a tongue spoken
 // nowhere, a vessel missing that its sanctum may not consecrate, an anchor
 // missing for some aspect, an edict's scroll missing, a tainted sanctum, a
-// desecrated rite — and heresy for a vessel whose sanctum markers are
+// desecrated rite, an exalted rite unsanctioned or whose sanction lapsed,
+// a forsaken sanction — and heresy for a vessel whose sanctum markers are
 // broken. An edict's machine is examined once, as it bears no aspect.
 func (s *Servitor) Inquire(names []string, spareVessels bool) (librarium.Findings, error) {
 	lib := s.Librarium
@@ -51,8 +52,12 @@ func (s *Servitor) Inquire(names []string, spareVessels bool) (librarium.Finding
 		if !spareVessels {
 			e.machine()
 			e.omens(s)
+			e.sanction(s)
 		}
 		found = append(found, e.found...)
+	}
+	if !spareVessels {
+		found = append(found, s.forsakenFindings(wanted)...)
 	}
 	found.Sort()
 	return found, nil

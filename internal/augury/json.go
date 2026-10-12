@@ -5,13 +5,14 @@ import (
 	"encoding/json"
 
 	"github.com/nerdwave-nick/servitor/internal/invocation"
+	"github.com/nerdwave-nick/servitor/internal/sanction"
 )
 
 // MarshalJSON writes the augury in the shape of the codex: rite, edict
-// (false), aspect, standing, auspex, desecrated, former (only when
+// (false), aspect, standing, sanction, auspex, desecrated, former (only when
 // desecrated), inscriptions, canon, last_rite (null when never invoked),
 // omens and taint (lists, never null). An edict's is rite, edict (true),
-// standing, auspex (always ""), inscriptions, canon and last_rite alone.
+// standing, sanction, auspex (always ""), inscriptions, canon and last_rite alone.
 func (a Augury) MarshalJSON() ([]byte, error) {
 	inscriptions := a.Inscriptions
 	if inscriptions == nil {
@@ -26,17 +27,19 @@ func (a Augury) MarshalJSON() ([]byte, error) {
 			Rite         string            `json:"rite"`
 			Edict        bool              `json:"edict"`
 			Standing     Standing          `json:"standing"`
+			Sanction     sanction.Standing `json:"sanction"`
 			Auspex       Heed              `json:"auspex"`
 			Inscriptions map[string]string `json:"inscriptions"`
 			Canon        []Declaration     `json:"canon"`
 			LastRite     *LastRite         `json:"last_rite"`
-		}{a.Rite, true, a.Standing, NoAuspex, inscriptions, canon, a.LastRite})
+		}{a.Rite, true, a.Standing, a.Sanction, NoAuspex, inscriptions, canon, a.LastRite})
 	}
 	type binharic struct {
 		Rite         string            `json:"rite"`
 		Edict        bool              `json:"edict"`
 		Aspect       string            `json:"aspect"`
 		Standing     Standing          `json:"standing"`
+		Sanction     sanction.Standing `json:"sanction"`
 		Auspex       Heed              `json:"auspex"`
 		Desecrated   bool              `json:"desecrated"`
 		Former       string            `json:"former,omitempty"`
@@ -46,7 +49,7 @@ func (a Augury) MarshalJSON() ([]byte, error) {
 		Omens        []Omen            `json:"omens"`
 		Taint        []Taint           `json:"taint"`
 	}
-	b := binharic{Rite: a.Rite, Aspect: a.Aspect, Standing: a.Standing, Auspex: a.Auspex, Desecrated: a.Desecrated,
+	b := binharic{Rite: a.Rite, Aspect: a.Aspect, Standing: a.Standing, Sanction: a.Sanction, Auspex: a.Auspex, Desecrated: a.Desecrated,
 		Inscriptions: inscriptions, Canon: canon, LastRite: a.LastRite, Omens: a.Omens, Taint: a.Taint}
 	if a.Desecrated {
 		b.Former = a.Former

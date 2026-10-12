@@ -255,13 +255,13 @@ const edictCanon = "  \"canon\": [\n    {\n      \"key\": \"region\",\n      \"p
 func TestEdict_AuguryBearsNoAspect(t *testing.T) {
 	e := newEnv(t)
 	e.addRite("rites/capture.json", edictJSON)
-	dormant := "{\n  \"rite\": \"capture\",\n  \"edict\": true,\n  \"standing\": \"dormant\",\n" +
+	dormant := "{\n  \"rite\": \"capture\",\n  \"edict\": true,\n  \"standing\": \"dormant\",\n  \"sanction\": \"\",\n" +
 		"  \"auspex\": \"\",\n  \"inscriptions\": {},\n" + edictCanon + "  \"last_rite\": null\n}\n"
 	if out := e.mustRun("augury", "capture"); out != dormant {
 		t.Errorf("augury of a dormant edict:\n%s\nwant\n%s", out, dormant)
 	}
 	e.mustRun("invoke", "capture", "-s", "--region", "window")
-	proclaimed := regexp.MustCompile(`^\{\n  "rite": "capture",\n  "edict": true,\n  "standing": "proclaimed",\n` +
+	proclaimed := regexp.MustCompile(`^\{\n  "rite": "capture",\n  "edict": true,\n  "standing": "proclaimed",\n  "sanction": "",\n` +
 		`  "auspex": "",\n  "inscriptions": \{\n    "region": "window"\n  \},\n` + regexp.QuoteMeta(edictCanon) +
 		`  "last_rite": \{\n    "verdict": "triumph",\n    "at": "[0-9T:Z-]+"\n  \}\n\}\n$`)
 	if out := e.mustRun("augury", "capture"); !proclaimed.MatchString(out) {
@@ -282,7 +282,7 @@ func TestEdict_AuguryBearsNoAspect(t *testing.T) {
 		}
 		grimdark(t, errOut)
 	}
-	if out, errOut, code := e.run("augury", "capture", "nope"); code != 2 || !strings.Contains(errOut, "(keys: standing, region)") {
+	if out, errOut, code := e.run("augury", "capture", "nope"); code != 2 || !strings.Contains(errOut, "(keys: standing, sanction, region)") {
 		t.Errorf("an unknown key: exit %d\nstdout: %s\nstderr: %s", code, out, errOut)
 	}
 }
@@ -292,7 +292,7 @@ func TestEdict_AuguryBearsNoAspect(t *testing.T) {
 func TestEdict_AuguryCompletesNoSignOfAnAspect(t *testing.T) {
 	e := newEnv(t)
 	e.addRite("rites/capture.json", edictJSON)
-	if keys, _ := e.complete("augury", "capture", ""); !slices.Equal(keys, []string{"standing", "region"}) {
+	if keys, _ := e.complete("augury", "capture", ""); !slices.Equal(keys, []string{"standing", "sanction", "region"}) {
 		t.Errorf("the augury of an edict completes %v", keys)
 	}
 	if aspects, directive := e.complete("augury", "capture", "--is", ""); len(aspects) != 0 || directive != noFileComp {
