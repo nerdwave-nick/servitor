@@ -3,6 +3,7 @@ package invocation
 import (
 	"context"
 	"fmt"
+	"io/fs"
 	"os/exec"
 	"time"
 
@@ -17,7 +18,7 @@ func (p *preflight) incantation(s *librarium.Incantation) performer {
 		return nil
 	}
 	sp.Words, sp.Argv = words, []string{sp.Tongue, "-c", words}
-	if !p.speakable(sp.Tongue) {
+	if !p.speakable(sp.Tongue) || (p.exalted && !p.exaltedTongue(sp.Tongue)) {
 		return nil
 	}
 	return p.spoken(s.Kind(), sp)
@@ -49,6 +50,9 @@ func (p *preflight) litany(s *librarium.Litany) performer {
 	sp.Argv = litanyArgv(sp)
 	if (!sp.Shebang || sp.Reversion != "") && !p.speakable(sp.Tongue) {
 		return nil
+	}
+	if p.exalted && (!p.speakable(sp.Tongue) || !p.exaltedTongue(sp.Tongue)) {
+		return nil // the exalted servitor speaks every litany's tongue
 	}
 	return p.spoken(s.Kind(), sp)
 }
@@ -106,6 +110,8 @@ func recitable(w world, path string) (bool, error) {
 	switch {
 	case err != nil:
 		return false, lament(path, err)
+	case e.hidden():
+		return false, lament(real, fs.ErrPermission)
 	case e.form == absent:
 		return false, fmt.Errorf("no scroll stands at %s for the litany to recite", real)
 	case e.form != scroll:

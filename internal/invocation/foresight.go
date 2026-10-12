@@ -45,11 +45,21 @@ type VesselChange struct {
 	Existed, Exists bool   // whether the vessel stands before and after
 	BeforeSeal      fs.FileMode
 	AfterSeal       fs.FileMode
+	// Hidden tells that the invoker may not read the vessel of an exalted
+	// step: Before and After are unknown, and so is whether it changes.
+	// Owner ("user:group", "" when unknown) and Size (-1 when unknown) tell
+	// what stands; Digest is the SHA-256 of the scripture planned, "" when
+	// it is not known before the vessel is read.
+	Hidden bool
+	Owner  string
+	Size   int64
+	Digest string
 }
 
-// Changed reports whether the vessel changes at all.
+// Changed reports whether the vessel changes at all; a hidden vessel may,
+// for none can tell.
 func (c VesselChange) Changed() bool {
-	return c.Existed != c.Exists || c.Before != c.After || (c.Exists && c.BeforeSeal != c.AfterSeal)
+	return c.Hidden || c.Existed != c.Exists || c.Before != c.After || (c.Exists && c.BeforeSeal != c.AfterSeal)
 }
 
 // Diff returns the lines that differ, prefixed with "- " and "+ ", between
@@ -63,10 +73,13 @@ type TetherChange struct {
 	// Displaced is true when a vessel that was no tether is cast down by
 	// zeal to make room.
 	Displaced bool
+	// Hidden tells that the invoker may not behold what stands at the name
+	// of an exalted tether: From is unknown, and so is whether it changes.
+	Hidden bool
 }
 
-// Changed reports whether the tether changes at all.
-func (c TetherChange) Changed() bool { return c.From != c.To || c.Displaced }
+// Changed reports whether the tether changes at all; a hidden name may.
+func (c TetherChange) Changed() bool { return c.Hidden || c.From != c.To || c.Displaced }
 
 func diffLines(before, after string) []string {
 	if before == after {

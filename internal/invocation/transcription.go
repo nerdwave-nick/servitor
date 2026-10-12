@@ -16,7 +16,7 @@ func (p *preflight) transcription(s *librarium.Transcription) performer {
 	if !okVessel || !okText {
 		return nil
 	}
-	t := transcribed{vessel: vessel, text: text, null: null, seal: s.Seal, zeal: s.Zeal}
+	t := transcribed{vessel: vessel, text: text, null: null, seal: s.Seal, zeal: s.Zeal, exalted: p.exalted}
 	if !s.Zeal {
 		t.known = p.known(s.Scripture)
 	}
@@ -31,6 +31,9 @@ type transcribed struct {
 	seal   *fs.FileMode // nil keeps the seal of a standing vessel
 	zeal   bool
 	known  []string // the scripture of every aspect, by which the vessel is recognised
+	// exalted: performed by the exalted servitor, whose vessel the invoker
+	// may be forbidden to read
+	exalted bool
 }
 
 // plan computes the vessel transcribed anew or struck. A standing vessel is
@@ -39,6 +42,12 @@ func (t transcribed) plan(w world) (VesselChange, error) {
 	real, e, err := follow(w, t.vessel)
 	if err != nil {
 		return VesselChange{}, lament(t.vessel, err)
+	}
+	if e.hidden() {
+		if !t.exalted {
+			return VesselChange{}, lament(real, fs.ErrPermission)
+		}
+		return hiddenChange(real, e, &t.text, t.seal, t.null), nil
 	}
 	c := VesselChange{Path: real, Before: e.content, Existed: e.form == scroll, BeforeSeal: e.mode}
 	switch e.form {

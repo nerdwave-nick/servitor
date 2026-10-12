@@ -2,6 +2,7 @@ package invocation
 
 import (
 	"fmt"
+	"io/fs"
 	"strings"
 
 	"github.com/nerdwave-nick/servitor/internal/librarium"
@@ -30,18 +31,26 @@ func (p *preflight) sanctum(s *librarium.Sanctum) performer {
 			return nil
 		}
 	}
-	aspect, consecrate := p.opts.Aspect, s.Consecrate
+	aspect, consecrate, exalted := p.opts.Aspect, s.Consecrate, p.exalted
 	return p.vessel(p.verse(s.Kind(), vessel), "sanctum", func(w world) (VesselChange, error) {
-		return planSanctum(w, vessel, consecrate, m, aspect, text)
+		return planSanctum(w, vessel, consecrate, m, aspect, text, exalted)
 	})
 }
 
 // planSanctum computes the vessel with the sanctum of m rewritten for
-// aspect, consecrating the vessel when allowed.
-func planSanctum(w world, vessel string, consecrate bool, m sanctum.Marker, aspect, text string) (VesselChange, error) {
+// aspect, consecrating the vessel when allowed. The vessel of an exalted
+// sanctum may be hidden from the invoker: its change is then unknown.
+func planSanctum(w world, vessel string, consecrate bool, m sanctum.Marker, aspect, text string,
+	exalted bool) (VesselChange, error) {
 	real, e, err := follow(w, vessel)
 	if err != nil {
 		return VesselChange{}, lament(vessel, err)
+	}
+	if e.hidden() {
+		if !exalted {
+			return VesselChange{}, lament(real, fs.ErrPermission)
+		}
+		return hiddenChange(real, e, nil, nil, false), nil
 	}
 	c := VesselChange{Path: real, Before: e.content, Existed: e.form == scroll, Exists: true,
 		BeforeSeal: e.mode, AfterSeal: e.mode}

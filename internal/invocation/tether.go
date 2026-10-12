@@ -3,6 +3,7 @@ package invocation
 import (
 	"context"
 	"fmt"
+	"io/fs"
 
 	"github.com/nerdwave-nick/servitor/internal/librarium"
 )
@@ -17,7 +18,7 @@ func (p *preflight) tether(s *librarium.Tether) performer {
 		p.denounce(field, "no anchor is written for the aspect %q, and no \"*\" serves in its stead", p.opts.Aspect)
 		return nil
 	}
-	t := &tethered{name: name, unbind: anchor.Null, zeal: s.Zeal}
+	t := &tethered{name: name, unbind: anchor.Null, zeal: s.Zeal, exalted: p.exalted}
 	okAnchor := true
 	if !anchor.Null {
 		t.anchor, okAnchor = p.path(field, anchor.Path)
@@ -48,6 +49,7 @@ type tethered struct {
 	anchor  string // "" when unbound
 	unbind  bool
 	zeal    bool
+	exalted bool // bound by the exalted servitor, whose names may be hidden from the invoker
 	planned TetherChange
 	done    *entry // what stood at the name before perform changed it
 }
@@ -62,6 +64,11 @@ func (t *tethered) plan(w world) (TetherChange, entry, error) {
 	}
 	c := TetherChange{Name: t.name, To: t.anchor}
 	switch e.form {
+	case veiled:
+		if !t.exalted {
+			return TetherChange{}, entry{}, lament(t.name, fs.ErrPermission)
+		}
+		c.Hidden = true
 	case bond:
 		c.From = e.anchor
 	case absent:

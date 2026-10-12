@@ -140,7 +140,7 @@ func TestPerformAll_RevertsFromTheFallenStepBackToTheFirst(t *testing.T) {
 		performers[i] = s
 	}
 
-	out := performAll(context.Background(), performers, nil)
+	out := performAll(context.Background(), performers, nil, nil)
 
 	if out.Fell == nil || out.Fell.Number != 4 || out.Fell.Heresy == nil {
 		t.Fatalf("fell %+v", out.Fell)
@@ -176,7 +176,7 @@ func TestPerformAll_RevertsFromTheFallenStepBackToTheFirst(t *testing.T) {
 
 func TestPerformAll_Triumphs(t *testing.T) {
 	var log []string
-	out := performAll(context.Background(), []performer{&deed{n: 1, log: &log, changes: true}, &deed{n: 2, log: &log}}, nil)
+	out := performAll(context.Background(), []performer{&deed{n: 1, log: &log, changes: true}, &deed{n: 2, log: &log}}, nil, nil)
 	if out.Fell != nil || len(out.Reversions) != 0 || len(log) != 2 || out.Verdict != Triumph || len(out.Deeds) != 2 {
 		t.Fatalf("outcome %+v, log %v", out, log)
 	}
@@ -274,7 +274,7 @@ func TestPerformAll_HaltedBetweenStepsBeginsNoMore(t *testing.T) {
 	second := &deed{n: 2, changes: true, log: &log}
 	third := &deed{n: 3, log: &log}
 
-	out := performAll(ctx, []performer{first, second, third}, nil)
+	out := performAll(ctx, []performer{first, second, third}, nil, nil)
 
 	if second.performed || second.wasRevered || third.performed {
 		t.Fatalf("a step was begun or reverted after the halt: log %v", log)

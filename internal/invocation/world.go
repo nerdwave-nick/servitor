@@ -4,7 +4,10 @@ import (
 	"errors"
 	"io/fs"
 	"os"
+	"os/user"
 	"path/filepath"
+	"strconv"
+	"syscall"
 )
 
 // form is what stands at a place in the machine.
@@ -16,6 +19,7 @@ const (
 	bond          // a symbolic link
 	hall          // a directory
 	stranger      // anything else
+	veiled        // what stands there is hidden from the invoker: a hall above it may not be searched
 )
 
 // entry is what stands at one place, as far as the steps care.
@@ -24,6 +28,11 @@ type entry struct {
 	content string      // scrolls only
 	mode    fs.FileMode // scrolls only
 	anchor  string      // bonds only: where the link leads, as written
+	// veil marks a scroll the invoker may not read: its content is
+	// unknown, and only its owner ("user:group") and size are told.
+	veil  bool
+	owner string
+	size  int64
 }
 
 // world is the machine as the steps see it: the disk itself while
@@ -41,6 +50,8 @@ func (disk) entry(path string) (entry, error) {
 	switch {
 	case errors.Is(err, fs.ErrNotExist):
 		return entry{form: absent}, nil
+	case errors.Is(err, fs.ErrPermission):
+		return entry{form: veiled, size: -1}, nil
 	case err != nil:
 		return entry{}, err
 	}
@@ -52,9 +63,29 @@ func (disk) entry(path string) (entry, error) {
 		return entry{form: hall}, nil
 	case mode.IsRegular():
 		data, err := os.ReadFile(path)
+		if errors.Is(err, fs.ErrPermission) {
+			return entry{form: scroll, mode: mode.Perm(), veil: true, owner: owner(info), size: info.Size()}, nil
+		}
 		return entry{form: scroll, content: string(data), mode: mode.Perm()}, err
 	}
 	return entry{form: stranger}, nil
+}
+
+// owner names the owner and group of what info describes, "user:group",
+// by number where the machine knows no name.
+func owner(info fs.FileInfo) string {
+	st, ok := info.Sys().(*syscall.Stat_t)
+	if !ok {
+		return ""
+	}
+	u, g := strconv.FormatUint(uint64(st.Uid), 10), strconv.FormatUint(uint64(st.Gid), 10)
+	if found, err := user.LookupId(u); err == nil {
+		u = found.Username
+	}
+	if found, err := user.LookupGroupId(g); err == nil {
+		g = found.Name
+	}
+	return u + ":" + g
 }
 
 // shadow is the disk overlaid with what the planned steps will have done.
@@ -99,6 +130,9 @@ func follow(w world, path string) (string, entry, error) {
 // hallExists reports whether the directory that would hold path stands.
 func hallExists(w world, path string) (bool, error) {
 	_, e, err := follow(w, filepath.Dir(path))
+	if err == nil && e.form == veiled {
+		err = fs.ErrPermission
+	}
 	return e.form == hall, err
 }
 
