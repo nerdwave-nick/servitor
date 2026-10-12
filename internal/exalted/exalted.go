@@ -3,16 +3,20 @@
 // authority, performs the exalted verses of one invocation from the
 // sanction of their master, while the invoker's servitor drives it.
 //
-// It hears its invoker over one channel on fd 0 and 1, a socketpair (or
-// pipes, when sudo records what passes), in strict JSON lines (Channel). The
-// first line is the Handshake, checked against argv and the channel's
-// credentials; the sanction is then read from the root's store, the
-// root-side dominions are seized, and the session is accepted. Thereafter
-// only Requests are heard: perform the next exalted verse, revert the last
-// performed, finish, abort. The end of the channel before finish, ten
-// minutes without a word, or SIGTERM revert every verse performed, in
-// reverse. Vessels and tethers are acted upon through package hallowed;
-// exalted speech is lent by a Voice. Every act is journaled as the root's.
+// Before it hears a word it judges the scroll it runs from (/proc/self/exe)
+// as package hallowed judges the installed servitor. It hears its invoker
+// over one channel on fd 0 and 1, a socketpair (or pipes, when sudo records
+// what passes), in strict JSON lines (Channel). The first line is the
+// Handshake, checked against argv and the channel's credentials; the
+// sanction is then read from the root's store, the root-side dominions are
+// seized, and the session is accepted. Every answer to the handshake names
+// the protocol, which the invoker's servitor hears first (Channel.Answer).
+// Thereafter only Requests are heard: perform the next exalted verse,
+// revert the last performed, finish, abort. The end of the channel before
+// finish, ten minutes without a word, or SIGTERM revert every verse
+// performed, in reverse. Vessels and tethers are acted upon through package
+// hallowed; exalted speech is lent by a Voice. Every act is journaled as
+// the root's.
 package exalted
 
 import (
@@ -52,6 +56,9 @@ type Config struct {
 	Sovereign func(uid uint32) bool
 	// Ground is where vessels and tethers are acted upon.
 	Ground hallowed.Ground
+	// Self names the scroll the servitor runs from, as /proc/self/exe does;
+	// it must stand enshrined in Ground.
+	Self string
 	// Dominions is where the root-side places of dominion lie.
 	Dominions string
 	// Journal keeps every act.
@@ -79,6 +86,7 @@ func Machine() Config {
 		Store:     sanction.DefaultRoot,
 		Sovereign: func(uid uint32) bool { return uid == 0 },
 		Ground:    hallowed.Machine,
+		Self:      "/proc/self/exe",
 		Dominions: DominionRoot,
 		Idle:      10 * time.Minute,
 		Voice:     MachineSpeech().Voice,

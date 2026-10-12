@@ -24,8 +24,9 @@ import (
 // nowhere, a vessel missing that its sanctum may not consecrate, an anchor
 // missing for some aspect, an edict's scroll missing, a tainted sanctum, a
 // desecrated rite, an exalted rite unsanctioned or whose sanction lapsed,
-// a forsaken sanction — and heresy for a vessel whose sanctum markers are
-// broken. An edict's machine is examined once, as it bears no aspect.
+// a forsaken sanction, the servitor installed at /usr/bin/servitor missing
+// or open to others while a rite holds exalted verses — and heresy for a
+// vessel whose sanctum markers are broken. An edict's machine is examined once, as it bears no aspect.
 func (s *Servitor) Inquire(names []string, spareVessels bool) (librarium.Findings, error) {
 	lib := s.Librarium
 	for _, n := range names {
@@ -58,6 +59,7 @@ func (s *Servitor) Inquire(names []string, spareVessels bool) (librarium.Finding
 	}
 	if !spareVessels {
 		found = append(found, s.forsakenFindings(wanted)...)
+		found = append(found, s.unenshrined(wanted)...)
 	}
 	found.Sort()
 	return found, nil

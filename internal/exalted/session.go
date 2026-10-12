@@ -61,6 +61,11 @@ func Serve(args []string, in *os.File, out io.Writer, cfg Config) int {
 		return s.refuse(errors.New("the exalted servitor is roused only with the machine's own authority, by " +
 			"an intercessor, and never by hand; nothing was touched"))
 	}
+	if err := cfg.Ground.EnshrinedSelf(cfg.Self); err != nil {
+		return s.refuse(fmt.Errorf("the exalted servitor bears the machine's authority only as the servitor installed "+
+			"where the root alone may write, yet the scroll it runs from breaks that rule: %v — install the servitor "+
+			"anew from its package (makepkg -si); nothing was touched", err))
+	}
 	a, err := parseArgv(args)
 	if err != nil {
 		return s.refuse(err)
