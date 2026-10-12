@@ -28,8 +28,9 @@ const heardCap = 64 << 10
 type speaker struct {
 	hall     string
 	env      []string
-	programs map[string]string // tongue → program as it is awakened
-	scrolls  map[int]string    // verse → the name of its scroll in the hall
+	programs map[string]string   // tongue → program as it is awakened
+	biddings map[string][]string // program of a tongue → how it reads no scripture of its own
+	scrolls  map[int]string      // verse → the name of its scroll in the hall
 
 	mu       sync.Mutex
 	sessions []int
@@ -39,18 +40,18 @@ type speaker struct {
 // patience, in a session of its own; its reversion, when it has one, is
 // spoken in the same tongue, hall and environment.
 func (sp *speaker) Speak(ctx context.Context, v sanction.Verse) (string, Undo, error) {
-	tongue := sp.programs[v.Tongue]
-	if tongue == "" {
-		return "", nil, fmt.Errorf("the tongue of verse %d was never judged", v.Verse)
+	tongue, err := sp.spoken(v)
+	if err != nil {
+		return "", nil, err
 	}
-	argv := []string{tongue, "--noprofile", "--norc", "-c", v.Target}
+	argv := append(slices.Clone(tongue), "-c", v.Target)
 	if v.Kind == librarium.KindLitany {
 		argv = sp.recital(v, tongue)
 	}
 	var undo Undo
 	if v.Reversion != "" {
 		undo = func(ctx context.Context) (string, error) {
-			heard, err := sp.utter(ctx, []string{tongue, "--noprofile", "--norc", "-c", v.Reversion}, v)
+			heard, err := sp.utter(ctx, append(slices.Clone(tongue), "-c", v.Reversion), v)
 			if err != nil {
 				return heard, fmt.Errorf("the reversion fell: %w", err)
 			}
@@ -64,9 +65,9 @@ func (sp *speaker) Speak(ctx context.Context, v sanction.Verse) (string, Undo, e
 // recital is how the scroll of the litany v is recited: by the interpreter
 // its shebang names, else through its tongue; it is offered exactly its
 // offerings.
-func (sp *speaker) recital(v sanction.Verse, tongue string) []string {
+func (sp *speaker) recital(v sanction.Verse, tongue []string) []string {
 	scroll := filepath.Join(sp.hall, sp.scrolls[v.Verse])
-	argv := []string{tongue, "--noprofile", "--norc", scroll}
+	argv := append(slices.Clone(tongue), scroll)
 	if interpreter, word, ok := shebang(v.Scroll); ok {
 		argv = []string{sp.programs[interpreter]}
 		if word != "" {

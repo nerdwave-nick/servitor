@@ -209,3 +209,27 @@ func (d *decoder) judgeSpeech() {
 		}
 	}
 }
+
+// exaltedTongues are the tongues exalted speech may be spoken in, by the
+// last name of the program each truly is, and the words that bid each read
+// no scripture of its own as it awakens: a non-interactive sh or dash reads
+// none, and ENV never reaches it.
+var exaltedTongues = map[string][]string{
+	"bash": {"--noprofile", "--norc"},
+	"zsh":  {"-f"},
+	"fish": {"--no-config"},
+	"sh":   {},
+	"dash": {},
+}
+
+// ExaltedTongueNames names the tongues exalted speech may be spoken in.
+const ExaltedTongueNames = "bash, zsh, fish, sh or dash"
+
+// ExaltedTongue tells how program, the path of a tongue with its bonds
+// followed, is bidden to read no scripture of its own as it awakens; known
+// is false for a program that is none of the tongues exalted speech knows,
+// judged by its last name.
+func ExaltedTongue(program string) (bidding []string, known bool) {
+	bidding, known = exaltedTongues[filepath.Base(program)]
+	return append([]string{}, bidding...), known
+}

@@ -15,6 +15,16 @@ rite's own aspects unless with zeal, and that a tether rebinds only a tether.
 It seeks every tongue along the machine's PATH, and the scroll of every
 litany.
 
+For a rite with exalted verses the pre-flight does more, before any proof
+is asked: it draws the exalted verses for the aspect into their unit and
+compares its sigil with the sanction (unsanctioned or lapsed is refused,
+naming servitor sanction <rite>); it judges the servitor installed at
+/usr/bin/servitor and finds the intercessor; it refuses a rune of an
+inscription spliced into exalted words, a word exalted speech could not
+hear, and an exalted tongue other than bash, zsh, fish, sh or dash. An
+exalted vessel its invoker may not read is no heresy: it is planned with
+its change unknown, for the exalted servitor reads it.
+
 Each step is planned upon the shadow as the steps before it left it, so a
 litany may recite a scroll that a transcription earlier in the same liturgy
 brings into being, and a sanctum may follow a tether bound a verse before.

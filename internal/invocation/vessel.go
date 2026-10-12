@@ -35,8 +35,11 @@ func (p *preflight) vessel(v Verse, field string, plan planner) performer {
 }
 
 func entryAfter(c VesselChange) entry {
-	if !c.Exists {
+	switch {
+	case !c.Exists:
 		return entry{form: absent}
+	case c.Hidden:
+		return entry{form: scroll, mode: c.AfterSeal, veil: true, owner: c.Owner, size: -1}
 	}
 	return entry{form: scroll, content: c.After, mode: c.AfterSeal}
 }

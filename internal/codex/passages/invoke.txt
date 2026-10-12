@@ -32,6 +32,26 @@ invoked it is no command to undo, and a reader gone from stdout or stderr
 loses only the words, never a deed. Lesser machines that do not wait launch
 the servitor detached, as its own passage teaches.
 
+A rite or edict that holds exalted verses is performed alike, yet its
+exalted verses never with its invoker's authority. Its pre-flight also draws
+them for the aspect invoked into their unit and compares its sigil with the
+sanction of their master: a plan never sanctioned, or whose sanction has
+lapsed, is refused before any proof is asked, and the words name servitor
+sanction <rite>. It judges the servitor installed at /usr/bin/servitor and
+finds the intercessor; it refuses a rune given for an inscription spliced
+into exalted words, and a word given at invocation that exalted speech could
+not hear (more than 4 KiB, or bearing a NUL or a newline). After the
+pre-flight and before the first verse one line tells, upon a terminal, that
+the exalted verses await the master's proof, naming the intercessor and the
+sigil (upon stderr under --binharic, withheld by --silence; without a
+terminal the intercessor's own dialog speaks), and the intercessor asks the
+proof once. The one exalted servitor it raises performs each exalted verse in
+its turn, from the sanctioned copy alone, while the servitor performs the
+common verses between them; should any verse fall, the exalted servitor
+reverts its verses among the common reversions, from the fallen verse back to
+the first, and no second proof is asked. A proof dismissed or refused is a
+refusal before anything was touched. Every invocation asks the proof anew.
+
 Each inscription the rite declares becomes a rune of its own, --<key> <value>,
 which outranks the rite's decree for that aspect (or the edict's one decree);
 an empty word clears it. A mandatory inscription that neither rune nor decree
@@ -57,6 +77,17 @@ rite's success vox-cast or, should it have none, from the same litany:
     ✔ verse 2 · incantation niri msg action do-screen-transition
   ✠ The Omnissiah is pleased: the rite now bears the aspect «on».
 
+Exalted verses await the master's proof before the header, the proof asked
+in the intercessor's own words:
+
+  ❯ servitor invoke split-lock on
+  ⋯ The exalted verses of split-lock await the master's proof: sudo asks it, under the sigil 4f0c2a9e1b7d.
+  servitor: authenticate to perform split-lock (sigil 4f0c2a9e1b7d):
+  +++ split-lock · off → on +++
+    ✔ verse 1 · incantation echo off > /sys/devices/system/cpu/smt/control
+    ✔ verse 3 · incantation sysctl -wq kernel.split_lock_mitigate=0
+  ✠ The Omnissiah is pleased: the rite now bears the aspect «on».
+
 An edict's header names the edict alone, with no turning of aspects, and its
 closing line names the edict, never an aspect:
 
@@ -80,9 +111,12 @@ The servitor's death-mark tells how the invocation ended, with or without
 --binharic: 0 upon triumph, 1 when it was reverted, 2 when it was refused
 before anything was touched (the pre-flight forbade it, the rite or aspect
 is unknown, a word was written after an edict's name, a rune was
-malformed), and 3 when it faltered.
+malformed, its exalted verses stand unsanctioned or lapsed, no intercessor
+vouched for the master, the proof was dismissed), and 3 when it faltered.
 
-The servitor performs nothing with the machine's own authority. Roused as root
+The servitor itself performs nothing with the machine's own authority; the
+exalted servitor, raised for one invocation, performs its exalted verses.
+Roused as root
 — through sudo, run0 or pkexec, or by root itself — it refuses every
 invocation and every proclaiming with the death-mark 2 before anything is
 touched; only --foresee is still heeded. Rouse it as yourself. Under sudo the
@@ -106,7 +140,8 @@ A rite's scripture, kept in <Librarium>/rites/<name>.json, may read thus:
   }
 
 Kindred passages: rite, edict, liturgy, pre-flight, reversion, inscriptions,
-verdicts, binharic, forbidden, death-marks, detached, dominion
+verdicts, binharic, forbidden, death-marks, detached, dominion, exalted,
+sanction, intercessor
 
 Exempla:
   servitor invoke mouse-autohide-toggle on --reason "gaming remnant"

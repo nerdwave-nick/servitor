@@ -16,7 +16,8 @@ type preflight struct {
 	opts     Options
 	values   placeholder.Values
 	world    *shadow
-	index    int // index of the step being examined
+	index    int  // index of the step being examined
+	exalted  bool // the step being examined is exalted
 	heresies Heresies
 }
 
@@ -41,7 +42,7 @@ func (p *preflight) prepare(s librarium.Step) performer {
 
 // verse names the step being examined.
 func (p *preflight) verse(k librarium.Kind, target string) Verse {
-	return Verse{Number: p.index + 1, Kind: k, Target: target}
+	return Verse{Number: p.index + 1, Kind: k, Target: target, Exalted: p.exalted}
 }
 
 // pointer is the JSON pointer of field within the step being examined.

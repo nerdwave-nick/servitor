@@ -23,7 +23,10 @@ func TestMain(m *testing.M) {
 	tearDown := enshrineTrials()
 	switch os.Getenv(awakenAs) {
 	case "servitor":
+		raiseAltarOfTheProcess()
 		os.Exit(Execute(os.Args[1:], os.Stdout, os.Stderr))
+	case "exalted":
+		os.Exit(serveAsExalted(os.Args[1:]))
 	case "caller":
 		os.Exit(beCaller(os.Args[1:]))
 	}

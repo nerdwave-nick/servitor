@@ -8,31 +8,64 @@ import (
 )
 
 // TestTranscribe_KeepsTheOwnerAndSealOfTheVessel: a standing vessel keeps
-// its owner and seal; the seal of the step serves only a vessel brought
-// into being.
+// its owner, and its seal unless the step names one: the seal of the step
+// serves a standing vessel as it serves one brought into being.
 func TestTranscribe_KeepsTheOwnerAndSealOfTheVessel(t *testing.T) {
-	for name, s := range map[string]*os.FileMode{"without a seal": nil, "with a seal": sealPtr(0o600)} {
+	for name, c := range map[string]struct {
+		seal *os.FileMode
+		want os.FileMode
+	}{"without a seal": {nil, 0o640}, "with a seal": {sealPtr(0o600), 0o600}} {
 		t.Run(name, func(t *testing.T) {
 			tp := newTemple(t)
 			tp.hall("/etc", 0o755)
 			tp.scroll("/etc/vessel", "old\n", 0o640)
 			before := tp.stat("/etc/vessel")
-			if _, err := tp.g.Transcribe("/etc/vessel", []byte("new\n"), s); err != nil {
+			if _, err := tp.g.Transcribe("/etc/vessel", []byte("new\n"), c.seal); err != nil {
 				t.Fatal(err)
 			}
 			after := tp.stat("/etc/vessel")
 			if got := tp.content("/etc/vessel"); got != "new\n" {
 				t.Fatalf("the vessel holds %q", got)
 			}
-			if seal(after) != 0o640 || after.Uid != before.Uid || after.Gid != before.Gid {
+			if seal(after) != c.want || after.Uid != before.Uid || after.Gid != before.Gid {
 				t.Fatalf("the vessel is %o %d:%d, not %o %d:%d",
-					seal(after), after.Uid, after.Gid, seal(before), before.Uid, before.Gid)
+					seal(after), after.Uid, after.Gid, c.want, before.Uid, before.Gid)
 			}
 			if after.Ino == before.Ino {
 				t.Fatal("the vessel was written in place, not replaced whole")
 			}
 			if names := tp.names("/etc"); !slices.Equal(names, []string{"vessel"}) {
 				t.Fatalf("the hall holds %v", names)
+			}
+		})
+	}
+}
+
+// TestTranscribe_ChangesNothingThatStandsAsDecreed: a vessel that already
+// holds the scripture under the seal decreed is not written, and the act
+// changed nothing; one whose seal alone differs takes the seal.
+func TestTranscribe_ChangesNothingThatStandsAsDecreed(t *testing.T) {
+	for name, c := range map[string]struct {
+		seal    *os.FileMode
+		changed bool
+		want    os.FileMode
+	}{"without a seal": {nil, false, 0o640}, "with its own seal": {sealPtr(0o640), false, 0o640},
+		"with another seal": {sealPtr(0o600), true, 0o600}} {
+		t.Run(name, func(t *testing.T) {
+			tp := newTemple(t)
+			tp.hall("/etc", 0o755)
+			tp.scroll("/etc/vessel", "same\n", 0o640)
+			before := tp.stat("/etc/vessel")
+			m, err := tp.g.Transcribe("/etc/vessel", []byte("same\n"), c.seal)
+			if err != nil {
+				t.Fatal(err)
+			}
+			after := tp.stat("/etc/vessel")
+			if m.Changed() != c.changed || seal(after) != c.want || (after.Ino == before.Ino) == c.changed {
+				t.Fatalf("changed %v, sealed %o, inode kept %v", m.Changed(), seal(after), after.Ino == before.Ino)
+			}
+			if err := m.Revert(); err != nil || seal(tp.stat("/etc/vessel")) != 0o640 {
+				t.Fatalf("reverted: %v, sealed %o", err, seal(tp.stat("/etc/vessel")))
 			}
 		})
 	}

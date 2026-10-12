@@ -2,6 +2,7 @@ package exalted
 
 import (
 	"encoding/base64"
+	"io/fs"
 	"os"
 	"slices"
 	"strconv"
@@ -94,6 +95,34 @@ func TestSession_AVerseThatFindsItsWorkDoneChangesNothing(t *testing.T) {
 	inv.say(Request{Finish: new(true)})
 	inv.ended()
 	sh.holds(performedOn)
+}
+
+// TestSession_AStandingVesselTakesTheSealDecreed: an exalted transcription
+// heeds its seal as every transcription does: a vessel that already holds
+// its scripture takes the seal decreed, and reverting restores the former.
+func TestSession_AStandingVesselTakesTheSealDecreed(t *testing.T) {
+	u := hallowUnit()
+	for i := range u.Aspects {
+		u.Aspects[i].Liturgy[0].Seal = new(fs.FileMode(0o600))
+	}
+	sh := newShrine(t, u)
+	const vessel = "/etc/sysctl.d/90-hallow.conf"
+	sh.scroll(vessel, string(u.Aspects[0].Liturgy[0].Scripture), 0o644)
+	inv := sh.accepted("on")
+	if r := inv.perform(1); !r.Changed {
+		t.Errorf("the seal was not taken: %+v", r)
+	}
+	if got := sh.look(vessel); !strings.HasPrefix(got, "600 ") {
+		t.Errorf("the vessel stands %q", got)
+	}
+	if r := inv.say(Request{Revert: new(1)}); r.Verdict != Reverted || !r.Changed {
+		t.Errorf("revert: %+v", r)
+	}
+	if got := sh.look(vessel); !strings.HasPrefix(got, "644 ") {
+		t.Errorf("the vessel stands %q after reverting", got)
+	}
+	inv.say(Request{Finish: new(true)})
+	inv.ended()
 }
 
 // TestSession_TheEndOfTheChannelRevertsInReverse: when the invoker's

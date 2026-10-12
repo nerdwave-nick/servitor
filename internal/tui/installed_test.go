@@ -1,7 +1,9 @@
 package tui
 
 import (
+	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"testing"
 
@@ -28,6 +30,11 @@ func TestMain(m *testing.M) {
 	}
 	me := uint32(os.Getuid())
 	rituals.Intercession.Ground = hallowed.Ground{Root: dir, Sovereign: func(uid uint32) bool { return uid == me }}
+	// the trials never call upon sudo, run0 or pkexec of the machine
+	rituals.Intercession.LookPath = func(string) (string, error) { return "", exec.ErrNotFound }
+	rituals.Summon = func(cmd *exec.Cmd, _ *os.File) (func() error, error) {
+		return nil, fmt.Errorf("the trials never call upon %s", cmd.Path)
+	}
 	code := m.Run()
 	_ = os.RemoveAll(dir)
 	os.Exit(code)

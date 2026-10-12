@@ -46,11 +46,20 @@ Markers begun twice, never sealed, or sealed without beginning are heresy.
 Should the invocation fall, the reversion returns the vessel to the very
 scripture it held before, and strikes a vessel the sanctum consecrated.
 
+Exalted ("exalted": true), the sanctum is rewritten by the exalted servitor
+from the sanction of its master, never by the servitor: its vessel must
+begin at the root, beneath none of /proc, /sys and /dev, and is walked
+through halls the root alone may write and written whole, keeping its owner
+and seal; one it consecrates belongs to the root. Its invoker may be
+forbidden to read the vessel: the pre-flight then plans it with its change
+unknown, and foresight tells its owner, seal and size, "contents hidden —
+change unknown". The exalted servitor reverts it should the invocation fall.
+
 An edict may keep no sanctum: a sanctum's marker records an aspect, and an
 edict bears none. A sanctum in an edict's liturgy is heresy.
 
 Kindred passages: ward, glyph, closing-glyph, consecrate, scripture, vessel,
-omens, standing, edict
+omens, standing, edict, exalted
 
 Exempla:
   {"sanctum": "~/.config/niri/util.kdl",

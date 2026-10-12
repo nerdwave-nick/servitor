@@ -285,22 +285,27 @@ func TestSanction_TheVigilLamentsTheForsakenFirst(t *testing.T) {
 }
 
 // TestInvoke_TheRefusalNamesTheStanding: the invocation of an exalted rite
-// is refused whatever its standing — even sanctioned, for no exalted verse
-// is yet performed — and the refusal names the standing and the ritual of
-// the sanction. Nothing is touched.
+// unsanctioned or lapsed is refused before any proof is asked, and the
+// refusal names the standing and the ritual of the sanction; a sanctioned
+// rite lent no intercessor (as the cogitator lends none yet) is refused
+// too. Nothing is touched.
 func TestInvoke_TheRefusalNamesTheStanding(t *testing.T) {
 	sc := newSanctuary(t)
-	for rite, words := range map[string][]string{
-		"fresh":      {"stands unsanctioned", "servitor sanction fresh"},
-		"lapsing":    {"has lapsed", "servitor sanction lapsing"},
-		"split-lock": {"stands sanctioned", "not one verse"},
+	for rite, c := range map[string]struct {
+		x     *Exaltation
+		words []string
+	}{
+		"fresh":      {&Exaltation{}, []string{"stands unsanctioned", "servitor sanction fresh"}},
+		"lapsing":    {&Exaltation{}, []string{"has lapsed", "servitor sanction lapsing"}},
+		"split-lock": {nil, []string{"lent no intercessor", "servitor invoke split-lock on"}},
 	} {
-		res, err := sc.s.Invoke(context.Background(), Petition{Rite: rite, Aspect: "on", Herald: &herald{}})
+		res, err := sc.s.Invoke(context.Background(), Petition{Rite: rite, Aspect: "on", Herald: &herald{},
+			Exaltation: c.x})
 		var hs invocation.Heresies
 		if !errors.As(err, &hs) || len(hs) != 1 || res.Outcome != nil || res.Entry != nil {
 			t.Fatalf("%s: %v %+v", rite, err, res)
 		}
-		for _, w := range append(words, "verse 1 is exalted", "not one verse of") {
+		for _, w := range append(c.words, "verse 1 is exalted", "not one verse of") {
 			if !strings.Contains(hs[0].Message, w) {
 				t.Errorf("%s: the refusal lacks %q: %s", rite, w, hs[0].Message)
 			}

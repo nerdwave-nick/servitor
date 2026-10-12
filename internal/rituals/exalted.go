@@ -6,53 +6,12 @@ import (
 	"io"
 	"io/fs"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
-	"github.com/nerdwave-nick/servitor/internal/invocation"
 	"github.com/nerdwave-nick/servitor/internal/librarium"
-	"github.com/nerdwave-nick/servitor/internal/sanction"
 )
-
-// unexalted refuses the invocation of a rite holding exalted verses, with a
-// heresy for each of them that names the rite's standing towards its
-// sanction: no exalted verse is ever performed with its invoker's
-// authority, and this servitor cannot yet raise an exalted servitor to
-// perform one from a sanction — so even a sanctioned rite is refused. It is
-// the one gate of that refusal, passed before anything of the rite is
-// touched; foresight never reaches it.
-func (s *Servitor) unexalted(r *librarium.Rite) error {
-	verses := r.ExaltedVerses()
-	if len(verses) == 0 {
-		return nil
-	}
-	var standing string
-	switch st, _, _ := s.standing(r.Name, r); st {
-	case sanction.Sanctioned:
-		standing = fmt.Sprintf("though the rite %q stands sanctioned, this servitor cannot yet raise the exalted "+
-			"servitor to perform it from its sanction", r.Name)
-	case sanction.Lapsed:
-		standing = fmt.Sprintf("the sanction of the rite %q has lapsed, for its exalted verses are no longer those "+
-			"its master sanctioned — sanction them anew: servitor sanction %s", r.Name, r.Name)
-	default:
-		standing = fmt.Sprintf("the rite %q stands unsanctioned, for its master never sanctioned its exalted "+
-			"verses — sanction them: servitor sanction %s", r.Name, r.Name)
-	}
-	var hs invocation.Heresies
-	for _, verse := range verses {
-		hs = append(hs, invocation.Heresy{Verse: verse, Finding: librarium.Finding{
-			Severity: librarium.Heresy, Scripture: r.Path, Rite: r.Name,
-			Position: r.Locate(fmt.Sprintf("/liturgy/%d/exalted", verse-1)),
-			Message: fmt.Sprintf("verse %d is exalted: it is performed with the machine's own authority alone, by an "+
-				"exalted servitor from the sanction of its master; %s — not one verse of %q was performed",
-				verse, standing, r.Name),
-		}})
-	}
-	if len(hs) > 0 {
-		return hs
-	}
-	return nil
-}
 
 // scrollLimit is how much of a scroll the inquisition reads.
 const scrollLimit = 1 << 20
@@ -82,6 +41,36 @@ func (e *examiner) exaltation() {
 		for j, relic := range u.Relics {
 			e.relic(i, j, relic)
 		}
+		if u.Exalted {
+			e.exaltedTongue(i, u.Tongue)
+		}
+	}
+}
+
+// exaltedTongue denounces the tongue of the exalted speech at index i, named
+// by the step, the rite or the settings, when the program it truly is is
+// none of the tongues exalted speech knows. A tongue spoken nowhere is
+// noted by the machine.
+func (e *examiner) exaltedTongue(i int, tongue string) {
+	ptr := field(i, "tongue")
+	switch {
+	case tongue == "" && e.rite.Tongue != "":
+		ptr = "/tongue"
+	case tongue == "" && e.orders.Tongue != "":
+		ptr = field(i, "exalted") // the settings speak for the step
+	}
+	t := e.tongueOf(tongue)
+	program, err := exec.LookPath(t)
+	if err == nil {
+		program, err = filepath.EvalSymlinks(program)
+	}
+	if err != nil {
+		return
+	}
+	if _, known := librarium.ExaltedTongue(program); !known {
+		e.note(librarium.Heresy, ptr, "the tongue %s of verse %d is %s, which exalted speech is never spoken in: "+
+			"it knows only %s, each bidden to read no scripture of its own as it awakens — name one of them as "+
+			"the \"tongue\" of the step", t, i+1, filepath.Base(program), librarium.ExaltedTongueNames)
 	}
 }
 

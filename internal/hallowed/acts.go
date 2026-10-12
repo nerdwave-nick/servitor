@@ -1,6 +1,7 @@
 package hallowed
 
 import (
+	"bytes"
 	"crypto/rand"
 	"errors"
 	"io"
@@ -58,8 +59,10 @@ func (g Ground) Read(path string) ([]byte, error) {
 }
 
 // Transcribe writes scripture to the vessel at path, following its bonds,
-// atomically. A standing vessel keeps its owner and seal; one brought into
-// being belongs to the ground's Lord and takes seal, else 0644.
+// atomically. A standing vessel keeps its owner; one brought into being
+// belongs to the ground's Lord. Either takes seal when it is given, else a
+// standing vessel keeps its own and one brought into being takes 0644, as
+// every transcription does.
 func (g Ground) Transcribe(path string, scripture []byte, seal *fs.FileMode) (*Memory, error) {
 	p, err := g.walk(path, vessel)
 	if err != nil {
@@ -71,11 +74,14 @@ func (g Ground) Transcribe(path string, scripture []byte, seal *fs.FileMode) (*M
 		return nil, lament(p.path(), err)
 	}
 	owner, mode := g.Lord, unixSeal(newSeal)
+	if f.form == scroll {
+		owner, mode = f.owner, f.seal
+	}
 	if seal != nil {
 		mode = unixSeal(*seal)
 	}
-	if f.form == scroll {
-		owner, mode = f.owner, f.seal
+	if f.form == scroll && mode == f.seal && bytes.Equal(f.scripture, scripture) {
+		return &Memory{g: g, path: p.path(), former: f}, nil // it stands as decreed
 	}
 	if err := inscribe(p, scripture, owner, mode, f.form == absent); err != nil {
 		return nil, lament(p.path(), err)
@@ -102,8 +108,12 @@ func (g Ground) Strike(path string) (*Memory, error) {
 }
 
 // Revert raises again exactly what stood at the place before the act:
-// scripture, owner and seal of a scroll, a bond as written, or nothing.
+// scripture, owner and seal of a scroll, a bond as written, or nothing. An
+// act that changed nothing has nothing to revert.
 func (m *Memory) Revert() error {
+	if !m.changed {
+		return nil
+	}
 	p, err := m.g.walk(m.path, itself)
 	if err != nil {
 		return err

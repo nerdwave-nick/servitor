@@ -12,6 +12,11 @@ takes it whether it is newly made or already stood. A seal is one value for
 every aspect, written as a string; anything but three or four octal numerals
 is heresy. Seals are never illuminated.
 
+An exalted transcription heeds its seal alike: the vessel it brings into
+being belongs to the root and bears the seal, else 0644, and a vessel that
+stands keeps its owner, and its own seal unless one is decreed. The seal is
+part of the sanction, so writing another lapses it.
+
 Sanctums bear no "seal": they keep the seal of the vessel they dwell in, and
 a vessel a sanctum consecrates bears 0644.
 

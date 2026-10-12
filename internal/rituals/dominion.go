@@ -2,6 +2,7 @@ package rituals
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"maps"
 	"slices"
@@ -48,6 +49,10 @@ type dominions struct {
 	places   map[string]bool // the resolved places of the vessels sought
 	seizings int
 	forgone  bool // no dominion could be held: performed without
+	// refusal refuses an invocation with exalted verses whose vessels
+	// shifted with every seizing: it is never performed without dominion.
+	refusal error
+	aspect  string // the aspect invoked
 }
 
 // holdDominion takes the dominion an invocation of r must hold before its
@@ -62,11 +67,12 @@ type dominions struct {
 // once (invocation.Dominion), and the invocation waits until it is
 // relinquished, or until ctx halts it (*Forsaken). A dominion that cannot
 // be held at all, its place beneath the state home unwritable, is lamented,
-// and the invocation is performed without it.
+// and the invocation is performed without it — save that of a rite with
+// exalted verses, which is then refused before anything is touched.
 func (s *Servitor) holdDominion(ctx context.Context, r *librarium.Rite, p Petition, inscriptions map[string]string,
 	res *Result) (*dominions, error) {
 	told := false
-	d := &dominions{ctx: ctx, env: s.env(), rite: r, res: res, places: map[string]bool{}, await: func() {
+	d := &dominions{ctx: ctx, env: s.env(), rite: r, res: res, places: map[string]bool{}, aspect: p.Aspect, await: func() {
 		if !told && p.Herald != nil {
 			p.Herald.Proclaim(invocation.Proclamation{Tidings: invocation.Dominion, Edict: r.Edict,
 				Values: placeholder.Values{Rite: r.Name, Aspect: p.Aspect}})
@@ -93,11 +99,15 @@ func (s *Servitor) holdDominion(ctx context.Context, r *librarium.Rite, p Petiti
 }
 
 // unheld is what becomes of an invocation whose dominion over what could
-// not be seized: Forsaken when it was halted, else a lament and an
-// invocation performed without dominion.
+// not be seized: Forsaken when it was halted, a refusal for a rite with
+// exalted verses, else a lament and an invocation performed without
+// dominion.
 func (d *dominions) unheld(what string, err error) error {
 	if d.ctx.Err() != nil {
 		return &Forsaken{Rite: d.rite.Name, Edict: d.rite.Edict, Err: err}
+	}
+	if d.rite.Exalted() {
+		return exaltedUnheld(d.rite, d.aspect, what, err)
 	}
 	d.forgone = true
 	d.res.lament(fmt.Errorf("no dominion could be held over %s, so it is performed without: %w", what, err))
@@ -144,10 +154,32 @@ func (d *dominions) covers(foresight []invocation.Foresight) bool {
 		if d.seizings < maxSeizings {
 			return false
 		}
+		if d.rite.Exalted() {
+			d.refusal = exaltedUnheld(d.rite, d.aspect, place, errors.New("its vessels shifted with every seizing of their "+
+				"dominion"))
+			return true
+		}
 		d.res.lament(fmt.Errorf("the vessels of the rite %q shifted with every seizing of their dominion, so it "+
 			"is performed without dominion over %s", d.rite.Name, place))
 	}
 	return true
+}
+
+// amiss is the refusal of an invocation with exalted verses whose dominion
+// could not be held over every place it writes; nil otherwise.
+func (d *dominions) amiss() error {
+	if d == nil {
+		return nil
+	}
+	return d.refusal
+}
+
+// exaltedUnheld refuses the invocation of r, whose exalted verses are never
+// performed without dominion over what (and the rite): no dominion could be
+// held over it (err).
+func exaltedUnheld(r *librarium.Rite, aspect, what string, err error) error {
+	return fmt.Errorf("%s is refused, and nothing was touched: a rite with exalted verses is performed only "+
+		"under dominion, yet no dominion could be held over %s: %w", invocationOf(r, aspect), what, err)
 }
 
 // relinquish lets go of the vessels, then the rite.

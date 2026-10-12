@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"sync"
 
 	"golang.org/x/sys/unix"
 
@@ -40,7 +41,8 @@ func summon(cmd *exec.Cmd, end *os.File) (func() error, error) {
 // demands: whether a terminal or the cogitator attends, so that the master
 // beholds what they sanction, and how the exalted servitor is raised (nil
 // is Summon). The cogitator raises it in a Summoner of its own, lending
-// sudo its terminal.
+// sudo its terminal. An invocation needs no terminal attending: the
+// intercessor asks as it may.
 type Exaltation struct {
 	Attended bool
 	Summon   Summoner
@@ -79,41 +81,79 @@ func (s *Spurned) Error() string {
 	return fmt.Sprintf("%s is refused by the exalted servitor, which touched nothing: %s", s.Deed, s.Lament)
 }
 
+// conduit is the channel of the invoker's servitor to an exalted servitor
+// raised through the intercessor, and what awaits the intercessor's end.
+type conduit struct {
+	ours  *os.File
+	ch    *exalted.Channel
+	wait  func() error
+	once  sync.Once
+	ended error // how the intercessor ended, once it did
+}
+
+// raiseConduit lays a socketpair and raises the exalted servitor through
+// cmd upon its other end with summoner.
+func raiseConduit(deed, intercessor string, cmd *exec.Cmd, summoner Summoner) (*conduit, error) {
+	fds, err := unix.Socketpair(unix.AF_UNIX, unix.SOCK_STREAM|unix.SOCK_CLOEXEC, 0)
+	if err != nil {
+		return nil, fmt.Errorf("%s is refused: no channel to the exalted servitor can be laid: %w", deed, err)
+	}
+	ours, theirs := os.NewFile(uintptr(fds[0]), "servitor"), os.NewFile(uintptr(fds[1]), "exalted servitor")
+	wait, err := summoner(cmd, theirs)
+	_ = theirs.Close()
+	if err != nil {
+		_ = ours.Close()
+		return nil, fmt.Errorf("%s is refused: the intercessor %s cannot be called upon: %w", deed, intercessor, err)
+	}
+	return &conduit{ours: ours, ch: exalted.NewChannel(ours, ours), wait: wait}, nil
+}
+
+// silence lets the exalted servitor hear no more words, and the invoker's
+// servitor hear none of its: an exalted servitor that awaits more words
+// hears the end of its channel.
+func (c *conduit) silence() { _ = unix.Shutdown(int(c.ours.Fd()), unix.SHUT_RDWR) }
+
+// end awaits the end of the intercessor, once, and closes the channel.
+func (c *conduit) end() error {
+	c.once.Do(func() {
+		c.ended = c.wait()
+		_ = c.ours.Close()
+	})
+	return c.ended
+}
+
 // exalt raises the exalted servitor through cmd, speaks to it with speak,
 // and hears its one answer. The end of the channel before any answer is
 // *Dismissed when the intercessor ended amiss; an exalted servitor of
 // another protocol is *exalted.Mismatch.
 func exalt(deed, intercessor string, cmd *exec.Cmd, summoner Summoner, speak func(*exalted.Channel) error) (
 	exalted.Reply, error) {
-	fds, err := unix.Socketpair(unix.AF_UNIX, unix.SOCK_STREAM|unix.SOCK_CLOEXEC, 0)
+	c, err := raiseConduit(deed, intercessor, cmd, summoner)
 	if err != nil {
-		return exalted.Reply{}, fmt.Errorf("%s is refused: no channel to the exalted servitor can be laid: %w", deed, err)
+		return exalted.Reply{}, err
 	}
-	ours, theirs := os.NewFile(uintptr(fds[0]), "servitor"), os.NewFile(uintptr(fds[1]), "exalted servitor")
-	defer func() { _ = ours.Close() }()
-	wait, err := summoner(cmd, theirs)
-	_ = theirs.Close()
-	if err != nil {
-		return exalted.Reply{}, fmt.Errorf("%s is refused: the intercessor %s cannot be called upon: %w", deed,
-			intercessor, err)
-	}
-	ch := exalted.NewChannel(ours, ours)
 	spoken := make(chan error, 1)
-	go func() { spoken <- speak(ch) }()
-	reply, err := ch.Answer()
+	go func() { spoken <- speak(c.ch) }()
+	reply, err := c.ch.Answer()
 	if err != nil {
-		_ = unix.Shutdown(int(ours.Fd()), unix.SHUT_RDWR) // an exalted servitor that awaits more words hears none
+		c.silence()
 	}
-	ended := wait()
+	ended := c.end()
 	<-spoken // what it could not hear, its answer told
-	switch {
-	case errors.Is(err, io.EOF) && ended != nil:
-		return exalted.Reply{}, &Dismissed{Deed: deed, Intercessor: intercessor, Err: ended}
-	case errors.Is(err, io.EOF):
-		return exalted.Reply{}, fmt.Errorf("%s is refused: the exalted servitor ended without a word, and touched "+
-			"nothing", deed)
-	case err != nil:
-		return exalted.Reply{}, fmt.Errorf("%s is refused: %w", deed, err)
+	if err != nil {
+		return exalted.Reply{}, unanswered(deed, intercessor, err, ended)
 	}
 	return reply, nil
+}
+
+// unanswered is the lament of an exalted servitor that gave no answer (err)
+// to deed; the intercessor ended so (ended).
+func unanswered(deed, intercessor string, err, ended error) error {
+	switch {
+	case errors.Is(err, io.EOF) && ended != nil:
+		return &Dismissed{Deed: deed, Intercessor: intercessor, Err: ended}
+	case errors.Is(err, io.EOF):
+		return fmt.Errorf("%s is refused: the exalted servitor ended without a word, and touched nothing", deed)
+	}
+	return fmt.Errorf("%s is refused: %w", deed, err)
 }

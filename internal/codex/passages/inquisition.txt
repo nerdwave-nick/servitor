@@ -19,8 +19,11 @@ value and without "*", an edict holding a sanctum, transcription, tether,
 auspex, aspect map, {{aspect}} or {{former}}, unknown placeholders and
 inscriptions never declared, missing tomes, a null scripture in a sanctum, a
 vox-cast that is neither "progress" nor "success", a ward claimed twice in one
-vessel, a rite recorded in two scriptures, heretical settings, and sanctums
-whose markers are broken.
+vessel, a rite recorded in two scriptures, heretical settings, sanctums
+whose markers are broken, exalted speech in a tongue other than bash, zsh,
+fish, sh or dash (by the program it truly is), and an exalted tether whose
+anchor lies beneath a hall its invoker may write (spared by
+--spare-vessels).
 
 Impurities are noted but forgiven: tongues spoken nowhere on this machine,
 vessels missing without "consecrate", anchors missing for some aspect, the

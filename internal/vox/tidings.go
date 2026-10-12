@@ -41,23 +41,29 @@ var (
 	dominionFile string
 	//go:embed edict-dominion.txt
 	edictDominionFile string
+	//go:embed exaltation.txt
+	exaltationFile string
+	//go:embed edict-exaltation.txt
+	edictExaltationFile string
 )
 
 // templates are the embedded template lists by tidings.
 var templates = map[invocation.Tidings][]string{
-	invocation.Progress: parseTemplates("progress.txt", progressFile),
-	invocation.Success:  parseTemplates("success.txt", successFile),
-	invocation.Failure:  parseTemplates("failure.txt", failureFile),
-	invocation.Dominion: parseTemplates("dominion.txt", dominionFile),
+	invocation.Progress:   parseTemplates("progress.txt", progressFile),
+	invocation.Success:    parseTemplates("success.txt", successFile),
+	invocation.Failure:    parseTemplates("failure.txt", failureFile),
+	invocation.Dominion:   parseTemplates("dominion.txt", dominionFile),
+	invocation.Exaltation: parseTemplates("exaltation.txt", exaltationFile),
 }
 
 // edictTemplates are the embedded template lists of an edict by tidings:
 // they name the edict and speak no aspect.
 var edictTemplates = map[invocation.Tidings][]string{
-	invocation.Progress: parseTemplates("edict-progress.txt", edictProgressFile),
-	invocation.Success:  parseTemplates("edict-success.txt", edictSuccessFile),
-	invocation.Failure:  parseTemplates("edict-failure.txt", edictFailureFile),
-	invocation.Dominion: parseTemplates("edict-dominion.txt", edictDominionFile),
+	invocation.Progress:   parseTemplates("edict-progress.txt", edictProgressFile),
+	invocation.Success:    parseTemplates("edict-success.txt", edictSuccessFile),
+	invocation.Failure:    parseTemplates("edict-failure.txt", edictFailureFile),
+	invocation.Dominion:   parseTemplates("edict-dominion.txt", edictDominionFile),
+	invocation.Exaltation: parseTemplates("edict-exaltation.txt", edictExaltationFile),
 }
 
 // parseTemplates takes one template per line, ignoring blank lines and
@@ -107,6 +113,9 @@ func Compose(p invocation.Proclamation, pick func(n int) int) Message {
 		v.Aspect = "«" + v.Aspect + "»"
 		summary += " → " + p.Values.Aspect
 	}
+	if p.Tidings == invocation.Exaltation {
+		tmpl = exaltationMarks(p).Replace(tmpl)
+	}
 	body := illuminate(scope, tmpl, v)
 	m := Message{Tidings: p.Tidings, Summary: summary, Flavour: body}
 	switch p.Tidings {
@@ -121,6 +130,15 @@ func Compose(p invocation.Proclamation, pick func(n int) int) Message {
 	}
 	m.Body = body
 	return m
+}
+
+// exaltationMarks illuminate the marks only the templates of an exaltation
+// speak, the intercessor and the sigil, before the rest is rendered: they
+// are no placeholders of any rite's scripture. What they name is spoken
+// with its own marks escaped.
+func exaltationMarks(p invocation.Proclamation) *strings.Replacer {
+	escape := strings.NewReplacer("{{", "{{{{")
+	return strings.NewReplacer("{{intercessor}}", escape.Replace(p.Intercessor), "{{sigil}}", escape.Replace(p.Sigil))
 }
 
 // illuminate renders a template; one that would not render is spoken as

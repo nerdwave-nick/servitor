@@ -164,7 +164,7 @@ const exaltedRite = `{
   "liturgy": [
     {"sanctum": "$DATA/y.conf", "consecrate": true, "scripture": {"on": "a", "*": ""}, "exalted": true},
     {"transcription": "$DATA/whole.conf", "scripture": "whole {{aspect}}", "seal": "0600", "exalted": true},
-    {"tether": "$DATA/current", "anchor": {"on": null, "*": "$DATA/themes"}, "exalted": true},
+    {"tether": "$DATA/current", "anchor": {"on": null, "*": "/usr/share"}, "exalted": true},
     {"incantation": "sysctl -w x=1", "reversion": "sysctl -w x=0", "exalted": true, "relics": []},
     {"litany": "scrolls/tune", "offerings": ["{{aspect}}"], "exalted": true,
      "relics": ["scrolls/tune.conf", "tuning.list"]},

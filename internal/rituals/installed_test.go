@@ -1,7 +1,9 @@
 package rituals
 
 import (
+	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"testing"
 
@@ -14,6 +16,9 @@ import (
 // given no world of intercession finds the servitor installed in a hall of
 // the trials' own, the invoker of the trials standing in for the root.
 func TestMain(m *testing.M) {
+	Summon = func(cmd *exec.Cmd, _ *os.File) (func() error, error) {
+		return nil, fmt.Errorf("the trials never call upon %s", cmd.Path)
+	}
 	dir, err := os.MkdirTemp("", "servitor-trials-enshrined-")
 	if err == nil {
 		Intercession, err = enshrine(dir)
@@ -32,6 +37,8 @@ func enshrine(root string) (intercessor.World, error) {
 	w := intercessor.Machine()
 	me := uint32(os.Getuid())
 	w.Ground = hallowed.Ground{Root: root, Sovereign: func(uid uint32) bool { return uid == me }}
+	// the trials never call upon sudo, run0 or pkexec of the machine
+	w.LookPath = func(string) (string, error) { return "", exec.ErrNotFound }
 	if err := os.Chmod(root, 0o755); err != nil {
 		return w, err
 	}

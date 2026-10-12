@@ -57,6 +57,9 @@ type Verse struct {
 	Number int // counted from one
 	Kind   librarium.Kind
 	Target string
+	// Exalted tells that the step is exalted: performed by the exalted
+	// servitor alone, from the sanction of its master.
+	Exalted bool
 }
 
 // performer is a step made ready by the pre-flight.
@@ -94,8 +97,11 @@ func Prepare(r *librarium.Rite, opts Options) (*Invocation, error) {
 	p := &preflight{rite: r, opts: opts, world: newShadow(), values: values(r, opts, opts.Inscriptions)}
 	p.heresies = unmet(r, opts.Aspect, opts.Inscriptions)
 	for i, s := range r.Liturgy {
-		p.index = i
+		p.index, p.exalted = i, librarium.IsExalted(s)
 		if step := p.prepare(s); step != nil {
+			if p.exalted {
+				step = &exaltedStep{planned: step}
+			}
 			inv.steps = append(inv.steps, step)
 			inv.foresight = append(inv.foresight, step.foresee())
 		}
@@ -152,16 +158,9 @@ func (inv *Invocation) Perform() (Outcome, error) { return inv.PerformContext(co
 // litany being spoken is slain with its whole process group and falls, no
 // further step is begun, and the steps performed are reverted as after any
 // fall. Reversions are never halted; each labours within its own patience.
+// An invocation holding exalted verses is refused (see PerformExalted).
 func (inv *Invocation) PerformContext(ctx context.Context) (Outcome, error) {
-	if len(inv.heresies) > 0 {
-		return Outcome{}, inv.heresies
-	}
-	if inv.performed {
-		return Outcome{}, ErrPerformed
-	}
-	inv.performed = true
-	c := newCrier(inv.opts.Herald, inv.rite.Edict, values(inv.rite, inv.opts, inv.opts.Inscriptions), inv.steps)
-	return performAll(ctx, inv.steps, c), nil
+	return inv.PerformExalted(ctx, nil)
 }
 
 // utterer is a performer whose commands utter words worth keeping.
@@ -177,8 +176,10 @@ func uttered(step performer) (said, unsaid string) {
 }
 
 // performAll performs steps in order, telling c (which may be nil) of
-// every step performed and of the fall.
-func performAll(ctx context.Context, steps []performer, c *crier) Outcome {
+// every step performed and of the fall, and then finishes the work of the
+// exalted servitor (finish, nil without one). A finish unheard after a
+// triumph is a fall at the last exalted step: every step is reverted.
+func performAll(ctx context.Context, steps []performer, c *crier, finish func() error) Outcome {
 	out := Outcome{Verdict: Triumph}
 	for k, step := range steps {
 		begun := ctx.Err() == nil
@@ -194,26 +195,42 @@ func performAll(ctx context.Context, steps []performer, c *crier) Outcome {
 			continue
 		}
 		out.Fell = &Fall{Verse: step.verse(), Heresy: err, Output: said}
-		out.Verdict = Reverted
 		from := k
 		if !begun {
 			from = k - 1 // a step never begun has nothing to revert
 		}
-		for j := from; j >= 0; j-- {
-			reverted, err := steps[j].revert()
-			if !reverted && err == nil {
-				continue
-			}
-			_, unsaid := uttered(steps[j])
-			out.Reversions = append(out.Reversions, Reversion{Verse: steps[j].verse(), Heresy: err, Output: unsaid})
-			if err != nil {
-				out.Verdict = Faltered
-			}
-		}
+		revertFrom(&out, steps, from)
 		c.fell(step, out)
 		break
 	}
+	if finish == nil {
+		return out
+	}
+	err := finish()
+	if last := lastExalted(steps); err != nil && out.Fell == nil && last >= 0 {
+		out.Fell = &Fall{Verse: steps[last].verse(), Heresy: fmt.Errorf("the exalted servitor never heard the "+
+			"finish, and reverts by itself what it performed: %w", err)}
+		revertFrom(&out, steps, len(steps)-1)
+		c.fell(steps[last], out)
+	}
 	return out
+}
+
+// revertFrom reverts steps from … 0, in reverse order, into out: a
+// failing reversion does not stop the others.
+func revertFrom(out *Outcome, steps []performer, from int) {
+	out.Verdict = Reverted
+	for j := from; j >= 0; j-- {
+		reverted, err := steps[j].revert()
+		if !reverted && err == nil {
+			continue
+		}
+		_, unsaid := uttered(steps[j])
+		out.Reversions = append(out.Reversions, Reversion{Verse: steps[j].verse(), Heresy: err, Output: unsaid})
+		if err != nil {
+			out.Verdict = Faltered
+		}
+	}
 }
 
 func quoteAll(names []string) string {

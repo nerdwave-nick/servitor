@@ -404,3 +404,70 @@ func TestSpeech_WeighsWithoutRaising(t *testing.T) {
 		t.Errorf("a hall was raised: %v", err)
 	}
 }
+
+// TestSpeech_BidsEachTongueReadNoScriptureOfItsOwn: each tongue exalted
+// speech knows is bidden, in its own words, to read no scripture of its
+// own as it awakens, by the name of the program it truly is: bash
+// --noprofile --norc, zsh -f, fish --no-config, sh and dash nothing. A
+// reversion is spoken alike. Any other tongue refuses the session before
+// anything is touched, naming the tongues it knows.
+func TestSpeech_BidsEachTongueReadNoScriptureOfItsOwn(t *testing.T) {
+	ground := t.TempDir()
+	must(t, os.Chmod(ground, 0o755))
+	must(t, os.MkdirAll(filepath.Join(ground, "bin"), 0o755))
+	const stub = "#!/bin/sh\nprintf '%s|' \"$@\"\n"
+	for _, name := range []string{"bash", "zsh", "fish", "dash", "python3"} {
+		must(t, os.WriteFile(filepath.Join(ground, "bin", name), []byte(stub), 0o755))
+	}
+	must(t, os.Symlink("dash", filepath.Join(ground, "bin", "sh")))
+	must(t, os.Symlink("bash", filepath.Join(ground, "bin", "rbash-alias")))
+	tongues := hallowed.Ground{Root: ground, Sovereign: func(uid uint32) bool { return uid == uint32(me) }}
+	for tongue, want := range map[string]string{
+		"/bin/bash":        "--noprofile|--norc|-c|spoken|",
+		"/bin/rbash-alias": "--noprofile|--norc|-c|spoken|",
+		"/bin/zsh":         "-f|-c|spoken|",
+		"/bin/fish":        "--no-config|-c|spoken|",
+		"/bin/dash":        "-c|spoken|",
+		"/bin/sh":          "-c|spoken|",
+	} {
+		t.Run(tongue, func(t *testing.T) {
+			v := sanction.Verse{Verse: 1, Kind: librarium.KindIncantation, Target: "spoken", Tongue: tongue,
+				Patience: patience, Relics: []sanction.Relic{}, Reversion: "unspoken"}
+			sh := newShrine(t, speakingUnit(v))
+			sp := sh.speech()
+			sp.Tongues = tongues
+			sh.cfg.Voice = sp.Voice
+			inv := sh.accepted("on")
+			if r := inv.perform(1); r.Heard != want {
+				t.Errorf("the tongue heard %q, want %q", r.Heard, want)
+			}
+			unspoken := strings.Replace(want, "spoken", "unspoken", 1)
+			if r := inv.say(Request{Revert: new(1)}); r.Verdict != Reverted || r.Heard != unspoken {
+				t.Errorf("the reversion: %+v, want heard %q", r, unspoken)
+			}
+			inv.say(Request{Finish: new(true)})
+			inv.ended()
+		})
+	}
+	t.Run("a tongue of no shell", func(t *testing.T) {
+		v := sanction.Verse{Verse: 1, Kind: librarium.KindIncantation, Target: "print(1)", Tongue: "/bin/python3",
+			Patience: patience, Relics: []sanction.Relic{}}
+		sh := newShrine(t, speakingUnit(v))
+		sp := sh.speech()
+		sp.Tongues = tongues
+		sh.cfg.Voice = sp.Voice
+		inv := sh.rouseFor("on")
+		r := inv.say(sh.handshake("on"))
+		if r.Verdict != Refused || !strings.Contains(r.Lament, "python3") ||
+			!strings.Contains(r.Lament, librarium.ExaltedTongueNames) {
+			t.Fatalf("heard %+v, want a refusal naming python3 and the tongues known", r)
+		}
+		if m := inv.ended(); m != 2 {
+			t.Fatalf("refused with the death-mark %d", m)
+		}
+		if err := sp.Weigh(Sitting{UID: me, Sanction: sanction.New(sh.unit, time.Time{}), Plan: sh.unit.Aspects[0],
+			Sigil: sh.sigil("on")}); err == nil || !strings.Contains(err.Error(), "python3") {
+			t.Errorf("Weigh = %v", err)
+		}
+	})
+}

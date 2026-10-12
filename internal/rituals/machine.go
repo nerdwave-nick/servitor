@@ -5,6 +5,10 @@ import (
 	"io/fs"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"strings"
+
+	"golang.org/x/sys/unix"
 
 	"github.com/nerdwave-nick/servitor/internal/augury"
 	"github.com/nerdwave-nick/servitor/internal/librarium"
@@ -81,6 +85,36 @@ func (e *examiner) tether(i int, t *librarium.Tether) {
 			e.note(librarium.Impurity, mapField(i, "anchor", t.Anchor, aspect), "the anchor %s, to which the "+
 				"tether binds %s in the aspect %q, does not exist: invoked into that aspect, the tether would "+
 				"lead into the void", p, name, aspect)
+		}
+		if hall := openHall(p); t.Exalted && hall != "" {
+			e.note(librarium.Heresy, mapField(i, "anchor", t.Anchor, aspect), "the exalted tether %s would lead "+
+				"in the aspect %q to %s, beneath the hall %s its invoker may write: whatever stands there would be "+
+				"read with the machine's own authority — transcribe the scripture by an exalted transcription "+
+				"instead", name, aspect, p, hall)
+		}
+	}
+}
+
+// openHall is the first hall above the place path truly leads to (its
+// bonds followed as far as they stand) that the invoker may write; "" when
+// none is.
+func openHall(path string) string {
+	real := filepath.Clean(path)
+	for p := real; ; p = filepath.Dir(p) {
+		if r, err := filepath.EvalSymlinks(p); err == nil {
+			real = filepath.Join(r, strings.TrimPrefix(real, p))
+			break
+		}
+		if p == filepath.Dir(p) {
+			break
+		}
+	}
+	for hall := filepath.Dir(real); ; hall = filepath.Dir(hall) {
+		if unix.Access(hall, unix.W_OK) == nil {
+			return hall
+		}
+		if hall == filepath.Dir(hall) {
+			return ""
 		}
 	}
 }

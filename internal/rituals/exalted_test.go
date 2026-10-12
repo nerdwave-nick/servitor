@@ -31,12 +31,14 @@ const reboot = `{"pattern": "Mark I", "edict": true, "liturgy": [
   {"vox-cast": "progress"},
   {"incantation": "echo exalted >> $DATA/said", "exalted": true}]}`
 
-// TestInvoke_RefusesEveryExaltedVerse: no exalted verse is performed with
-// the invoker's authority. The invocation is refused with a heresy for
-// every exalted verse before anything is touched — no auspex, no dominion,
-// no vessel, no speech, no data-slate, no chronicle — while foresight
-// still reveals what it would do.
-func TestInvoke_RefusesEveryExaltedVerse(t *testing.T) {
+// TestInvoke_RefusesExaltedVersesNeverSanctioned: no exalted verse is
+// performed with the invoker's authority, nor without the sanction of its
+// master. The invocation of a rite never sanctioned (and lent no
+// intercessor) is refused with a heresy for every exalted verse before
+// anything is touched — no auspex, no dominion, no vessel, no speech, no
+// data-slate, no chronicle — while foresight still reveals what it would
+// do.
+func TestInvoke_RefusesExaltedVersesNeverSanctioned(t *testing.T) {
 	for _, c := range []struct{ rite, scripture, aspect string }{{"split-lock", splitLock, "on"}, {"reboot", reboot, ""}} {
 		t.Run(c.rite, func(t *testing.T) {
 			fx := newFixture(t)
@@ -139,5 +141,89 @@ func TestInquire_TheRelicsAndScrollsOfExaltedVerses(t *testing.T) {
 	}
 	if len(fs) != len(expect) {
 		t.Errorf("found %d, expected %d:\n%v", len(fs), len(expect), fs)
+	}
+}
+
+// TestInquire_ExaltedSpeechKnowsItsTongues: exalted speech is spoken only in
+// the tongues it knows how to bid read no scripture of their own — bash,
+// zsh, fish, sh and dash, by the name of the program each truly is. Any
+// other tongue of an exalted incantation or litany, named by the step, the
+// rite or the settings, is heresy; a common verse may speak it.
+func TestInquire_ExaltedSpeechKnowsItsTongues(t *testing.T) {
+	fx := newFixture(t)
+	bin := t.TempDir()
+	for _, name := range []string{"python3", "zsh"} {
+		fx.write(bin, name, "#!/bin/sh\n")
+		if err := os.Chmod(filepath.Join(bin, name), 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := os.Symlink("python3", filepath.Join(bin, "shell")); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("PATH", bin+string(os.PathListSeparator)+os.Getenv("PATH"))
+	fx.rite("tongues", `{"pattern": "Mark I", "aspects": ["on", "off"], "liturgy": [
+	  {"incantation": "print(1)", "tongue": "python3", "exalted": true},
+	  {"incantation": "print(2)", "tongue": "python3"},
+	  {"incantation": "echo 3", "tongue": "zsh", "exalted": true},
+	  {"incantation": "echo 4", "tongue": "shell", "exalted": true},
+	  {"litany": "tongues.json", "tongue": "python3", "exalted": true},
+	  {"incantation": "echo 6", "exalted": true}
+	]}`)
+	fx.rite("rite-tongue", `{"pattern": "Mark I", "aspects": ["on"], "tongue": "python3",
+	  "liturgy": [{"incantation": "print(1)", "exalted": true}]}`)
+
+	fs := inquire(t, fx.servitor(), true)
+	for _, e := range []struct {
+		rite, words string
+		line, col   int
+	}{
+		{"tongues", "the tongue python3 of verse 1 is python3", 2, 42},
+		{"tongues", "the tongue shell of verse 4 is python3", 5, 40},
+		{"tongues", "the tongue python3 of verse 5 is python3", 6, 41},
+		{"rite-tongue", "the tongue python3 of verse 1 is python3", 1, 52},
+	} {
+		got := denounced(fs, e.rite, librarium.Heresy, e.words, librarium.ExaltedTongueNames)
+		if len(got) != 1 {
+			t.Errorf("%s %q: found %d in\n%v", e.rite, e.words, len(got), fs)
+			continue
+		}
+		if f := got[0]; f.Line != e.line || f.Column != e.col {
+			t.Errorf("%q found at %d:%d, want %d:%d", e.words, f.Line, f.Column, e.line, e.col)
+		}
+	}
+	if got := denounced(fs, "", librarium.Heresy); len(got) != 0 {
+		t.Errorf("found beyond the rites: %v", got)
+	}
+	if n := len(denounced(fs, "tongues", librarium.Heresy, "is never spoken")); n != 3 {
+		t.Errorf("found %d heresies of tongues in\n%v", n, fs)
+	}
+}
+
+// TestInquire_AnExaltedTetherLeadsThroughTheRootsHallsAlone: an exalted
+// tether whose anchor lies beneath a hall its invoker may write is heresy,
+// its words naming an exalted transcription as the remedy; one beneath the
+// root's halls alone is not, nor a common tether. --spare-vessels spares
+// the judgement.
+func TestInquire_AnExaltedTetherLeadsThroughTheRootsHallsAlone(t *testing.T) {
+	if os.Geteuid() == 0 {
+		t.Skip("the root may write every hall")
+	}
+	fx := newFixture(t)
+	mine := fx.vessel("dotfiles/x.conf", "x\n")
+	fx.rite("tethers", `{"pattern": "Mark I", "aspects": ["on", "off"], "liturgy": [
+	  {"tether": "/etc/servitor-trials-x.conf", "anchor": {"on": "`+mine+`", "off": "/usr/bin/env"}, "exalted": true},
+	  {"tether": "$DATA/common", "anchor": "`+mine+`"}
+	]}`)
+	fs := inquire(t, fx.servitor(), false, "tethers")
+	got := denounced(fs, "tethers", librarium.Heresy, "exalted tether", filepath.Dir(mine), "exalted transcription")
+	if len(got) != 1 || got[0].Line != 2 {
+		t.Errorf("found %v in\n%v", got, fs)
+	}
+	if n := len(denounced(fs, "tethers", librarium.Heresy)); n != 1 {
+		t.Errorf("found %d heresies in\n%v", n, fs)
+	}
+	if got := denounced(inquire(t, fx.servitor(), true, "tethers"), "tethers", librarium.Heresy); len(got) != 0 {
+		t.Errorf("--spare-vessels found %v", got)
 	}
 }

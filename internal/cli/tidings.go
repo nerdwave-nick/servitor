@@ -12,6 +12,7 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/invocation"
 	"github.com/nerdwave-nick/servitor/internal/librarium"
 	"github.com/nerdwave-nick/servitor/internal/rituals"
+	"github.com/nerdwave-nick/servitor/internal/sanction"
 )
 
 // verseName names a verse of r as "verse 2 · tether <target>": the home of
@@ -44,8 +45,15 @@ func printForesight(w io.Writer, res rituals.Result) {
 	} else {
 		fmt.Fprintf(w, "+++ Foreseen: the rite %s, %s → %s +++\n", res.Rite.Name, former(res), res.Options.Aspect)
 	}
+	if told := foreseenSanction(res); told != "" {
+		fmt.Fprintln(w, told)
+	}
 	for _, f := range res.Foresight {
-		fmt.Fprintln(w, verseName(res.Rite, f.Verse))
+		name := verseName(res.Rite, f.Verse)
+		if f.Exalted {
+			name += " ✠"
+		}
+		fmt.Fprintln(w, name)
 		switch {
 		case f.Vessel != nil:
 			foreseeVessel(w, *f.Vessel)
@@ -58,7 +66,31 @@ func printForesight(w io.Writer, res rituals.Result) {
 	fmt.Fprintln(w, "Nothing was performed.")
 }
 
+// foreseenSanction tells how the exalted verses of the foreseen plan stand
+// towards their sanction; "" for a rite without exalted verses.
+func foreseenSanction(res rituals.Result) string {
+	name := res.Rite.Name
+	switch res.Sanction {
+	case sanction.Sanctioned:
+		return fmt.Sprintf("✠ The exalted verses stand sanctioned under the sigil %s; the exalted servitor performs "+
+			"them, after one proof of the master.", sanction.Short(res.Sigil))
+	case sanction.Lapsed:
+		return fmt.Sprintf("✠ The sanction of the exalted verses has lapsed: they are no longer those their master "+
+			"sanctioned, and the invocation would be refused — sanction them anew: servitor sanction %s", name)
+	case sanction.Unsanctioned:
+		return fmt.Sprintf("✠ The exalted verses stand unsanctioned, and the invocation would be refused — sanction "+
+			"them: servitor sanction %s", name)
+	}
+	return ""
+}
+
 func foreseeVessel(w io.Writer, c invocation.VesselChange) {
+	if c.Hidden {
+		for _, line := range hiddenVessel(c) {
+			fmt.Fprintln(w, line)
+		}
+		return
+	}
 	switch {
 	case !c.Changed():
 		fmt.Fprintln(w, "  the vessel stands undisturbed")
@@ -75,7 +107,37 @@ func foreseeVessel(w io.Writer, c invocation.VesselChange) {
 	}
 }
 
+// hiddenVessel tells what is known of a vessel hidden from the invoker.
+func hiddenVessel(c invocation.VesselChange) []string {
+	owner, size := c.Owner, "of unknown size"
+	if owner == "" {
+		owner = "unknown"
+	}
+	if c.Size >= 0 {
+		size = fmt.Sprintf("%d bytes", c.Size)
+	}
+	out := []string{"  contents hidden — change unknown"}
+	if c.Existed {
+		out = append(out, fmt.Sprintf("  owner %s, sealed %04o, %s", owner, c.BeforeSeal.Perm(), size))
+	}
+	switch {
+	case !c.Exists:
+		out = append(out, "  the vessel is struck from the machine")
+	case c.Digest != "":
+		out = append(out, fmt.Sprintf("  it shall hold the scripture of SHA-256 %s, sealed %04o", c.Digest,
+			c.AfterSeal.Perm()))
+	}
+	return out
+}
+
 func foreseeTether(w io.Writer, c invocation.TetherChange) {
+	if c.Hidden {
+		fmt.Fprintln(w, "  what stands at the name is hidden — change unknown")
+		if c.To != "" {
+			fmt.Fprintf(w, "  the tether is bound to %s\n", homeward(c.To))
+		}
+		return
+	}
 	from, to := homeward(c.From), homeward(c.To)
 	if from == "" {
 		from = "nothing"
