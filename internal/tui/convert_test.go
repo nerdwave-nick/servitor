@@ -21,8 +21,7 @@ func TestConvert_TheCogitatorConvertsAndToasts(t *testing.T) {
 	if now, _ := os.ReadFile(scripture); string(now) != string(original) {
 		t.Fatal("a cogitator that does not convert converted")
 	}
-	h.m = newModel(h.dir, librarium.Runes{}, true)
-	h.send()
+	h.renew(librarium.Runes{}, true)
 	h.mustShow(`the rite "mouse" is converted to pattern "Mark II"`, "mouse")
 	if kept, _ := os.ReadFile(filepath.Join(h.dir, "rites", ".mark-i", "mouse.json")); string(kept) != string(original) {
 		t.Error("the original is not kept in rites/.mark-i/")

@@ -31,8 +31,9 @@ func (m *model) converted(told rituals.Converted) {
 	m.toast = t
 }
 
-// Init lets the toast of the first reading fade.
+// Init awakens the auspexes of the first reading, and lets its toast fade.
 func (m *model) Init() tea.Cmd {
+	m.watch()
 	if m.toast.text == "" {
 		return nil
 	}

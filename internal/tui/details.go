@@ -196,6 +196,9 @@ func (m *model) auspexLine(rite *librarium.Rite, a augury.Augury) string {
 			return m.omenMark(o, a.Aspect) + " " + t.text.Render(o.Aspect)
 		}
 	}
+	if a.Auspex == augury.Awaited {
+		return t.dim.Render("· awaited")
+	}
 	return t.dim.Render("· silent")
 }
 

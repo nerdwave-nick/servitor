@@ -17,6 +17,9 @@ import (
 // harness drives the model with key presses and renders after every step,
 // so any panic in update or view fails the test. What an invocation sends
 // from its own goroutine waits in the inbox until next or await delivers it.
+// What the vigil of a reading sends waits in vigil: after every step the
+// harness delivers it until the auspexes of the reading have settled, as
+// though the cogitator awaited them, unless it is hasty.
 type harness struct {
 	t       *testing.T
 	m       *model
@@ -24,6 +27,8 @@ type harness struct {
 	dataDir string
 	stub    string // where the notify-send stub records its calls
 	inbox   chan tea.Msg
+	vigil   chan tea.Msg
+	hasty   bool // the auspexes are left to settle when settle is called
 }
 
 // markRite is a rite of pattern Mark I: a progress vox-cast, a sanctum, an
@@ -48,7 +53,8 @@ const markRite = `{
 
 func newHarness(t *testing.T) *harness {
 	t.Helper()
-	h := &harness{t: t, dir: t.TempDir(), dataDir: t.TempDir(), inbox: make(chan tea.Msg, 64)}
+	h := &harness{t: t, dir: t.TempDir(), dataDir: t.TempDir(), inbox: make(chan tea.Msg, 64),
+		vigil: make(chan tea.Msg, 256)}
 	t.Setenv("XDG_STATE_HOME", t.TempDir())
 	t.Setenv(librarium.EnvChronicle, "")
 	stubs := t.TempDir()
@@ -60,10 +66,44 @@ func newHarness(t *testing.T) *harness {
 	t.Setenv("PATH", stubs+string(os.PathListSeparator)+os.Getenv("PATH"))
 	h.writeRite("mouse", markRite)
 	h.writeData("x.kdl", "input {}\n")
-	h.m = newModel(h.dir, librarium.Runes{}, false)
-	h.m.send = func(msg tea.Msg) { h.inbox <- msg }
-	h.send(tea.WindowSizeMsg{Width: 120, Height: 36})
+	t.Cleanup(func() { h.m.forsake() }) // no auspex outlives its test
+	h.renew(librarium.Runes{}, false)
 	return h
+}
+
+// renew awakens the cogitator anew upon the harness's Librarium, read with
+// runes, converting when convert, its vigil of the last one forsaken.
+func (h *harness) renew(runes librarium.Runes, convert bool) {
+	h.t.Helper()
+	if h.m != nil {
+		h.m.forsake()
+	}
+	h.m = newModel(h.dir, runes, convert)
+	h.m.send = func(msg tea.Msg) {
+		switch msg.(type) {
+		case settledMsg, attendedMsg:
+			h.vigil <- msg
+		default:
+			h.inbox <- msg
+		}
+	}
+	h.send(tea.WindowSizeMsg{Width: 120, Height: 36})
+}
+
+// settle delivers what the vigil of the current reading tells until its
+// auspexes have settled.
+func (h *harness) settle() {
+	h.t.Helper()
+	h.m.watch()
+	for h.m.vigil.attending {
+		select {
+		case msg := <-h.vigil:
+			h.m.Update(msg)
+			_ = h.m.View()
+		case <-time.After(10 * time.Second):
+			h.t.Fatalf("the auspexes never settled:\n%s", h.screen())
+		}
+	}
 }
 
 // writeRite writes the scripture of the rite name; $DATA is the vessels' place.
@@ -132,6 +172,9 @@ func (h *harness) send(msgs ...tea.Msg) {
 		_, cmd := h.m.Update(msg)
 		h.runCmd(cmd)
 		_ = h.m.View()
+		if !h.hasty {
+			h.settle()
+		}
 	}
 }
 
@@ -221,6 +264,7 @@ func (h *harness) mustNotShow(substrs ...string) {
 func (h *harness) reading(name string) augury.Augury {
 	h.t.Helper()
 	h.m.reload("")
+	h.settle()
 	for _, r := range h.m.all {
 		if r.name == name {
 			return r.reading.Augury

@@ -88,9 +88,7 @@ func TestMarkII_NoFormFellsTheCogitator(t *testing.T) {
 		h.writeRite(name, body)
 	}
 	h.writeData("smt", "off\n")
-	h.m = newModel(h.dir, librarium.Runes{}, true)
-	h.m.send = func(msg tea.Msg) { h.inbox <- msg }
-	h.send(tea.WindowSizeMsg{Width: 120, Height: 36})
+	h.renew(librarium.Runes{}, true)
 	h.keys("r", "g")
 	h.mustShow("Rites (7)", "every", "gaming", "dnd")
 	for range len(h.m.rows) {
