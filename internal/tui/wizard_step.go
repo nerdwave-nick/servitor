@@ -26,6 +26,9 @@ func (w *wizard) essencePage(m *model) tea.Cmd {
 	sd := w.work
 	f := newForm(m.t)
 	k := sd.kind
+	if w.d.bearsSubjects() {
+		w.subjectFields(f)
+	}
 	switch k {
 	case librarium.KindSanctum:
 		glyph, closing := librarium.DefaultGlyphs(sd.fixed["sanctum"])
@@ -52,7 +55,7 @@ func (w *wizard) essencePage(m *model) tea.Cmd {
 		f.addChoice("vox-cast", "Tidings", []string{librarium.VoxProgress, librarium.VoxSuccess}, sd.fixed["vox-cast"],
 			"progress tells of the step before it; success proclaims triumph and belongs last.")
 	}
-	addExaltation(f, sd)
+	addExaltation(f, sd, w.d.bearsSubjects())
 	if hasFurther(k) {
 		f.addToggle("further", "Further rites", sd.further, furtherHints[k])
 	}
@@ -65,6 +68,10 @@ func (w *wizard) keepEssence() {
 		switch fl.key {
 		case "further":
 			w.work.further = fl.on
+		case "name":
+			w.subject.name = strings.TrimSpace(fl.value())
+		case "purpose":
+			w.subject.purpose = strings.TrimSpace(fl.value())
 		case "relics":
 			w.work.relics = keptRelics(fl.value(), w.work.relics)
 		default:
@@ -234,16 +241,7 @@ func lines(text string) []string {
 
 // finishStep places the step written into the liturgy.
 func (w *wizard) finishStep() tea.Cmd {
-	if w.widx < 0 {
-		at := 0
-		if len(w.d.steps) > 0 {
-			at = w.cursor + 1
-		}
-		w.d.steps = append(w.d.steps[:at], append([]stepDraft{w.work}, w.d.steps[at:]...)...)
-		w.cursor = at
-	} else {
-		w.d.steps[w.widx] = w.work
-	}
+	w.d.steps = place(w.d.steps, w.widx, &w.cursor, w.work)
 	w.form = nil
 	return nil
 }

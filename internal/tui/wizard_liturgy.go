@@ -28,19 +28,15 @@ func (w *wizard) updateLiturgy(m *model, msg tea.Msg) (screen, tea.Cmd) {
 	if w.choosing {
 		return w, w.updateChoosing(m, k.String())
 	}
+	var arranged bool
+	if w.d.steps, arranged = arrange(w.d.steps, &w.cursor, k.String()); arranged {
+		return w, nil
+	}
 	steps := w.d.steps
 	n := len(steps)
 	switch k.String() {
 	case "esc":
 		return w, w.ritePage(m)
-	case "up", "k":
-		w.cursor = max(0, w.cursor-1)
-	case "down", "j":
-		w.cursor = max(0, min(n-1, w.cursor+1))
-	case "g", "home":
-		w.cursor = 0
-	case "G", "end":
-		w.cursor = max(0, n-1)
 	case "a", "n":
 		w.choosing, w.kind = true, 0
 	case "enter", "e":
@@ -50,21 +46,6 @@ func (w *wizard) updateLiturgy(m *model, msg tea.Msg) (screen, tea.Cmd) {
 		}
 		if n > 0 {
 			return w, w.editStep(m, w.cursor, steps[w.cursor])
-		}
-	case "d", "x":
-		if n > 0 {
-			w.d.steps = append(steps[:w.cursor], steps[w.cursor+1:]...)
-			w.cursor = max(0, min(w.cursor, len(w.d.steps)-1))
-		}
-	case "K":
-		if w.cursor > 0 {
-			steps[w.cursor], steps[w.cursor-1] = steps[w.cursor-1], steps[w.cursor]
-			w.cursor--
-		}
-	case "J":
-		if w.cursor < n-1 {
-			steps[w.cursor], steps[w.cursor+1] = steps[w.cursor+1], steps[w.cursor]
-			w.cursor++
 		}
 	case "tab", "ctrl+s", "right", "l":
 		if n == 0 {
@@ -85,15 +66,22 @@ func (w *wizard) updateChoosing(m *model, key string) tea.Cmd {
 	case "down", "j":
 		w.kind = min(len(kinds)-1, w.kind+1)
 	case "enter":
-		w.choosing = false
-		return w.editStep(m, -1, newStepDraft(kinds[w.kind]))
+		return w.begin(m, kinds[w.kind])
 	default:
 		if len(key) == 1 && key[0] >= '1' && int(key[0]-'1') < len(kinds) {
-			w.choosing = false
-			return w.editStep(m, -1, newStepDraft(kinds[key[0]-'1']))
+			return w.begin(m, kinds[key[0]-'1'])
 		}
 	}
 	return nil
+}
+
+// begin writes a new step, or a new subject, of kind k.
+func (w *wizard) begin(m *model, k librarium.Kind) tea.Cmd {
+	w.choosing = false
+	if w.d.bearsSubjects() {
+		return w.editSubject(m, -1, newSubjectDraft(k))
+	}
+	return w.editStep(m, -1, newStepDraft(k))
 }
 
 // editStep writes the step sd at place i of the liturgy (-1 for a new one).
@@ -123,12 +111,19 @@ func copyMap[T any](src map[string]T) map[string]T {
 func (w *wizard) liturgyView(m *model, width, height int) string {
 	t := m.t
 	if w.choosing {
-		lines := []string{t.text.Render("Choose the kind of the new step:"), ""}
+		head, words := "Choose the kind of the new step:", kindWords
+		if w.d.bearsSubjects() {
+			head, words = "Choose the designation of the new subject:", designationWords
+		}
+		lines := []string{t.text.Render(head), ""}
 		for i, k := range w.kinds() {
-			line := fmt.Sprintf("%d %s %-14s", i+1, kindGlyph(k), k.Key()) + t.dim.Render(kindWords[k])
+			line := fmt.Sprintf("%d %s %-14s", i+1, kindGlyph(k), k.Key()) + t.dim.Render(words[k])
 			lines = append(lines, w.marked(m, i == w.kind, line, width))
 		}
 		return strings.Join(lines, "\n")
+	}
+	if w.d.bearsSubjects() {
+		return w.subjectsView(m, width, height)
 	}
 	lines := []string{t.text.Render("The liturgy of the " + w.d.noun() + " " + w.d.name + ", performed in order:"), ""}
 	if len(w.d.steps) == 0 {
