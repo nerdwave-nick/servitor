@@ -9,69 +9,94 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/librarium"
 )
 
-// grid is the omens of a subject as one page writes them: a row for each
-// aspect, which bears an omen of its own or the omen of every other aspect,
-// written under "*"; the row of "*" stands while an aspect bears it.
+// grid is a page of rows, one for each of its keys — the aspects, or the
+// omens of a machine-spirit — where a row bears a value of its own or the
+// value of every other row, written under "*"; the row of "*" stands while
+// a row bears it.
 type grid interface {
-	page(f *form, aspects []string)
-	keep(f *form, aspects []string)
+	page(f *form)
+	keep(f *form)
+	// turned names the field whose turning reshapes the page; "" when none
+	// turned.
+	turned(f *form) string
 }
 
-// omenGrid writes omens of type T: add writes the fields of one row, at an
-// aspect or "*", and read reads them back.
+// omenGrid writes values of type T keyed by keys: add writes the fields of
+// one row, at a key or "*", and read reads them back. noun names a key
+// ("aspect" or "omen"), and shares tells what a row bearing the value of
+// every other row bears.
 type omenGrid[T any] struct {
-	v    *varied[T]
-	add  func(f *form, at, where string, x T)
-	read func(f *form, at string) T
+	v      *varied[T]
+	keys   []string
+	noun   string
+	shares string
+	add    func(f *form, at, where string, x T)
+	read   func(f *form, at string) T
 }
 
-func (g omenGrid[T]) page(f *form, aspects []string) {
+func (g omenGrid[T]) page(f *form) {
 	sharing := false
-	for _, a := range aspects {
-		x, same := g.v.value(a)
-		f.addToggle("same:"+a, fmt.Sprintf("Aspect %q bears the omen of every other aspect", a), same,
-			`Written under "*": the omen of every aspect that bears none of its own. space turns it.`)
+	title := strings.ToUpper(g.noun[:1]) + g.noun[1:]
+	for _, k := range g.keys {
+		x, same := g.v.value(k)
+		f.addToggle("same:"+k, fmt.Sprintf("%s %q %s", title, k, g.shares), same,
+			fmt.Sprintf(`Written under "*", for every %s that bears none of its own. space turns it.`, g.noun))
 		if !same {
-			g.add(f, a, fmt.Sprintf("aspect %q", a), x)
+			g.add(f, k, fmt.Sprintf("%s %q", g.noun, k), x)
 		}
 		sharing = sharing || same
 	}
 	if sharing {
-		g.add(f, librarium.Fallback, "every other aspect (*)", g.v.shared)
+		g.add(f, librarium.Fallback, "every other "+g.noun+" (*)", g.v.shared)
 	}
 }
 
-// keep keeps the rows of the page. An aspect turned to bear the omen of
-// every other aspect gives it its own when none is yet written; one turned
-// to bear its own begins with that of every other aspect.
-func (g omenGrid[T]) keep(f *form, aspects []string) {
+// keep keeps the rows of the page. A row turned to bear the value of every
+// other row gives it its own when none is yet written; one turned to bear
+// its own begins with that of every other row.
+func (g omenGrid[T]) keep(f *form) {
 	v := g.v
 	if f.has("omen:" + librarium.Fallback) {
 		v.shared, v.hasShared = g.read(f, librarium.Fallback), true
 	}
-	for _, a := range aspects {
-		same, shown := f.get("same:"+a) == "true", f.has("omen:"+a)
+	for _, k := range g.keys {
+		same, shown := f.get("same:"+k) == "true", f.has("omen:"+k)
 		switch {
 		case same && shown && !v.hasShared:
-			v.set(a, g.read(f, a), true)
+			v.set(k, g.read(f, k), true)
 		case same:
-			delete(v.own, a)
+			delete(v.own, k)
 		case shown:
-			v.set(a, g.read(f, a), false)
+			v.set(k, g.read(f, k), false)
 		default:
-			v.set(a, v.shared, false)
+			v.set(k, v.shared, false)
 		}
 	}
 }
 
-// omenGrid is the grid of the omens of the subject being written: the
-// anchors of a tether, or the scripture of a sanctum or transcription.
-func (w *wizard) omenGrid() grid {
+func (g omenGrid[T]) turned(f *form) string {
+	for _, k := range g.keys {
+		if (f.get("same:"+k) == "true") == f.has("omen:"+k) {
+			return "same:" + k
+		}
+	}
+	return ""
+}
+
+// gridOf is the grid of the page p of the subject being written: its omens,
+// or the auspex or enact words of a machine-spirit.
+func (w *wizard) gridOf(p pageKind) grid {
+	if w.work.kind == kindMachineSpirit {
+		return w.spiritGrid(p)
+	}
+	aspects := w.d.aspectList()
 	if w.work.kind == librarium.KindTether {
-		return omenGrid[librarium.Anchor]{v: &w.work.anchor, add: addAnchor, read: readAnchor}
+		return omenGrid[librarium.Anchor]{v: &w.work.anchor, keys: aspects, noun: "aspect",
+			shares: "bears the omen of every other aspect", add: addAnchor, read: readAnchor}
 	}
 	transcription := w.work.kind == librarium.KindTranscription
-	return omenGrid[librarium.Scripture]{v: &w.work.scripture, read: readScripture,
+	return omenGrid[librarium.Scripture]{v: &w.work.scripture, keys: aspects, noun: "aspect",
+		shares: "bears the omen of every other aspect", read: readScripture,
 		add: func(f *form, at, where string, sc librarium.Scripture) {
 			f.addArea("omen:"+at, "Omen of "+where+": its scripture", sc.Text,
 				"The lines the vessel holds in this aspect; empty is allowed.")
@@ -108,28 +133,18 @@ func readAnchor(f *form, at string) librarium.Anchor {
 	return librarium.Anchor{Path: strings.TrimSpace(f.get("omen:" + at))}
 }
 
-// omensPage writes the omens of the subject on one page.
-func (w *wizard) omensPage(m *model) tea.Cmd {
+// gridPage writes the grid of the page p on one page.
+func (w *wizard) gridPage(m *model, p pageKind) tea.Cmd {
 	f := newForm(m.t)
-	w.omenGrid().page(f, w.d.aspectList())
-	return w.setForm(m, pageOmens, 0, f)
+	w.gridOf(p).page(f)
+	return w.setForm(m, p, 0, f)
 }
 
-// omensTurned names the row of the omens page whose aspect turned to bear
-// the omen of every other aspect, or its own; "" when none turned.
-func (w *wizard) omensTurned() string {
-	for _, a := range w.d.aspectList() {
-		if (w.form.get("same:"+a) == "true") == w.form.has("omen:"+a) {
-			return "same:" + a
-		}
-	}
-	return ""
-}
-
-// turnOmens shows the rows as turned, keeping all the page holds.
-func (w *wizard) turnOmens(m *model, key string) tea.Cmd {
-	w.omenGrid().keep(w.form, w.d.aspectList())
-	w.omensPage(m)
+// turnGrid shows the page as turned by the field key, keeping all the page
+// holds.
+func (w *wizard) turnGrid(m *model, key string) tea.Cmd {
+	w.gridOf(w.page).keep(w.form)
+	w.gridPage(m, w.page)
 	for i, fl := range w.form.fields {
 		if fl.key == key {
 			return w.form.setFocus(i)

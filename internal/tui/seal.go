@@ -74,6 +74,9 @@ func (w *wizard) updateSeal(m *model, msg tea.Msg) (screen, tea.Cmd) {
 	switch k.String() {
 	case "esc", "left", "h":
 		w.station = stationLiturgy
+		if w.d.bearsSubjects() {
+			w.station = stationObservances
+		}
 	case "down", "j":
 		s.offset++
 	case "up", "k":

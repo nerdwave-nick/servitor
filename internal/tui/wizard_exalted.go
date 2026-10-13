@@ -8,21 +8,36 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/librarium"
 )
 
-// addExaltation offers the step sd its exaltation, save a vox-cast, and
-// an exalted incantation or litany its relics; a subject is offered its
-// own.
-func addExaltation(f *form, sd stepDraft, subject bool) {
+// exaltedHints tell what the exaltation of a verse, subject or observance
+// does.
+var exaltedHints = map[string]string{
+	"verse":      "Performed",
+	"subject":    "Set",
+	"observance": "Spoken",
+}
+
+// exaltedNoun names what the step being written is exalted as: a verse, a
+// subject or an observance.
+func (w *wizard) exaltedNoun() string {
+	switch {
+	case w.station == stationObservances:
+		return "observance"
+	case w.d.bearsSubjects():
+		return "subject"
+	}
+	return "verse"
+}
+
+// addExaltation offers the step sd its exaltation as the noun it is
+// written as, save a vox-cast, and exalted speech or an exalted
+// machine-spirit its relics.
+func addExaltation(f *form, sd stepDraft, noun string) {
 	if sd.kind == librarium.KindVoxCast {
 		return
 	}
 	exalted := sd.fixed["exalted"] == "true"
-	if subject {
-		f.addToggle("exalted", "Exalted subject", exalted, "Set with the machine's own authority, by an exalted "+
-			"servitor from the sanction of its master; space turns it.")
-		return
-	}
-	f.addToggle("exalted", "Exalted verse", exalted, "Performed with the machine's own authority, by an exalted "+
-		"servitor from the sanction of its master; space turns it.")
+	f.addToggle("exalted", "Exalted "+noun, exalted, exaltedHints[noun]+" with the machine's own authority, by an "+
+		"exalted servitor from the sanction of its master; space turns it.")
 	if exalted && bearsRelics(sd.kind) {
 		f.addArea("relics", "Relics, one per line", strings.Join(sd.relics, "\n"),
 			"The scriptures the exalted speech reads beside its scroll, each reckoned from the hall of the "+
@@ -30,9 +45,10 @@ func addExaltation(f *form, sd stepDraft, subject bool) {
 	}
 }
 
-// bearsRelics reports whether a step of kind k, once exalted, bears relics.
+// bearsRelics reports whether a step of kind k, once exalted, bears relics:
+// speech, and the enact words of a machine-spirit.
 func bearsRelics(k librarium.Kind) bool {
-	return k == librarium.KindIncantation || k == librarium.KindLitany
+	return k == librarium.KindIncantation || k == librarium.KindLitany || k == kindMachineSpirit
 }
 
 // turnExaltation unveils the relics of an incantation or litany once it is

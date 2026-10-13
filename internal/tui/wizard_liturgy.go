@@ -78,7 +78,10 @@ func (w *wizard) updateChoosing(m *model, key string) tea.Cmd {
 // begin writes a new step, or a new subject, of kind k.
 func (w *wizard) begin(m *model, k librarium.Kind) tea.Cmd {
 	w.choosing = false
-	if w.d.bearsSubjects() {
+	switch {
+	case w.station == stationObservances:
+		return w.editObservance(m, -1, observanceDraft{step: newStepDraft(k)})
+	case w.d.bearsSubjects():
 		return w.editSubject(m, -1, newSubjectDraft(k))
 	}
 	return w.editStep(m, -1, newStepDraft(k))
@@ -112,17 +115,23 @@ func (w *wizard) liturgyView(m *model, width, height int) string {
 	t := m.t
 	if w.choosing {
 		head, words := "Choose the kind of the new step:", kindWords
-		if w.d.bearsSubjects() {
+		switch {
+		case w.station == stationObservances:
+			head, words = "Choose the designation of the new observance:", designationWords
+		case w.d.bearsSubjects():
 			head, words = "Choose the designation of the new subject:", designationWords
 		}
 		lines := []string{t.text.Render(head), ""}
 		for i, k := range w.kinds() {
-			line := fmt.Sprintf("%d %s %-14s", i+1, kindGlyph(k), k.Key()) + t.dim.Render(words[k])
+			line := fmt.Sprintf("%d %s %-14s", i+1, kindGlyph(k), kindKey(k)) + t.dim.Render(words[k])
 			lines = append(lines, w.marked(m, i == w.kind, line, width))
 		}
 		return strings.Join(lines, "\n")
 	}
-	if w.d.bearsSubjects() {
+	switch {
+	case w.station == stationObservances:
+		return w.observancesView(m, width, height)
+	case w.d.bearsSubjects():
 		return w.subjectsView(m, width, height)
 	}
 	lines := []string{t.text.Render("The liturgy of the " + w.d.noun() + " " + w.d.name + ", performed in order:"), ""}

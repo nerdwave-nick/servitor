@@ -14,8 +14,13 @@ now. The auspex is an object of up to four keys:
               when it runs out, its whole process group is slain
   "exalted"   true when only the root may read the subject (see below)
 
-At least one of "scan" and "trials" is demanded, and with both the scan
-reads. An auspex that falls, outlasts its patience, prints nothing, prints
+At least one of "scan" and "trials" is demanded. An auspex holding both is
+read by its scan, by every ritual and by the invocation before it sets
+anything. Its trials only prove, once the invocation has set or restored
+the subject, that the omen commanded now shows: its trial must hold, and an
+omen bearing no trial shows when every trial fails, whatever the scan would
+print. The augury, the census, the vigil, the cogitator and completion
+never speak them. An auspex that falls, outlasts its patience, prints nothing, prints
 an omen never declared, or whose reading no omen fits is mute: it gives no
 omen, and is never mistaken for one. A machine-spirit without an auspex
 cannot be read: it is enacted on every invocation and never proven, which

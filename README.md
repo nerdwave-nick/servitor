@@ -377,7 +377,10 @@ and its `enact` words set it. From
     allowed): all are spoken at once, and an omen fits when its trial ends
     with the death-mark 0. When no trial holds, the omens that bear no trial
     fit. Each trial hears its own omen as `{{omen}}` and `SERVITOR_OMEN`.
-  * With both, the scan reads and the trials are not spoken while reading.
+  * With both, the scan reads, and the trials are spoken only to prove,
+    once the invocation has set or restored the subject, that the omen
+    commanded shows: its trial must hold, and an omen bearing no trial
+    shows when every trial fails, whatever the scan would print.
   * An auspex that falls, outlasts its patience, prints nothing or an omen
     that is not declared, or whose trial is slain, is **mute**: it gives no
     omen, and is never mistaken for an aspect. One slow trial makes the
@@ -1293,16 +1296,23 @@ lapsed or never laid, no intercessor, the servitor not installed, a proof
 dismissed — is shown as a heresy with the words the intercessor spoke, and
 nothing is touched.
 
-The consecration wizard (`n`, `e`, `c`) leads a rite through its stations:
+The consecration wizard (`n`, `e`, `c`) builds every form, so that no
+scripture need be written by hand. It leads a rite through its stations:
 the **Rite** (name, purpose, its nature, a rite of aspects or an edict, then
-aspects, inscriptions and the vox-cast list), then its **Subjects** (`a`
-adds one by designation, `J`/`K` reorder, `d` strikes; an omens grid gives
-each aspect its omen, "every other aspect" writing `"*"`) or, for an edict,
-its **Liturgy**, and the **Seal**, where the scripture stands as it will be
+aspects, inscriptions and the vox-cast list); its **Subjects** (`a` adds one
+by designation, `J`/`K` reorder, `d` strikes; an omens grid gives each
+aspect its omen, "every other aspect" writing `"*"`; a machine-spirit has a
+page for its auspex, the scan and a trial per omen, its patience and, when
+exalted, whether its auspex is exalted too, and a page for its enact words,
+one row per omen; a last page names, per observance, whether the subject
+bears it as introit or recessional); its **Observances** (incantations and
+litanies, their words or scroll and offerings, reversion, the aspects their
+`to` and `from` admit, exalted and relics) or, for an edict, its
+**Liturgy**; and the **Seal**, where the scripture stands as it will be
 written, judged by the Inquisition before anything is written. A heretical
 rite cannot be sealed. Amended or replicated, a rite keeps its pattern. In
-forms, `tab`/`↑↓` move between fields, `enter`
-advances, `ctrl+s` seals the page and `esc` steps back.
+forms, `tab`/`↑↓` move between fields, `enter` advances, `ctrl+s` seals the
+page and `esc` steps back. `servitor expound cogitator` recites every page.
 
 ## Conversion of the elder pattern
 

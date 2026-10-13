@@ -21,12 +21,13 @@
 // the trials of its auspex, and the omens agree by intersection
 // (intersect). An exalted auspex is never spoken here. What each subject
 // showed is kept for the invocation that plans by it (Augury.Readings), and
-// ReadSubject reads one subject anew to prove it once set. Where the live
-// omen of a machine-spirit is not heard — its auspex exalted or forgone —
-// the omen its data-slate recorded at the last invocation serves, marked
-// stale (remembered), unless recorded in another boot or no longer
-// declared; a stale omen alone never desecrates the rite. An invocation
-// never trusts one.
+// ReadSubject reads one subject anew to prove it once set: by the trials
+// of its auspex when it holds them, though a scan beside them reads. Where
+// the live omen of a machine-spirit is not heard — its auspex exalted or
+// forgone — the omen its data-slate recorded at the last invocation
+// serves, marked stale (remembered), unless recorded in another boot or no
+// longer declared; a stale omen alone never desecrates the rite. An
+// invocation never trusts one.
 //
 // An edict bears no aspect and yields no omen: it lies dormant until first
 // proclaimed, stands proclaimed after a last invocation that ended in
