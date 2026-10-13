@@ -5,7 +5,6 @@ import (
 	"encoding/json/v2"
 	"os"
 	"path/filepath"
-	"slices"
 	"strings"
 	"testing"
 )
@@ -173,5 +172,5 @@ func (e exampleEnv) lastChanged(t *testing.T) []string {
 	if line.Verdict != "triumph" {
 		t.Fatalf("the last invocation ended %q: %s", line.Verdict, lines[len(lines)-1])
 	}
-	return slices.Clip(line.Changed)
+	return line.Changed
 }
