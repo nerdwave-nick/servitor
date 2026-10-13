@@ -78,8 +78,7 @@ func (d *drawer) spirit(ms *librarium.MachineSpirit) (Verse, error) {
 	if v.Omen, err = d.omen(ms, d.aspect); err != nil {
 		return v, err
 	}
-	enact := d.scope
-	enact.Omen = true
+	var declared []string
 	for _, aspect := range d.rite.Aspects {
 		omen, err := d.omen(ms, aspect)
 		if err != nil {
@@ -88,17 +87,51 @@ func (d *drawer) spirit(ms *librarium.MachineSpirit) (Verse, error) {
 		if _, drawn := v.Enact[omen]; drawn {
 			continue // an omen several aspects share
 		}
+		declared = append(declared, omen)
 		text, ok := ms.Enact.For(omen)
 		if !ok {
 			return v, d.lament("no enact words are written for the omen %q, and no \"*\" serves in their stead", omen)
 		}
-		values := d.values
-		values.Omen = omen
-		if v.Enact[omen], err = d.renderIn(enact, text, values); err != nil {
+		if v.Enact[omen], err = d.omened(text, omen); err != nil {
+			return v, err
+		}
+	}
+	if a := ms.Auspex; a != nil && a.Exalted {
+		if v.Auspex, err = d.auspex(a, declared, ms.Omens.IsZero()); err != nil {
 			return v, err
 		}
 	}
 	return v, d.speech(&v, librarium.Utterance{Tongue: ms.Tongue, Patience: ms.Patience, Relics: ms.Relics})
+}
+
+// omened renders words that hear omen as {{omen}}: enact words, or a trial.
+func (d *drawer) omened(text, omen string) (string, error) {
+	scope, values := d.scope, d.values
+	scope.Omen, values.Omen = true, omen
+	return d.renderIn(scope, text, values)
+}
+
+// auspex draws the privileged auspex a of an exalted machine-spirit, which
+// declares the omens declared (the names of aspects when named): its scan,
+// the trial of every declared omen that bears one, and its patience.
+func (d *drawer) auspex(a *librarium.SpiritAuspex, declared []string, named bool) (*Auspex, error) {
+	x := &Auspex{Trials: map[string]string{}, Patience: a.Wait(), NamesAspects: named}
+	var err error
+	if a.Scan != "" {
+		if x.Scan, err = d.render(a.Scan); err != nil {
+			return x, err
+		}
+	}
+	for _, omen := range declared {
+		text, ok := a.Trials.For(omen)
+		if !ok {
+			continue // what remains when every trial fails
+		}
+		if x.Trials[omen], err = d.omened(text, omen); err != nil {
+			return x, err
+		}
+	}
+	return x, nil
 }
 
 // omen is the omen aspect demands of the machine-spirit, rendered for that

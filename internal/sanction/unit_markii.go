@@ -113,6 +113,13 @@ type (
 		Tongue      string            `json:"tongue"`
 		Patience    string            `json:"patience"`
 		Relics      []Relic           `json:"relics"`
+		Auspex      *auspexItem       `json:"auspex,omitzero"` // a privileged auspex alone
+	}
+	auspexItem struct {
+		Scan         string            `json:"scan"`
+		Trials       map[string]string `json:"trials"`
+		Patience     string            `json:"patience"`
+		NamesAspects bool              `json:"names-aspects"`
 	}
 	observanceItem struct {
 		Name        string    `json:"name"`
@@ -153,8 +160,12 @@ func (v Verse) marshalItem() ([]byte, error) {
 	case v.Observance != "" || v.Verse != 0:
 		return nil, fmt.Errorf("%s is no exalted item of a state rite", v.Named())
 	case v.Spirit():
-		w = spiritSubject{v.Subject, v.Place, librarium.DesignationMachineSpirit, v.Omen, enactOf(v.Enact), v.Tongue,
-			v.Patience.String(), orEmpty(v.Relics)}
+		sp := spiritSubject{v.Subject, v.Place, librarium.DesignationMachineSpirit, v.Omen, enactOf(v.Enact), v.Tongue,
+			v.Patience.String(), orEmpty(v.Relics), nil}
+		if a := v.Auspex; a != nil {
+			sp.Auspex = &auspexItem{a.Scan, enactOf(a.Trials), a.Patience.String(), a.NamesAspects}
+		}
+		w = sp
 	case v.Kind == librarium.KindSanctum:
 		w = sanctumSubject{v.Subject, v.Place, v.Kind.Key(), v.Target, v.Ward, v.Glyph, v.ClosingGlyph, v.Consecrate,
 			orEmpty(v.Scripture)}
@@ -233,6 +244,10 @@ func (v *Verse) unmarshalItem(data []byte, keys map[string]jsontext.Value) error
 			*v = Verse{Subject: w.Name, Place: w.Place, Omen: w.Omen, Enact: maps.Clone(w.Enact), Tongue: w.Tongue,
 				Relics: w.Relics}
 			v.Patience, err = time.ParseDuration(w.Patience)
+			if a := w.Auspex; a != nil && err == nil {
+				v.Auspex = &Auspex{Scan: a.Scan, Trials: maps.Clone(a.Trials), NamesAspects: a.NamesAspects}
+				v.Auspex.Patience, err = time.ParseDuration(a.Patience)
+			}
 		}
 	case librarium.DesignationIncantation, librarium.DesignationLitany:
 		err = v.unmarshalObservance(data, designation)

@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/nerdwave-nick/servitor/internal/augury"
 	"github.com/nerdwave-nick/servitor/internal/invocation"
@@ -81,7 +82,9 @@ func printForesight(w io.Writer, res rituals.Result) {
 
 // foreseenPlan tells what a subject was read to show and whether it
 // changes: a machine-spirit also the omen read and the omen commanded,
-// «"on" → "off", changing».
+// «"on" → "off", changing». A privileged auspex is never spoken in
+// foresight: the omen the data-slate recorded is told stale, else that it
+// is read at invocation.
 func foreseenPlan(p invocation.SubjectPlan, spirit bool) string {
 	told := "unchanged"
 	if p.Changing {
@@ -94,6 +97,10 @@ func foreseenPlan(p invocation.SubjectPlan, spirit bool) string {
 	switch {
 	case p.Unread:
 		read = "(no auspex)"
+	case p.Privileged && p.Stale:
+		read += " (stale, read " + p.ReadAt.UTC().Format(time.RFC3339) + ")"
+	case p.Privileged:
+		read = "(read at invocation)"
 	case p.Mute:
 		read = "(mute)"
 	}

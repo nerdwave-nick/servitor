@@ -165,6 +165,9 @@ func performable(plan sanction.Plan, voiced bool) error {
 			if _, ok := v.Enact[v.Omen]; !ok || v.Omen == "" {
 				return fmt.Errorf("%s bears no enact words of its omen %q", v.Named(), v.Omen)
 			}
+			if err := speakable(v); err != nil {
+				return err
+			}
 		}
 		if v.Speaks() {
 			if !voiced {
@@ -182,6 +185,27 @@ func performable(plan sanction.Plan, voiced bool) error {
 				return fmt.Errorf("the vessel %s of %s lies beneath %s, where no vessel is kept", v.Target,
 					v.Named(), hall)
 			}
+		}
+	}
+	return nil
+}
+
+// speakable checks the privileged auspex of the machine-spirit v, if it
+// bears one: words of a scan or trials, each trial of an omen it declares,
+// and a patience.
+func speakable(v sanction.Verse) error {
+	a := v.Auspex
+	switch {
+	case a == nil:
+		return nil
+	case a.Scan == "" && len(a.Trials) == 0:
+		return fmt.Errorf("the exalted auspex of %s holds neither a scan nor trials", v.Named())
+	case a.Patience <= 0:
+		return fmt.Errorf("the exalted auspex of %s bears no patience", v.Named())
+	}
+	for omen := range a.Trials {
+		if _, ok := v.Enact[omen]; !ok {
+			return fmt.Errorf("the exalted auspex of %s tries the omen %q, which it does not declare", v.Named(), omen)
 		}
 	}
 	return nil

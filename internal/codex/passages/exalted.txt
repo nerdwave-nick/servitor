@@ -31,6 +31,25 @@ machine-spirit by its own auspex, and should the invocation fall, the
 exalted servitor restores each machine-spirit to the omen it was read to
 show, and the invoker proves that too.
 
+What only the root can read — nft list ruleset, /sys/kernel/debug, a
+scroll sealed 0600 — an exalted subject reads by an auspex itself marked
+"exalted": {"scan": "nft list table inet gaming", "exalted": true}. Its
+words, tongue, patience and relics are part of the sanction, so editing
+them lapses every aspect. A rite holding such an auspex always raises the
+exalted servitor, since what changes cannot be known without it; it reads
+every such subject at once, before anything is performed, and matches what
+each printed against the subject's declared omens itself, telling only the
+omens that fit, or none: never the words printed. So too an exalted
+sanctum, transcription or tether its invoker may not read: the exalted
+servitor tells only whether it already stands as the aspect demands, never
+its scripture. Then the plan is whole, and what stands as demanded is
+passed over. The exalted servitor proves what it set or restored of such a
+subject by the same auspex, its trials when it bears them, and the omens it
+was told to show are kept on the data-slate, marked "exalted". The augury,
+the census, the vigil, completion and foresight never speak such an
+auspex; they tell the omen last recorded, stale, and foresight that it is
+read at invocation when none is.
+
 The words of an exalted verse are fixed when its master sanctions them:
 commands, reversions, vessels, anchors, offerings, and scripture inline or
 illuminated from a tome. {{aspect}}, {{rite.name}} and an inscription taken

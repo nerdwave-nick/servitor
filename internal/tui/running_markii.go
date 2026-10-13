@@ -106,6 +106,10 @@ func readOmen(p invocation.SubjectPlan) string {
 	switch {
 	case p.Unread:
 		return "(no auspex)"
+	case p.Privileged && p.Stale:
+		return strconv.Quote(p.Read) + " (stale)"
+	case p.Privileged:
+		return "(read at invocation)"
 	case p.Mute:
 		return "(mute)"
 	}

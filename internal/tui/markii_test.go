@@ -14,7 +14,8 @@ import (
 // TestMarkII_TheCogitatorStandsFirmAndPerformsNothing: rites of pattern
 // Mark II are listed and shown beside those of Mark I, and every key upon
 // them answers without the cogitator falling; a state rite whose subject
-// bears a privileged auspex is not performed (its edicts are proclaimed, see
+// bears a privileged auspex is not performed while it stands unsanctioned,
+// and its privileged auspex is never spoken (its edicts are proclaimed, see
 // edict_markii_test.go, and other state rites invoked, see
 // TestMarkII_TheCogitatorInvokesAStateRite). The wizard opens upon an
 // edict, and refuses to amend or replicate a rite of machine-spirits, whose
@@ -46,14 +47,15 @@ func TestMarkII_TheCogitatorStandsFirmAndPerformsNothing(t *testing.T) {
 	refused := func(keys ...string) {
 		t.Helper()
 		h.keys("r")
-		h.mustNotShow("yet the rite of performance")
+		h.mustNotShow("stands unsanctioned")
 		h.keys(keys...)
 		h.await()
-		h.mustShow(`is written in pattern "Mark II"`, "yet the rite of performance")
+		h.mustShow("is exalted", "stands unsanctioned", "servitor sanction gaming")
 	}
 	refused("g", "j", "space")
 	h.mustShow(`the rite "gaming"`)
-	refused("esc", "g", "j", "enter", "enter")
+	h.keys("esc")
+	refused("g", "j", "enter", "enter")
 	h.mustShow(`the rite "gaming"`)
 	h.keys("esc", "h", "esc", "i", "esc", "?", "esc", "j", "k")
 	if _, err := os.Stat(filepath.Join(h.dataDir, "m")); err == nil {

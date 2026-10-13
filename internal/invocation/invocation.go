@@ -79,6 +79,9 @@ type Reading struct {
 	// Exalted marks a reading the exalted servitor made, the invoker
 	// being unable to read the subject itself.
 	Exalted bool
+	// Stale marks the omen the data-slate recorded for a subject whose
+	// privileged auspex was not heard: only a foresight reads one.
+	Stale bool
 }
 
 // Reader reads the subject at index i of a state rite's subjects anew,
@@ -125,6 +128,7 @@ type Invocation struct {
 	foresight []Foresight
 	heresies  Heresies
 	performed bool
+	unread    []string // the subjects the exalted servitor reads (see Unread)
 }
 
 // Prepare runs the pre-flight of rite r for opts. The returned invocation

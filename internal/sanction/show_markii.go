@@ -24,6 +24,18 @@ func (s *shower) subject(v Verse) {
 	for _, omen := range sortedKeys(v.Enact) {
 		s.field("enact "+word(omen), v.Enact[omen])
 	}
+	if a := v.Auspex; a != nil {
+		if a.Scan != "" {
+			s.field("exalted auspex scan", a.Scan)
+		}
+		for _, omen := range sortedKeys(a.Trials) {
+			s.field("exalted auspex trial "+word(omen), a.Trials[omen])
+		}
+		s.field("exalted auspex patience", a.Patience.String())
+		if a.NamesAspects {
+			s.add(3, "exalted auspex prints the names of aspects")
+		}
+	}
 	s.speech(v)
 }
 

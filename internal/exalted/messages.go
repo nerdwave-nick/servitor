@@ -21,6 +21,11 @@ type Handshake struct {
 // Request is every later line the invoker's servitor speaks: exactly one of
 // its members.
 type Request struct {
+	// Read names subjects of a state rite of pattern Mark II the invoker
+	// cannot read itself — those whose auspex is privileged, and the
+	// sanctums, transcriptions and tethers hidden from it — to be read by
+	// the exalted servitor, once, before any item is performed.
+	Read []string `json:"read,omitzero"`
 	// Perform performs the exalted item named: of a liturgy, the verse of
 	// that number, which must be the next of the plan; of a state rite of
 	// pattern Mark II, the subject or observance, which must lie after
@@ -53,6 +58,9 @@ const (
 	Reverted Verdict = "reverted"
 	// Faltered: a reversion fell.
 	Faltered Verdict = "faltered"
+	// Beheld: the subjects a read named were read; Sights tell what each
+	// shows.
+	Beheld Verdict = "beheld"
 	// Finished: the session ends, and what was performed is kept.
 	Finished Verdict = "finished"
 	// Sanctioned: the sanction was laid in the store.
@@ -86,6 +94,12 @@ type Reply struct {
 	After   *Seen `json:"after,omitzero"`  // the vessel after it; nil when absent
 	// Heard are the words exalted speech uttered.
 	Heard string `json:"heard,omitzero"`
+	// Sights tell what each subject a read named shows, in the order named.
+	Sights []Sight `json:"sights,omitzero"`
+	// Omens are the declared omens a privileged subject was read to show
+	// once it was set or restored, which proved it: never the words its
+	// auspex printed.
+	Omens []string `json:"omens,omitzero"`
 	// Lament tells why the line was refused or the verse fell or faltered.
 	Lament string `json:"lament,omitzero"`
 	// Reversions are the reversions of an abort, from the last verse
@@ -100,4 +114,15 @@ type Reply struct {
 type Seen struct {
 	Size   int    `json:"size"`
 	SHA256 string `json:"sha256"`
+}
+
+// Sight is what the exalted servitor tells of one subject a read named,
+// never the words its auspex printed nor the scripture of its vessel: of a
+// machine-spirit, the declared omens it fits (none when it is mute); of a
+// sanctum, transcription or tether, whether it already stands as the plan
+// demands.
+type Sight struct {
+	Subject   string   `json:"subject"`
+	Omens     []string `json:"omens,omitzero"`
+	Unchanged bool     `json:"unchanged,omitzero"`
 }

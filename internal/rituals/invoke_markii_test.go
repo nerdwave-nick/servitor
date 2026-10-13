@@ -2,7 +2,6 @@ package rituals
 
 import (
 	"context"
-	"errors"
 	"os"
 	"path/filepath"
 	"slices"
@@ -320,43 +319,6 @@ func TestInvokeII_ForeseesEverySubjectWithoutPerforming(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(fx.state, "servitor")); err == nil {
 		t.Fatal("foresight kept something in the state home")
-	}
-}
-
-// TestInvokeII_RefusesWhatIsNotYetForged: a state rite holding a
-// privileged auspex is refused before anything is read or touched.
-// Observances, common or exalted, and exalted subjects are performed (see
-// observances_markii_test.go and exalting_markii_test.go).
-func TestInvokeII_RefusesWhatIsNotYetForged(t *testing.T) {
-	for name, tc := range map[string]struct{ subjects, observances, why string }{
-		"privileged auspex": {`{"name": "m", "designation": "machine-spirit", "exalted": true,
-		   "auspex": {"scan": "echo read >> $DATA/marker; echo on", "exalted": true}, "enact": {"*": "true"}}`, ``,
-			`the auspex of the subject "m" is exalted`},
-	} {
-		t.Run(name, func(t *testing.T) {
-			fx := newFixture(t)
-			marker := fx.vessel("marker", "")
-			fx.rite("gaming", `{"pattern": "Mark II", "aspects": ["on", "off"], "subjects": [`+tc.subjects+`]`+tc.observances+`}`)
-			for _, p := range []Petition{{Rite: "gaming", Aspect: "off"}, {Rite: "gaming", Aspect: "off", Foresee: true}} {
-				res, err := fx.servitor().Invoke(context.Background(), p)
-				var refused *Unperformable
-				if !errors.As(err, &refused) || res.Outcome != nil || len(res.Foresight) != 0 {
-					t.Fatalf("%+v: %v %+v", p, err, res)
-				}
-				for _, want := range []string{tc.why, `pattern "Mark II"`, "not yet forged"} {
-					if !strings.Contains(err.Error(), want) {
-						t.Errorf("the lament lacks %q: %v", want, err)
-					}
-				}
-				grimdark(t, err.Error())
-			}
-			if got := fx.read(marker); got != "" {
-				t.Fatalf("a refused rite was read or touched: %q", got)
-			}
-			if _, err := os.Stat(filepath.Join(fx.state, "servitor")); err == nil {
-				t.Fatal("a refused invocation kept something in the state home")
-			}
-		})
 	}
 }
 

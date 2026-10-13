@@ -27,6 +27,7 @@ type session struct {
 	next      int  // the index in the plan of the verse to perform next
 	fallen    bool // a verse fell; nothing more is performed
 	reverting bool // a verse was reverted; nothing more is performed
+	beheld    bool // the subjects a read named were read
 	// cursor is where the last item of a state rite performed lies, and
 	// spoken names the observances performed (see order.go).
 	cursor    position
@@ -38,11 +39,12 @@ type session struct {
 
 // deed is one verse or item performed; undo is nil when it changed
 // nothing. A machine-spirit is reverted by restore instead, which enacts
-// the omen named.
+// the omen named and tells the omens that proved a privileged one
+// restored.
 type deed struct {
 	verse   sanction.Verse
 	undo    Undo
-	restore func(ctx context.Context, omen string) (string, error)
+	restore func(ctx context.Context, omen string) (heard string, omens []string, err error)
 	omen    string // the omen restore enacts
 }
 
@@ -153,22 +155,26 @@ func (s *session) serve() int {
 			return s.violated("", err)
 		}
 		switch {
-		case r.Perform != nil && r.Revert == nil && r.Finish == nil && r.Abort == nil:
+		case r.Read != nil && r.Perform == nil && r.Revert == nil && r.Finish == nil && r.Abort == nil:
+			if err := s.readSubjects(r.Read); err != nil {
+				return s.fall(err)
+			}
+		case r.Perform != nil && r.Read == nil && r.Revert == nil && r.Finish == nil && r.Abort == nil:
 			if err := s.performItem(*r.Perform); err != nil {
 				return s.fall(err)
 			}
-		case r.Revert != nil && r.Perform == nil && r.Finish == nil && r.Abort == nil:
+		case r.Revert != nil && r.Read == nil && r.Perform == nil && r.Finish == nil && r.Abort == nil:
 			if err := s.revert(*r.Revert); err != nil {
 				return s.fall(err)
 			}
-		case r.Finish != nil && *r.Finish && r.Perform == nil && r.Revert == nil && r.Abort == nil:
+		case r.Finish != nil && *r.Finish && r.Read == nil && r.Perform == nil && r.Revert == nil && r.Abort == nil:
 			s.record(Entry{Deed: "finish", Verdict: Finished})
 			_ = s.reply(Reply{To: "finish", Verdict: Finished})
 			return markFinished
-		case r.Abort != nil && *r.Abort && r.Perform == nil && r.Revert == nil && r.Finish == nil:
+		case r.Abort != nil && *r.Abort && r.Read == nil && r.Perform == nil && r.Revert == nil && r.Finish == nil:
 			return s.abort()
 		default:
-			return s.violated("", errors.New("a request names exactly one of perform, revert, finish and abort"))
+			return s.violated("", errors.New("a request names exactly one of read, perform, revert, finish and abort"))
 		}
 	}
 }

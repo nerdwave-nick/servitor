@@ -26,14 +26,16 @@ const gamingIIJSON = `{"pattern": "Mark II", "purpose": "enable or disable gamin
 const captureIIJSON = `{"pattern": "Mark II", "edict": true, "vox-cast": ["success"],
   "liturgy": [{"designation": "incantation", "words": "echo proclaimed >> $TARGET.edict"}]}`
 
-// TestMarkII_IsReadByEveryRitualYetNeverInvoked: rites of pattern Mark II
-// stand in the Librarium beside those of Mark I; every reading ritual
-// heeds them, yet invoking or foreseeing a rite of aspects of that pattern
-// whose subject bears a privileged auspex is refused before anything is
-// touched, naming the rite of performance not yet forged. Its edicts are
-// proclaimed (see edict_markii_test.go), and other rites of aspects invoked (see
-// invoke_markii_test.go).
-func TestMarkII_IsReadByEveryRitualYetNeverInvoked(t *testing.T) {
+// TestMarkII_IsReadByEveryRitualYetNeverInvokedUnsanctioned: rites of
+// pattern Mark II stand in the Librarium beside those of Mark I; every
+// reading ritual heeds them. Invoking a rite of aspects of that pattern
+// whose exalted subject bears a privileged auspex is refused before
+// anything is read or touched while it stands unsanctioned, naming the
+// ritual that sanctions it; foreseeing it never speaks the privileged
+// auspex, which is read at invocation. Its edicts are proclaimed (see
+// edict_markii_test.go), and other rites of aspects invoked (see
+// invoke_markii_test.go and exalted_markii_test.go).
+func TestMarkII_IsReadByEveryRitualYetNeverInvokedUnsanctioned(t *testing.T) {
 	e := newEnv(t)
 	e.addRite("rites/gaming.json", gamingIIJSON)
 	e.addRite("rites/capture.json", captureIIJSON)
@@ -49,18 +51,21 @@ func TestMarkII_IsReadByEveryRitualYetNeverInvoked(t *testing.T) {
 	if out := e.mustRun("census"); !strings.Contains(out, "gaming") || !strings.Contains(out, "capture") {
 		t.Errorf("the census does not list the rites of Mark II:\n%s", out)
 	}
-	for _, args := range [][]string{{"invoke", "gaming", "on"}, {"invoke", "gaming", "off", "--foresee"},
-		{"invoke", "gaming", "on", "--binharic"}} {
+	for _, args := range [][]string{{"invoke", "gaming", "on"}, {"invoke", "gaming", "on", "--binharic"}} {
 		out, errOut, code := e.run(args...)
 		if code != markRefused {
 			t.Fatalf("servitor %v: exit %d, want %d\nstdout: %s\nstderr: %s", args, code, markRefused, out, errOut)
 		}
-		for _, want := range []string{`pattern "Mark II"`, "rite of performance", "not yet forged"} {
+		for _, want := range []string{`the subject "nft" is exalted`, "stands unsanctioned", "servitor sanction gaming"} {
 			if !strings.Contains(errOut, want) {
 				t.Errorf("servitor %v: the refusal lacks %q:\n%s", args, want, errOut)
 			}
 		}
 		grimdark(t, errOut)
+	}
+	out := e.mustRun("invoke", "gaming", "off", "--foresee")
+	if !strings.Contains(out, `subject nft · machine-spirit ✠: (read at invocation) → "off", changing`) {
+		t.Errorf("the foresight does not tell that nft is read at invocation:\n%s", out)
 	}
 	for _, mark := range []string{".smt", ".herald", ".nft"} {
 		if _, err := os.Stat(e.target + mark); err == nil {

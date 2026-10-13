@@ -3,6 +3,7 @@ package invocation
 import (
 	"context"
 	"fmt"
+	"slices"
 
 	"github.com/nerdwave-nick/servitor/internal/librarium"
 )
@@ -39,7 +40,24 @@ func (inv *Invocation) subjects(p *preflight) {
 		}
 	}
 	p.subject, p.exalted = "", false
+	inv.unread = p.unread
 	inv.ordain(subjects, p.observances())
+}
+
+// Unread names the subjects of a state rite the invoker cannot read
+// itself, in written order: those whose auspex is privileged, and the
+// exalted sanctums, transcriptions and tethers hidden from it. The exalted
+// servitor reads them in its stead, and their readings, marked Exalted,
+// complete the plan when the invocation is prepared anew with them.
+func (inv *Invocation) Unread() []string { return slices.Clone(inv.unread) }
+
+// reading is what the subject examined was read to show before the
+// invocation.
+func (p *preflight) reading() Reading {
+	if p.index < len(p.opts.Readings) {
+		return p.opts.Readings[p.index]
+	}
+	return Reading{}
 }
 
 // builtIn plans a sanctum, transcription or tether subject by the change
@@ -52,6 +70,13 @@ func (p *preflight) builtIn(step performer) (*Foresight, performer) {
 	}
 	f := step.foresee()
 	changing := f.Vessel != nil && f.Vessel.Changed() || f.Tether != nil && f.Tether.Changed()
+	if hidden := f.Vessel != nil && f.Vessel.Hidden || f.Tether != nil && f.Tether.Hidden; hidden && p.exalted {
+		// What the invoker cannot read, the exalted servitor decides.
+		p.unread = append(p.unread, p.subject)
+		if read := p.reading(); read.Exalted {
+			changing = !slices.Contains(read.Aspects, p.opts.Aspect)
+		}
+	}
 	f.Plan = &SubjectPlan{Changing: changing}
 	if !changing {
 		return &f, nil

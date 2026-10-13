@@ -84,31 +84,6 @@ func (e *Heretical) Error() string {
 	return b.String()
 }
 
-// Unperformable is the lament for a state rite of pattern Mark II that
-// holds what the servitor cannot yet perform: a privileged auspex, which
-// only the exalted servitor may speak. Why tells what, in its own words.
-type Unperformable struct {
-	Name string
-	Why  string
-}
-
-func (e *Unperformable) Error() string {
-	return fmt.Sprintf("the rite %q is written in pattern %q, yet the rite of performance for what it holds is not "+
-		"yet forged within this servitor, for %s: not one subject or observance is read, touched or foreseen",
-		e.Name, librarium.PatternMarkII, e.Why)
-}
-
-// unperformable tells why the state rite r cannot yet be performed; "" when
-// it can.
-func unperformable(r *librarium.Rite) string {
-	for _, sub := range r.Subjects {
-		if ms, ok := sub.Matter.(*librarium.MachineSpirit); ok && ms.Auspex != nil && ms.Auspex.Exalted {
-			return fmt.Sprintf("the auspex of the subject %q is exalted", sub.Name)
-		}
-	}
-	return ""
-}
-
 // Rite returns the rite name, fit to be invoked; the error is *Unrecorded
 // or *Heretical.
 func (s *Servitor) Rite(name string) (*librarium.Rite, error) {

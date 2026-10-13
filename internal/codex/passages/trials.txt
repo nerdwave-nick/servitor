@@ -11,7 +11,9 @@ whole auspex, as does a reading that no omen fits. A key naming no declared
 omen is heresy. Not every omen needs a trial.
 
 Beside a "scan", the trials are not spoken while reading: they only prove,
-after a subject is set, that the omen invoked now shows.
+after a subject is set, that the omen invoked now shows. Trials of an
+auspex itself marked "exalted" are spoken by the exalted servitor alone,
+at invocation.
 
 Kindred passages: auspex, scan, machine-spirit, omens, death-marks
 

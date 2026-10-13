@@ -26,6 +26,10 @@ type exalter struct {
 	reverts error // how the exalted servitor ended reverting by itself
 	settled bool
 	laments []error
+	// proofs are the omens the exalted servitor told a privileged subject
+	// showed when it last set or restored it, by subject, until the
+	// invocation reads them (see reader).
+	proofs map[string][]string
 }
 
 // raise raises the exalted servitor for the invocation of r prepared in
@@ -150,6 +154,7 @@ func (e *exalter) Enact(v invocation.Verse, restore string) (string, bool, error
 
 func (e *exalter) perform(it exalted.Item) (string, bool, error) {
 	r, err := e.ask(exalted.Request{Perform: &it}, "perform", it)
+	e.prove(it, r, err == nil && r.Verdict == exalted.Triumph)
 	switch {
 	case err != nil:
 		return "", false, err
@@ -160,6 +165,21 @@ func (e *exalter) perform(it exalted.Item) (string, bool, error) {
 	}
 	e.lose(fmt.Errorf("%w: the exalted servitor answered %s with %q", errLost, it.Named(), r.Verdict))
 	return "", false, e.lost
+}
+
+// prove keeps the omens the reply r told the subject it names showed, when
+// it proved it (proven); every earlier proof of it is struck.
+func (e *exalter) prove(it exalted.Item, r exalted.Reply, proven bool) {
+	if it.Subject == "" {
+		return
+	}
+	delete(e.proofs, it.Subject)
+	if proven && r.Omens != nil {
+		if e.proofs == nil {
+			e.proofs = map[string][]string{}
+		}
+		e.proofs[it.Subject] = r.Omens
+	}
 }
 
 // Revert bids the exalted servitor revert the exalted verse, subject or
@@ -178,6 +198,7 @@ func (e *exalter) Restore(v invocation.Verse, omen string) (string, bool, error)
 func (e *exalter) revert(it exalted.Item) (string, bool, error) {
 	r, err := e.ask(exalted.Request{Revert: &it}, "revert", exalted.Item{Verse: it.Verse, Subject: it.Subject,
 		Observance: it.Observance})
+	e.prove(it, r, err == nil && r.Verdict == exalted.Reverted)
 	switch {
 	case err != nil:
 		return "", true, e.revertedAlone()

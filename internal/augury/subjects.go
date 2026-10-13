@@ -37,7 +37,10 @@ func (a *Augury) readSubjects(ctx context.Context, s *seer, opts Options) {
 			switch {
 			case m.Auspex == nil:
 			case m.Auspex.Exalted:
-				omens[i] = s.remembered(sub, opts)
+				if omens[i] = s.remembered(sub, opts); omens[i] != nil {
+					o := omens[i]
+					a.Readings[i] = invocation.Reading{Omen: o.Read, Aspects: o.Aspects, At: o.ReadAt, Stale: true}
+				}
 			default:
 				spirits = append(spirits, i)
 			}
@@ -99,6 +102,24 @@ func ReadSubject(ctx context.Context, r *librarium.Rite, i int, opts Options) in
 	return invocation.Reading{}
 }
 
+// Fitting is the reading of the machine-spirit at index i of the state
+// rite r showing the omens shown, as the auspex of an invocation into
+// opts.Target would read them: every aspect whose omen, rendered as such
+// an auspex renders it, is among them, and the omen read when it is one.
+// It reads what the exalted servitor told of a privileged auspex, which
+// names declared omens alone.
+func Fitting(r *librarium.Rite, i int, opts Options, shown []string) invocation.Reading {
+	sub := r.Subjects[i]
+	if ms, ok := sub.Matter.(*librarium.MachineSpirit); !ok || ms.Auspex == nil || len(shown) == 0 {
+		return invocation.Reading{}
+	}
+	slate, _ := ReadSlate(opts.env(), r.Name)
+	s := newSeer(r, slate)
+	s.invoked(opts)
+	read := s.spirit(sub, opts).fits(shown)
+	return invocation.Reading{Omen: read.omen, Aspects: read.aspects}
+}
+
 // hearSpirits awakens the auspexes of the machine-spirits at the indices
 // spirits together, and keeps the omen of each that fits an aspect at its
 // index of omens. The heed tells of them alone: none, forgone, mute when
@@ -150,11 +171,12 @@ func aspectsOf(seen []sighting) []string {
 
 // remembered is the omen the data-slate recorded for the machine-spirit
 // sub, marked stale, where its live omen is not heard; nil when none may
-// serve: during an invocation, which trusts no record, when it was recorded
-// in another boot, or when it is no longer a declared omen of sub. A stale
-// omen fits aspects as a live one does.
+// serve: during an invocation, which trusts no record (a foresight, which
+// performs nothing, does), when it was recorded in another boot, or when
+// it is no longer a declared omen of sub. A stale omen fits aspects as a
+// live one does.
 func (s *seer) remembered(sub librarium.Subject, opts Options) *Omen {
-	if s.target != "" || s.slate == nil {
+	if s.target != "" && !opts.Foreseen || s.slate == nil {
 		return nil
 	}
 	rec, ok := s.slate.Omens[sub.Name]

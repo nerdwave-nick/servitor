@@ -171,6 +171,11 @@ type Options struct {
 	// renders the omens of Target with them before any other, as they will
 	// be set. Outside an invocation they are nil.
 	Inscriptions map[string]string
+	// Foreseen marks the augury of a foresight into Target, which performs
+	// nothing: a privileged auspex, which only the exalted servitor speaks
+	// at invocation, shows the omen the data-slate recorded, stale, as it
+	// does outside an invocation.
+	Foreseen bool
 }
 
 func (o Options) env() librarium.Environment {

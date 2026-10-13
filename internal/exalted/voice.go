@@ -28,6 +28,13 @@ type Speaker interface {
 	// Speak performs the incantation or litany v, returning the words it
 	// uttered and how it is reverted (nil when it reverts nothing).
 	Speak(ctx context.Context, v sanction.Verse) (heard string, undo Undo, err error)
+	// Hear speaks words of the privileged auspex of the machine-spirit v,
+	// hearing omen as SERVITOR_OMEN when it is not "" (a trial): printed
+	// is the first of what they printed on their standard output, spoke
+	// that they ended with the death-mark 0, and err that they were
+	// silent — they outlasted the patience of the auspex, were slain, or
+	// could not be awakened.
+	Hear(ctx context.Context, v sanction.Verse, words, omen string) (printed string, spoke bool, err error)
 	// Close ends the speech of the session, however it ends.
 	Close() error
 }
