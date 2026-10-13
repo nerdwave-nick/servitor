@@ -8,21 +8,22 @@
 //   servitor augury screenshot standing           # proclaimed
 {
   "$schema": "https://raw.githubusercontent.com/nerdwave-nick/servitor/main/schema/rite.schema.json",
-  "pattern": "Mark I",
+  "pattern": "Mark II",
   "purpose": "Capture the visage of the machine",
   "edict": true,
   "inscriptions": {
     // an edict's decree is one plain word, never a map of aspects
     "region": {"purpose": "\"chosen\" lets slurp mark the region, \"whole\" takes every output", "decrees": "chosen"},
   },
+  "vox-cast": ["success"],
   "liturgy": [
     {
-      "incantation": "if [ \"$SERVITOR_INSCRIPTION_REGION\" = whole ]; then grim ~/pictures/visage.png; else grim -g \"$(slurp)\" ~/pictures/visage.png; fi",
+      "designation": "incantation",
+      "words": "if [ \"$SERVITOR_INSCRIPTION_REGION\" = whole ]; then grim ~/pictures/visage.png; else grim -g \"$(slurp)\" ~/pictures/visage.png; fi",
       "patience": "2m",                          // slurp waits upon your hand
       "reversion": "rm -f ~/pictures/visage.png", // strike the visage should a later verse fall
     },
     // lay the visage upon the clipboard; should this fall, the visage is struck
-    {"incantation": "wl-copy --type image/png < ~/pictures/visage.png"},
-    {"vox-cast": "success"},
+    {"designation": "incantation", "words": "wl-copy --type image/png < ~/pictures/visage.png"},
   ],
 }

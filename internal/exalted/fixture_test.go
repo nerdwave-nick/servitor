@@ -50,14 +50,17 @@ func (l *ledger) all() []Entry {
 	return slices.Clone(l.entries)
 }
 
-// deeds are the deeds journaled with their verses and verdicts, e.g.
-// "perform 1 triumph".
+// deeds are the deeds journaled with their verses or items and verdicts,
+// e.g. "perform conf triumph".
 func (l *ledger) deeds() []string {
 	var out []string
 	for _, e := range l.all() {
 		d := e.Deed
 		if e.Verse > 0 {
 			d += " " + strconv.Itoa(e.Verse)
+		}
+		if e.Subject+e.Observance != "" {
+			d += " " + e.Subject + e.Observance
 		}
 		out = append(out, d+" "+string(e.Verdict))
 	}
@@ -74,24 +77,50 @@ type shrine struct {
 	unit    *sanction.Unit
 }
 
-// hallowUnit is the unit of the rite "hallow" for the trials: verse 1
-// transcribes a new scroll, verse 3 rewrites a sanctum, verse 4 binds a
-// tether; verse 2, a common verse, is no part of it.
+// hallowUnit is the unit of the rite "hallow" for the trials: the subject
+// conf (place 1) transcribes a new scroll, lock (place 3) rewrites a
+// sanctum, theme (place 4) binds a tether; the subject at place 2, a
+// common one, is no part of it.
 func hallowUnit() *sanction.Unit {
 	plan := func(aspect string) sanction.Plan {
-		return sanction.Plan{Aspect: aspect, Inscriptions: map[string]string{}, Liturgy: []sanction.Verse{
-			{Verse: 1, Kind: librarium.KindTranscription, Target: "/etc/sysctl.d/90-hallow.conf",
+		return sanction.Plan{Aspect: aspect, Inscriptions: map[string]string{}, Subjects: []sanction.Verse{
+			{Subject: "conf", Place: 0, Kind: librarium.KindTranscription, Target: "/etc/sysctl.d/90-hallow.conf",
 				Scripture: []byte("kernel.hallow = " + aspect + " # " + secret + "\n")},
-			{Verse: 3, Kind: librarium.KindSanctum, Target: "/etc/hallow.conf", Ward: "hallow", Glyph: "#",
-				Scripture: []byte("mode = " + aspect + " " + secret)},
-			{Verse: 4, Kind: librarium.KindTether, Target: "/etc/hallow-theme", Anchor: "/usr/share/hallow/" + aspect},
+			{Subject: "lock", Place: 2, Kind: librarium.KindSanctum, Target: "/etc/hallow.conf", Ward: "hallow",
+				Glyph: "#", Scripture: []byte("mode = " + aspect + " " + secret)},
+			{Subject: "theme", Place: 3, Kind: librarium.KindTether, Target: "/etc/hallow-theme",
+				Anchor: "/usr/share/hallow/" + aspect},
 		}}
 	}
 	return &sanction.Unit{Pattern: sanction.Pattern, UID: me, Rite: "hallow",
-		Environment: sanction.Environment{Pattern: sanction.EnvironmentPattern, Keys: []string{"SERVITOR_ASPECT",
-			"SERVITOR_FORMER_ASPECT", "SERVITOR_INSCRIPTION_WHO", "SERVITOR_RITE"}},
+		Environment: sanction.Environment{Pattern: sanction.Pattern, Keys: []string{"SERVITOR_ASPECT",
+			"SERVITOR_FORMER_ASPECT", "SERVITOR_INSCRIPTION_WHO", "SERVITOR_OMEN", "SERVITOR_RITE"}},
 		Aspects: []sanction.Plan{plan("on"), plan("off")}}
 }
+
+// elderUnit is hallowUnit as a rite of pattern Mark I was drawn: its
+// subjects were verses of a liturgy, numbered by their places.
+func elderUnit() *sanction.Unit {
+	u := hallowUnit()
+	u.Pattern, u.Environment.Pattern = sanction.PatternMarkI, sanction.PatternMarkI
+	u.Environment.Keys = slices.DeleteFunc(u.Environment.Keys, func(k string) bool { return k == "SERVITOR_OMEN" })
+	for i := range u.Aspects {
+		p := &u.Aspects[i]
+		p.Liturgy, p.Subjects = p.Subjects, nil
+		for j := range p.Liturgy {
+			p.Liturgy[j].Verse, p.Liturgy[j].Subject = p.Liturgy[j].Place+1, ""
+			p.Liturgy[j].Place = 0
+		}
+	}
+	return u
+}
+
+// The exalted subjects of hallowUnit.
+var (
+	conf  = subject("conf")
+	lock  = subject("lock")
+	theme = subject("theme")
+)
 
 // original is what /etc/hallow.conf holds before any verse.
 const original = "base = " + secret + "\n"
@@ -269,12 +298,13 @@ func (inv *invoker) hear() Reply {
 	return r
 }
 
-// perform performs verse n, which must triumph.
-func (inv *invoker) perform(n int) Reply {
+// perform performs the verse or item it, which must triumph.
+func (inv *invoker) perform(it *Item) Reply {
 	inv.t.Helper()
-	r := inv.say(Request{Perform: new(n)})
-	if r.Verdict != Triumph || r.To != "perform" || r.Verse != n {
-		inv.t.Fatalf("verse %d: %+v", n, r)
+	r := inv.say(Request{Perform: it})
+	if r.Verdict != Triumph || r.To != "perform" || r.Verse != it.Verse || r.Subject != it.Subject ||
+		r.Observance != it.Observance {
+		inv.t.Fatalf("%s: %+v", it.Named(), r)
 	}
 	return r
 }

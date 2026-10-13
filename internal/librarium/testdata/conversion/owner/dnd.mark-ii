@@ -1,0 +1,25 @@
+{
+  "pattern": "Mark II",
+  "purpose": "turn on/off dnd",
+  "aspects": ["on", "off"],
+  "tongue": "bash",
+  "vox-cast": ["success"],
+  // pattern "Mark I" read the aspect of the whole rite by the auspex "makoctl mode | grep \"dnd\" &>/dev/null && echo \"on\" || echo \"off\"" (patience 200ms);
+  // it is struck, for it read the whole rite, and none of its 2 machine-spirits may bear it alone
+  "subjects": [
+    {
+      "name": "incantation-1",
+      "designation": "machine-spirit",
+      "enact": {
+        "on": "notify-send \"Initiating Vow of Silence\" \"The vox-cast will be turned off. Praise the Omnissiah!\" -t 1000 && sleep 1",
+        "*": ":"
+      },
+      "patience": "2s"
+    },
+    {
+      "name": "incantation-2",
+      "designation": "machine-spirit",
+      "enact": {"on": "makoctl mode -a dnd", "*": "makoctl mode -r dnd"}
+    }
+  ]
+}

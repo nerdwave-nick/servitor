@@ -1,8 +1,9 @@
-// The edict of the specification's sixteenth chapter: a rite without
-// aspects, proclaimed whole, every key an edict may bear written plainly.
+// The edict of the specification's sixteenth chapter, in pattern Mark II: a
+// rite without aspects, proclaimed whole, every key an edict may bear written
+// plainly.
 {
   "$schema": "https://raw.githubusercontent.com/nerdwave-nick/servitor/main/schema/rite.schema.json",
-  "pattern": "Mark I",
+  "pattern": "Mark II",
   "purpose": "Capture the visage of the machine",
   "edict": true,
   "inscriptions": {
@@ -10,12 +11,12 @@
     "reason": {"purpose": "why the visage was taken", "mandatory": true, "decrees": "remembrance"},
   },
   "tongue": "bash",
+  "vox-cast": ["progress", "success"],
   "liturgy": [
-    {"incantation": "grim -g \"$(slurp)\" ~/pictures/{{inscription.region}}.png", "patience": "2m",
-     "reversion": "rm -f ~/pictures/{{inscription.region}}.png"},
-    {"vox-cast": "progress"},
-    {"litany": "scrolls/hymn", "offerings": ["~/pictures", "{{rite.name}}", "{{inscription.reason}}"], "tongue": "sh",
-     "patience": "30s", "reversion": ""},
-    {"vox-cast": "success"},
+    {"designation": "incantation", "words": "grim -g \"$(slurp)\" ~/pictures/{{inscription.region}}.png",
+     "patience": "2m", "reversion": "rm -f ~/pictures/{{inscription.region}}.png"},
+    {"designation": "litany", "scroll": "scrolls/hymn",
+     "offerings": ["~/pictures", "{{rite.name}}", "{{inscription.reason}}"], "tongue": "sh", "patience": "30s",
+     "reversion": ""},
   ],
 }

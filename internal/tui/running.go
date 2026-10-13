@@ -49,12 +49,18 @@ func (h herald) Begin(v invocation.Verse, step, steps int) {
 }
 
 // runningScreen shows an invocation while it is performed: its vox-casts,
-// "step x / n" and the step being performed. ctrl+c halts it.
+// "step x / n" and the step being performed; for a rite of aspects of pattern
+// Mark II, "subject x / n" of the changing subjects, the subject being set
+// with the omen it is set to, and the observances spoken. ctrl+c halts it.
 type runningScreen struct {
 	rite, aspect string
-	edict        bool // an edict is proclaimed, into no aspect
+	edict        bool            // an edict is proclaimed, into no aspect
+	scripture    *librarium.Rite // the rite performed
+	state        bool            // a rite of aspects is invoked
 	step, steps  int
 	verse        *invocation.Verse
+	plans        map[string]invocation.SubjectPlan // of a rite of aspects's subjects, once drawn
+	spoken       []string                          // the observances spoken
 	casts        []vox.Message
 	halt         context.CancelFunc
 	halting      bool
@@ -83,21 +89,17 @@ func (m *model) isRunning() bool {
 // interrupt or SIGTERM sent to the cogitator halts and reverts it, as
 // ctrl+c does.
 //
-// Its exalted verses are performed by the exalted servitor alone, raised
+// Its exalted subjects, observances and verses are performed by the exalted servitor alone, raised
 // through the cogitator's intercession; run0 is bidden forget the master's
 // proof once it has ended.
 func (m *model) invoke(r *librarium.Rite, aspect string, runes map[string]string) tea.Cmd {
 	ctx, halt := context.WithCancel(context.Background())
-	rs := &runningScreen{rite: r.Name, aspect: aspect, edict: r.Edict, halt: halt}
-	for _, step := range r.Liturgy {
-		if step.Kind() != librarium.KindVoxCast {
-			rs.steps++
-		}
-	}
+	rs := &runningScreen{rite: r.Name, aspect: aspect, edict: r.Edict, scripture: r, state: !r.Edict,
+		halt: halt, steps: len(r.Liturgy)}
 	m.screen = rs
 	s, send, c := m.s, m.send, m.intercede()
 	p := rituals.Petition{Rite: r.Name, Aspect: aspect, Runes: runes, Herald: herald{send},
-		Exaltation: c.exaltation()}
+		Exaltation: c.exaltation(), Commence: commence(r, send)}
 	m.running.Add(1)
 	go func() {
 		defer m.running.Done()
@@ -163,7 +165,7 @@ func (m *model) invoked(msg invokedMsg) tea.Cmd {
 	}
 	m.last = &res
 	if out := res.Outcome; out.Verdict != invocation.Triumph {
-		body := m.fallen(*out, edict)
+		body := m.fallen(res)
 		if words := m.spoken(msg.words); words != nil {
 			body += "\n" + strings.Join(words, "\n")
 		}
@@ -187,6 +189,10 @@ func (s *runningScreen) update(m *model, msg tea.Msg) (screen, tea.Cmd) {
 	switch msg := msg.(type) {
 	case begunMsg:
 		s.step, s.steps, s.verse = msg.step, msg.steps, &msg.verse
+	case commencedMsg:
+		s.plans, s.steps = msg.plans, changing(msg.plans)
+	case spokenMsg:
+		s.spoken = append(s.spoken, msg.verse.Observance)
 	case voxMsg:
 		s.casts = append(s.casts, msg.Message)
 	case tea.KeyPressMsg:
@@ -201,11 +207,21 @@ func (s *runningScreen) update(m *model, msg tea.Msg) (screen, tea.Cmd) {
 func (s *runningScreen) view(m *model) string {
 	t := m.t
 	w := min(72, m.width-8)
-	b := []string{t.bold.Render(fmt.Sprintf("step %d / %d", s.step, s.steps)) + "  " + progressBar(max(0, s.step-1), s.steps, w-16)}
-	if s.verse != nil {
-		b = append(b, t.accent.Render("▸ ")+t.text.Render(truncate(verseName(*s.verse), w-2)))
-	} else {
+	unit := "step"
+	if s.state {
+		unit = "subject"
+	}
+	b := []string{t.bold.Render(fmt.Sprintf("%s %d / %d", unit, s.step, s.steps)) + "  " + progressBar(max(0, s.step-1), s.steps, w-16)}
+	switch {
+	case s.verse != nil:
+		b = append(b, t.accent.Render("▸ ")+t.text.Render(truncate(s.setting(*s.verse), w-2)))
+	case s.state:
+		b = append(b, t.dim.Render("  the subjects await their setting"))
+	default:
 		b = append(b, t.dim.Render("  the liturgy awaits its first step"))
+	}
+	if len(s.spoken) > 0 {
+		b = append(b, t.dim.Render(truncate("  observances spoken: "+strings.Join(s.spoken, ", "), w)))
 	}
 	if len(s.casts) > 0 {
 		b = append(b, "", t.label.Render("VOX-CASTS"))
@@ -223,6 +239,20 @@ func (s *runningScreen) view(m *model) string {
 		title = "Proclamation of the edict " + s.rite
 	}
 	return t.modal(title, strings.Join(b, "\n"), m.width-4)
+}
+
+// setting names the step being performed: a subject of a rite of aspects with
+// its designation, and a machine-spirit with the omen read and the omen it
+// is set to.
+func (s *runningScreen) setting(v invocation.Verse) string {
+	if !s.state {
+		return verseName(v)
+	}
+	name := named(s.scripture, v)
+	if p, ok := s.plans[v.Subject]; ok && spirit(s.scripture, v) {
+		name += fmt.Sprintf(": %s → %q", readOmen(p), p.Target)
+	}
+	return name
 }
 
 func (s *runningScreen) hints(m *model) [][2]string {

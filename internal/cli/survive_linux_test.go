@@ -72,7 +72,7 @@ func pipe(t *testing.T) (*stream, *os.File) {
 func (s *stream) depart() { _ = s.r.Close(); <-s.done }
 
 // TestInvoke_ADepartedReaderNeverHalfPerformsTheRite: the reader of stdout,
-// of stderr or of both departs mid-liturgy; the servitor performs or
+// of stderr or of both departs mid-invocation; the servitor performs or
 // reverts the rite whole, chronicles the verdict and bears its death-mark.
 func TestInvoke_ADepartedReaderNeverHalfPerformsTheRite(t *testing.T) {
 	cases := []struct {
@@ -94,10 +94,11 @@ func TestInvoke_ADepartedReaderNeverHalfPerformsTheRite(t *testing.T) {
 			e := newEnv(t)
 			marker, release := e.lingering("lingering", c.edict)
 			if c.falls {
-				e.addRite("rites/lingering.json", `{"pattern": "Mark I", "aspects": ["on"], "liturgy": [
-				  {"sanctum": "$TARGET", "ward": "lingering", "scripture": "x"},
-				  {"incantation": "`+gate(marker, release)+`"},
-				  {"incantation": "echo dying words; exit 3"}]}`)
+				e.addRite("rites/lingering.json", `{"pattern": "Mark II", "aspects": ["on"], "subjects": [
+				  {"name": "warded", "designation": "sanctum", "vessel": "$TARGET", "ward": "lingering", "omens": {"*": "x"},
+				   "introit": ["gate"], "recessional": ["dying"]}],
+				  "observances": [{"name": "gate", "designation": "incantation", "words": "`+gate(marker, release)+`"},
+				    {"name": "dying", "designation": "incantation", "words": "echo dying words; exit 3"}]}`)
 			}
 			cmd := e.servitorProcess(append([]string{"invoke", "lingering"}, c.args...)...)
 			out, outW := pipe(t)

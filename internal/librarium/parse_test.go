@@ -35,13 +35,13 @@ const theme = `{
   ],
 }`
 
-func parse(t *testing.T, scripture string) (*Rite, Findings) {
+func readRite(t *testing.T, scripture string) (*Rite, Findings) {
 	t.Helper()
-	return Parse("theme", "/lib/rites/theme.json", []byte(scripture))
+	return parse("theme", "/lib/rites/theme.json", []byte(scripture))
 }
 
 func TestParse_ThemeYieldsEveryField(t *testing.T) {
-	r, fs := parse(t, theme)
+	r, fs := readRite(t, theme)
 	if len(fs) != 0 {
 		t.Fatalf("unexpected findings:\n%v", fs)
 	}
@@ -54,7 +54,7 @@ func TestParse_ThemeYieldsEveryField(t *testing.T) {
 			{Key: "reason", Purpose: "why the rite was invoked"},
 			{Key: "mode", Mandatory: true, Decrees: PerAspect(Entry[string]{"default", "plain"}, Entry[string]{"*", "ornate"})},
 		},
-		Auspex: &Auspex{Rite: "cat ~/.cache/theme", Patience: 5 * time.Second},
+		markI: true, auspex: &riteAuspex{Rite: "cat ~/.cache/theme", Patience: 5 * time.Second},
 		Tongue: "zsh",
 		Liturgy: []Step{
 			&Incantation{Command: Uniform("niri msg action do-screen-transition -d 200")},
@@ -71,14 +71,14 @@ func TestParse_ThemeYieldsEveryField(t *testing.T) {
 				Zeal:   true},
 			&Incantation{Command: PerAspect(Entry[string]{"default", "true"}, Entry[string]{"*", "source ~/.config/nfluff/themes/{{aspect}}/hooks"}),
 				Utterance: Utterance{Tongue: "bash", Patience: 90 * time.Second, Reversion: Uniform("source ~/.config/nfluff/themes/{{former}}/hooks")}},
-			&VoxCast{Tidings: VoxProgress},
+			&voxCast{Tidings: VoxProgress},
 			&Litany{Scroll: Uniform("scripts/change-theme"),
 				Offerings: []AspectMap[string]{
 					Uniform("~/.config/nfluff/themes/{{aspect}}"),
 					PerAspect(Entry[string]{"default", "-q"}, Entry[string]{"*", "{{inscription.reason}}"}),
 				},
 				Utterance: Utterance{Reversion: PerAspect(Entry[string]{"*", ""})}},
-			&VoxCast{Tidings: VoxSuccess},
+			&voxCast{Tidings: VoxSuccess},
 		},
 	}
 	if r == nil {
@@ -92,8 +92,8 @@ func TestParse_ThemeYieldsEveryField(t *testing.T) {
 const fs0600 = fs.FileMode(0o600)
 
 func TestRite_Equal(t *testing.T) {
-	a, _ := parse(t, theme)
-	b, _ := Parse("theme", "/elsewhere/theme.jsonc", []byte(theme))
+	a, _ := readRite(t, theme)
+	b, _ := parse("theme", "/elsewhere/theme.jsonc", []byte(theme))
 	if !a.Equal(b) || a.Equal(nil) || !(*Rite)(nil).Equal(nil) {
 		t.Fatal("rites read from different places must be equal")
 	}
@@ -155,7 +155,7 @@ func posOf(t *testing.T, text, needle string, delta int) Position {
 }
 
 func TestRite_Locate(t *testing.T) {
-	r, _ := parse(t, theme)
+	r, _ := readRite(t, theme)
 	if r == nil {
 		t.Fatal("Parse returned no rite")
 	}

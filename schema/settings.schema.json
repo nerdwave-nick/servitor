@@ -1,18 +1,18 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/nerdwave-nick/servitor/main/schema/settings.schema.json",
-  "title": "Settings of the servitor, pattern Mark I",
+  "title": "Settings of the servitor, pattern Mark II",
   "description": "The servitor's standing orders, kept as servitor.json in the Librarium. A rune outranks the environment, the environment outranks these orders, and these orders outrank the defaults. Recite 'servitor expound <key>' for the lore of any key.",
   "type": "object",
   "required": ["pattern"],
   "additionalProperties": false,
   "properties": {
     "pattern": {
-      "description": "The Mark of the form in which these orders are written. This servitor reads only \"Mark I\"; orders of no pattern, or of another, are heresy and none of them is heeded.",
-      "const": "Mark I"
+      "description": "The Mark of the form in which these orders are written: \"Mark II\". Orders of pattern \"Mark I\", which bear the same keys, are converted by the servitor on its first reading, their pattern alone rewritten; orders of no pattern, or of another, are heresy and none of them is heeded.",
+      "const": "Mark II"
     },
     "tongue": {
-      "description": "The program in which incantations and litanies are spoken when neither their rite nor the step names one.",
+      "description": "The program in which every word of a rite is spoken when neither the rite nor its subject, observance or verse names one.",
       "$ref": "#/$defs/word",
       "default": "bash"
     },
@@ -26,12 +26,12 @@
       "default": "auto"
     },
     "patience": {
-      "description": "How long an incantation or litany may labour before it is slain and deemed fallen, unless the step says otherwise: a span greater than nothing, such as \"500ms\", \"30s\" or \"2m\".",
+      "description": "How long an incantation or litany may labour before it is slain and deemed fallen, unless its subject, observance or verse says otherwise: a span greater than nothing, such as \"500ms\", \"30s\" or \"2m\".",
       "$ref": "#/$defs/patience",
       "default": "30s"
     },
     "intercessor": {
-      "description": "Who vouches for the master before an exalted servitor is raised for the exalted verses of an invocation: \"auto\" lets the servitor choose by whether a terminal attends the invocation (sudo, else run0, else pkexec with a terminal; run0, else pkexec without), while \"sudo\", \"run0\" or \"pkexec\" calls upon that one alone.",
+      "description": "Who vouches for the master before an exalted servitor is raised for the exalted subjects, observances or verses of an invocation: \"auto\" lets the servitor choose by whether a terminal attends the invocation (sudo, else run0, else pkexec with a terminal; run0, else pkexec without), while \"sudo\", \"run0\" or \"pkexec\" calls upon that one alone.",
       "enum": ["auto", "sudo", "run0", "pkexec"],
       "default": "auto"
     },

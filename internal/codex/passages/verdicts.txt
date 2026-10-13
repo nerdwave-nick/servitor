@@ -1,19 +1,21 @@
 How an invocation ended: triumph, reverted or faltered
 
-When the liturgy is done, the servitor passes judgement upon the invocation,
+When the invocation is done, the servitor passes judgement upon the invocation,
 and that verdict is inscribed on the rite's data-slate and in the chronicle.
 Three verdicts are known to the codex:
 
-  triumph    every step was performed; the rite stands in the aspect invoked,
-             or the edict is obeyed
-  reverted   a step fell, and every step already performed was undone; the
-             machine stands as it stood before
-  faltered   a step fell, and at least one reversion fell too; the machine
-             stands half in one aspect and half in another, or half
-             touched by an edict
+  triumph    every changing subject was set and proven and every observance
+             spoken — or nothing needed to change; the rite stands in the
+             aspect invoked, or the edict is obeyed
+  reverted   a subject, an observance or a verse fell, and everything
+             already performed was undone; the machine stands as it stood
+             before
+  faltered   something fell, and at least one reversion fell too; the
+             machine stands half in one aspect and half in another, or
+             half touched by an edict
 
-A reverted or faltered invocation ends with the servitor's lament — the step
-that fell, its last words, and how each reversion went — and the invoke
+A reverted or faltered invocation ends with the servitor's lament — what fell
+(for a subject, the omen commanded and the omen found), its last words, and how each reversion went — and the invoke
 ritual bears the death-mark 1 when reverted and 3 when faltered (0 upon
 triumph). Spoken with --binharic, it speaks the chronicle's line of the
 invocation, verdict and all, upon stdout. A faltered verdict leaves the rite corrupted until it is
@@ -28,9 +30,9 @@ chronicle keeps the verdict of every invocation, with "fell_at" and
 
 An invocation refused in its pre-flight performed nothing and earns no
 verdict: neither its data-slate nor the chronicle is touched. So too an
-invocation whose exalted verses were refused before any proof, or whose
-proof was dismissed (death-mark 2). Exalted verses are judged with the rest:
-the verdict tells their reversions among the common ones. The same holds
+invocation refused before any proof for the sanction of what it exalts, or
+whose proof was dismissed (death-mark 2). What is exalted is judged with the
+rest: the verdict tells its reversions among the common ones. The same holds
 for an invocation only foreseen. An invocation halted by its master's
 interrupt is reverted like any other that fell, and judged accordingly.
 
@@ -44,5 +46,7 @@ Exempla:
 
   {"at": "2026-10-10T13:30:00Z", "rite": "theme", "aspect": "porpl",
    "former": "default", "inscriptions": {}, "verdict": "faltered",
-   "fell_at": {"verse": 3, "incantation": "make-it-so"},
-   "heresy": "…", "reversions": [{"verse": 2, "verdict": "faltered"}]}
+   "fell_at": {"observance": "awaken"},
+   "heresy": "…", "reversions": [{"observance": "awaken", "verdict": "triumph"},
+                                 {"subject": "visage", "verdict": "faltered"}],
+   "changed": ["visage"]}

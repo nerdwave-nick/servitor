@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/nerdwave-nick/servitor/internal/augury"
 	"github.com/nerdwave-nick/servitor/internal/invocation"
@@ -15,10 +16,19 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/sanction"
 )
 
-// verseName names a verse of r as "verse 2 · tether <target>": the home of
-// the faithful is spoken as "~", and a litany's scroll beside the rite as
-// it is written.
+// verseName names a verse of r as "verse 2 · tether <target>", a subject
+// of a rite of aspects as "subject smt · machine-spirit", a built-in one with
+// its target, and an observance as "observance veil · incantation": the
+// home of the faithful is spoken as "~", and a litany's scroll beside the
+// rite as it is written.
 func verseName(r *librarium.Rite, v invocation.Verse) string {
+	if v.Observance != "" {
+		return fmt.Sprintf("observance %s · %s", v.Observance, v.Kind.Key())
+	}
+	if v.Subject != "" {
+		sub, _ := r.Subject(v.Subject)
+		return strings.TrimSpace(fmt.Sprintf("subject %s · %s %s", v.Subject, sub.Designation(), homeward(v.Target)))
+	}
 	target := homeward(v.Target)
 	if hall := r.Dir() + string(filepath.Separator); v.Kind == librarium.KindLitany && strings.HasPrefix(v.Target, hall) {
 		target = strings.TrimPrefix(v.Target, hall)
@@ -53,6 +63,10 @@ func printForesight(w io.Writer, res rituals.Result) {
 		if f.Exalted {
 			name += " ✠"
 		}
+		if f.Plan != nil {
+			sub, _ := res.Rite.Subject(f.Subject)
+			name += ": " + foreseenPlan(*f.Plan, sub.Designation() == librarium.DesignationMachineSpirit)
+		}
 		fmt.Fprintln(w, name)
 		switch {
 		case f.Vessel != nil:
@@ -66,20 +80,48 @@ func printForesight(w io.Writer, res rituals.Result) {
 	fmt.Fprintln(w, "Nothing was performed.")
 }
 
-// foreseenSanction tells how the exalted verses of the foreseen plan stand
-// towards their sanction; "" for a rite without exalted verses.
+// foreseenPlan tells what a subject was read to show and whether it
+// changes: a machine-spirit also the omen read and the omen commanded,
+// «"on" → "off", changing». A privileged auspex is never spoken in
+// foresight: the omen the data-slate recorded is told stale, else that it
+// is read at invocation.
+func foreseenPlan(p invocation.SubjectPlan, spirit bool) string {
+	told := "unchanged"
+	if p.Changing {
+		told = "changing"
+	}
+	if !spirit {
+		return told
+	}
+	read := strconv.Quote(p.Read)
+	switch {
+	case p.Unread:
+		read = "(no auspex)"
+	case p.Privileged && p.Stale:
+		read += " (stale, read " + p.ReadAt.UTC().Format(time.RFC3339) + ")"
+	case p.Privileged:
+		read = "(read at invocation)"
+	case p.Mute:
+		read = "(mute)"
+	}
+	return fmt.Sprintf("%s → %q, %s", read, p.Target, told)
+}
+
+// foreseenSanction tells how the exalted verses (or exalted subjects and
+// observances) of the foreseen plan stand towards their sanction; "" for a
+// rite without any.
 func foreseenSanction(res rituals.Result) string {
-	name := res.Rite.Name
+	name, exalted := res.Rite.Name, res.Rite.ExaltedNoun()
 	switch res.Sanction {
 	case sanction.Sanctioned:
-		return fmt.Sprintf("✠ The exalted verses stand sanctioned under the sigil %s; the exalted servitor performs "+
-			"them, after one proof of the master.", sanction.Short(res.Sigil))
+		return fmt.Sprintf("✠ The %s stand sanctioned under the sigil %s; the exalted servitor performs "+
+			"them, after one proof of the master.", exalted, sanction.Short(res.Sigil))
 	case sanction.Lapsed:
-		return fmt.Sprintf("✠ The sanction of the exalted verses has lapsed: they are no longer those their master "+
-			"sanctioned, and the invocation would be refused — sanction them anew: servitor sanction %s", name)
+		return fmt.Sprintf("✠ The sanction of the %s has lapsed: they are no longer those their master "+
+			"sanctioned, and the invocation would be refused — sanction them anew: servitor sanction %s", exalted, name)
 	case sanction.Unsanctioned:
-		return fmt.Sprintf("✠ The exalted verses stand unsanctioned, and the invocation would be refused — sanction "+
-			"them: servitor sanction %s", name)
+		return fmt.Sprintf("✠ The %s stand unsanctioned, and the invocation would be refused — sanction "+
+			"them: servitor sanction %s", exalted, name)
 	}
 	return ""
 }

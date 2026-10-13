@@ -32,15 +32,14 @@ func TestVigil_TellsEveryRiteThenEveryAuspexAsItSettles(t *testing.T) {
 	fx := newFixture(t)
 	fx.vessel("util.kdl", "")
 	fx.rite("mouse", mouse)
-	fx.rite("capture", capture)
-	fx.rite("broken", `{"pattern": "Mark I", "aspects": []}`)
-	fx.rite("fallen", `{"pattern": "Mark I", "aspects": ["on", "off"], "auspex": "exit 1", "liturgy": []}`)
-	fx.rite("nonsense", `{"pattern": "Mark I", "aspects": ["on", "off"], "auspex": "echo porpl", "liturgy": []}`)
-	fx.rite("sluggard", `{"pattern": "Mark I", "aspects": ["on", "off"],
-	  "auspex": {"rite": "sleep 5; echo on", "patience": "0.3s"}, "liturgy": []}`)
+	fx.rite("capture", captureII)
+	fx.rite("broken", broken)
+	fx.rite("fallen", spirit(`{"scan": "exit 1"}`))
+	fx.rite("nonsense", spirit(`{"scan": "echo porpl"}`))
+	fx.rite("sluggard", spirit(`{"scan": "sleep 5; echo on", "patience": "0.3s"}`))
 	for i, nap := range []string{"1.2", "0.9", "0.6"} {
 		fx.rite(fmt.Sprintf("slow%d", i),
-			`{"pattern": "Mark I", "aspects": ["on", "off"], "auspex": "sleep `+nap+`; echo on", "liturgy": []}`)
+			spirit(`{"scan": "sleep `+nap+`; echo on"}`))
 	}
 	s := fx.servitor()
 	for _, rite := range []string{"fallen", "broken", "slow1"} {
@@ -107,8 +106,8 @@ func TestVigil_ForgoneTellsEveryRiteOnce(t *testing.T) {
 	fx := newFixture(t)
 	mark := filepath.Join(fx.state, "awakened")
 	fx.rite("mouse", mouse)
-	fx.rite("capture", capture)
-	fx.rite("sloth", `{"pattern": "Mark I", "aspects": ["on", "off"], "auspex": "touch `+mark+`; sleep 5", "liturgy": []}`)
+	fx.rite("capture", captureII)
+	fx.rite("sloth", spirit(`{"scan": "touch `+mark+`; sleep 5"}`))
 	s := fx.servitor()
 
 	start := time.Now()
@@ -137,8 +136,7 @@ func TestVigil_AnEndedVigilSlaysItsAuspexes(t *testing.T) {
 	fx := newFixture(t)
 	pids := filepath.Join(fx.state, "pids")
 	for i := range 3 {
-		fx.rite(fmt.Sprintf("sloth%d", i), `{"pattern": "Mark I", "aspects": ["on", "off"],
-		  "auspex": {"rite": "sleep 30 & echo $$ $! >> `+pids+`; wait", "patience": "60s"}, "liturgy": []}`)
+		fx.rite(fmt.Sprintf("sloth%d", i), spirit(`{"scan": "sleep 30 & echo $$ $! >> `+pids+`; wait", "patience": "60s"}`))
 	}
 	s := fx.servitor()
 	ctx, end := context.WithCancel(context.Background())
@@ -187,4 +185,50 @@ func ended(pid int) bool {
 	}
 	_, after, _ := strings.Cut(string(stat), ") ")
 	return strings.HasPrefix(after, "Z")
+}
+
+// TestVigil_HeraldThenAttendIsTheVigilWithItsReadings: the vigil parted in
+// two — Herald tells every rite as it stands without its auspex and names
+// the rites awaited, Attend tells those once their auspexes settle — tells
+// what the vigil tells; every rite told bears the reading it was told from,
+// an awaited one marked awaited as its entry is.
+func TestVigil_HeraldThenAttendIsTheVigilWithItsReadings(t *testing.T) {
+	fx := newFixture(t)
+	fx.vessel("util.kdl", "")
+	fx.rite("mouse", mouse)
+	fx.rite("capture", captureII)
+	fx.rite("broken", broken)
+	fx.rite("slow", spirit(`{"scan": "sleep 0.2; echo on"}`))
+	s := fx.servitor()
+
+	var parted []Heralding
+	tell := func(h Heralding) { parted = append(parted, h) }
+	awaited := s.Herald(context.Background(), false, tell)
+	if !slices.Equal(awaited, []string{"slow"}) {
+		t.Errorf("awaited %v, want [slow]", awaited)
+	}
+	first := len(parted)
+	s.Attend(context.Background(), awaited, tell)
+
+	whole := keepVigil(context.Background(), s, false)
+	if len(parted) != len(whole) || first != len(s.Librarium.Names()) {
+		t.Fatalf("parted vigil told %d (%d first), whole %d", len(parted), first, len(whole))
+	}
+	for i, h := range parted {
+		if got, want := marshal(t, h.Entry), marshal(t, whole[i].Entry); got != want {
+			t.Errorf("heralding %d: %s, want %s", i, got, want)
+		}
+		if h.Reading == nil {
+			t.Fatalf("heralding %d of %s bears no reading", i, h.Entry.Rite)
+		}
+		if got, want := marshal(t, s.entry(h.Entry.Rite, *h.Reading)), marshal(t, h.Entry); got != want {
+			t.Errorf("the reading of %s tells %s, want %s", h.Entry.Rite, got, want)
+		}
+	}
+	if r := parted[slices.IndexFunc(parted, func(h Heralding) bool { return h.Entry.Rite == "slow" })].Reading; r.Auspex != augury.Awaited {
+		t.Errorf("slow first read with auspex %q, want awaited", r.Auspex)
+	}
+	if r := parted[len(parted)-1].Reading; r.Rite.Name != "slow" || r.Auspex != augury.Heeded || r.Aspect != "on" {
+		t.Errorf("slow settled as %+v", r.Augury)
+	}
 }

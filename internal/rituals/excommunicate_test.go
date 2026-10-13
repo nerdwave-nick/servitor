@@ -9,16 +9,17 @@ import (
 	"testing"
 )
 
-// theme is a rite with two sanctums (one vessel per aspect), a
-// transcription and a tether.
+// theme is a rite with two sanctum subjects (the first with one vessel per
+// aspect), a transcription and a tether.
 const theme = `{
-  "pattern": "Mark I",
+  "pattern": "Mark II",
   "aspects": ["dark", "light"],
-  "liturgy": [
-    {"sanctum": "$DATA/{{aspect}}.conf", "scripture": "scheme = {{aspect}}"},
-    {"sanctum": "$DATA/link.conf", "ward": "accent", "scripture": "accent = {{aspect}}"},
-    {"transcription": "$DATA/whole.conf", "scripture": "whole {{aspect}}"},
-    {"tether": "$DATA/current", "anchor": "$DATA/themes/{{aspect}}"}
+  "subjects": [
+    {"name": "scheme", "designation": "sanctum", "vessel": "$DATA/{{aspect}}.conf", "omens": {"*": "scheme = {{aspect}}"}},
+    {"name": "accent", "designation": "sanctum", "vessel": "$DATA/link.conf", "ward": "accent",
+     "omens": {"*": "accent = {{aspect}}"}},
+    {"name": "whole", "designation": "transcription", "vessel": "$DATA/whole.conf", "omens": {"*": "whole {{aspect}}"}},
+    {"name": "current", "designation": "tether", "tether": "$DATA/current", "omens": {"*": "$DATA/themes/{{aspect}}"}}
   ]
 }`
 
@@ -125,7 +126,7 @@ func TestExcommunicate_ADefiledVesselStopsThePurge(t *testing.T) {
 
 func TestExcommunicate_HereticalAndUnrecordedRites(t *testing.T) {
 	fx := newFixture(t)
-	p := fx.rite("broken", `{"pattern": "Mark I", "aspects": []}`)
+	p := fx.rite("broken", broken)
 	s := fx.servitor()
 
 	var heretical *Heretical
@@ -153,7 +154,7 @@ func readlink(t *testing.T, p string) string {
 func TestExcommunicate_AnEdictIsStruckAndHasNoSanctumToPurge(t *testing.T) {
 	for _, purge := range []bool{false, true} {
 		fx := newFixture(t)
-		path := fx.rite("capture", capture)
+		path := fx.rite("capture", captureII)
 		if _, err := fx.servitor().Invoke(context.Background(), Petition{Rite: "capture"}); err != nil {
 			t.Fatal(err)
 		}

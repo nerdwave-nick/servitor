@@ -76,22 +76,25 @@ func TestInvoke_TheChronicleRuneAndEnvironmentPlaceTheChronicle(t *testing.T) {
 	}
 }
 
-func TestInvoke_ForeseeingPerformsNothingNotEvenTheAuspex(t *testing.T) {
+// TestInvoke_ForeseeingPerformsNothing: foresight tells the subject that
+// would change and the observance that would be spoken, and touches,
+// keeps and chronicles nothing.
+func TestInvoke_ForeseeingPerformsNothing(t *testing.T) {
 	fx := newFixture(t)
 	util := fx.vessel("util.kdl", "input {}\n")
-	fx.rite("mouse", strings.Replace(mouse, `"liturgy"`, `"auspex": "touch $DATA/auspex; echo on", "liturgy"`, 1))
+	fx.rite("mouse", mouse)
 
 	res, err := fx.servitor().Invoke(context.Background(), Petition{Rite: "mouse", Aspect: "on", Foresee: true})
 
 	if err != nil {
 		t.Fatal(err)
 	}
-	if res.Outcome != nil || len(res.Foresight) != 3 || res.Foresight[0].Vessel == nil ||
+	if res.Outcome != nil || len(res.Foresight) != 2 || res.Foresight[0].Vessel == nil ||
 		!strings.Contains(res.Foresight[0].Vessel.After, "hide-after-inactive-ms 400") ||
 		res.Foresight[1].Speech == nil || !strings.Contains(res.Foresight[1].Speech.Words, "echo on-") {
 		t.Fatalf("result %+v", res)
 	}
-	if fx.read(util) != "input {}\n" || exists(filepath.Join(fx.data, "said")) || exists(filepath.Join(fx.data, "auspex")) {
+	if fx.read(util) != "input {}\n" || exists(filepath.Join(fx.data, "said")) {
 		t.Fatal("foreseeing touched the machine")
 	}
 	if fx.slate("mouse") != nil || len(fx.chronicled()) != 0 {
@@ -99,11 +102,16 @@ func TestInvoke_ForeseeingPerformsNothingNotEvenTheAuspex(t *testing.T) {
 	}
 }
 
+// TestInvoke_TheAuspexSeesTheTargetDuringAnInvocation: the auspex of a
+// machine-spirit hears the aspect invoked as SERVITOR_ASPECT, and the omen
+// it reads names the former aspect.
 func TestInvoke_TheAuspexSeesTheTargetDuringAnInvocation(t *testing.T) {
 	fx := newFixture(t)
-	fx.vessel("util.kdl", "")
-	fx.rite("mouse", strings.Replace(mouse, `"liturgy"`,
-		`"auspex": "echo $SERVITOR_ASPECT > $DATA/auspex; echo off", "liturgy"`, 1))
+	fx.vessel("cursor", "off\n")
+	fx.rite("mouse", `{"pattern": "Mark II", "aspects": ["on", "off"], "subjects": [
+	  {"name": "cursor", "designation": "machine-spirit",
+	   "auspex": {"scan": "echo $SERVITOR_ASPECT > $DATA/auspex; cat $DATA/cursor"},
+	   "enact": {"*": "echo {{omen}} > $DATA/cursor"}}]}`)
 
 	res, err := fx.servitor().Invoke(context.Background(), Petition{Rite: "mouse", Aspect: "on"})
 
@@ -114,14 +122,18 @@ func TestInvoke_TheAuspexSeesTheTargetDuringAnInvocation(t *testing.T) {
 		t.Fatalf("the auspex saw %q", got)
 	}
 	if res.Options.Former != "off" {
-		t.Fatalf("former %q, though the auspex, the only omen, names off", res.Options.Former)
+		t.Fatalf("former %q, though the auspex, the only omen, read off", res.Options.Former)
 	}
 }
 
+// TestInvoke_AFallIsRevertedKeptAndChronicled: an observance that falls
+// restores the sanctum already set, is proclaimed a failure, and the
+// reversion is kept on the data-slate and chronicled with the observance
+// that fell.
 func TestInvoke_AFallIsRevertedKeptAndChronicled(t *testing.T) {
 	fx := newFixture(t)
 	util := fx.vessel("util.kdl", "input {}\n")
-	fx.rite("mouse", strings.Replace(mouse, `{"vox-cast": "success"}`, `{"incantation": "echo dying; exit 3"}`, 1))
+	fx.rite("mouse", falling)
 	h := &herald{}
 
 	res, err := fx.servitor().Invoke(context.Background(), Petition{Rite: "mouse", Aspect: "on", Herald: h})
@@ -130,7 +142,7 @@ func TestInvoke_AFallIsRevertedKeptAndChronicled(t *testing.T) {
 		t.Fatal(err)
 	}
 	out := res.Outcome
-	if out == nil || out.Verdict != invocation.Reverted || out.Fell == nil || out.Fell.Number != 3 ||
+	if out == nil || out.Verdict != invocation.Reverted || out.Fell == nil || out.Fell.Observance != "fall" ||
 		out.Fell.Output != "dying\n" {
 		t.Fatalf("outcome %+v", out)
 	}
@@ -145,11 +157,13 @@ func TestInvoke_AFallIsRevertedKeptAndChronicled(t *testing.T) {
 	}
 	entries := fx.chronicled()
 	if len(entries) != 1 || entries[0].Verdict != invocation.Reverted || entries[0].FellAt == nil ||
-		entries[0].FellAt.Number != 3 || entries[0].Heresy == "" {
+		entries[0].FellAt.Observance != "fall" || entries[0].Heresy == "" {
 		t.Fatalf("chronicle %+v", entries)
 	}
 }
 
+// TestInvoke_AHaltRevertsAndIsChronicled: an invocation halted before its
+// first subject is set touches nothing, and is chronicled reverted.
 func TestInvoke_AHaltRevertsAndIsChronicled(t *testing.T) {
 	fx := newFixture(t)
 	util := fx.vessel("util.kdl", "input {}\n")
@@ -162,7 +176,7 @@ func TestInvoke_AHaltRevertsAndIsChronicled(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if res.Outcome == nil || res.Outcome.Verdict != invocation.Reverted || res.Outcome.Fell.Number != 1 {
+	if res.Outcome == nil || res.Outcome.Verdict != invocation.Reverted || res.Outcome.Fell.Subject != "util" {
 		t.Fatalf("outcome %+v", res.Outcome)
 	}
 	if fx.read(util) != "input {}\n" || exists(filepath.Join(fx.data, "said")) {
@@ -208,7 +222,7 @@ func TestInvoke_ARefusalChangesAndKeepsNothing(t *testing.T) {
 
 func TestInvoke_OnlyRitesFitToBeInvoked(t *testing.T) {
 	fx := newFixture(t)
-	fx.rite("broken", `{"pattern": "Mark I", "aspects": []}`)
+	fx.rite("broken", broken)
 	s := fx.servitor()
 
 	_, err := s.Invoke(context.Background(), Petition{Rite: "nope", Aspect: "on"})

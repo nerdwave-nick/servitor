@@ -46,7 +46,7 @@ func TestAugur_ReadsTheRiteAndAnswersItsKeys(t *testing.T) {
 
 func TestAugur_HereticalAndUnrecordedRites(t *testing.T) {
 	fx := newFixture(t)
-	fx.rite("broken", `{"pattern": "Mark I", "aspects": []}`)
+	fx.rite("broken", broken)
 	s := fx.servitor()
 
 	r, err := s.Augur("broken", false)
@@ -64,7 +64,7 @@ func TestAugur_HereticalAndUnrecordedRites(t *testing.T) {
 
 func TestAugur_ForgoingTheAuspexAwakensItNot(t *testing.T) {
 	fx := newFixture(t)
-	fx.rite("dnd", `{"pattern": "Mark I", "aspects": ["on", "off"], "auspex": "touch $DATA/awoken; echo on", "liturgy": []}`)
+	fx.rite("dnd", spirit(`{"scan": "touch $DATA/awoken; echo on"}`))
 	s := fx.servitor()
 	if r, err := s.Augur("dnd", true); err != nil || r.Aspect != "" || exists(filepath.Join(fx.data, "awoken")) {
 		t.Fatalf("forgone auspex: %+v, %v", r, err)
@@ -78,8 +78,8 @@ func TestCensus_EveryRiteInTheShapeOfTheCodex(t *testing.T) {
 	fx := newFixture(t)
 	fx.vessel("util.kdl", "")
 	path := fx.rite("mouse", mouse)
-	broken := fx.rite("broken", `{"pattern": "Mark I", "aspects": []}`)
-	fx.rite("dnd", `{"pattern": "Mark I", "aspects": ["on", "off"], "auspex": "touch $DATA/awoken; echo off", "liturgy": []}`)
+	broken := fx.rite("broken", broken)
+	fx.rite("dnd", spirit(`{"scan": "touch $DATA/awoken; echo off"}`))
 	s := fx.servitor()
 	if _, err := s.Invoke(context.Background(), Petition{Rite: "mouse", Aspect: "on"}); err != nil {
 		t.Fatal(err)
@@ -98,11 +98,11 @@ func TestCensus_EveryRiteInTheShapeOfTheCodex(t *testing.T) {
 		t.Fatal(err)
 	}
 	want := `[{"rite":"broken","edict":false,"aspect":"","standing":"heretical","sanction":"","auspex":"","aspects":[],"purpose":"",` +
-		`"desecrated":false,"last_rite":null,"recorded_in":"` + broken + `","canon":[]},` +
+		`"desecrated":false,"stale":false,"last_rite":null,"recorded_in":"` + broken + `","canon":[]},` +
 		`{"rite":"dnd","edict":false,"aspect":"","standing":"dormant","sanction":"","auspex":"forgone","aspects":["on","off"],"purpose":"",` +
-		`"desecrated":false,"last_rite":null,"recorded_in":"` + filepath.Join(fx.lib, "rites", "dnd.json") + `","canon":[]},` +
+		`"desecrated":false,"stale":false,"last_rite":null,"recorded_in":"` + filepath.Join(fx.lib, "rites", "dnd.json") + `","canon":[]},` +
 		`{"rite":"mouse","edict":false,"aspect":"on","standing":"performed","sanction":"","auspex":"","aspects":["on","off"],` +
-		`"purpose":"Hide the cursor after inactivity","desecrated":false,` +
+		`"purpose":"Hide the cursor after inactivity","desecrated":false,"stale":false,` +
 		`"last_rite":{"verdict":"triumph","at":"2026-10-10T13:30:00Z"},"recorded_in":"` + path + `",` +
 		`"canon":[{"key":"reason","purpose":"why the rite was invoked","mandatory":false,"decrees":{"off":"restored"},"decree":null}]}]`
 	if string(data) != want {
@@ -116,8 +116,8 @@ func TestCensus_EveryRiteInTheShapeOfTheCodex(t *testing.T) {
 
 func TestCensus_AnEdictBearsNoAspects(t *testing.T) {
 	fx := newFixture(t)
-	path := fx.rite("capture", capture)
-	fx.rite("dormant", `{"pattern": "Mark I", "edict": true, "liturgy": [{"incantation": "true"}]}`)
+	path := fx.rite("capture", captureII)
+	fx.rite("dormant", `{"pattern": "Mark II", "edict": true, "liturgy": [{"designation": "incantation", "words": "true"}]}`)
 	s := fx.servitor()
 	if _, err := s.Invoke(context.Background(), Petition{Rite: "capture"}); err != nil {
 		t.Fatal(err)
@@ -133,10 +133,10 @@ func TestCensus_AnEdictBearsNoAspects(t *testing.T) {
 		t.Fatal(err)
 	}
 	want := `[{"rite":"capture","edict":true,"aspect":"","standing":"proclaimed","sanction":"","auspex":"","aspects":[],` +
-		`"purpose":"Capture the visage of the machine","desecrated":false,` +
+		`"purpose":"Capture the visage of the machine","desecrated":false,"stale":false,` +
 		`"last_rite":{"verdict":"triumph","at":"2026-10-10T13:30:00Z"},"recorded_in":"` + path + `",` +
-		`"canon":[{"key":"region","purpose":"the slurp geometry","mandatory":false,"decrees":{},"decree":"full"}]},` +
-		`{"rite":"dormant","edict":true,"aspect":"","standing":"dormant","sanction":"","auspex":"","aspects":[],"purpose":"","desecrated":false,` +
+		`"canon":[{"key":"region","purpose":"\"chosen\" or \"whole\"","mandatory":false,"decrees":{},"decree":"chosen"}]},` +
+		`{"rite":"dormant","edict":true,"aspect":"","standing":"dormant","sanction":"","auspex":"","aspects":[],"purpose":"","desecrated":false,"stale":false,` +
 		`"last_rite":null,"recorded_in":"` + filepath.Join(fx.lib, "rites", "dormant.json") + `","canon":[]}]`
 	if string(data) != want {
 		t.Fatalf("census\n%s\nwant\n%s", data, want)
@@ -144,15 +144,14 @@ func TestCensus_AnEdictBearsNoAspects(t *testing.T) {
 }
 
 // TestCensus_MarksWhatEveryAuspexGave: every entry tells a heeded auspex
-// from a mute one, and both from a rite that keeps none.
+// from a mute one, and both from a rite whose subjects keep none.
 func TestCensus_MarksWhatEveryAuspexGave(t *testing.T) {
 	fx := newFixture(t)
-	fx.rite("heeded", `{"pattern": "Mark I", "aspects": ["on", "off"], "auspex": "echo on", "liturgy": []}`)
-	fx.rite("fallen", `{"pattern": "Mark I", "aspects": ["on", "off"], "auspex": "echo on; exit 1", "liturgy": []}`)
-	fx.rite("nonsense", `{"pattern": "Mark I", "aspects": ["on", "off"], "auspex": "echo porpl", "liturgy": []}`)
-	fx.rite("impatient", `{"pattern": "Mark I", "aspects": ["on", "off"],
-		"auspex": {"rite": "sleep 3; echo on", "patience": "100ms"}, "liturgy": []}`)
-	fx.rite("silent", `{"pattern": "Mark I", "aspects": ["on", "off"], "liturgy": []}`)
+	fx.rite("heeded", spirit(`{"scan": "echo on"}`))
+	fx.rite("fallen", spirit(`{"scan": "echo on; exit 1"}`))
+	fx.rite("nonsense", spirit(`{"scan": "echo porpl"}`))
+	fx.rite("impatient", spirit(`{"scan": "sleep 3; echo on", "patience": "100ms"}`))
+	fx.rite("silent", spirit(""))
 
 	entries, laments := fx.servitor().Census(false)
 

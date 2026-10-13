@@ -1,0 +1,18 @@
+The aspects an observance is spoken into
+
+Under "to" an observance lists the declared aspects it is spoken into: an
+invocation into any other aspect passes it over, though a subject naming it
+changes. Without "to" an observance is spoken into every aspect.
+
+Every aspect named must be declared by the rite, else heresy. Words that
+differ by aspect are written as several observances, each guarded by "to",
+for the words of an observance are never an aspect map.
+
+Kindred passages: from, observances, introit, recessional, aspects
+
+Exempla:
+  {"name": "herald-silence", "designation": "incantation", "to": ["on"],
+   "words": "notify-send 'The heralds fall silent'"}
+
+  {"name": "herald-wakes", "designation": "incantation", "to": ["off"],
+   "words": "notify-send 'The heralds speak again'"}

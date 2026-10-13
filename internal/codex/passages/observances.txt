@@ -1,0 +1,51 @@
+The named deeds a rite of pattern Mark II speaks when its subjects change
+
+Under "observances" a rite of aspects lists named deeds that change no
+subject of their own: the transition of a screen, the litany a theme keeps
+for its awakening, a missive to the desktop. Each observance bears a
+"name", unique among the observances and bound by the rule of names, and a
+"designation": an "incantation" speaking its "words", or a "litany"
+reciting its "scroll" with its "offerings". It may bear a "tongue", a
+"patience", plain "reversion" words, "exalted" and "relics", and the guards
+"to" and "from".
+
+An observance is spoken only when a subject that names it changes: as the
+"introit" of subjects, once, before the first of them that changes; as the
+"recessional" of subjects, once, after the last of them that changes. It is
+spoken in its place, among the subjects being set, never deferred to the
+end of the invocation. A subject passed over because it already bears its
+omen calls upon no observance. One observance is named in one of the two
+places, never both, which is heresy; an observance no subject names is never
+spoken, an impurity.
+
+The guards weigh each invocation: "to" admits it when it names the aspect
+invoked, "from" when it names the former aspect — and an invocation whose
+former aspect is unknown is admitted by no "from". An empty guard admits
+nothing; a guard unwritten admits every aspect. The pre-flight examines
+every observance, admitted or not, before anything is touched.
+
+An observance is spoken as an incantation or litany is: in its tongue, else
+the rite's, else the settings', else bash; in the rite's hall; within its
+patience; hearing SERVITOR_ASPECT, SERVITOR_FORMER_ASPECT, SERVITOR_RITE and
+the inscriptions, yet never SERVITOR_OMEN, for it sets no omen. Should it
+fall, it fells the invocation as a subject does, and the reversion speaks
+its reversion words, if it bears any, in its place among the restorations.
+Exalted, it is spoken by the exalted servitor from the sanction of its
+master.
+
+Its words are written once for every aspect, never as an aspect map; words
+that differ by aspect are written as several observances guarded by "to".
+An edict bears no observances: its liturgy is spoken whole.
+
+Kindred passages: introit, recessional, to, from, words, scroll, subjects,
+reversion, exalted
+
+Exempla:
+  "observances": [
+    {"name": "herald-silence", "designation": "incantation", "to": ["on"],
+     "words": "notify-send -t 2000 'The heralds fall silent'"},
+    {"name": "awaken", "designation": "litany",
+     "scroll": "scripts/recite-hooks",
+     "offerings": ["~/.config/nfluff/themes/{{aspect}}"],
+     "reversion": "test -z \"$SERVITOR_FORMER_ASPECT\" || scripts/recite-hooks ~/.config/nfluff/themes/\"$SERVITOR_FORMER_ASPECT\""}
+  ]

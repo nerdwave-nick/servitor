@@ -9,8 +9,6 @@ import (
 	"testing"
 	"time"
 
-	tea "charm.land/bubbletea/v2"
-
 	"github.com/nerdwave-nick/servitor/internal/chronicle"
 	"github.com/nerdwave-nick/servitor/internal/codex"
 	"github.com/nerdwave-nick/servitor/internal/invocation"
@@ -171,8 +169,7 @@ func TestChronicle_SilentAndPlacedByTheRune(t *testing.T) {
 
 	elsewhere := filepath.Join(t.TempDir(), "rites.jsonl")
 	seedChronicle(t, elsewhere, fallenTheme)
-	h.m = newModel(h.dir, librarium.Runes{Chronicle: elsewhere})
-	h.send(tea.WindowSizeMsg{Width: 120, Height: 36})
+	h.renew(librarium.Runes{Chronicle: elsewhere})
 	h.keys("h", "/", "esc")
 	h.mustShow("Chronicle (1)", shortPath(elsewhere))
 	h.inOrder("theme default → porpl")

@@ -33,13 +33,9 @@ type stepDraft struct {
 // unless told otherwise; commands, anchors and offerings, which name
 // {{aspect}} where they differ, are the same for every aspect.
 func newStepDraft(k librarium.Kind) stepDraft {
-	sd := stepDraft{kind: k, fixed: map[string]string{}, scripture: newVaried[librarium.Scripture](true),
+	return stepDraft{kind: k, fixed: map[string]string{}, scripture: newVaried[librarium.Scripture](true),
 		anchor: newVaried[librarium.Anchor](false), command: newVaried[string](false),
 		reversion: newVaried[string](false), offerings: newVaried[[]string](false)}
-	if k == librarium.KindVoxCast {
-		sd.fixed[k.Key()] = librarium.VoxProgress
-	}
-	return sd
 }
 
 // furtherKeys are the further rites of each kind that hold one value for
@@ -49,6 +45,7 @@ var furtherKeys = map[librarium.Kind][]string{
 	librarium.KindTether:        {"zeal"},
 	librarium.KindIncantation:   {"tongue", "patience"},
 	librarium.KindLitany:        {"tongue", "patience"},
+	kindMachineSpirit:           {"tongue", "patience"},
 }
 
 // hasFurther reports whether a step of kind k bears further rites.
@@ -90,8 +87,6 @@ func stepFrom(s librarium.Step) stepDraft {
 			sd.offerings = offeringsFrom(s.Offerings)
 			sd.further = true
 		}
-	case *librarium.VoxCast:
-		f["vox-cast"] = s.Tidings
 	}
 	flag("exalted", librarium.IsExalted(s))
 	for _, k := range furtherKeys[sd.kind] {
@@ -110,7 +105,9 @@ func (sd *stepDraft) utteranceFrom(u librarium.Utterance) {
 	sd.relics = u.Relics
 }
 
-// toStep writes the step for a rite of aspects.
+// toStep writes the step over aspects: a sanctum, transcription or tether
+// subject's omens varied per aspect, or the words of an observance or an
+// edict's verse spoken once (aspects nil).
 func (sd stepDraft) toStep(aspects []string) librarium.Step {
 	f := sd.fixed
 	exalted := f["exalted"] == "true"
@@ -127,11 +124,9 @@ func (sd stepDraft) toStep(aspects []string) librarium.Step {
 			Exalted: exalted}
 	case librarium.KindIncantation:
 		return &librarium.Incantation{Command: sd.command.toMap(aspects), Utterance: sd.utterance(aspects)}
-	case librarium.KindLitany:
-		return &librarium.Litany{Scroll: sd.command.toMap(aspects), Offerings: offeringsTo(sd.offerings, aspects),
-			Utterance: sd.utterance(aspects)}
 	}
-	return &librarium.VoxCast{Tidings: f["vox-cast"]}
+	return &librarium.Litany{Scroll: sd.command.toMap(aspects), Offerings: offeringsTo(sd.offerings, aspects),
+		Utterance: sd.utterance(aspects)}
 }
 
 // utterance is what an incantation or litany speaks with; a reversion

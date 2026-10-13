@@ -13,17 +13,21 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/invocation"
 )
 
-// gated is a rite that tells its beginning, then waits at $DATA/gate
-// before it tells its end.
-const gated = `{"pattern": "Mark I", "aspects": ["on", "off"], "liturgy": [
-  {"incantation": "echo begin-{{aspect}} >> $DATA/log; touch $DATA/began-{{aspect}}"},
-  {"incantation": "while [ ! -e $DATA/gate ]; do sleep 0.01; done; echo end-{{aspect}} >> $DATA/log"}
+// gated is a rite whose first machine-spirit tells its beginning, and whose
+// second waits at $DATA/gate before it tells its end; neither can be read,
+// so both are set at every invocation.
+const gated = `{"pattern": "Mark II", "aspects": ["on", "off"], "subjects": [
+  {"name": "begin", "designation": "machine-spirit",
+   "enact": {"*": "echo begin-{{aspect}} >> $DATA/log; touch $DATA/began-{{aspect}}"}},
+  {"name": "end", "designation": "machine-spirit",
+   "enact": {"*": "while [ ! -e $DATA/gate ]; do sleep 0.01; done; echo end-{{aspect}} >> $DATA/log"}}
 ]}`
 
 // gatedEdict is gated as an edict; its inscription who stands for the aspect.
-const gatedEdict = `{"pattern": "Mark I", "edict": true, "inscriptions": {"who": {"mandatory": true}}, "liturgy": [
-  {"incantation": "echo begin-{{inscription.who}} >> $DATA/log; touch $DATA/began-{{inscription.who}}"},
-  {"incantation": "while [ ! -e $DATA/gate ]; do sleep 0.01; done; echo end-{{inscription.who}} >> $DATA/log"}
+const gatedEdict = `{"pattern": "Mark II", "edict": true, "inscriptions": {"who": {"mandatory": true}}, "liturgy": [
+  {"designation": "incantation", "words": "echo begin-{{inscription.who}} >> $DATA/log; touch $DATA/began-{{inscription.who}}"},
+  {"designation": "incantation",
+   "words": "while [ ! -e $DATA/gate ]; do sleep 0.01; done; echo end-{{inscription.who}} >> $DATA/log"}
 ]}`
 
 // awaitingHerald hears every proclamation and tells each dominion awaited.

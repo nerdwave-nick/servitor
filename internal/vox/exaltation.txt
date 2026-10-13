@@ -1,9 +1,9 @@
-# +++ Vox-casts of a rite whose exalted verses await the master's proof +++
+# +++ Vox-casts of a rite of aspects whose exalted deeds await the master's proof +++
 # One template per line; blank lines and lines starting with "#" are ignored.
 # Told once, unbidden, upon a terminal, after the pre-flight and before the
 # intercessor asks for the master's proof. Each names the rite by
 # {{rite.name}}, the intercessor by {{intercessor}} and the sigil of the plan
 # by {{sigil}}, and speaks no aspect.
-The exalted verses of {{rite.name}} await the master's proof: {{intercessor}} asks it, under the sigil {{sigil}}.
-{{intercessor}} demands the master's proof before the exalted verses of {{rite.name}} are performed, as sanctioned under the sigil {{sigil}}.
+The exalted deeds of {{rite.name}} await the master's proof: {{intercessor}} asks it, under the sigil {{sigil}}.
+{{intercessor}} demands the master's proof before {{rite.name}} acts with the machine's own authority, as sanctioned under the sigil {{sigil}}.
 The machine's own authority stirs for {{rite.name}}; prove yourself to {{intercessor}}, and the sigil {{sigil}} is fulfilled.

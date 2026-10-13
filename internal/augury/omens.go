@@ -16,11 +16,16 @@ import (
 // seer reads the omens of one rite, reading every place of the machine at
 // most once.
 type seer struct {
-	rite     *librarium.Rite
-	slate    *Slate
-	variants map[string][]placeholder.Values
-	scrolls  map[string]scroll
-	bonds    map[string]bond
+	rite  *librarium.Rite
+	slate *Slate
+	// target and inscriptions are those of the invocation reading the
+	// rite: they render the omens of target first.
+	target       string
+	inscriptions map[string]string
+	booted       *string // the boot of the machine, once read
+	variants     map[string][]placeholder.Values
+	scrolls      map[string]scroll
+	bonds        map[string]bond
 }
 
 // scroll is what stands at a vessel's place, its symbolic links followed.
@@ -43,22 +48,9 @@ func newSeer(r *librarium.Rite, slate *Slate) *seer {
 		scrolls: map[string]scroll{}, bonds: map[string]bond{}}
 }
 
-// observe reads the omen of the step at index i of the liturgy, and its
-// taint when it is a sanctum altered by other hands.
-func (s *seer) observe(i int, step librarium.Step) (*Omen, *Taint) {
-	switch st := step.(type) {
-	case *librarium.Sanctum:
-		return s.sanctum(i, st)
-	case *librarium.Transcription:
-		return s.transcription(i, st), nil
-	case *librarium.Tether:
-		return s.tether(i, st), nil
-	}
-	return nil, nil
-}
-
-// fitting tells whether the observation of a step fits aspect when its
-// fields are rendered with v, and what its own key holds rendered so.
+// fitting tells whether the observation of a subject fits aspect when its
+// fields are rendered with v, and what its vessel or bound name holds
+// rendered so.
 type fitting func(aspect string, v placeholder.Values) (target string, fits bool)
 
 // sighting is the one aspect an observation fits, and how it was rendered.
@@ -67,9 +59,9 @@ type sighting struct {
 	v              placeholder.Values
 }
 
-// sight returns the aspect the observation fits; ok is false when it fits
-// none or several.
-func (s *seer) sight(fits fitting) (seen sighting, ok bool) {
+// sightings returns every aspect the observation fits, in the order of the
+// rite's aspects.
+func (s *seer) sightings(fits fitting) []sighting {
 	var found []sighting
 	for _, a := range s.rite.Aspects {
 		for _, v := range s.valuesOf(a) {
@@ -79,19 +71,27 @@ func (s *seer) sight(fits fitting) (seen sighting, ok bool) {
 			}
 		}
 	}
+	return found
+}
+
+// sight returns the aspect the observation fits; ok is false when it fits
+// none or several.
+func (s *seer) sight(fits fitting) (seen sighting, ok bool) {
+	return one(s.sightings(fits))
+}
+
+func one(found []sighting) (sighting, bool) {
 	if len(found) != 1 {
 		return sighting{}, false
 	}
 	return found[0], true
 }
 
-func (s *seer) omen(i int, k librarium.Kind, seen sighting) *Omen {
-	return &Omen{Verse: invocation.Verse{Number: i + 1, Kind: k, Target: seen.target}, Aspect: seen.aspect}
-}
-
-// sanctum reads the aspect a sanctum's marker records and whether its
-// scripture is still that of the aspect.
-func (s *seer) sanctum(i int, st *librarium.Sanctum) (*Omen, *Taint) {
+// sanctum reads the aspect the marker of a sanctum subject records, and
+// whether its scripture is still that of the aspect; ok is false when no
+// marker of its ward names one aspect. A tainted sanctum names its vessel,
+// rendered for that aspect.
+func (s *seer) sanctum(st *librarium.Sanctum) (aspect string, taint *string, ok bool) {
 	glyph, closing := st.Glyphs()
 	m := sanctum.Marker{Glyph: glyph, ClosingGlyph: closing, Ward: st.WardFor(s.rite.Name)}
 	held := func(v placeholder.Values) (string, sanctum.Sanctum, bool) {
@@ -111,9 +111,8 @@ func (s *seer) sanctum(i int, st *librarium.Sanctum) (*Omen, *Taint) {
 		return target, ok && found.Aspect == aspect
 	})
 	if !ok {
-		return nil, nil
+		return "", nil, false
 	}
-	omen := s.omen(i, st.Kind(), seen)
 	_, found, _ := held(seen.v)
 	sc, _ := st.Scripture.For(seen.aspect)
 	judged := false
@@ -123,20 +122,20 @@ func (s *seer) sanctum(i int, st *librarium.Sanctum) (*Omen, *Taint) {
 			continue
 		}
 		if strings.TrimSuffix(text, "\n") == found.Content {
-			return omen, nil
+			return seen.aspect, nil, true
 		}
 		judged = true
 	}
 	if !judged {
-		return omen, nil
+		return seen.aspect, nil, true
 	}
-	return omen, &Taint{Verse: omen.Verse}
+	return seen.aspect, &seen.target, true
 }
 
-// transcription reads which aspect's scripture a transcribed vessel holds;
-// an absent vessel is that of a null scripture.
-func (s *seer) transcription(i int, st *librarium.Transcription) *Omen {
-	seen, ok := s.sight(func(aspect string, v placeholder.Values) (string, bool) {
+// transcribed returns every aspect whose scripture a transcribed vessel
+// holds.
+func (s *seer) transcribed(st *librarium.Transcription) []sighting {
+	return s.sightings(func(aspect string, v placeholder.Values) (string, bool) {
 		sc, has := st.Scripture.For(aspect)
 		target, ok := s.render(st.Vessel, v)
 		if !has || !ok {
@@ -154,16 +153,11 @@ func (s *seer) transcription(i int, st *librarium.Transcription) *Omen {
 		text, ok := invocation.Illuminate(s.rite, sc, v)
 		return target, ok && strings.TrimSuffix(text, "\n") == strings.TrimSuffix(f.content, "\n")
 	})
-	if !ok {
-		return nil
-	}
-	return s.omen(i, st.Kind(), seen)
 }
 
-// tether reads which aspect's anchor a tether's name leads to; an unbound
-// name is that of a null anchor.
-func (s *seer) tether(i int, st *librarium.Tether) *Omen {
-	seen, ok := s.sight(func(aspect string, v placeholder.Values) (string, bool) {
+// bound returns every aspect whose anchor a tether's name leads to.
+func (s *seer) bound(st *librarium.Tether) []sighting {
+	return s.sightings(func(aspect string, v placeholder.Values) (string, bool) {
 		anchor, has := st.Anchor.For(aspect)
 		target, ok := s.render(st.Name, v)
 		if !has || !ok {
@@ -181,20 +175,20 @@ func (s *seer) tether(i int, st *librarium.Tether) *Omen {
 		want, ok := s.render(anchor.Path, v)
 		return target, ok && s.rite.ResolvePath(want) == b.anchor
 	})
-	if !ok {
-		return nil
-	}
-	return s.omen(i, st.Kind(), seen)
 }
 
 // valuesOf returns every set of placeholder values an invocation into
-// aspect may have rendered with: the data-slate's inscriptions when it
-// recorded aspect, else the decrees of aspect, with any former aspect.
+// aspect may have rendered with: those of the invocation reading the rite
+// into aspect, the data-slate's inscriptions when it recorded aspect,
+// and the decrees of aspect, with any former aspect.
 func (s *seer) valuesOf(aspect string) []placeholder.Values {
 	if vs, ok := s.variants[aspect]; ok {
 		return vs
 	}
 	var sets []map[string]string
+	if s.inscriptions != nil && aspect == s.target {
+		sets = append(sets, s.inscriptions)
+	}
 	if s.slate != nil && s.slate.Aspect == aspect {
 		sets = append(sets, s.slate.Inscriptions)
 	}

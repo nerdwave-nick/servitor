@@ -1,16 +1,17 @@
 // Package sanction draws the canonical exalted unit of a rite and its
 // sigils, and reads the sanctions its master laid in the store.
 //
-// The unit (Build) holds everything a rite's exalted verses do: the
-// pattern of its form, the master's uid and the rite's name; for every
-// aspect (once for an edict) a Plan of the exalted verses resolved for it —
-// their verse numbers, rendered words and reversions, the absolute tongue,
-// the patience, the bytes of their scrolls, relics, tomes and transcribed
-// scripture, seal and zeal — and the words of every inscription spliced into
-// them, taken from its decrees; and the variables of the environment exalted
-// speech hears, with the pattern of the environment the exalted servitor
-// grants. Common verses are no part of it: editing a vox-cast or a common
-// incantation changes no sigil.
+// The unit (Build) holds everything a rite's exalted subjects and
+// observances do — or an edict's exalted verses: the pattern of its form,
+// the master's uid and the rite's name; for every aspect (once for an
+// edict) a Plan of the exalted items resolved for it — the places of its
+// subjects, the verse numbers of an edict, rendered words and reversions,
+// the absolute tongue, the patience, the bytes of their scrolls, relics,
+// tomes and transcribed scripture, seal and zeal — and the words of every
+// inscription spliced into them, taken from its decrees; and the variables
+// of the environment exalted speech hears, with the pattern of the
+// environment the exalted servitor grants. Common subjects and observances
+// are no part of it: editing them, or the vox-cast list, changes no sigil.
 //
 // The unit is written as canonical JSON (RFC 8785); its Sigil is the
 // SHA-256 of that writing, and SigilOf the sigil of the unit narrowed to one
@@ -27,9 +28,21 @@ import (
 	"encoding/hex"
 )
 
-// Pattern is the pattern of the form of every unit and sanction this
-// package draws and reads.
-const Pattern = "Mark I"
+// Pattern is the pattern of the form of every unit drawn, and of the
+// environment it grants: a state rite's plans hold its exalted subjects and
+// observances (see Verse), an edict's its exalted verses.
+//
+// PatternMarkI is the form of the units of rites of pattern Mark I, which
+// are drawn no more: a sanction laid in that form is still read, listed and
+// abjured, yet it lapses, for the unit of the rite converted is of Pattern
+// (spec §19.10), and the exalted servitor performs it never.
+const (
+	Pattern      = "Mark II"
+	PatternMarkI = "Mark I"
+)
+
+// Patterns are the patterns of the sanctions this package reads.
+var Patterns = []string{Pattern, PatternMarkI}
 
 // Standing is how a rite stands towards its sanction; it marshals as the
 // augury's and the census's "sanction".

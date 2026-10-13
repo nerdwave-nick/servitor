@@ -63,15 +63,15 @@ type purge struct {
 	mode  fs.FileMode
 }
 
-// purgePlans reads every vessel of the rite's sanctums and removes the
+// purgePlans reads every vessel of the rite's sanctum subjects and removes the
 // sanctums from what was read, touching nothing; vessels that do not stand,
 // or hold no sanctum of the rite, are passed over.
 func purgePlans(r *librarium.Rite) ([]purge, error) {
 	e := &examiner{rite: r, seen: map[string]bool{}}
 	byPath := map[string]*purge{}
 	var order []string
-	for _, step := range r.Liturgy {
-		st, ok := step.(*librarium.Sanctum)
+	for _, sub := range r.Subjects {
+		st, ok := sub.Matter.(*librarium.Sanctum)
 		if !ok {
 			continue
 		}

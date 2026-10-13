@@ -7,17 +7,21 @@ import (
 	"testing"
 )
 
-// falteringJSON is a rite whose second verse falls and whose first verse
-// cannot be undone.
-const falteringJSON = `{"pattern": "Mark I", "aspects": ["on"], "liturgy": [
-  {"incantation": "true", "reversion": "exit 4"},
-  {"incantation": "exit 3"}]}`
+// falteringJSON is a rite whose recessional falls once its subject
+// changed, and whose introit cannot be undone.
+const falteringJSON = `{"pattern": "Mark II", "aspects": ["on"], "subjects": [
+  {"name": "veil", "designation": "transcription", "vessel": "$TARGET.veil", "omens": {"*": "x"},
+   "introit": ["kept"], "recessional": ["dying"]}], "observances": [
+  {"name": "kept", "designation": "incantation", "words": "true", "reversion": "exit 4"},
+  {"name": "dying", "designation": "incantation", "words": "exit 3"}]}`
 
 // doubleHeresyJSON is a rite whose pre-flight finds two heresies: a scroll
 // that is not there and a tongue the machine does not speak.
-const doubleHeresyJSON = `{"pattern": "Mark I", "aspects": ["on"], "liturgy": [
-  {"litany": "no-such-scroll"},
-  {"incantation": "true", "tongue": "no-such-tongue-of-the-machine"}]}`
+const doubleHeresyJSON = `{"pattern": "Mark II", "aspects": ["on"], "subjects": [
+  {"name": "veil", "designation": "transcription", "vessel": "$TARGET.veil", "omens": {"*": "x"},
+   "introit": ["scroll", "tongue"]}], "observances": [
+  {"name": "scroll", "designation": "litany", "scroll": "no-such-scroll"},
+  {"name": "tongue", "designation": "incantation", "words": "true", "tongue": "no-such-tongue-of-the-machine"}]}`
 
 // lastChronicled is the chronicle's last line, as written.
 func (e *env) lastChronicled() string {
@@ -65,7 +69,7 @@ func TestInvoke_BinharicPrintsTheChronicledEntryAndItsVerdictIsTheExit(t *testin
 				if entry["rite"] != tc.rite || entry["aspect"] != "on" || entry["verdict"] != tc.verdict {
 					t.Fatalf("entry %v", entry)
 				}
-				if tc.verdict != "triumph" && (entry["fell_at"] == nil || !strings.Contains(errOut, "fell at verse 2")) {
+				if tc.verdict != "triumph" && (entry["fell_at"] == nil || !strings.Contains(errOut, "fell at observance dying")) {
 					t.Fatalf("the fall is neither recorded nor lamented: %v\nstderr: %s", entry, errOut)
 				}
 			})
@@ -142,9 +146,9 @@ func TestInvoke_BinharicForbiddenRecitesEveryHeresy(t *testing.T) {
 // the edict and its heresies alone.
 func TestInvoke_BinharicForbiddenEdictNamesNoAspect(t *testing.T) {
 	e := newEnv(t)
-	e.addRite("rites/capture.json", `{"pattern": "Mark I", "edict": true,
+	e.addRite("rites/capture.json", `{"pattern": "Mark II", "edict": true,
 	  "inscriptions": {"region": {"mandatory": true}},
-	  "liturgy": [{"incantation": "echo {{inscription.region}} >> $TARGET.edict"}]}`)
+	  "liturgy": [{"designation": "incantation", "words": "echo {{inscription.region}} >> $TARGET.edict"}]}`)
 
 	out, errOut, code := e.run("invoke", "capture", "--json")
 
@@ -206,7 +210,7 @@ func TestInvoke_BinharicNarratesUponStderr(t *testing.T) {
 			if code != 0 || out != e.lastChronicled()+"\n" {
 				t.Fatalf("exit %d\nstdout: %s\nstderr: %s", code, out, errOut)
 			}
-			for _, want := range []string{"+++ mouse-autohide-toggle · (dormant) → on +++\n", "  ✔ verse 1 · sanctum ", "\n✠ "} {
+			for _, want := range []string{"+++ mouse-autohide-toggle · (dormant) → on +++\n", "  ✔ subject cursor · sanctum ", "\n✠ "} {
 				if !strings.Contains(errOut, want) {
 					t.Errorf("stderr lacks %q:\n%s", want, errOut)
 				}

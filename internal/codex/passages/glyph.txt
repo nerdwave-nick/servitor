@@ -32,8 +32,10 @@ the old markers unrecognised, and a new sanctum is appended.
 Kindred passages: closing-glyph, sanctum, ward, vessel
 
 Exempla:
-  {"sanctum": "~/.config/hypr/hyprland.conf", "glyph": "#",
-   "scripture": {"on": "decoration { blur { enabled = true } }", "off": ""}}
+  {"name": "blur", "designation": "sanctum",
+   "vessel": "~/.config/hypr/hyprland.conf", "glyph": "#",
+   "omens": {"on": "decoration { blur { enabled = true } }", "off": ""}}
 
-  {"sanctum": "~/.config/app/settings.txt", "glyph": "//",
-   "scripture": {"*": "visage = {{aspect}}"}}
+  {"name": "visage", "designation": "sanctum",
+   "vessel": "~/.config/app/settings.txt", "glyph": "//",
+   "omens": {"*": "visage = {{aspect}}"}}

@@ -1,0 +1,24 @@
+{
+  "pattern": "Mark I",
+  "purpose": "turn on/off dnd",
+  "aspects": ["on", "off"],
+  "auspex": {
+    "rite": "makoctl mode | grep \"dnd\" &>/dev/null && echo \"on\" || echo \"off\"",
+    "patience": "200ms"
+  },
+  "tongue": "bash",
+  "liturgy": [
+    {
+      "incantation": {
+        "on": "notify-send \"Initiating Vow of Silence\" \"The vox-cast will be turned off. Praise the Omnissiah!\" -t 1000 && sleep 1",
+        "*": ":"
+      },
+      "patience": "2s"
+    },
+    {
+      "incantation": {"on": "makoctl mode -a dnd", "*": "makoctl mode -r dnd"}
+    },
+    {"vox-cast": "success"}
+  ]
+}
+

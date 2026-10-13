@@ -1,0 +1,41 @@
+{
+  "pattern": "Mark I",
+  "purpose": "Hide the cursor of the machine automatically - or don't",
+  "aspects": ["on", "off"],
+  "inscriptions": {
+    "reason": {
+      "purpose": "why the rite was invoked",
+      "decrees": {"off": "some stupid reason probably"}
+    },
+    "time_ms": {
+      "purpose": "the actual autohide timeout",
+      "decrees": {"on": "400"}
+    }
+  },
+  "auspex": {
+    "rite": "grep -Fq \"hide-after-inactive-ms\" ~/.config/niri/util.kdl && echo \"on\" || echo \"off\"",
+    "patience": "300ms"
+  },
+  "tongue": "bash",
+  "liturgy": [
+    {
+      "sanctum": "~/.config/niri/util.kdl",
+      "ward": "mouse-autohide-toggle",
+      "glyph": "//",
+      "consecrate": true,
+      "scripture": {
+        "on": [
+          "cursor {",
+          "  hide-after-inactive-ms {{inscription.time_ms}}",
+          "}"
+        ],
+        "*": [
+          "cursor {",
+          "}"
+        ]
+      }
+    },
+    {"vox-cast": "success"}
+  ]
+}
+

@@ -1,8 +1,6 @@
 package tui
 
 import (
-	"errors"
-	"fmt"
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
@@ -10,12 +8,15 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/librarium"
 )
 
-// station is a stage of the consecration wizard: Rite → Liturgy → Seal.
+// station is a stage of the consecration wizard: Rite → Subjects →
+// Observances → Seal for a rite of aspects, or Rite → Liturgy → Seal for
+// an edict.
 type station int
 
 const (
-	stationRite station = iota
-	stationLiturgy
+	stationRite        station = iota
+	stationLiturgy             // the liturgy, or the subjects
+	stationObservances         // the observances of a rite of aspects of Mark II
 	stationSeal
 )
 
@@ -27,23 +28,33 @@ const (
 	pageInscription          // one inscription, index
 	pageEssence              // the essential fields of the step
 	pageFurther              // the further rites of the step
-	pageAspect               // the aspect-varying fields of the step for aspect index
+	pageAspect               // the words of an edict's verse or an observance, spoken once
+	pageOmens                // the omens of the subject, a row for each aspect
+	pageAuspex               // the auspex of a machine-spirit: its scan, a trial per omen, its patience
+	pageEnact                // the enact words of a machine-spirit, a row for each omen
+	pageRites                // the observances a subject names as introit or recessional
+	pageGuards               // the aspects an observance is spoken into and out of
 )
 
 // wizard is the guided, full-screen flow for consecrating, amending and
-// replicating rites of pattern Mark I.
+// replicating rites of every form of pattern Mark II.
 type wizard struct {
 	d        riteDraft
 	station  station
 	page     pageKind
 	index    int   // the inscription or aspect of the page
-	form     *form // nil while the liturgy itself is shown
-	cursor   int   // the chosen step of the liturgy
-	choosing bool  // the kind of a new step is being chosen
-	kind     int   // the kind chosen among librarium.Kinds
+	form     *form // nil while the liturgy or the subjects are shown
+	cursor   int   // the chosen step of the liturgy, subject or observance
+	choosing bool  // the kind of a new step, or designation of a subject or observance, is being chosen
+	kind     int   // the kind chosen among w.kinds()
 	work     stepDraft
-	widx     int // the place of work in the liturgy; -1 for a new step
-	seal     *sealing
+	widx     int // the place of work in the liturgy, subjects or observances; -1 for a new one
+	// subject is the subject being written, while work holds its step;
+	// observance is the observance being written, while work holds its
+	// speech.
+	subject    subjectDraft
+	observance observanceDraft
+	seal       *sealing
 }
 
 func (m *model) openWizard(d riteDraft) tea.Cmd {
@@ -82,12 +93,23 @@ func (w *wizard) update(m *model, msg tea.Msg) (screen, tea.Cmd) {
 	switch {
 	case w.station == stationSeal:
 		return w.updateSeal(m, msg)
+	case w.form == nil && w.station == stationObservances:
+		return w.updateObservances(m, msg)
+	case w.form == nil && w.d.bearsSubjects():
+		return w.updateSubjects(m, msg)
 	case w.form == nil:
 		return w.updateLiturgy(m, msg)
 	}
 	res, cmd := w.form.update(msg)
-	if edict := w.form.get("edict") == natureEdict; w.page == pageRite && edict != w.d.edict {
-		return w, w.turnNature(m, edict)
+	switch w.page {
+	case pageRite:
+		if key := w.riteTurned(); key != "" {
+			return w, w.turnRite(m, key)
+		}
+	case pageOmens, pageAuspex, pageEnact:
+		if key := w.gridOf(w.page).turned(w.form); key != "" {
+			return w, w.turnGrid(m, key)
+		}
 	}
 	if w.page == pageEssence && bearsRelics(w.work.kind) && (w.form.get("exalted") == "true") != w.form.has("relics") {
 		return w, w.turnExaltation(m)
@@ -109,6 +131,9 @@ func (w *wizard) update(m *model, msg tea.Msg) (screen, tea.Cmd) {
 
 // back withdraws to the page before the current one.
 func (w *wizard) back(m *model) (screen, tea.Cmd) {
+	if w.d.bearsSubjects() && w.page != pageRite && w.page != pageInscription {
+		return w, w.course(m, -1)
+	}
 	switch w.page {
 	case pageRite:
 		return nil, m.notify(toastInfo, "The consecration is abandoned.")
@@ -123,10 +148,7 @@ func (w *wizard) back(m *model) (screen, tea.Cmd) {
 	case pageFurther:
 		return w, w.essencePage(m)
 	}
-	switch {
-	case w.index > 0:
-		return w, w.aspectPage(m, w.index-1)
-	case w.work.further && hasFurther(w.work.kind):
+	if w.work.further && hasFurther(w.work.kind) {
 		return w, w.furtherPage(m)
 	}
 	return w, w.essencePage(m)
@@ -137,13 +159,7 @@ func (w *wizard) onward(m *model) tea.Cmd {
 	f := w.form
 	switch w.page {
 	case pageRite:
-		d := &w.d
-		d.name, d.purpose, d.tongue = strings.TrimSpace(f.get("name")), f.get("purpose"), f.get("tongue")
-		if d.edict = f.get("edict") == natureEdict; !d.edict {
-			d.aspects, d.auspex, d.patience = f.get("aspects"), f.get("auspex"), f.get("patience")
-		}
-		keys, _ := parseKeys(f.get("inscriptions"))
-		d.declare(keys)
+		w.keepRite()
 		return w.afterInscription(m, -1)
 	case pageInscription:
 		in := &w.d.inscriptions[w.index]
@@ -153,25 +169,24 @@ func (w *wizard) onward(m *model) tea.Cmd {
 			in.decrees[a] = strings.TrimSpace(f.get("decree:" + a))
 		}
 		return w.afterInscription(m, w.index)
+	}
+	if w.d.bearsSubjects() {
+		w.keepPage()
+		return w.course(m, 1)
+	}
+	switch w.page {
 	case pageEssence:
 		w.keepEssence()
-		switch {
-		case w.work.kind == librarium.KindVoxCast:
-			return w.finishStep()
-		case w.work.further && hasFurther(w.work.kind):
+		if w.work.further && hasFurther(w.work.kind) {
 			return w.furtherPage(m)
 		}
-		return w.aspectPage(m, 0)
+		return w.oncePage(m)
 	case pageFurther:
-		for _, k := range furtherKeys[w.work.kind] {
-			w.work.fixed[k] = strings.TrimSpace(f.get(k))
-		}
-		return w.aspectPage(m, 0)
+		w.keepFurther()
+		return w.oncePage(m)
 	}
-	if w.keepAspect() {
-		return w.finishStep()
-	}
-	return w.aspectPage(m, w.index+1)
+	w.keepOnce()
+	return w.finishStep()
 }
 
 // afterInscription turns to the inscription after i, or to the liturgy.
@@ -180,77 +195,17 @@ func (w *wizard) afterInscription(m *model, i int) tea.Cmd {
 		return w.inscriptionPage(m, i+1)
 	}
 	w.station, w.form = stationLiturgy, nil
-	w.cursor = max(0, min(w.cursor, len(w.d.steps)-1))
+	n := len(w.d.steps)
+	if w.d.bearsSubjects() {
+		n = len(w.d.subjects)
+	}
+	w.cursor = max(0, min(w.cursor, n-1))
 	return nil
 }
 
-// ritePage writes the rite itself; an edict is asked no aspects and no
-// auspex.
-func (w *wizard) ritePage(m *model) tea.Cmd {
-	w.station = stationRite
-	d := w.d
-	f := newForm(m.t)
-	f.addText("name", "Name of the rite", d.name, "mouse-autohide-toggle",
-		"Also the name of its scripture in the Librarium. Letters, digits, '.', '_', '-'.",
-		func(s string) error {
-			s = strings.TrimSpace(s)
-			if !librarium.ValidName(s) {
-				return errors.New("a rite's name must be letters, digits, '.', '_' and '-'")
-			}
-			if _, exists := m.s.Librarium.Scriptures[s]; exists && s != d.origName {
-				return errors.New("a rite of this name is already recorded")
-			}
-			return nil
-		})
-	f.addText("purpose", "Purpose", d.purpose, "Hide the cursor of the machine",
-		"Optional. Told in the census, the cogitator and the completions.", nil)
-	nature := natureAspects
-	if d.edict {
-		nature = natureEdict
+// keepFurther keeps the further rites of the step.
+func (w *wizard) keepFurther() {
+	for _, k := range furtherKeys[w.work.kind] {
+		w.work.fixed[k] = strings.TrimSpace(w.form.get(k))
 	}
-	f.addChoice("edict", "Nature", []string{natureAspects, natureEdict}, nature,
-		"A rite brings the machine into one of its aspects; an edict bears none and proclaims its whole "+
-			"liturgy anew at every invocation.")
-	if !d.edict {
-		f.addText("aspects", "Aspects", d.aspects, "on, off",
-			"The aspects the rite may bring the machine into, separated by commas.",
-			func(s string) error { _, err := parseAspects(s); return err })
-	}
-	f.addText("inscriptions", "Inscriptions", strings.Join(d.keys(), ", "), "reason, mode",
-		"Optional, separated by commas; each is spoken as a rune and illuminated as {{inscription.<name>}}.",
-		func(s string) error { _, err := parseKeys(s); return err })
-	if !d.edict {
-		f.addText("auspex", "Auspex", d.auspex, "makoctl mode | grep -q do-not-disturb && echo on || echo off",
-			"Optional. A command that speaks the aspect the machine stands in.", nil)
-		f.addText("patience", "Patience of the auspex", d.patience, "2s",
-			"How long the auspex may labour, such as 500ms or 5s.", validPatience)
-	}
-	f.addText("tongue", "Tongue", d.tongue, "bash",
-		"The program that speaks the rite's commands; unspoken, the tongue of the settings, or bash.", validWord)
-	return w.setForm(m, pageRite, 0, f)
-}
-
-// inscriptionPage writes the inscription i: its decrees per aspect, or
-// one plain decree for an edict.
-func (w *wizard) inscriptionPage(m *model, i int) tea.Cmd {
-	in := w.d.inscriptions[i]
-	f := newForm(m.t)
-	f.addText("purpose", "Purpose", in.purpose, "why the rite was invoked",
-		"Optional. Told beside its rune in the completions.", nil)
-	if w.d.edict {
-		f.addToggle("mandatory", "Mandatory", in.mandatory,
-			"A proclamation lacking this inscription, with no decree, is refused.")
-		f.addText("decree:*", "Decree", in.decrees[librarium.Fallback], "",
-			"Inscribed when the edict is proclaimed and no rune speaks otherwise; empty decrees nothing.", nil)
-		return w.setForm(m, pageInscription, i, f)
-	}
-	f.addToggle("mandatory", "Mandatory", in.mandatory,
-		"An invocation lacking this inscription, with no decree for its aspect, is refused.")
-	for _, a := range w.d.aspectList() {
-		f.addText("decree:"+a, fmt.Sprintf("Decree for aspect %q", a), in.decrees[a], "",
-			"Inscribed when the rite is invoked into this aspect and no rune speaks otherwise; empty decrees nothing.", nil)
-	}
-	f.addText("decree:*", "Decree for every other aspect (*)", in.decrees[librarium.Fallback], "",
-		"Serves every aspect without a decree of its own.", nil)
-	return w.setForm(m, pageInscription, i, f)
 }

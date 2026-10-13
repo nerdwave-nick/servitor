@@ -3,10 +3,11 @@ Read how a rite stands, the aspect it bears, and its inscriptions
 The augury reads the omens of one rite and speaks what they reveal: the
 aspect the machine stands in, the rite's standing, whether other hands
 desecrated it, the inscriptions of its last invocation, its last rite with
-verdict and hour, every omen with its verse, and every taint upon its
-sanctums. The augury changes nothing; it awakens the rite's auspex, should
-the rite keep one, but performs no step. An edict, which stands in no
-aspect, yields no omen: its augury is read from its data-slate alone.
+verdict and hour, the aspects its subjects agree upon, every omen with its
+subject, and every taint upon its sanctums. The augury changes nothing; it
+reads every subject and awakens the auspex of every machine-spirit — never
+one marked exalted — but sets nothing. An edict, which stands in no aspect,
+yields no omen: its augury is read from its data-slate alone.
 
 Roused as root by sudo, the augury reads the rite of the invoker's Librarium,
 with the invoker's vessels and data-slate, and writes nothing; the passage on
@@ -15,25 +16,36 @@ the Librarium tells all.
 Without a key, the augury speaks one object in binharic, for other machines
 to read:
 
-  {"rite": "theme", "edict": false, "aspect": "porpl",
+  {"rite": "do-not-disturb", "edict": false, "aspect": "off",
    "standing": "performed", "sanction": "", "auspex": "heeded",
-   "desecrated": false,
-   "inscriptions": {"reason": "gaming remnant"},
-   "canon": [{"key": "reason", "purpose": "why the visage was changed",
-              "mandatory": false, "decrees": {}, "decree": null}],
-   "last_rite": {"verdict": "triumph", "at": "2026-10-10T13:30:00Z"},
-   "omens": [{"verse": 2, "tether": "~/.local/share/nfluff/current-theme",
-              "aspect": "porpl"}, {"auspex": true, "aspect": "porpl"}],
+   "desecrated": false, "inscriptions": {}, "canon": [],
+   "last_rite": {"verdict": "triumph", "at": "2026-10-13T16:26:40Z"},
+   "fitting": ["off"],
+   "omens": [{"subject": "mako", "designation": "machine-spirit",
+              "omen": "default", "aspects": ["off"], "aspect": "off"}],
    "taint": []}
 
+"fitting" holds the aspects every omen fits ([] when they fit none, or when
+no subject yielded an omen). Each omen is named by its subject and
+designation, with "omen" — the words a machine-spirit showed, when it showed
+one declared omen — "aspects", every aspect it fits, and "aspect" when it
+fits but one; a subject that yields no omen is not listed. The sanctums of
+"taint" are named alike ({"subject": "cursor", "designation": "sanctum"}).
+An omen taken from the data-slate's record, where the live omen of its
+subject was not heard, bears "stale": true and "read_at", the hour it was
+read; the augury awaits every live auspex, so only an exalted auspex, or one
+spared by --spare-auspex, is ever told stale. The passage on the omens
+tells all.
+
 The key "former", naming the aspect the data-slate recorded, appears only
-when the rite is desecrated. The key "auspex" tells what the rite's auspex
-gave: "" when it keeps none, "heeded", "mute", or "forgone" when the rune
---spare-auspex left it unawakened; the passage on the auspex tells all.
-The key "sanction" tells how the rite stands towards the sanction of its
-exalted verses: "sanctioned", "lapsed", "unsanctioned", or "" for a rite
-that holds no exalted verse; the passage on the sanction tells all.
-The key "canon" holds every inscription the rite declares, in written order,
+when the rite is desecrated. The key "auspex" tells what the auspexes of its
+machine-spirits gave: "" when none keeps one the augury may speak,
+"heeded", "mute", or "forgone" when the rune --spare-auspex left them
+unawakened; the passage on the auspex tells all. The key "sanction" tells
+how the rite stands towards the sanction of its exalted subjects,
+observances or verses: "sanctioned", "lapsed", "unsanctioned", or "" for a
+rite that holds nothing exalted; the passage on the sanction tells all. The
+key "canon" holds every inscription the rite declares, in written order,
 with its purpose, whether it is mandatory and its decrees; "inscriptions"
 holds the words the data-slate keeps. A heretical rite's canon is [], and
 the passage on the canon tells all.
@@ -57,7 +69,8 @@ sanction and its inscriptions alone: asked for its aspect, desecrated or former,
 with a heresy, for it bears no aspect.
 
 With the rune --spare-auspex, the augury awakens no auspex and answers at
-once from the other omens and the data-slate, in every manner of reading.
+once from the other omens, the omens the data-slate recorded and the
+data-slate itself, in every manner of reading.
 
 With the rune --is <aspect>, the augury speaks nothing at all: it exits 0
 when the rite stands in that aspect and 1 when it does not, for the
@@ -71,7 +84,7 @@ an unknown rite or key, an aspect the rite knows not, a key given beside
 former or --is, or a malformed rune.
 
 Kindred passages: is, spare-auspex, omens, standing, data-slate,
-inscriptions, canon, auspex, edict, sanction
+inscriptions, canon, auspex, subjects, edict, sanction
 
 Exempla:
   servitor augury theme
@@ -79,7 +92,7 @@ Exempla:
   servitor augury theme reason
   servitor augury theme | jq -r .inscriptions.reason
   servitor augury theme | jq -r '.canon[].key'
-  servitor augury mouse --is on && echo "the cursor is veiled"
+  servitor augury mouse-autohide-toggle --is on && echo "the cursor is veiled"
   servitor augury screenshot standing
   servitor augury split-lock sanction
   servitor augury do-not-disturb --spare-auspex

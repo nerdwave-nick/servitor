@@ -1,4 +1,4 @@
-// Package schema holds the schemas of pattern Mark I, written in JSON Schema
+// Package schema holds the schemas of pattern Mark II, written in JSON Schema
 // (draft 2020-12): one for the scripture of a rite, one for the settings.
 // The faithful's editors name them under "$schema" by their raw address in
 // the repository; the servitor recites them with expound --schema. Both are

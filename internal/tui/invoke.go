@@ -181,7 +181,11 @@ func (m *model) foresight(res rituals.Result, err error) string {
 		b = append(b, line, "")
 	}
 	for _, f := range res.Foresight {
-		b = append(b, t.bold.Render(verseName(f.Verse)))
+		head := named(res.Rite, f.Verse)
+		if f.Plan != nil {
+			head += ": " + foreseenPlan(*f.Plan, spirit(res.Rite, f.Verse))
+		}
+		b = append(b, t.bold.Render(head))
 		for _, line := range foreseen(f) {
 			st := t.text
 			switch {
@@ -196,19 +200,21 @@ func (m *model) foresight(res rituals.Result, err error) string {
 	return strings.Join(append(b, t.dim.Render("Nothing was performed.")), "\n")
 }
 
-// foreseenSanction tells how the exalted verses of a foreseen invocation
-// stand towards their sanction; "" for a rite without them.
+// foreseenSanction tells how what the rite of a foreseen invocation holds
+// exalted stands towards its sanction; "" for a rite holding nothing
+// exalted.
 func (m *model) foreseenSanction(res rituals.Result) string {
 	t := m.t
+	exalted := exaltedOf(res.Rite, true)
 	switch res.Sanction {
 	case sanction.Sanctioned:
-		return t.ok.Render("✠ The exalted verses stand sanctioned under the sigil " + sanction.Short(res.Sigil) +
+		return t.ok.Render("✠ The " + exalted + " stand sanctioned under the sigil " + sanction.Short(res.Sigil) +
 			"; one proof of the master raises the exalted servitor that performs them.")
 	case sanction.Lapsed:
-		return t.danger.Render("☓ The sanction of the exalted verses has lapsed, and the invocation would be " +
+		return t.danger.Render("☓ The sanction of the " + exalted + " has lapsed, and the invocation would be " +
 			"refused — sanction them anew with s.")
 	case sanction.Unsanctioned:
-		return t.warn.Render("○ The exalted verses stand unsanctioned, and the invocation would be refused — " +
+		return t.warn.Render("○ The " + exalted + " stand unsanctioned, and the invocation would be refused — " +
 			"sanction them with s.")
 	}
 	return ""

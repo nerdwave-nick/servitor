@@ -1,0 +1,32 @@
+{
+  "pattern": "Mark II",
+  "purpose": "enable or disable gaming optimization",
+  "aspects": ["on", "off"],
+  "vox-cast": ["progress"],
+  "subjects": [
+    {
+      "name": "incantation-1",
+      "designation": "machine-spirit",
+      "enact": {
+        "on": "sysctl -wq kernel.split_lock_mitigate=0",
+        "*": "sysctl -wq kernel.split_lock_mitigate=1"
+      }
+    },
+    {
+      "name": "incantation-3",
+      "designation": "machine-spirit",
+      "enact": {
+        "on": "scx_cosmos -p 0 -c 0 &> /dev/null",
+        "*": "killall scx_cosmos &> /dev/null || true"
+      }
+    },
+    {
+      "name": "incantation-5",
+      "designation": "machine-spirit",
+      "enact": {
+        "on": "echo on | tee /sys/devices/system/cpu/smt/control &> /dev/null",
+        "*": "echo off | tee /sys/devices/system/cpu/smt/control &> /dev/null"
+      }
+    }
+  ]
+}

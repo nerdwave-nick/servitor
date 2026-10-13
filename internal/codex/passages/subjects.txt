@@ -1,0 +1,40 @@
+What a rite of pattern Mark II reads and sets, each by itself
+
+A rite of pattern "Mark II" keeps no liturgy. Under "subjects" it declares,
+in written order, every thing of the machine it brings into its aspects: a
+sanctum in a vessel, a vessel transcribed whole, a tethered name, or a
+machine-spirit read by its auspex and set by its enact words. Each subject
+is named once under "name", takes its shape from its "designation", and
+declares under "omens" the mark each aspect leaves upon it.
+
+At invocation every subject is read; those already bearing the omen of the
+aspect invoked are passed over, and only those whose omen differs are set,
+each proven by a second reading, and restored to what was read should the
+invocation fall. A subject may name observances to be spoken before it
+changes ("introit") or after ("recessional").
+
+The list must hold at least one subject: a rite of aspects with nothing to
+read or set can bring the machine into no aspect, and is heresy. An edict
+bears no subjects. A subject may be exalted, set with the machine's own
+authority from a sanction; its words are then fixed at that sanction.
+
+An exalted subject is set by the exalted servitor alone, and only when it
+is to change (see exalted). Its auspex may itself be marked "exalted", for
+what only the root can read: such an auspex is spoken by the exalted
+servitor at invocation alone, which tells only the declared omens it
+fits, and never by an augury, a census, a completion or a foresight, which
+tell the omen last recorded, stale.
+
+Kindred passages: designation, omens, machine-spirit, observances, introit,
+recessional, pattern, exalted, sanction
+
+Exempla:
+  "subjects": [
+    {"name": "visage", "designation": "tether",
+     "tether": "~/.local/share/nfluff/current-theme",
+     "omens": {"*": "~/.config/nfluff/themes/{{aspect}}"}},
+    {"name": "smt", "designation": "machine-spirit", "exalted": true,
+     "omens": {"on": "off", "*": "on"},
+     "auspex": {"scan": "cat /sys/devices/system/cpu/smt/control"},
+     "enact": {"*": "echo {{omen}} > /sys/devices/system/cpu/smt/control"}}
+  ]

@@ -32,17 +32,17 @@ another; their invocations are performed side by side.
 An invocation that finds any of its dominion held does not refuse. It tells
 once that it waits, however much it awaits, then waits for the dominion to
 be relinquished; no patience bounds the waiting, for the holder is bounded
-by the patience of its own steps. Upon a terminal the awaiting is one line
+by the patience of its own words. Upon a terminal the awaiting is one line
 before the header (upon stderr under --binharic, withheld by --silence);
 without a terminal it is the invocation's one desktop missive, as the vox
 commands, replaced in place by the vox-casts that follow. Dominion free at
 once is never spoken of. An interrupt (Ctrl-C) or SIGTERM ends the waiting,
 and nothing is touched.
 
-A rite with exalted verses is never performed without dominion: should its
+A rite that exalts anything is never performed without dominion: should its
 dominion not be held at all, or its vessels shift with every seizing, it is
 refused with the death-mark 2 before anything is touched. Its exalted
-servitor then seizes a dominion of its own before the first verse, beneath
+servitor then seizes a dominion of its own before it performs anything, beneath
 /run/servitor/dominions/: rites/<uid>-<rite>, and vessels/<sha256> for every
 exalted vessel and bound name, waiting as every invocation waits; one it
 cannot hold refuses the invocation, and nothing is touched.
@@ -65,14 +65,14 @@ Exempla:
   ❯ servitor invoke theme porpl
   ⋯ Another invocation holds dominion over what theme must touch. The servitor waits its turn.
   +++ theme · default → porpl +++
-    ✔ verse 1 · tether ~/.local/share/nfluff/current-theme
+    ✔ subject visage · tether ~/.local/share/nfluff/current-theme
   ✠ Binharic hymns resound: the aspect «porpl» is attained.
 
   ❯ servitor invoke mouse-autohide-toggle on
   ⋯ mouse-autohide-toggle must wait: dominion lies with another invocation. Stillness is the first devotion.
   +++ mouse-autohide-toggle · off → on +++
-    ✔ verse 1 · sanctum ~/.config/niri/util.kdl
-    ✔ verse 2 · incantation niri msg action do-screen-transition
+    ✔ subject cursor · sanctum ~/.config/niri/util.kdl
+    ✔ observance reread · incantation
   ✠ The Omnissiah is pleased: the rite now bears the aspect «on».
 
   ❯ servitor invoke screenshot

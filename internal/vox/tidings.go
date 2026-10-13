@@ -45,6 +45,10 @@ var (
 	exaltationFile string
 	//go:embed edict-exaltation.txt
 	edictExaltationFile string
+	//go:embed subject-progress.txt
+	subjectProgressFile string
+	//go:embed subject-failure.txt
+	subjectFailureFile string
 )
 
 // templates are the embedded template lists by tidings.
@@ -64,6 +68,14 @@ var edictTemplates = map[invocation.Tidings][]string{
 	invocation.Failure:    parseTemplates("edict-failure.txt", edictFailureFile),
 	invocation.Dominion:   parseTemplates("edict-dominion.txt", edictDominionFile),
 	invocation.Exaltation: parseTemplates("edict-exaltation.txt", edictExaltationFile),
+}
+
+// subjectTemplates are the embedded template lists of the progress and fall
+// of a rite of aspects: they name the subject. Its triumph,
+// dominion and exaltation are told as every rite's.
+var subjectTemplates = map[invocation.Tidings][]string{
+	invocation.Progress: parseTemplates("subject-progress.txt", subjectProgressFile),
+	invocation.Failure:  parseTemplates("subject-failure.txt", subjectFailureFile),
 }
 
 // parseTemplates takes one template per line, ignoring blank lines and
@@ -97,14 +109,20 @@ const awakening = "The machine spirit stirs; the liturgy begins."
 // index below n) and illuminates it, the aspect written «aspect». The body
 // of progress ends in "step x / n", that of failure in how the reversion
 // went. An edict's vox-cast is drawn from its own templates, and neither it
-// nor its summary speaks an aspect.
+// nor its summary speaks an aspect. The progress and fall of a subject of a
+// rite of aspects are drawn from templates naming it, and progress ends in
+// "subject x / n".
 func Compose(p invocation.Proclamation, pick func(n int) int) Message {
+	tid := p.Values.Tidings
 	list, scope := templates[p.Tidings], voxScope
-	if p.Edict {
+	counted := "step"
+	switch subjects, ok := subjectTemplates[p.Tidings]; {
+	case p.Edict:
 		list, scope = edictTemplates[p.Tidings], edictScope
+	case ok && tid.Subject != "":
+		list, counted = subjects, "subject"
 	}
 	tmpl := list[pick(len(list))]
-	tid := p.Values.Tidings
 	if p.Tidings == invocation.Progress && tid.Step == 0 {
 		tmpl = awakening
 	}
@@ -124,7 +142,7 @@ func Compose(p invocation.Proclamation, pick func(n int) int) Message {
 		if tid.Steps > 0 {
 			m.Percent = tid.Step * 100 / tid.Steps
 		}
-		body += fmt.Sprintf("\nstep %d / %d", tid.Step, tid.Steps)
+		body += fmt.Sprintf("\n%s %d / %d", counted, tid.Step, tid.Steps)
 	case invocation.Failure:
 		body += "\n" + reversion(p.Outcome, p.Edict)
 	}
@@ -158,7 +176,13 @@ func reversion(out *invocation.Outcome, edict bool) string {
 	}
 	var fallen []string
 	for _, r := range out.Reversions {
-		if r.Heresy != nil {
+		switch {
+		case r.Heresy == nil:
+		case r.Subject != "":
+			fallen = append(fallen, "subject "+r.Subject)
+		case r.Observance != "":
+			fallen = append(fallen, "observance "+r.Observance)
+		default:
 			fallen = append(fallen, fmt.Sprintf("verse %d", r.Number))
 		}
 	}

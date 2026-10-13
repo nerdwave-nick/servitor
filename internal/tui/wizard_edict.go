@@ -1,7 +1,6 @@
 package tui
 
 import (
-	"slices"
 	"strings"
 
 	tea "charm.land/bubbletea/v2"
@@ -15,29 +14,6 @@ const (
 	natureAspects = "aspects"
 	natureEdict   = "edict"
 )
-
-// turnNature turns the Rite page to an edict or back to a rite of
-// aspects, keeping all that was written upon it.
-func (w *wizard) turnNature(m *model, edict bool) tea.Cmd {
-	old := w.form
-	if !w.d.edict {
-		w.d.aspects, w.d.auspex, w.d.patience = old.get("aspects"), old.get("auspex"), old.get("patience")
-	}
-	w.d.edict = edict
-	w.ritePage(m)
-	at := 0
-	for i, fl := range w.form.fields {
-		if fl.key == "edict" {
-			at = i
-		}
-		for _, o := range old.fields {
-			if o.key == fl.key && o.kind == fieldText && fl.kind == fieldText {
-				fl.input.SetValue(o.input.Value())
-			}
-		}
-	}
-	return w.form.setFocus(at)
-}
 
 // oncePage writes the words of an incantation or litany of an edict, each
 // spoken once.
@@ -74,16 +50,16 @@ func (w *wizard) keepOnce() {
 	}
 }
 
-// kinds are the kinds of step the rite may bear: an edict only speaks,
-// recites and sends word, for it holds no aspect to keep.
+// kinds are the kinds of what may be written at the station: the
+// designations of an observance, or of a subject of a rite of aspects;
+// an edict's liturgy only speaks and recites, for it holds no aspect to
+// keep, and sends word by the vox-casts of the rite.
 func (w *wizard) kinds() []librarium.Kind {
-	if !w.d.edict {
-		return librarium.Kinds
+	switch {
+	case w.station == stationObservances:
+		return observanceDesignations
+	case w.d.bearsSubjects():
+		return subjectDesignations
 	}
-	return slices.DeleteFunc(slices.Clone(librarium.Kinds), func(k librarium.Kind) bool { return !edictBears(k) })
-}
-
-// edictBears reports whether an edict may bear a step of kind k.
-func edictBears(k librarium.Kind) bool {
-	return k == librarium.KindIncantation || k == librarium.KindLitany || k == librarium.KindVoxCast
+	return []librarium.Kind{librarium.KindIncantation, librarium.KindLitany}
 }

@@ -27,15 +27,25 @@ type session struct {
 	next      int  // the index in the plan of the verse to perform next
 	fallen    bool // a verse fell; nothing more is performed
 	reverting bool // a verse was reverted; nothing more is performed
+	beheld    bool // the subjects a read named were read
+	// cursor is where the last item of a state rite performed lies, and
+	// spoken names the observances performed (see order.go).
+	cursor    position
+	spoken    map[string]bool
 	performed []deed
 	speaker   Speaker
 	dominion  *dominion.Dominion
 }
 
-// deed is one verse performed; undo is nil when it changed nothing.
+// deed is one verse or item performed; undo is nil when it changed
+// nothing. A machine-spirit is reverted by restore instead, which enacts
+// the omen named and tells the omens that proved a privileged one
+// restored.
 type deed struct {
-	verse sanction.Verse
-	undo  Undo
+	verse   sanction.Verse
+	undo    Undo
+	restore func(ctx context.Context, omen string) (heard string, omens []string, err error)
+	omen    string // the omen restore enacts
 }
 
 // heard is one line of the channel, or why none came.
@@ -57,7 +67,8 @@ func Serve(args []string, in *os.File, out io.Writer, cfg Config) int {
 	if cfg.Idle <= 0 {
 		cfg.Idle = Machine().Idle
 	}
-	s := &session{cfg: cfg, out: NewChannel(nil, out)}
+	s := &session{cfg: cfg, out: NewChannel(nil, out), cursor: position{place: -1, phase: afterSubject},
+		spoken: map[string]bool{}}
 	if cfg.Exalted == nil || !cfg.Exalted() {
 		return s.refuse(errors.New("the exalted servitor is roused only with the machine's own authority, by " +
 			"an intercessor, and never by hand; nothing was touched"))
@@ -85,11 +96,7 @@ func Serve(args []string, in *os.File, out io.Writer, cfg Config) int {
 	if err := s.accept(); err != nil {
 		return s.refuse(err)
 	}
-	verses := []int{}
-	for _, v := range s.plan.Liturgy {
-		verses = append(verses, v.Verse)
-	}
-	if err := s.reply(Reply{To: "handshake", Verdict: Accepted, Protocol: Protocol, Verses: verses}); err != nil {
+	if err := s.reply(s.acceptance()); err != nil {
 		return s.fall(err)
 	}
 	s.record(Entry{Deed: "accept", Verdict: Accepted})
@@ -148,22 +155,26 @@ func (s *session) serve() int {
 			return s.violated("", err)
 		}
 		switch {
-		case r.Perform != nil && r.Revert == nil && r.Finish == nil && r.Abort == nil:
-			if err := s.perform(*r.Perform); err != nil {
+		case r.Read != nil && r.Perform == nil && r.Revert == nil && r.Finish == nil && r.Abort == nil:
+			if err := s.readSubjects(r.Read); err != nil {
 				return s.fall(err)
 			}
-		case r.Revert != nil && r.Perform == nil && r.Finish == nil && r.Abort == nil:
+		case r.Perform != nil && r.Read == nil && r.Revert == nil && r.Finish == nil && r.Abort == nil:
+			if err := s.performItem(*r.Perform); err != nil {
+				return s.fall(err)
+			}
+		case r.Revert != nil && r.Read == nil && r.Perform == nil && r.Finish == nil && r.Abort == nil:
 			if err := s.revert(*r.Revert); err != nil {
 				return s.fall(err)
 			}
-		case r.Finish != nil && *r.Finish && r.Perform == nil && r.Revert == nil && r.Abort == nil:
+		case r.Finish != nil && *r.Finish && r.Read == nil && r.Perform == nil && r.Revert == nil && r.Abort == nil:
 			s.record(Entry{Deed: "finish", Verdict: Finished})
 			_ = s.reply(Reply{To: "finish", Verdict: Finished})
 			return markFinished
-		case r.Abort != nil && *r.Abort && r.Perform == nil && r.Revert == nil && r.Finish == nil:
+		case r.Abort != nil && *r.Abort && r.Read == nil && r.Perform == nil && r.Revert == nil && r.Finish == nil:
 			return s.abort()
 		default:
-			return s.violated("", errors.New("a request names exactly one of perform, revert, finish and abort"))
+			return s.violated("", errors.New("a request names exactly one of read, perform, revert, finish and abort"))
 		}
 	}
 }
@@ -175,11 +186,9 @@ type violation struct {
 	error
 }
 
-// perform performs verse n, which must be the next of the plan.
-func (s *session) perform(n int) error {
+// performVerse performs verse n, which must be the next of the plan.
+func (s *session) performVerse(n int) error {
 	switch {
-	case s.fallen || s.reverting:
-		return violation{"perform", fmt.Errorf("verse %d is not performed: the session reverts what it performed", n)}
 	case s.next >= len(s.plan.Liturgy):
 		return violation{"perform", fmt.Errorf("verse %d is not performed: every exalted verse of the plan was", n)}
 	case s.plan.Liturgy[s.next].Verse != n:
@@ -188,23 +197,43 @@ func (s *session) perform(n int) error {
 	}
 	v := s.plan.Liturgy[s.next]
 	s.next++
+	return s.perform(v, "")
+}
+
+// perform performs the verse or item v; restore is the omen a
+// machine-spirit is restored to.
+func (s *session) perform(v sanction.Verse, restore string) error {
 	ctx, cancel := s.halting()
 	defer cancel()
-	r, d := s.act(ctx, v)
+	r, d := s.act(ctx, v, restore)
+	r.Subject, r.Observance = v.Subject, v.Observance
 	if d != nil {
 		s.performed = append(s.performed, *d)
 	}
 	s.fallen = r.Verdict == Fell
-	s.record(Entry{Verse: n, Deed: "perform", Verdict: r.Verdict, Lament: r.Lament})
+	s.record(Entry{Verse: v.Verse, Subject: v.Subject, Observance: v.Observance, Deed: "perform", Verdict: r.Verdict,
+		Lament: r.Lament})
 	return s.reply(r)
 }
 
-// revert reverts verse n, which must be the last performed and not yet
-// reverted.
-func (s *session) revert(n int) error {
-	if len(s.performed) == 0 || s.performed[len(s.performed)-1].verse.Verse != n {
-		return violation{"revert", fmt.Errorf("verse %d is not reverted: it is not the last verse performed and not yet "+
-			"reverted", n)}
+// revert reverts the item named, which must be the last performed and not
+// yet reverted; a machine-spirit may name the declared omen it is restored
+// to.
+func (s *session) revert(it Item) error {
+	if len(s.performed) == 0 || !it.names(s.performed[len(s.performed)-1].verse) {
+		noun := "verse"
+		if it.Verse == 0 {
+			noun = "item"
+		}
+		return violation{"revert", fmt.Errorf("%s is not reverted: it is not the last %s performed and not yet "+
+			"reverted", it.Named(), noun)}
+	}
+	last := &s.performed[len(s.performed)-1]
+	if it.Omen != "" {
+		if err := restorable(last.verse, it.Omen); err != nil {
+			return violation{"revert", err}
+		}
+		last.omen = it.Omen
 	}
 	s.reverting = true
 	return s.reply(s.undo())

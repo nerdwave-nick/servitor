@@ -10,6 +10,9 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/librarium"
 )
 
+// TestPerform_RevertsEveryFileStepWhenOneFalls: when a subject falls,
+// every subject set before it is restored in reverse order, the machine as
+// it stood.
 func TestPerform_RevertsEveryFileStepWhenOneFalls(t *testing.T) {
 	fx := newFixture(t)
 	util := write(t, fx.data, "util.kdl", "input {}\n", 0o640)
@@ -18,12 +21,12 @@ func TestPerform_RevertsEveryFileStepWhenOneFalls(t *testing.T) {
 	link(t, "themes/porpl", theme)
 	vis := write(t, fx.data, "visage.conf", "visage off", 0o600)
 	ro := write(t, fx.data, "ro/x.conf", "x off", 0o644)
-	r := fx.rite(t, `{"sanctum": "$DATA/util.kdl", "scripture": "1"},
-	  {"sanctum": "$DATA/created.kdl", "consecrate": true, "scripture": "2"},
-	  {"tether": "$DATA/current-theme", "anchor": "$DATA/themes/{{aspect}}"},
-	  {"vox-cast": "progress"},
-	  {"transcription": "$DATA/visage.conf", "scripture": {"on": null, "*": "visage {{aspect}}"}},
-	  {"transcription": "$DATA/ro/x.conf", "scripture": "x {{aspect}}"}`)
+	r := fx.rite(t, `{"name": "util", "designation": "sanctum", "vessel": "$DATA/util.kdl", "omens": {"*": "1"}},
+	  {"name": "created", "designation": "sanctum", "vessel": "$DATA/created.kdl", "consecrate": true, "omens": {"*": "2"}},
+	  {"name": "theme", "designation": "tether", "tether": "$DATA/current-theme", "omens": {"*": "$DATA/themes/{{aspect}}"}},
+	  {"name": "visage", "designation": "transcription", "vessel": "$DATA/visage.conf",
+	   "omens": {"on": null, "*": "visage {{aspect}}"}},
+	  {"name": "ro", "designation": "transcription", "vessel": "$DATA/ro/x.conf", "omens": {"*": "x {{aspect}}"}}`)
 	before := tree(t, fx.data)
 
 	inv, err := Prepare(r, Options{Aspect: "on"})
@@ -43,19 +46,19 @@ func TestPerform_RevertsEveryFileStepWhenOneFalls(t *testing.T) {
 	if out.Fell == nil {
 		t.Skip("the hall's seal is not enforced (performing as root?)")
 	}
-	if out.Fell.Number != 6 || out.Fell.Kind != librarium.KindTranscription || out.Fell.Target != ro {
+	if out.Fell.Subject != "ro" || out.Fell.Kind != librarium.KindTranscription || out.Fell.Target != ro {
 		t.Fatalf("fell at %+v", out.Fell)
 	}
 	grimdark(t, out.Fell.Heresy.Error())
-	var verses []int
+	var subjects []string
 	for _, rv := range out.Reversions {
 		if rv.Heresy != nil {
-			t.Errorf("reversion of verse %d failed: %v", rv.Number, rv.Heresy)
+			t.Errorf("reversion of the subject %s failed: %v", rv.Subject, rv.Heresy)
 		}
-		verses = append(verses, rv.Number)
+		subjects = append(subjects, rv.Subject)
 	}
-	if want := []int{5, 3, 2, 1}; !equalInts(verses, want) {
-		t.Fatalf("reverted verses %v, want %v", verses, want)
+	if want := []string{"visage", "theme", "created", "util"}; !equalStrings(subjects, want) {
+		t.Fatalf("restored subjects %v, want %v", subjects, want)
 	}
 	sameTree(t, before, tree(t, fx.data))
 	if out.Verdict != Reverted {
@@ -66,12 +69,15 @@ func TestPerform_RevertsEveryFileStepWhenOneFalls(t *testing.T) {
 	}
 }
 
+// TestPerform_RestoresAScrollCastDownByATether: a vessel a zealous tether
+// cast down is raised again when a later subject falls.
 func TestPerform_RestoresAScrollCastDownByATether(t *testing.T) {
 	fx := newFixture(t)
 	theme := write(t, fx.data, "current-theme", "hand-written", 0o600)
 	write(t, fx.data, "ro/x.conf", "x off", 0o644)
-	r := fx.rite(t, `{"tether": "$DATA/current-theme", "anchor": "$DATA/themes/{{aspect}}", "zeal": true},
-	  {"transcription": "$DATA/ro/x.conf", "scripture": "x {{aspect}}"}`)
+	r := fx.rite(t, `{"name": "theme", "designation": "tether", "tether": "$DATA/current-theme",
+	   "omens": {"*": "$DATA/themes/{{aspect}}"}, "zeal": true},
+	  {"name": "ro", "designation": "transcription", "vessel": "$DATA/ro/x.conf", "omens": {"*": "x {{aspect}}"}}`)
 	inv, err := Prepare(r, Options{Aspect: "on"})
 	if err != nil {
 		t.Fatal(err)
@@ -197,16 +203,18 @@ func TestPerform_OnlyOnce(t *testing.T) {
 	}
 }
 
+// TestForesee_TouchesNothing: the foresight of every subject, named in
+// written order, tells what it would change and touches nothing.
 func TestForesee_TouchesNothing(t *testing.T) {
 	fx := newFixture(t)
 	write(t, fx.data, "util.kdl", "input {}\n", 0o640)
 	write(t, fx.data, "visage.conf", "visage off", 0o600)
 	link(t, "themes/porpl", filepath.Join(fx.data, "current-theme"))
-	r := fx.rite(t, `{"sanctum": "$DATA/util.kdl", "scripture": "1"},
-	  {"sanctum": "$DATA/created.kdl", "consecrate": true, "scripture": "2"},
-	  {"vox-cast": "progress"},
-	  {"tether": "$DATA/current-theme", "anchor": "$DATA/themes/{{aspect}}"},
-	  {"transcription": "$DATA/visage.conf", "scripture": "visage {{aspect}}", "seal": "0644"}`)
+	r := fx.rite(t, `{"name": "util", "designation": "sanctum", "vessel": "$DATA/util.kdl", "omens": {"*": "1"}},
+	  {"name": "created", "designation": "sanctum", "vessel": "$DATA/created.kdl", "consecrate": true, "omens": {"*": "2"}},
+	  {"name": "theme", "designation": "tether", "tether": "$DATA/current-theme", "omens": {"*": "$DATA/themes/{{aspect}}"}},
+	  {"name": "visage", "designation": "transcription", "vessel": "$DATA/visage.conf", "omens": {"*": "visage {{aspect}}"},
+	   "seal": "0644"}`)
 	before := tree(t, fx.data)
 
 	inv, err := Prepare(r, Options{Aspect: "on"})
@@ -216,12 +224,12 @@ func TestForesee_TouchesNothing(t *testing.T) {
 	seen := inv.Foresee()
 	sameTree(t, before, tree(t, fx.data))
 
-	if len(seen) != 5 {
-		t.Fatalf("foresaw %d steps", len(seen))
+	if len(seen) != 4 {
+		t.Fatalf("foresaw %d subjects", len(seen))
 	}
-	for i, f := range seen {
-		if f.Number != i+1 {
-			t.Errorf("foresight %d names verse %d", i, f.Number)
+	for i, name := range []string{"util", "created", "theme", "visage"} {
+		if seen[i].Subject != name {
+			t.Errorf("foresight %d names the subject %q, want %q", i, seen[i].Subject, name)
 		}
 	}
 	if d := seen[0].Vessel.Diff(); !equalStrings(d, []string{"+ // +++ begin of sanctum mouse -- aspect|on +++",
@@ -231,13 +239,10 @@ func TestForesee_TouchesNothing(t *testing.T) {
 	if c := seen[1].Vessel; c.Existed || !c.Exists {
 		t.Errorf("consecration foreseen as %+v", c)
 	}
-	if seen[2].Vessel != nil || seen[2].Tether != nil || seen[2].Kind != librarium.KindVoxCast {
-		t.Errorf("vox-cast foreseen as %+v", seen[2])
-	}
-	if c := seen[3].Tether; c.From != "themes/porpl" || c.To != filepath.Join(fx.data, "themes", "on") {
+	if c := seen[2].Tether; c.From != "themes/porpl" || c.To != filepath.Join(fx.data, "themes", "on") {
 		t.Errorf("tether foreseen as %+v", c)
 	}
-	if c := seen[4].Vessel; c.BeforeSeal != 0o600 || c.AfterSeal != 0o644 || !equalStrings(c.Diff(), []string{"- visage off", "+ visage on"}) {
+	if c := seen[3].Vessel; c.BeforeSeal != 0o600 || c.AfterSeal != 0o644 || !equalStrings(c.Diff(), []string{"- visage off", "+ visage on"}) {
 		t.Errorf("transcription foreseen as %+v", c)
 	}
 }

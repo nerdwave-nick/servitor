@@ -25,7 +25,7 @@ var overviewBindings = []binding{
 	{"e", "amend", true},
 	{"c", "replicate", false},
 	{"d", "excommunicate", true},
-	{"s", "sanction the exalted verses, or abjure the sanction", false},
+	{"s", "sanction what the rite holds exalted, or abjure the sanction", false},
 	{"o", "open in $EDITOR", false},
 	{"i", "inquisition", false},
 	{"O", "words of the last invocation", false},

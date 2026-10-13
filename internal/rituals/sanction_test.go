@@ -30,11 +30,12 @@ type sanctuary struct {
 	store sanction.Store
 }
 
-// exaltedRite is a rite of one exalted verse speaking word.
+// exaltedRite is a rite of one exalted machine-spirit, read by a common
+// scan, whose enact words speak word.
 func exaltedRite(word string) string {
-	return `{"pattern": "Mark I", "aspects": ["on", "off"], "liturgy": [
-	  {"incantation": "echo ` + word + ` >> $DATA/said", "exalted": true},
-	  {"vox-cast": "success"}]}`
+	return `{"pattern": "Mark II", "aspects": ["on", "off"], "vox-cast": ["success"], "subjects": [
+	  {"name": "word", "exalted": true, "designation": "machine-spirit", "auspex": {"scan": "cat $DATA/word"},
+	   "enact": {"*": "echo {{omen}} > $DATA/word; echo ` + word + ` >> $DATA/said"}}]}`
 }
 
 // newSanctuary keeps "split-lock" sanctioned, "lapsing" lapsed (sanctioned,
@@ -48,7 +49,8 @@ func newSanctuary(t *testing.T) *sanctuary {
 	fx.rite("split-lock", exaltedRite("sanctioned"))
 	fx.rite("lapsing", exaltedRite("before"))
 	fx.rite("fresh", exaltedRite("fresh"))
-	fx.rite("plain", `{"pattern": "Mark I", "aspects": ["on"], "liturgy": [{"incantation": "echo plain"}]}`)
+	fx.rite("plain", `{"pattern": "Mark II", "aspects": ["on"], "subjects": [
+	  {"name": "plain", "designation": "machine-spirit", "auspex": {"scan": "echo on"}, "enact": {"*": "echo plain"}}]}`)
 	fx.rite("broken", exaltedRite("broken"))
 	fx.rite("a-gone", exaltedRite("gone"))
 	sc.s = sc.servitor()
@@ -56,7 +58,7 @@ func newSanctuary(t *testing.T) *sanctuary {
 		sc.sanctify(name)
 	}
 	fx.rite("lapsing", exaltedRite("after"))
-	fx.rite("broken", `{"pattern": "Mark I", "aspects": []}`)
+	fx.rite("broken", broken)
 	if err := os.Remove(filepath.Join(fx.lib, "rites", "a-gone.json")); err != nil {
 		t.Fatal(err)
 	}
@@ -116,7 +118,7 @@ func (sc *sanctuary) sigil(name string) string {
 var forsakenWords = []string{
 	`the sanction of "a-gone" is forsaken: no rite named "a-gone" is recorded in the Librarium any more, and ` +
 		`the sanction serves nothing — abjure it: servitor abjure a-gone`,
-	`the sanction of "plain" is forsaken: the rite "plain" holds no exalted verse any more, and the sanction ` +
+	`the sanction of "plain" is forsaken: the rite "plain" holds nothing exalted any more, and the sanction ` +
 		`serves nothing — abjure it: servitor abjure plain`,
 }
 
@@ -157,7 +159,7 @@ func TestSanction_CensusAndAuguryTellEachStanding(t *testing.T) {
 		t.Fatal(err)
 	}
 	shape := `{"rite":"split-lock","edict":false,"aspect":"","standing":"dormant","sanction":"sanctioned",` +
-		`"auspex":"","aspects":["on","off"],"purpose":"","desecrated":false,"last_rite":null,` +
+		`"auspex":"forgone","aspects":["on","off"],"purpose":"","desecrated":false,"stale":false,"last_rite":null,` +
 		`"recorded_in":"` + filepath.Join(sc.lib, "rites", "split-lock.json") + `","canon":[]}`
 	if string(got) != shape {
 		t.Errorf("census entry\n got %s\nwant %s", got, shape)
@@ -261,9 +263,10 @@ func TestSanction_TheInquisitionNotesEveryStandingAmiss(t *testing.T) {
 	}
 }
 
-// exaltedAt is the column of the "exalted" of the first verse of the rite.
+// exaltedAt is the column of the "exalted" of the first subject of the
+// rite.
 func exaltedAt(sc *sanctuary, rite string) int {
-	return sc.s.Librarium.Rites[rite].Locate("/liturgy/0/exalted").Column
+	return sc.s.Librarium.Rites[rite].Locate("/subjects/0/exalted").Column
 }
 
 // TestSanction_TheVigilLamentsTheForsakenFirst: the vigil tells every
@@ -304,7 +307,7 @@ func TestInvoke_TheRefusalNamesTheStanding(t *testing.T) {
 		if !errors.As(err, &hs) || len(hs) != 1 || res.Outcome != nil || res.Entry != nil {
 			t.Fatalf("%s: %v %+v", rite, err, res)
 		}
-		for _, w := range append(c.words, "verse 1 is exalted", "not one verse of") {
+		for _, w := range append(c.words, `the subject "word" is exalted`, "not one subject or observance of") {
 			if !strings.Contains(hs[0].Message, w) {
 				t.Errorf("%s: the refusal lacks %q: %s", rite, w, hs[0].Message)
 			}

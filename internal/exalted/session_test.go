@@ -13,7 +13,7 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/sanction"
 )
 
-// performedOn is what the ground holds once every verse of "on" was
+// performedOn is what the ground holds once every subject of "on" was
 // performed.
 var performedOn = map[string]string{
 	"/etc/sysctl.d/90-hallow.conf": "644 kernel.hallow = on # " + secret + "\n",
@@ -32,26 +32,27 @@ func (sh *shrine) holds(want map[string]string) {
 }
 
 // TestSession_PerformsThePlanAndFinishes: accepted, the exalted servitor
-// performs each exalted verse of the plan from the sanction, in written
+// performs each exalted subject of the plan from the sanction, in written
 // order, keeps the owner and seal of a standing vessel, keeps it all upon
 // finish, and journals every act as the root's.
 func TestSession_PerformsThePlanAndFinishes(t *testing.T) {
 	sh := newShrine(t, nil)
 	inv := sh.rouseFor("on")
 	r := inv.say(sh.handshake("on"))
-	if r.To != "handshake" || r.Verdict != Accepted || r.Protocol != Protocol || !slices.Equal(r.Verses, []int{1, 3, 4}) {
+	if r.To != "handshake" || r.Verdict != Accepted || r.Protocol != Protocol || r.Verses != nil ||
+		!slices.Equal(r.Subjects, []string{"conf", "lock", "theme"}) {
 		t.Fatalf("accepted with %+v", r)
 	}
-	first := inv.perform(1)
+	first := inv.perform(conf)
 	if !first.Changed || first.Before != nil || first.After == nil || first.After.Size != len(performedOn["/etc/sysctl.d/90-hallow.conf"])-4 {
-		t.Errorf("verse 1: %+v", first)
+		t.Errorf("conf: %+v", first)
 	}
-	third := inv.perform(3)
+	third := inv.perform(lock)
 	if !third.Changed || third.Before == nil || third.Before.Size != len(original) || third.Before.SHA256 == third.After.SHA256 {
-		t.Errorf("verse 3: %+v", third)
+		t.Errorf("lock: %+v", third)
 	}
-	if fourth := inv.perform(4); !fourth.Changed {
-		t.Errorf("verse 4: %+v", fourth)
+	if fourth := inv.perform(theme); !fourth.Changed {
+		t.Errorf("theme: %+v", fourth)
 	}
 	if r := inv.say(Request{Finish: new(true)}); r.To != "finish" || r.Verdict != Finished {
 		t.Fatalf("finish: %+v", r)
@@ -60,7 +61,7 @@ func TestSession_PerformsThePlanAndFinishes(t *testing.T) {
 		t.Fatalf("finished with the death-mark %d", m)
 	}
 	sh.holds(performedOn)
-	if want := []string{"accept accepted", "perform 1 triumph", "perform 3 triumph", "perform 4 triumph",
+	if want := []string{"accept accepted", "perform conf triumph", "perform lock triumph", "perform theme triumph",
 		"finish finished"}; !slices.Equal(sh.journal.deeds(), want) {
 		t.Errorf("journaled %v, want %v", sh.journal.deeds(), want)
 	}
@@ -71,25 +72,25 @@ func TestSession_PerformsThePlanAndFinishes(t *testing.T) {
 	}
 }
 
-// TestSession_AVerseThatFindsItsWorkDoneChangesNothing: performed again,
-// the plan touches nothing, and its verses stand performed all the same.
-func TestSession_AVerseThatFindsItsWorkDoneChangesNothing(t *testing.T) {
+// TestSession_ASubjectThatFindsItsWorkDoneChangesNothing: performed again,
+// the plan touches nothing, and its subjects stand performed all the same.
+func TestSession_ASubjectThatFindsItsWorkDoneChangesNothing(t *testing.T) {
 	sh := newShrine(t, nil)
 	inv := sh.accepted("on")
-	for _, n := range []int{1, 3, 4} {
-		inv.perform(n)
+	for _, it := range []*Item{conf, lock, theme} {
+		inv.perform(it)
 	}
 	inv.say(Request{Finish: new(true)})
 	inv.ended()
 	inv = sh.accepted("on")
-	for _, n := range []int{1, 3, 4} {
-		if r := inv.perform(n); r.Changed {
-			t.Errorf("verse %d changed what it found done: %+v", n, r)
+	for _, it := range []*Item{conf, lock, theme} {
+		if r := inv.perform(it); r.Changed {
+			t.Errorf("%s changed what it found done: %+v", it.Named(), r)
 		}
 	}
-	for _, n := range []int{4, 3, 1} {
-		if r := inv.say(Request{Revert: new(n)}); r.Verdict != Reverted || r.Verse != n || r.Changed {
-			t.Errorf("revert %d: %+v", n, r)
+	for _, it := range []*Item{theme, lock, conf} {
+		if r := inv.say(Request{Revert: it}); r.Verdict != Reverted || r.Subject != it.Subject || r.Changed {
+			t.Errorf("revert %s: %+v", it.Named(), r)
 		}
 	}
 	inv.say(Request{Finish: new(true)})
@@ -103,19 +104,19 @@ func TestSession_AVerseThatFindsItsWorkDoneChangesNothing(t *testing.T) {
 func TestSession_AStandingVesselTakesTheSealDecreed(t *testing.T) {
 	u := hallowUnit()
 	for i := range u.Aspects {
-		u.Aspects[i].Liturgy[0].Seal = new(fs.FileMode(0o600))
+		u.Aspects[i].Subjects[0].Seal = new(fs.FileMode(0o600))
 	}
 	sh := newShrine(t, u)
 	const vessel = "/etc/sysctl.d/90-hallow.conf"
-	sh.scroll(vessel, string(u.Aspects[0].Liturgy[0].Scripture), 0o644)
+	sh.scroll(vessel, string(u.Aspects[0].Subjects[0].Scripture), 0o644)
 	inv := sh.accepted("on")
-	if r := inv.perform(1); !r.Changed {
+	if r := inv.perform(conf); !r.Changed {
 		t.Errorf("the seal was not taken: %+v", r)
 	}
 	if got := sh.look(vessel); !strings.HasPrefix(got, "600 ") {
 		t.Errorf("the vessel stands %q", got)
 	}
-	if r := inv.say(Request{Revert: new(1)}); r.Verdict != Reverted || !r.Changed {
+	if r := inv.say(Request{Revert: conf}); r.Verdict != Reverted || !r.Changed {
 		t.Errorf("revert: %+v", r)
 	}
 	if got := sh.look(vessel); !strings.HasPrefix(got, "644 ") {
@@ -126,13 +127,13 @@ func TestSession_AStandingVesselTakesTheSealDecreed(t *testing.T) {
 }
 
 // TestSession_TheEndOfTheChannelRevertsInReverse: when the invoker's
-// servitor falls before finish, the exalted servitor reverts every verse it
+// servitor falls before finish, the exalted servitor reverts every subject it
 // performed, from the last to the first, journals it, and ends non-zero.
 func TestSession_TheEndOfTheChannelRevertsInReverse(t *testing.T) {
 	sh := newShrine(t, nil)
 	inv := sh.accepted("on")
-	for _, n := range []int{1, 3, 4} {
-		inv.perform(n)
+	for _, it := range []*Item{conf, lock, theme} {
+		inv.perform(it)
 	}
 	sh.holds(performedOn)
 	must(t, inv.conn.Close())
@@ -140,30 +141,31 @@ func TestSession_TheEndOfTheChannelRevertsInReverse(t *testing.T) {
 		t.Fatalf("ended with the death-mark %d, want 1", m)
 	}
 	sh.untouched()
-	want := []string{"accept accepted", "perform 1 triumph", "perform 3 triumph", "perform 4 triumph",
-		"revert 4 reverted", "revert 3 reverted", "revert 1 reverted", "fall reverted"}
+	want := []string{"accept accepted", "perform conf triumph", "perform lock triumph", "perform theme triumph",
+		"revert theme reverted", "revert lock reverted", "revert conf reverted", "fall reverted"}
 	if !slices.Equal(sh.journal.deeds(), want) {
 		t.Errorf("journaled %v, want %v", sh.journal.deeds(), want)
 	}
 }
 
-// TestSession_AbortRevertsInReverse: abort reverts every verse performed
-// and tells each reversion; revert reverts the last verse performed alone.
+// TestSession_AbortRevertsInReverse: abort reverts every subject performed
+// and tells each reversion; revert reverts the last one performed alone.
 func TestSession_AbortRevertsInReverse(t *testing.T) {
 	sh := newShrine(t, nil)
 	inv := sh.accepted("on")
-	for _, n := range []int{1, 3, 4} {
-		inv.perform(n)
+	for _, it := range []*Item{conf, lock, theme} {
+		inv.perform(it)
 	}
-	if r := inv.say(Request{Revert: new(4)}); r.To != "revert" || r.Verse != 4 || r.Verdict != Reverted || !r.Changed {
-		t.Fatalf("revert 4: %+v", r)
+	if r := inv.say(Request{Revert: theme}); r.To != "revert" || r.Subject != "theme" || r.Verdict != Reverted ||
+		!r.Changed {
+		t.Fatalf("revert theme: %+v", r)
 	}
 	if got := sh.look("/etc/hallow-theme"); got != "absent" {
 		t.Fatalf("the tether stands reverted as %q", got)
 	}
 	r := inv.say(Request{Abort: new(true)})
-	if r.To != "abort" || r.Verdict != Reverted || len(r.Reversions) != 2 || r.Reversions[0].Verse != 3 ||
-		r.Reversions[1].Verse != 1 {
+	if r.To != "abort" || r.Verdict != Reverted || len(r.Reversions) != 2 || r.Reversions[0].Subject != "lock" ||
+		r.Reversions[1].Subject != "conf" {
 		t.Fatalf("abort: %+v", r)
 	}
 	if m := inv.ended(); m != 1 {
@@ -172,9 +174,9 @@ func TestSession_AbortRevertsInReverse(t *testing.T) {
 	sh.untouched()
 }
 
-// TestSession_RefusesWhatComesOutOfOrder: perform names strictly the next
-// exalted verse, revert the last performed; nothing is performed once
-// reverting began. A refused line ends the session, reverting what was
+// TestSession_RefusesWhatComesOutOfOrder: perform names an exalted subject
+// of the plan that lies after every one performed, never a verse; revert
+// names the last performed; nothing is performed once reverting began. A refused line ends the session, reverting what was
 // performed.
 func TestSession_RefusesWhatComesOutOfOrder(t *testing.T) {
 	for what, c := range map[string]struct {
@@ -182,18 +184,18 @@ func TestSession_RefusesWhatComesOutOfOrder(t *testing.T) {
 		wrong  Request
 		to     string
 	}{
-		"a verse before its turn":   {wrong: Request{Perform: new(3)}, to: "perform"},
-		"a verse skipped":           {before: []Request{{Perform: new(1)}}, wrong: Request{Perform: new(4)}, to: "perform"},
-		"a verse performed twice":   {before: []Request{{Perform: new(1)}}, wrong: Request{Perform: new(1)}, to: "perform"},
-		"a common verse":            {wrong: Request{Perform: new(2)}, to: "perform"},
-		"a verse beyond the plan":   {before: []Request{{Perform: new(1)}, {Perform: new(3)}, {Perform: new(4)}}, wrong: Request{Perform: new(5)}, to: "perform"},
-		"a revert of no verse":      {wrong: Request{Revert: new(1)}, to: "revert"},
-		"a revert out of reverse":   {before: []Request{{Perform: new(1)}, {Perform: new(3)}}, wrong: Request{Revert: new(1)}, to: "revert"},
-		"a perform after reverting": {before: []Request{{Perform: new(1)}, {Revert: new(1)}}, wrong: Request{Perform: new(3)}, to: "perform"},
-		"two words at once":         {wrong: Request{Perform: new(1), Abort: new(true)}},
-		"a finish that is false":    {wrong: Request{Finish: new(false)}},
-		"no word at all":            {wrong: Request{}},
-		"a second plan":             {before: []Request{{Perform: new(1)}}},
+		"a subject behind what was performed": {before: []Request{{Perform: lock}}, wrong: Request{Perform: conf},
+			to: "perform"},
+		"a subject performed twice":    {before: []Request{{Perform: conf}}, wrong: Request{Perform: conf}, to: "perform"},
+		"a common subject":             {wrong: Request{Perform: subject("common")}, to: "perform"},
+		"a verse of a rite of aspects": {wrong: Request{Perform: numbered(1)}, to: "perform"},
+		"a revert of nothing":          {wrong: Request{Revert: conf}, to: "revert"},
+		"a revert out of reverse":      {before: []Request{{Perform: conf}, {Perform: lock}}, wrong: Request{Revert: conf}, to: "revert"},
+		"a perform after reverting":    {before: []Request{{Perform: conf}, {Revert: conf}}, wrong: Request{Perform: lock}, to: "perform"},
+		"two words at once":            {wrong: Request{Perform: conf, Abort: new(true)}},
+		"a finish that is false":       {wrong: Request{Finish: new(false)}},
+		"no word at all":               {wrong: Request{}},
+		"a second plan":                {before: []Request{{Perform: conf}}},
 	} {
 		t.Run(what, func(t *testing.T) {
 			sh := newShrine(t, nil)
@@ -270,6 +272,8 @@ func TestHandshake_IsCheckedAgainstArgvAndTheChannel(t *testing.T) {
 		"a store the root does not own": {mar: func(sh *shrine) {
 			sh.cfg.Sovereign = func(uint32) bool { return false }
 		}, words: "cannot be trusted"},
+		"a sanction of pattern Mark I": {mar: func(sh *shrine) { sh.lay(sh.cfg.Store, elderUnit()) },
+			words: `of the pattern "Mark I"`},
 		"an edict's argv for a rite": {args: func(sh *shrine) []string {
 			return []string{"hallow", sanction.Short(sh.unit.Sigil())}
 		}, edit: func(sh *shrine, h *Handshake) { h.Aspect, h.Former, h.Sigil = "", "", sh.unit.Sigil() },
@@ -319,10 +323,10 @@ func TestHandshake_IsCheckedAgainstArgvAndTheChannel(t *testing.T) {
 func TestSession_NoWordCarriesTheScriptureOfAVessel(t *testing.T) {
 	sh := newShrine(t, nil)
 	inv := sh.accepted("on")
-	for _, n := range []int{1, 3, 4} {
-		inv.perform(n)
+	for _, it := range []*Item{conf, lock, theme} {
+		inv.perform(it)
 	}
-	inv.say(Request{Revert: new(4)})
+	inv.say(Request{Revert: theme})
 	inv.say(Request{Abort: new(true)})
 	inv.ended()
 	var journal strings.Builder
@@ -342,20 +346,20 @@ func TestSession_NoWordCarriesTheScriptureOfAVessel(t *testing.T) {
 	}
 }
 
-// TestSession_AVerseFallsThroughTheTrustedPath: the vessels are acted upon
-// through the root-safe acts: a hall others may write fells the verse,
-// touching nothing, and a fallen verse that changed nothing is not
-// reverted.
-func TestSession_AVerseFallsThroughTheTrustedPath(t *testing.T) {
+// TestSession_ASubjectFallsThroughTheTrustedPath: the vessels are acted
+// upon through the root-safe acts: a hall others may write fells the
+// subject, touching nothing, and a fallen subject that changed nothing is
+// not reverted.
+func TestSession_ASubjectFallsThroughTheTrustedPath(t *testing.T) {
 	sh := newShrine(t, nil)
 	must(t, os.Chmod(sh.at("/etc/sysctl.d"), 0o777))
 	inv := sh.accepted("on")
-	r := inv.say(Request{Perform: new(1)})
+	r := inv.say(Request{Perform: conf})
 	if r.Verdict != Fell || r.Changed || !strings.Contains(r.Lament, "others than its owner may write") {
-		t.Fatalf("verse 1: %+v", r)
+		t.Fatalf("conf: %+v", r)
 	}
-	if r := inv.say(Request{Perform: new(3)}); r.Verdict != Refused {
-		t.Fatalf("a verse was performed after one fell: %+v", r)
+	if r := inv.say(Request{Perform: lock}); r.Verdict != Refused {
+		t.Fatalf("a subject was performed after one fell: %+v", r)
 	}
 	if m := inv.ended(); m != 1 {
 		t.Fatalf("ended with the death-mark %d", m)
@@ -371,8 +375,8 @@ func TestSession_AVesselOfNoAspectGivesWayOnlyWithZeal(t *testing.T) {
 	sh := newShrine(t, nil)
 	sh.scroll("/etc/sysctl.d/90-hallow.conf", "kernel.hallow = mine\n", 0o640)
 	inv := sh.accepted("on")
-	if r := inv.say(Request{Perform: new(1)}); r.Verdict != Fell || !strings.Contains(r.Lament, "zeal") {
-		t.Fatalf("verse 1: %+v", r)
+	if r := inv.say(Request{Perform: conf}); r.Verdict != Fell || !strings.Contains(r.Lament, "zeal") {
+		t.Fatalf("conf: %+v", r)
 	}
 	inv.say(Request{Abort: new(true)})
 	inv.ended()
@@ -382,7 +386,7 @@ func TestSession_AVesselOfNoAspectGivesWayOnlyWithZeal(t *testing.T) {
 
 	sh.scroll("/etc/sysctl.d/90-hallow.conf", "kernel.hallow = off # "+secret+"\n", 0o640)
 	inv = sh.accepted("on")
-	inv.perform(1)
+	inv.perform(conf)
 	inv.say(Request{Finish: new(true)})
 	inv.ended()
 	if got := sh.look("/etc/sysctl.d/90-hallow.conf"); got != "640 kernel.hallow = on # "+secret+"\n" {
@@ -391,13 +395,13 @@ func TestSession_AVesselOfNoAspectGivesWayOnlyWithZeal(t *testing.T) {
 }
 
 // TestSession_SilenceAndHaltRevert: ten minutes without a word (here less)
-// and SIGTERM (Halt) revert every verse performed.
+// and SIGTERM (Halt) revert every subject performed.
 func TestSession_SilenceAndHaltRevert(t *testing.T) {
 	t.Run("silence", func(t *testing.T) {
 		sh := newShrine(t, nil)
 		sh.cfg.Idle = 200 * time.Millisecond
 		inv := sh.accepted("on")
-		inv.perform(1)
+		inv.perform(conf)
 		if m := inv.ended(); m != 1 {
 			t.Fatalf("ended with the death-mark %d", m)
 		}
@@ -408,8 +412,8 @@ func TestSession_SilenceAndHaltRevert(t *testing.T) {
 		halt := make(chan struct{})
 		sh.cfg.Halt = halt
 		inv := sh.accepted("on")
-		inv.perform(1)
-		inv.perform(3)
+		inv.perform(conf)
+		inv.perform(lock)
 		close(halt)
 		r := inv.hear()
 		if r.To != "abort" || r.Verdict != Reverted || len(r.Reversions) != 2 {

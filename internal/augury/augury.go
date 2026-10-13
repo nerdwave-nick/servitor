@@ -1,20 +1,28 @@
-// Package augury reads which aspect a rite of pattern Mark I stands in, and
-// how it stands, and keeps each rite's data-slate.
+// Package augury reads which aspect a rite stands in, and how it stands,
+// and keeps each rite's data-slate.
 //
-// Every step that can be observed yields an omen: a sanctum the aspect its
-// marker records, a tether the aspect whose rendered anchor it leads to
-// (null when unbound), a transcription the aspect whose scripture its
-// vessel holds (null when absent), and the rite's auspex the aspect it
-// prints. Incantations, litanies, vox-casts and vessels that cannot be read
-// yield none, and so does a step whose observation fits several aspects.
-// Observed fields are rendered for every aspect with the inscriptions the
+// A rite of aspects is read by its subjects (readSubjects): a sanctum yields
+// the aspect its marker records, a transcription every aspect whose
+// scripture its vessel holds (none when absent and no aspect writes null),
+// a tether every aspect whose rendered anchor its bound name leads to, and
+// a machine-spirit every aspect it fits by the scan or the trials of its
+// auspex. Omens are rendered for every aspect with the inscriptions the
 // data-slate recorded for its aspect, or else the decrees of the aspect.
+// The omens agree by intersection (intersect): none corrupts the rite, one
+// names its aspect, and a data-slate that recorded another desecrates it.
+// Without omen the data-slate names the aspect, and without either the rite
+// lies dormant. A sanctum whose scripture other hands altered taints the
+// rite, and a last invocation that faltered corrupts it.
 //
-// All omens agreeing name the aspect (performed); any disagreement leaves it
-// unknown (corrupted). Without omen the data-slate names it, and without
-// either the rite lies dormant. Omens agreeing on an aspect the data-slate
-// did not record mark the rite desecrated, a sanctum whose scripture other
-// hands altered taints it, and a last invocation that faltered corrupts it.
+// An exalted auspex is never spoken here. What each subject showed is kept
+// for the invocation that plans by it (Augury.Readings), and ReadSubject
+// reads one subject anew to prove it once set: by the trials of its auspex
+// when it holds them, though a scan beside them reads. Where the live omen
+// of a machine-spirit is not heard — its auspex exalted or forgone — the
+// omen its data-slate recorded at the last invocation serves, marked stale
+// (remembered), unless recorded in another boot or no longer declared; a
+// stale omen alone never desecrates the rite. An invocation never trusts
+// one.
 //
 // An edict bears no aspect and yields no omen: it lies dormant until first
 // proclaimed, stands proclaimed after a last invocation that ended in
@@ -24,6 +32,8 @@ package augury
 import (
 	"context"
 	"os"
+	"slices"
+	"time"
 
 	"github.com/nerdwave-nick/servitor/internal/invocation"
 	"github.com/nerdwave-nick/servitor/internal/librarium"
@@ -38,7 +48,7 @@ type Standing string
 // dormant. An edict is heretical, corrupted, proclaimed or dormant.
 const (
 	Heretical  Standing = "heretical"  // its scripture is heresy
-	Corrupted  Standing = "corrupted"  // its omens disagree, or its last invocation faltered
+	Corrupted  Standing = "corrupted"  // its omens fit no aspect together, or its last invocation faltered
 	Tainted    Standing = "tainted"    // other hands altered a sanctum's scripture
 	Desecrated Standing = "desecrated" // its omens agree on an aspect the data-slate did not record
 	Performed  Standing = "performed"  // its omens, or else its data-slate, name its aspect
@@ -48,19 +58,19 @@ const (
 	Proclaimed Standing = "proclaimed"
 )
 
-// Heed is what the rite's auspex gave the augury; it marshals as the
-// augury's and the census's "auspex".
+// Heed is what the auspexes of the rite's machine-spirits gave the augury;
+// it marshals as the augury's and the census's "auspex".
 type Heed string
 
 // The heeds of the auspex.
 const (
-	NoAuspex Heed = ""        // the rite keeps no auspex, is an edict, or is heretical
-	Forgone  Heed = "forgone" // the auspex was left unawakened on request
-	Heeded   Heed = "heeded"  // the auspex named one of the rite's aspects
-	Mute     Heed = "mute"    // the auspex fell, outlasted its patience, or named no aspect
+	NoAuspex Heed = ""        // no subject bears an auspex the augury may speak, or the rite is an edict or heretical
+	Forgone  Heed = "forgone" // the auspexes were left unawakened on request
+	Heeded   Heed = "heeded"  // every auspex read an omen fitting an aspect
+	Mute     Heed = "mute"    // an auspex fell, outlasted its patience, or read no declared omen
 	// Awaited is for a census kept as a vigil alone: the rite is told
 	// before its auspex settled, and will be told again once it has. No
-	// augury bears it.
+	// augury reads it; the vigil marks the readings it tells so.
 	Awaited Heed = "awaited"
 )
 
@@ -74,51 +84,84 @@ type Augury struct {
 	// Sanction is how the rite stands towards its sanction; the augury
 	// leaves it None, for its reader to judge.
 	Sanction   sanction.Standing
-	Auspex     Heed   // what the auspex gave; its omen, when heeded, stands among Omens
+	Auspex     Heed   // what the auspexes gave; their omens stand among Omens
 	Desecrated bool   // the omens agree on an aspect the data-slate did not record
 	Former     string // the data-slate's aspect, when desecrated
 	// Inscriptions are those on the data-slate: a rite never invoked
 	// through the servitor has none.
 	Inscriptions map[string]string
 	LastRite     *LastRite // nil when the rite was never invoked
-	Omens        []Omen    // in written order, the auspex's last
+	Omens        []Omen    // one per subject that yielded one, in written order
 	Taint        []Taint   // in written order
+	// Fitting are the aspects every omen of a rite of aspects fits, in the order
+	// of the rite's aspects; empty when they fit none, or when no subject
+	// yielded an omen.
+	Fitting []string
+	// Readings are what every subject of a rite was read to show, in
+	// written order, mute ones too: what an invocation plans by. They are
+	// never told.
+	Readings []invocation.Reading
 	// Canon are the inscriptions the rite declares, in written order; a
 	// heretical rite declares none.
 	Canon []Declaration
 }
 
-// Omen is what one step, or the auspex, reveals about the aspect.
+// Omen is what one subject reveals about the aspect.
 type Omen struct {
-	// Verse names the step: its verse, its own key, and what that key holds
-	// rendered for Aspect (not resolved). Zero for the auspex.
-	invocation.Verse
-	Auspex bool // the omen of the rite's auspex
+	// Aspect is the one aspect the subject fits, "" when it fits several.
 	Aspect string
+
+	Subject     string   // the subject's name
+	Designation string   // the subject's designation
+	Read        string   // the omen a machine-spirit was read to show; "" when no single one
+	Aspects     []string // every aspect the subject fits, in the order of the rite's
+	// Stale marks an omen taken from the data-slate's record, where the
+	// live omen of the subject was not heard; ReadAt is when it was read.
+	Stale  bool
+	ReadAt time.Time
 }
 
-// Taint is a sanctum whose scripture other hands altered: it no longer
-// holds the scripture of the aspect its marker records.
+// Stale tells whether any omen of the augury was taken from the data-slate's
+// record.
+func (a Augury) Stale() bool {
+	return slices.ContainsFunc(a.Omens, func(o Omen) bool { return o.Stale })
+}
+
+// Taint is a sanctum subject whose scripture other hands altered: it no
+// longer holds the scripture of the aspect its marker records.
 type Taint struct {
-	invocation.Verse
+	Subject string // the sanctum subject's name
+	Vessel  string // its vessel, rendered for that aspect (not resolved)
 }
 
 // Options are what an augury is read with.
 type Options struct {
 	// Target is the aspect being invoked when the augury is read during an
-	// invocation; the auspex sees it as {{aspect}} and SERVITOR_ASPECT.
+	// invocation; every auspex sees it as {{aspect}} and SERVITOR_ASPECT.
 	// Outside an invocation it is "".
 	Target string
-	// ForgoAuspex leaves the auspex unawakened, for answers that must come
-	// at once (shell completion, --spare-auspex); a rite keeping one is
+	// ForgoAuspex leaves every auspex unawakened, for answers that must
+	// come at once (shell completion, --spare-auspex); a rite keeping one is
 	// then marked Forgone.
 	ForgoAuspex bool
-	// Orders are the settings resolved; the auspex is spoken in the rite's
-	// tongue, else theirs, else bash.
+	// Orders are the settings resolved; an auspex is spoken in its
+	// subject's tongue, else the rite's, else theirs, else bash.
 	Orders librarium.Orders
 	// Env is the environment that places the data-slates; nil reads the
 	// servitor's own.
 	Env librarium.Environment
+	// Places bound how many processes of auspexes labour at once, shared
+	// by every augury read with them; nil bounds none.
+	Places Places
+	// Inscriptions are those of the invocation into Target: the omens of
+	// Target are rendered with them before any other, as they will be set.
+	// Outside an invocation they are nil.
+	Inscriptions map[string]string
+	// Foreseen marks the augury of a foresight into Target, which performs
+	// nothing: a privileged auspex, which only the exalted servitor speaks
+	// at invocation, shows the omen the data-slate recorded, stale, as it
+	// does outside an invocation.
+	Foreseen bool
 }
 
 func (o Options) env() librarium.Environment {
@@ -135,8 +178,8 @@ func Augur(r *librarium.Rite, opts Options) (Augury, error) {
 	return AugurContext(context.Background(), r, opts)
 }
 
-// AugurContext is Augur whose auspex labours only while ctx lasts: when ctx
-// ends, its whole process group is slain and it is mute.
+// AugurContext is Augur whose auspexes labour only while ctx lasts: when
+// ctx ends, their whole process groups are slain and they are mute.
 func AugurContext(ctx context.Context, r *librarium.Rite, opts Options) (Augury, error) {
 	slate, err := ReadSlate(opts.env(), r.Name)
 	a := fromSlate(r.Name, slate)
@@ -147,27 +190,9 @@ func AugurContext(ctx context.Context, r *librarium.Rite, opts Options) (Augury,
 		return a, err
 	}
 	s := newSeer(r, slate)
-	for i, step := range r.Liturgy {
-		omen, taint := s.observe(i, step)
-		if omen != nil {
-			a.Omens = append(a.Omens, *omen)
-		}
-		if taint != nil {
-			a.Taint = append(a.Taint, *taint)
-		}
-	}
-	switch {
-	case r.Auspex == nil:
-	case opts.ForgoAuspex:
-		a.Auspex = Forgone
-	default:
-		a.Auspex = Mute
-		if aspect, ok := s.auspex(ctx, opts); ok {
-			a.Auspex = Heeded
-			a.Omens = append(a.Omens, Omen{Auspex: true, Aspect: aspect})
-		}
-	}
-	a.judge(slate)
+	s.invoked(opts)
+	a.readSubjects(ctx, s, opts)
+	a.intersect(slate)
 	return a, err
 }
 
@@ -189,28 +214,9 @@ func fromSlate(rite string, slate *Slate) Augury {
 	return a
 }
 
-// judge names the aspect and standing from the omens, the taint and the
-// data-slate.
-func (a *Augury) judge(slate *Slate) {
-	recorded := ""
-	if slate != nil {
-		recorded = slate.Aspect
-	}
-	agreed, agree := agreement(a.Omens)
-	switch {
-	case len(a.Omens) == 0:
-		a.Aspect, a.Standing = recorded, Performed
-		if recorded == "" {
-			a.Standing = Dormant
-		}
-	case !agree:
-		a.Standing = Corrupted
-	default:
-		a.Aspect, a.Standing = agreed, Performed
-		if recorded != "" && recorded != agreed {
-			a.Desecrated, a.Former, a.Standing = true, recorded, Desecrated
-		}
-	}
+// weigh lays the graver standings upon the one the omens name: taint,
+// unless the omens disagree, and a last invocation that faltered.
+func (a *Augury) weigh(slate *Slate) {
 	if len(a.Taint) > 0 && a.Standing != Corrupted {
 		a.Standing = Tainted
 	}
@@ -231,17 +237,4 @@ func (a *Augury) proclamation(slate *Slate) {
 	default:
 		a.Standing = Proclaimed
 	}
-}
-
-// agreement returns the aspect every omen names, and whether they agree.
-func agreement(omens []Omen) (string, bool) {
-	for _, o := range omens {
-		if o.Aspect != omens[0].Aspect {
-			return "", false
-		}
-	}
-	if len(omens) == 0 {
-		return "", false
-	}
-	return omens[0].Aspect, true
 }

@@ -1,32 +1,35 @@
-A step that recites a whole written scroll of commands
+An observance or edict verse that recites a whole written scroll
 
 Where an incantation speaks a single line, a litany recites a whole scroll:
-a scripture-file of commands kept beside the rite or anywhere upon the
-machine. The step's own key holds the path of the scroll, and it may differ
-for every aspect as an aspect map. A leading "~" and the $NAMES of the
-environment are expanded, and a path that does not begin at the root is
-reckoned from the hall where the rite's scripture is kept.
+a scripture-file of words kept beside the rite or anywhere upon the
+machine. It is the designation of an observance, or of a verse of an edict's
+liturgy, that names the path of its scroll under "scroll": {"designation":
+"litany", "scroll": "…"}. The path is written once, never as an aspect map;
+a leading "~" and the $NAMES of the environment are expanded, and a path
+that does not begin at the root is reckoned from the hall where the rite's
+scripture is kept.
 
 A scroll the machine may execute is recited by its own shebang, whatever its
-tongue; any other scroll is recited through the tongue of the step, the rite
-or the settings ("<tongue> <scroll>"). The scroll must stand when its turn
-comes: the pre-flight looks for it as the steps before it would leave the
-machine, so a transcription earlier in the liturgy may write the very scroll
-a litany then recites.
+tongue; any other scroll is recited through the tongue of the litany, the
+rite or the settings ("<tongue> <scroll>"). The scroll must stand when its
+turn comes: the pre-flight looks for it as the subjects of the rite would
+leave the machine, so a transcription may write the very scroll a litany
+then recites, and the scroll is sought again on the disk ere it is
+recited.
 
 A litany receives nothing it is not offered. Under "offerings" a list of
 words is laid before the scroll, each handed over exactly as written — never
 parsed by a tongue, never split, no $NAME expanded — with only its
-placeholders filled and a leading "~/" borne to the invoker's home; each may
-differ per aspect. Without offerings the scroll is recited bare, and learns
-the aspect from SERVITOR_ASPECT and its kin.
+placeholders filled and a leading "~/" borne to the invoker's home. Without
+offerings the scroll is recited bare, and learns the aspect from
+SERVITOR_ASPECT and its kin.
 
 Like an incantation, the scroll is recited in the rite's hall with nothing
 upon its input, anointed with SERVITOR_ASPECT, SERVITOR_FORMER_ASPECT,
 SERVITOR_RITE and SERVITOR_INSCRIPTION_<KEY> — the scroll of an edict with
 SERVITOR_RITE and SERVITOR_INSCRIPTION_<KEY> alone, for an edict bears no
 aspect. A death-mark other than 0, or patience run out (30s unless the
-settings or the step say otherwise), makes it fall; on running out the
+settings or the litany say otherwise), makes it fall; on running out the
 servitor slays it with every process it summoned. Its words are captured,
 never printed. Background children that must outlive it should send their
 words elsewhere ("cmd >/dev/null 2>&1 &"). Interactive scrolls are
@@ -36,27 +39,26 @@ Its "reversion" is not a scroll but one line of words, spoken in the tongue
 should the invocation fall. A litany yields no omen.
 
 An exalted litany is recited by the exalted servitor, in its turn among the
-common verses, from the scroll its
-master sanctioned, never from the scroll as it stands now: the scroll is
-laid in a working hall of its own beside its relics, under the name it is
-written by (or its last name, when it lies beyond the rite's hall). A scroll
-whose first line names an interpreter ("#!/usr/bin/bash -e") is recited by
-that interpreter, which must be a program of the root like any tongue;
-every other through its tongue, bidden to read no scripture of its own
-(bash, zsh, fish, sh or dash alone; see tongue). It hears
-PATH=/usr/local/sbin:/usr/local/bin:/usr/bin, HOME=/root, the locale and the
-SERVITOR_ variables alone. What it leaves behind is slain when the
-invocation ends; a root process meant to last belongs in a unit of the
-machine ("systemd-run --unit=…").
+common ones, from the scroll its master sanctioned, never from the scroll as
+it stands now: the scroll is laid in a working hall of its own beside its
+relics, under the name it is written by (or its last name, when it lies
+beyond the rite's hall). A scroll whose first line names an interpreter
+("#!/usr/bin/bash -e") is recited by that interpreter, which must be a
+program of the root like any tongue; every other through its tongue, bidden
+to read no scripture of its own (bash, zsh, fish, sh or dash alone; see
+tongue). It hears PATH=/usr/local/sbin:/usr/local/bin:/usr/bin, HOME=/root,
+the locale and the SERVITOR_ variables alone. What it leaves behind is slain
+when the invocation ends; a root process meant to last belongs in a unit of
+the machine ("systemd-run --unit=…").
 
-Kindred passages: offerings, incantation, tongue, patience, reversion,
-placeholders, relics, exalted
+Kindred passages: scroll, offerings, incantation, observances, liturgy,
+tongue, patience, reversion, placeholders, relics, exalted
 
 Exempla:
-  {"litany": "scripts/change-theme",
-   "offerings": ["{{aspect}}", "{{former}}"]}
+  {"name": "awaken", "designation": "litany",
+   "scroll": "scripts/recite-hooks",
+   "offerings": ["~/.config/nfluff/themes/{{aspect}}"], "patience": "1m"}
 
-  {"litany": {"day": "hooks/dawn.sh", "night": "hooks/dusk.sh"},
-   "tongue": "zsh",
-   "patience": "1m",
-   "reversion": "hooks/restore.sh \"$SERVITOR_FORMER_ASPECT\""}
+  {"name": "dusk", "designation": "litany", "to": ["night"],
+   "scroll": "scrolls/dusk.sh", "tongue": "zsh",
+   "reversion": "scrolls/dawn.sh \"$SERVITOR_FORMER_ASPECT\""}

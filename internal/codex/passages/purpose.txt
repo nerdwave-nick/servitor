@@ -22,11 +22,14 @@ Kindred passages: rite, inscriptions, census, cogitator
 
 Exemplum:
   {
-    "pattern": "Mark I",
+    "pattern": "Mark II",
     "purpose": "The visage of the machine",
     "aspects": ["default", "finii", "porpl"],
     "inscriptions": {
       "reason": {"purpose": "why the rite was invoked"}
     },
-    "liturgy": [{"incantation": "nfluff apply {{aspect}}"}]
+    "subjects": [{"name": "visage", "designation": "tether",
+                  "purpose": "the theme nfluff wears",
+                  "tether": "~/.local/share/nfluff/current-theme",
+                  "omens": {"*": "~/.config/nfluff/themes/{{aspect}}"}}]
   }

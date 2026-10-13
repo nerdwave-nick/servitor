@@ -1,56 +1,80 @@
-Invoke an aspect of a rite, or proclaim an edict, verse by verse
+Invoke an aspect of a rite, or proclaim an edict
 
 Invocation is the servitor's foremost ritual. Name a rite and one of its
-aspects, and the servitor brings the machine into that aspect by performing
-the rite's liturgy — its sanctums, transcriptions, tethers, incantations,
-litanies and vox-casts — one step after another, exactly in the order
-written. Every rite of the Librarium stands beneath this ritual as a ritual
+aspects, and the servitor brings the machine into that aspect: it reads
+every subject of the rite, sets only those that differ, and proves each one
+it set. Every rite of the Librarium stands beneath this ritual as a ritual
 of its own, so the faithful write: servitor invoke <rite> <aspect>.
 
 An edict knows no aspect and is proclaimed by its name alone: servitor
 invoke <edict>. Any word written after its name is refused before a verse
 is performed, for an edict bears no aspect. Every invocation of an edict
-performs its whole liturgy anew; nothing is passed over because it was
-performed before.
+performs its whole liturgy anew, verse by verse; nothing is passed over
+because it was performed before.
 
-First comes the pre-flight, which touches nothing: every placeholder is
-illuminated, every tome read afresh, every vessel, tether and tongue weighed,
-and every inscription resolved. Should the pre-flight find any heresy, the
-invocation is forbidden, each heresy is recited, and nothing on the machine
-is disturbed.
+First comes the pre-flight, which touches nothing: every omen, enact word,
+observance, verse and tome is rendered for the aspect invoked, every vessel,
+tether and tongue weighed, and every inscription resolved. Should the
+pre-flight find any heresy, the invocation is forbidden, each heresy is
+recited, and nothing on the machine is disturbed.
 
-Then the liturgy is performed. Should a step fall — a vessel that cannot be
-written, an incantation that ends bearing a death-mark, a patience that runs
-out — the steps already performed are reverted in reverse order, the fallen
-step among them, and the lament tells which verse fell, its last words, and
-how each reversion went. An interrupt from the terminal (Ctrl-C) halts the
-invocation in the same manner: the labouring command and its kin are slain,
-no further step begins, and every deed is undone; a second interrupt during
-the reversions is not heeded, so that the reversions may finish.
-SIGTERM halts it alike. A hangup does not: the departure of the one who
-invoked it is no command to undo, and a reader gone from stdout or stderr
-loses only the words, never a deed. Lesser machines that do not wait launch
-the servitor detached, as its own passage teaches.
+Then every subject is read, as the augury reads it, and the former aspect
+is the one their omens agree upon — the one aspect they fit, or the
+data-slate's among several — else it is unknown. A subject already bearing
+the omen of the aspect invoked is unchanged and passed over; every other —
+one whose omen differs, whose auspex is mute, or that has no auspex — is
+changing. When nothing changes, nothing is performed, and the invocation is
+still a triumph: the data-slate is written, the chronicle kept, and a
+"success" vox-cast still speaks.
 
-A rite or edict that holds exalted verses is performed alike, yet its
-exalted verses never with its invoker's authority. Its pre-flight also draws
-them for the aspect invoked into their unit and compares its sigil with the
-sanction of their master: a plan never sanctioned, or whose sanction has
-lapsed, is refused before any proof is asked, and the words name servitor
-sanction <rite>. It judges the servitor installed at /usr/bin/servitor and
-finds the intercessor; it refuses a rune given for an inscription spliced
-into exalted words, and a word given at invocation that exalted speech could
-not hear (more than 4 KiB, or bearing a NUL or a newline). After the
-pre-flight and before the first verse one line tells, upon a terminal, that
-the exalted verses await the master's proof, naming the intercessor and the
-sigil (upon stderr under --binharic, withheld by --silence; without a
-terminal the intercessor's own dialog speaks), and the intercessor asks the
-proof once. The one exalted servitor it raises performs each exalted verse in
-its turn, from the sanctioned copy alone, while the servitor performs the
-common verses between them; should any verse fall, the exalted servitor
-reverts its verses among the common reversions, from the fallen verse back to
-the first, and no second proof is asked. A proof dismissed or refused is a
-refusal before anything was touched. Every invocation asks the proof anew.
+The changing subjects are set in written order. Before each, its introits
+not yet spoken; then the subject is set — a sanctum, transcription or tether
+written as its designation commands, a machine-spirit by its enact words for
+the omen commanded — and proven at once by a reading afresh, which must
+show that omen; a machine-spirit without an auspex cannot be proven. After
+it, each recessional of which it is the last changing subject to name it.
+Every observance is spoken once, in place, and only when its guards "to" and
+"from" admit the invocation.
+
+Should anything fall — a vessel that cannot be written, enact words or an
+observance that end bearing a death-mark, a patience that runs out, a proof
+that shows another omen — everything already performed is reverted in
+reverse order, the fallen one among them: each subject restored to what was
+read, each observance undone by its reversion words, as the passage on
+reversion tells. The lament tells what fell — for a subject, the omen
+commanded and the omen found — its last words, and how each reversion went.
+An interrupt from the terminal (Ctrl-C) halts the invocation in the same
+manner: the labouring words and their kin are slain, nothing further
+begins, and every deed is undone; a second interrupt during the reversions
+is not heeded, so that the reversions may finish. SIGTERM halts it alike.
+A hangup does not: the departure of the one who invoked it is no command to
+undo, and a reader gone from stdout or stderr loses only the words, never a
+deed. Lesser machines that do not wait launch the servitor detached, as its
+own passage teaches.
+
+A rite whose subjects, observances or verses are exalted is performed alike,
+yet its exalted ones never with its invoker's authority. Its pre-flight
+also draws them for the aspect invoked into their unit and compares its
+sigil with the sanction of their master: a plan never sanctioned, or whose
+sanction has lapsed, is refused before any proof is asked — even when
+nothing exalted would change — and the words name servitor sanction <rite>.
+It judges the servitor installed at /usr/bin/servitor and finds the
+intercessor; it refuses a rune given for an inscription spliced into
+exalted words, and a word given at invocation that exalted speech could not
+hear (more than 4 KiB, or bearing a NUL or a newline). The exalted servitor
+is raised only when an exalted subject or observance is to change, or when
+an auspex itself marked exalted must be read: so an invocation that changes
+nothing exalted asks no proof at all. Then one line tells, upon a terminal,
+that the exalted words await the master's proof, naming the intercessor
+and the sigil (upon stderr under --binharic, withheld by --silence; without
+a terminal the intercessor's own dialog speaks), and the intercessor asks
+the proof once. The one exalted servitor it raises first reads every
+subject only the root may read, then sets each exalted subject and speaks
+each exalted observance in its turn, from the sanctioned copy alone, while
+the servitor performs the common ones between them; should anything fall,
+the exalted servitor restores its own among the common reversions, and no
+second proof is asked. A proof dismissed or refused is a refusal before
+anything was touched. Every invocation asks the proof anew.
 
 Each inscription the rite declares becomes a rune of its own, --<key> <value>,
 which outranks the rite's decree for that aspect (or the edict's one decree);
@@ -65,87 +89,104 @@ as it always would. --binharic and --foresee are not spoken together.
 
 Spoken at a terminal, the invocation is told in one report as it is
 performed: a header naming the rite and its turning, the former aspect and
-the new; a line for every verse once it is performed, the home written ~
-and a long verse cut short with … to the width of the terminal; every
-progress vox-cast in its place, with how many of the steps that act upon
-the machine are done; and one closing line of triumph, drawn from the
-rite's success vox-cast or, should it have none, from the same litany:
+the new; a line for every subject set and every observance spoken once it
+is performed, the home written ~ and a long line cut short with … to the
+width of the terminal; every progress vox-cast in its place, with how many
+of the changing subjects are done; and one closing line of triumph, drawn
+from the rite's success vox-cast or, should it have none, from the same
+litany. An invocation that changes nothing tells its header and its closing
+line alone:
 
-  ❯ servitor invoke mouse-autohide-toggle on
-  +++ mouse-autohide-toggle · off → on +++
-    ✔ verse 1 · sanctum ~/.config/niri/util.kdl
-    ✔ verse 2 · incantation niri msg action do-screen-transition
-  ✠ The Omnissiah is pleased: the rite now bears the aspect «on».
+  ❯ servitor invoke theme porpl
+  +++ theme · default → porpl +++
+    ✔ observance veil · incantation
+    ✔ subject visage · tether ~/.local/share/nfluff/current-theme
+    ⋯ Cogs turn: visage now bears the aspect «porpl».  (1/1)
+    ✔ observance awaken · litany
+  ✠ Every rune turned, every litany sung: the aspect «porpl» prevails.
 
-Exalted verses await the master's proof before the header, the proof asked
-in the intercessor's own words:
+  ❯ servitor invoke theme porpl
+  +++ theme · porpl → porpl +++
+  ✠ The tech-priests rejoice; the machine wears the aspect «porpl».
+
+Exalted subjects await the master's proof before the header, the proof
+asked in the intercessor's own words:
 
   ❯ servitor invoke split-lock on
-  ⋯ The exalted verses of split-lock await the master's proof: sudo asks it, under the sigil 4f0c2a9e1b7d.
+  ⋯ The exalted deeds of split-lock await the master's proof: sudo asks it, under the sigil 4f0c2a9e1b7d.
   servitor: authenticate to perform split-lock (sigil 4f0c2a9e1b7d):
   +++ split-lock · off → on +++
-    ✔ verse 1 · incantation echo off > /sys/devices/system/cpu/smt/control
-    ✔ verse 3 · incantation sysctl -wq kernel.split_lock_mitigate=0
+    ✔ subject penance · machine-spirit
+    ✔ subject remembrance · transcription /etc/sysctl.d/90-split-lock.conf
   ✠ The Omnissiah is pleased: the rite now bears the aspect «on».
 
-An edict's header names the edict alone, with no turning of aspects, and its
-closing line names the edict, never an aspect:
+An edict's header names the edict alone, with no turning of aspects, a line
+for every verse performed, and its closing line names the edict, never an
+aspect:
 
   ❯ servitor invoke screenshot
   +++ screenshot · edict +++
-    ✔ verse 1 · incantation grim -g "$(slurp)" ~/pictures/full.png
+    ✔ verse 1 · incantation grim -g "$(slurp)" ~/pictures/visage.png
+    ✔ verse 2 · incantation wl-copy --type image/png < ~/pictures/visage.png
   ✠ The edict screenshot is proclaimed, and the machine obeys.
 
 The closing words are drawn at random. Roused without a terminal — from a
 hotkey or a launcher — the servitor sends the vox-casts to the desktop
-instead, and tells the same report once the rite has triumphed. Should a
-step fall, the report ends with the last verse performed, and the lament
+instead, and tells the same report once the rite has triumphed. Should
+anything fall, the report ends with the last deed performed, and the lament
 alone tells the fall.
 
-After a performance the servitor writes the rite's data-slate and adds one
-line to the chronicle, whatever the verdict. An invocation the pre-flight
+After a performance the servitor writes the rite's data-slate — with the
+omens it knew at the end — and adds one line to the chronicle, naming the
+subjects it changed, whatever the verdict. An invocation the pre-flight
 forbade, or one merely foreseen, is neither chronicled nor recorded on the
-data-slate, for nothing was performed.
+data-slate, for nothing was performed. Scripture of pattern Mark I
+is converted before it is invoked (see conversion).
 
 The servitor's death-mark tells how the invocation ended, with or without
 --binharic: 0 upon triumph, 1 when it was reverted, 2 when it was refused
 before anything was touched (the pre-flight forbade it, the rite or aspect
 is unknown, a word was written after an edict's name, a rune was
-malformed, its exalted verses stand unsanctioned or lapsed, no intercessor
-vouched for the master, the proof was dismissed), and 3 when it faltered.
+malformed, its exalted subjects and observances stand unsanctioned or
+lapsed, no intercessor vouched for the master, the proof was dismissed),
+and 3 when it faltered.
 
 The servitor itself performs nothing with the machine's own authority; the
-exalted servitor, raised for one invocation, performs its exalted verses.
-Roused as root
-— through sudo, run0 or pkexec, or by root itself — it refuses every
-invocation and every proclaiming with the death-mark 2 before anything is
-touched; only --foresee is still heeded. Rouse it as yourself. Under sudo the
-foresight reads the Librarium, the vessels and the data-slates of the one who
-spoke sudo, as the passage on the Librarium tells.
+exalted servitor, raised for one invocation, performs what is exalted.
+Roused as root — through sudo, run0 or pkexec, or by root itself — it
+refuses every invocation and every proclaiming with the death-mark 2 before
+anything is touched; only --foresee is still heeded. Rouse it as yourself.
+Under sudo the foresight reads the Librarium, the vessels and the
+data-slates of the one who spoke sudo, as the passage on the Librarium
+tells.
 
 A rite's scripture, kept in <Librarium>/rites/<name>.json, may read thus:
 
   {
-    "pattern": "Mark I",
-    "purpose": "Hide the mouse cursor after inactivity",
+    "pattern": "Mark II",
+    "purpose": "Silence the heralds of the machine",
     "aspects": ["on", "off"],
-    "inscriptions": {"reason": {"purpose": "why the rite was invoked"}},
-    "liturgy": [
-      {"sanctum": "~/.config/niri/util.kdl",
-       "scripture": {"on": "cursor {\n    hide-after-inactive-ms 400\n}",
-                     "off": ""}},
-      {"incantation": "niri msg action do-screen-transition"},
-      {"vox-cast": "success"}
+    "vox-cast": ["success"],
+    "subjects": [
+      {"name": "mako", "designation": "machine-spirit",
+       "omens": {"on": "do-not-disturb", "*": "default"},
+       "auspex": {"scan": "makoctl mode"},
+       "enact": {"*": "makoctl mode -s \"$SERVITOR_OMEN\""},
+       "introit": ["herald-silence"]}
+    ],
+    "observances": [
+      {"name": "herald-silence", "designation": "incantation", "to": ["on"],
+       "words": "notify-send -t 2000 'The heralds fall silent'"}
     ]
   }
 
-Kindred passages: rite, edict, liturgy, pre-flight, reversion, inscriptions,
-verdicts, binharic, forbidden, death-marks, detached, dominion, exalted,
-sanction, intercessor
+Kindred passages: rite, edict, subjects, observances, liturgy, pre-flight,
+reversion, inscriptions, verdicts, binharic, forbidden, death-marks,
+detached, dominion, exalted, sanction, intercessor
 
 Exempla:
   servitor invoke mouse-autohide-toggle on --reason "gaming remnant"
   servitor invoke mouse-autohide-toggle off --foresee
   servitor invoke theme "$(printf 'default\nfinii\nporpl\n' | fuzzel --dmenu)"
-  servitor invoke screenshot --region full
+  servitor invoke screenshot --region whole
   servitor invoke theme porpl --binharic | jq -r .verdict

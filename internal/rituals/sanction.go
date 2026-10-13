@@ -98,13 +98,13 @@ func (s *Servitor) ListSanctions() ([]Sanctioned, []error) {
 // ForsakenSanction is the lament of a forsaken sanction.
 type ForsakenSanction struct {
 	Rite string
-	Gone bool // the rite is gone; else it holds no exalted verse
+	Gone bool // the rite is gone; else it holds nothing exalted
 }
 
 func (f *ForsakenSanction) Error() string {
 	why := fmt.Sprintf("no rite named %q is recorded in the Librarium any more", f.Rite)
 	if !f.Gone {
-		why = fmt.Sprintf("the rite %q holds no exalted verse any more", f.Rite)
+		why = fmt.Sprintf("the rite %q holds nothing exalted any more", f.Rite)
 	}
 	return fmt.Sprintf("the sanction of %q is forsaken: %s, and the sanction serves nothing — abjure it: "+
 		"servitor abjure %s", f.Rite, why, f.Rite)
@@ -126,25 +126,26 @@ func (s *Servitor) forsaken() []error {
 }
 
 // sanction notes an exalted rite that stands unsanctioned, or whose
-// sanction lapsed, at the "exalted" of its first exalted verse.
+// sanction lapsed, at the "exalted" of its first exalted verse, subject or
+// observance.
 func (e *examiner) sanction(s *Servitor) {
 	standing, kept, lament := s.standing(e.rite.Name, e.rite)
-	verses := e.rite.ExaltedVerses()
-	if len(verses) == 0 {
+	items := e.rite.ExaltedItems()
+	if len(items) == 0 {
 		return
 	}
-	ptr := fmt.Sprintf("/liturgy/%d/exalted", verses[0]-1)
+	ptr := items[0].Pointer
 	name := e.rite.Name
 	switch standing {
 	case sanction.Unsanctioned:
-		e.note(librarium.Impurity, ptr, "the rite %q holds exalted verses, yet it stands unsanctioned: its master "+
+		e.note(librarium.Impurity, ptr, "the rite %q holds %s, yet it stands unsanctioned: its master "+
 			"never sanctioned them, and every invocation is refused before any proof is asked — sanction them: "+
-			"servitor sanction %s", name, name)
+			"servitor sanction %s", name, e.rite.ExaltedNoun(), name)
 	case sanction.Lapsed:
-		why := "its exalted verses are no longer those its master sanctioned"
+		why := fmt.Sprintf("its %s are no longer those its master sanctioned", e.rite.ExaltedNoun())
 		if kept != nil {
-			why = fmt.Sprintf("its exalted verses are no longer those its master sanctioned under the sigil %s",
-				sanction.Short(kept.Sigil))
+			why = fmt.Sprintf("its %s are no longer those its master sanctioned under the sigil %s",
+				e.rite.ExaltedNoun(), sanction.Short(kept.Sigil))
 		}
 		if lament != nil {
 			why = lament.Error()

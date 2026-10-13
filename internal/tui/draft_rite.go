@@ -5,23 +5,27 @@ import (
 	"fmt"
 	"slices"
 	"strings"
-	"time"
 
 	"github.com/nerdwave-nick/servitor/internal/librarium"
 )
 
-// riteDraft is the editable form of a rite of pattern Mark I, as the
-// consecration wizard holds it between its stations. Values are kept as
-// typed; the forms have examined them before they are stored.
+// riteDraft is the editable form of a rite, as the consecration wizard
+// holds it between its stations. Values are kept as typed; the forms have
+// examined them before they are stored. A rite of aspects is written from
+// its subjects and observances, an edict from its steps (incantations and
+// litanies), each in pattern Mark II; the vox-casts are a list of the rite.
 type riteDraft struct {
 	origName, origPath string // the rite amended; empty for a new one
 	name, purpose      string
+	schema             string // the "$schema" kept as read
 	aspects            string // separated by commas
 	edict              bool   // proclaimed whole, without aspects
 	inscriptions       []inscriptionDraft
-	auspex, patience   string // the auspex and its patience
+	voxCasts           []string // the vox-casts of the rite; nil when unwritten
 	tongue             string
-	steps              []stepDraft
+	steps              []stepDraft       // the liturgy of an edict
+	subjects           []subjectDraft    // of a rite of aspects
+	observances        []observanceDraft // of a rite of aspects
 }
 
 // inscriptionDraft is one declared inscription; its decrees are keyed by
@@ -36,14 +40,8 @@ func newRiteDraft() riteDraft { return riteDraft{aspects: "on, off"} }
 
 // riteDraftFrom is the rite r as the wizard amends it.
 func riteDraftFrom(r *librarium.Rite) riteDraft {
-	d := riteDraft{origName: r.Name, origPath: r.Path, name: r.Name, purpose: r.Purpose,
-		aspects: strings.Join(r.Aspects, ", "), edict: r.Edict, tongue: r.Tongue}
-	if a := r.Auspex; a != nil {
-		d.auspex = a.Rite
-		if a.Patience != 0 {
-			d.patience = a.Patience.String()
-		}
-	}
+	d := riteDraft{origName: r.Name, origPath: r.Path, name: r.Name, purpose: r.Purpose, schema: r.Schema,
+		aspects: strings.Join(r.Aspects, ", "), edict: r.Edict, tongue: r.Tongue, voxCasts: r.VoxCasts}
 	for _, in := range r.Inscriptions {
 		id := inscriptionDraft{key: in.Key, purpose: in.Purpose, mandatory: in.Mandatory, decrees: map[string]string{}}
 		for _, e := range in.Decrees.Entries() {
@@ -54,8 +52,18 @@ func riteDraftFrom(r *librarium.Rite) riteDraft {
 	for _, s := range r.Liturgy {
 		d.steps = append(d.steps, stepFrom(s))
 	}
+	for _, s := range r.Subjects {
+		d.subjects = append(d.subjects, subjectFrom(s))
+	}
+	for _, o := range r.Observances {
+		d.observances = append(d.observances, observanceFrom(o))
+	}
 	return d
 }
+
+// bearsSubjects reports whether the draft is written from its subjects: a
+// rite of aspects, not an edict.
+func (d riteDraft) bearsSubjects() bool { return !d.edict }
 
 // aspectList is the declared aspects; the form has examined them. An
 // edict declares none.
@@ -100,16 +108,13 @@ func (d *riteDraft) declare(keys []string) {
 	d.inscriptions = next
 }
 
-// toRite writes the rite as it would be recorded at path. An edict is
-// written without aspects and auspex, whatever the draft kept of them.
+// toRite writes the rite as it would be recorded at path: an edict without
+// aspects, from its steps, whatever the draft kept of subjects; a rite of
+// aspects from its subjects and observances.
 func (d riteDraft) toRite(path string) *librarium.Rite {
 	aspects := d.aspectList()
-	r := &librarium.Rite{Name: d.name, Path: path, Purpose: strings.TrimSpace(d.purpose), Aspects: aspects,
-		Edict: d.edict, Tongue: strings.TrimSpace(d.tongue)}
-	if a := strings.TrimSpace(d.auspex); a != "" && !d.edict {
-		r.Auspex = &librarium.Auspex{Rite: a}
-		r.Auspex.Patience, _ = time.ParseDuration(strings.TrimSpace(d.patience))
-	}
+	r := &librarium.Rite{Name: d.name, Path: path, Schema: d.schema, Purpose: strings.TrimSpace(d.purpose),
+		Aspects: aspects, Edict: d.edict, Tongue: strings.TrimSpace(d.tongue), VoxCasts: d.voxCasts}
 	for _, id := range d.inscriptions {
 		in := librarium.Inscription{Key: id.key, Purpose: strings.TrimSpace(id.purpose), Mandatory: id.mandatory}
 		v := newVaried[string](false)
@@ -124,10 +129,22 @@ func (d riteDraft) toRite(path string) *librarium.Rite {
 		if len(v.own) > 0 || v.hasShared {
 			in.Decrees = v.toMap(aspects)
 		}
+		if d.bearsSubjects() {
+			in.Decrees = object(in.Decrees)
+		}
 		r.Inscriptions = append(r.Inscriptions, in)
 	}
+	if d.bearsSubjects() {
+		for _, sd := range d.subjects {
+			r.Subjects = append(r.Subjects, sd.toSubject(d))
+		}
+		for _, od := range d.observances {
+			r.Observances = append(r.Observances, od.toObservance())
+		}
+		return r
+	}
 	for _, sd := range d.steps {
-		r.Liturgy = append(r.Liturgy, sd.toStep(aspects))
+		r.Liturgy = append(r.Liturgy, sd.toStep(nil))
 	}
 	return r
 }

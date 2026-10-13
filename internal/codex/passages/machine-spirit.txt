@@ -1,0 +1,28 @@
+A subject read by its auspex and set by its enact words
+
+A machine-spirit is the designation of a subject that no vessel or link
+reveals: a knob of the kernel, a daemon awakened or slain, the mode of a
+herald of the desktop. Its "omens" give the words it shows in each aspect,
+its "auspex" reads which of them it shows now, and its "enact" words set it
+into an omen.
+
+Without "omens" each aspect's own name is its omen, so a scan that prints
+the aspect itself serves. An omen shared by several aspects fits all of
+them. A machine-spirit without "enact" is heresy, for a subject that cannot
+be set belongs in no rite; one without an "auspex" cannot be read, so it is
+enacted on every invocation and never proven, which the inquisition notes
+as an impurity.
+
+Its words are spoken in its "tongue", else the rite's, else the settings',
+else bash, with its "patience" (30s, as the settings say, when unwritten).
+Should it be exalted, its enact words are spoken with the machine's own
+authority from a sanction, and may read its "relics".
+
+Kindred passages: designation, enact, auspex, scan, trials, omens, subjects,
+exalted, relics
+
+Exempla:
+  {"name": "split-lock", "designation": "machine-spirit", "exalted": true,
+   "omens": {"on": "0", "*": "1"},
+   "auspex": {"scan": "sysctl -n kernel.split_lock_mitigate"},
+   "enact": {"*": "sysctl -wq kernel.split_lock_mitigate={{omen}}"}}

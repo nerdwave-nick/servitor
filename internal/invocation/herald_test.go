@@ -2,6 +2,7 @@ package invocation
 
 import (
 	"fmt"
+	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
@@ -12,16 +13,19 @@ type hearer struct{ heard []Proclamation }
 
 func (h *hearer) Proclaim(p Proclamation) { h.heard = append(h.heard, p) }
 
-func TestHerald_HearsProgressOfTheRealStepBeforeAndSuccess(t *testing.T) {
+// TestHerald_HearsProgressOfEverySubjectAndSuccess: a rite bearing the
+// vox-casts progress and success proclaims each subject once it is set,
+// counted among the subjects that change, and its triumph at the end;
+// observances count for nothing.
+func TestHerald_HearsProgressOfEverySubjectAndSuccess(t *testing.T) {
 	fx := newFixture(t)
 	util := write(t, fx.data, "util.kdl", "", 0o644)
-	r := fx.rite(t, `{"vox-cast": "progress"},
-	  {"sanctum": "$DATA/util.kdl", "scripture": "1"},
-	  {"vox-cast": "progress"},
-	  {"tether": "$DATA/current-theme", "anchor": "$DATA/themes/{{aspect}}"},
-	  {"incantation": "true"},
-	  {"vox-cast": "progress"},
-	  {"vox-cast": "success"}`)
+	theme := filepath.Join(fx.data, "current-theme")
+	r := fx.riteWith(t, `"vox-cast": ["progress", "success"],
+  "observances": [{"name": "o", "designation": "incantation", "words": "true"}],`,
+		`{"name": "util", "designation": "sanctum", "vessel": "$DATA/util.kdl", "omens": {"*": "1"}},
+	  {"name": "theme", "designation": "tether", "tether": "$DATA/current-theme", "omens": {"*": "$DATA/themes/{{aspect}}"},
+	   "recessional": ["o"]}`)
 	h := &hearer{}
 
 	out, _ := perform(t, r, Options{Aspect: "on", Former: "off", Inscriptions: map[string]string{"reason": "gaming"}, Herald: h})
@@ -30,16 +34,14 @@ func TestHerald_HearsProgressOfTheRealStepBeforeAndSuccess(t *testing.T) {
 		t.Fatalf("verdict %q", out.Verdict)
 	}
 	type heard struct {
-		tidings      Tidings
-		step, steps  int
-		kind, target string
-		verse        int
+		tidings               Tidings
+		step, steps           int
+		kind, target, subject string
 	}
 	want := []heard{
-		{Progress, 0, 3, "", "", 0},
-		{Progress, 1, 3, "sanctum", util, 2},
-		{Progress, 3, 3, "incantation", "true", 5},
-		{Success, 3, 3, "incantation", "true", 5},
+		{Progress, 1, 2, "sanctum", util, "util"},
+		{Progress, 2, 2, "tether", theme, "theme"},
+		{Success, 2, 2, "tether", theme, "theme"},
 	}
 	if len(h.heard) != len(want) {
 		t.Fatalf("heard %d proclamations, want %d: %+v", len(h.heard), len(want), h.heard)
@@ -47,24 +49,28 @@ func TestHerald_HearsProgressOfTheRealStepBeforeAndSuccess(t *testing.T) {
 	for i, w := range want {
 		p := h.heard[i]
 		got := heard{p.Tidings, p.Values.Tidings.Step, p.Values.Tidings.Steps,
-			p.Values.Tidings.StepKind, p.Values.Tidings.StepTarget, p.Verse.Number}
+			p.Values.Tidings.StepKind, p.Values.Tidings.StepTarget, p.Verse.Subject}
 		if got != w {
 			t.Errorf("proclamation %d: got %+v, want %+v", i, got, w)
 		}
 		if p.Values.Aspect != "on" || p.Values.Former != "off" || p.Values.Rite != "mouse" ||
-			p.Values.Inscriptions["reason"] != "gaming" || p.Outcome != nil || p.Values.Tidings.Heresy != "" {
+			p.Values.Inscriptions["reason"] != "gaming" || p.Outcome != nil || p.Values.Tidings.Heresy != "" ||
+			p.Values.Tidings.Subject != w.subject {
 			t.Errorf("proclamation %d carries %+v", i, p)
 		}
 	}
 }
 
+// TestHerald_HearsTheFallUnbiddenAfterTheReversions: the fall of an
+// observance is proclaimed unbidden once every reversion is done, naming
+// what fell and how the reversion went.
 func TestHerald_HearsTheFallUnbiddenAfterTheReversions(t *testing.T) {
 	fx := newFixture(t)
 	write(t, fx.data, "util.kdl", "", 0o644)
-	r := fx.rite(t, `{"sanctum": "$DATA/util.kdl", "scripture": "1"},
-	  {"vox-cast": "progress"},
-	  {"incantation": "echo woe; exit 3", "reversion": "exit 1"},
-	  {"vox-cast": "success"}`)
+	r := fx.riteWith(t, `"vox-cast": ["progress", "success"],
+  "observances": [{"name": "woe", "designation": "incantation", "words": "echo woe; exit 3", "reversion": "exit 1"}],`,
+		`{"name": "util", "designation": "sanctum", "vessel": "$DATA/util.kdl", "omens": {"*": "1"}},
+	  {"name": "x", "designation": "machine-spirit", "enact": {"*": "true"}, "introit": ["woe"]}`)
 	h := &hearer{}
 
 	out, _ := perform(t, r, Options{Aspect: "on", Herald: h})
@@ -78,7 +84,7 @@ func TestHerald_HearsTheFallUnbiddenAfterTheReversions(t *testing.T) {
 	p := h.heard[1]
 	tid := p.Values.Tidings
 	if p.Tidings != Failure || tid.Step != 2 || tid.Steps != 2 || tid.StepKind != "incantation" ||
-		tid.StepTarget != "echo woe; exit 3" || p.Verse.Number != 3 {
+		tid.StepTarget != "echo woe; exit 3" || p.Verse.Observance != "woe" {
 		t.Fatalf("failure proclaimed as %+v", p)
 	}
 	if tid.Heresy == "" || tid.Heresy != out.Fell.Heresy.Error() {
@@ -90,6 +96,8 @@ func TestHerald_HearsTheFallUnbiddenAfterTheReversions(t *testing.T) {
 	}
 }
 
+// TestHerald_HearsNothingOfATriumphWithoutVoxCasts: a rite bearing no
+// vox-cast proclaims nothing of its triumph.
 func TestHerald_HearsNothingOfATriumphWithoutVoxCasts(t *testing.T) {
 	fx := newFixture(t)
 	write(t, fx.data, "util.kdl", "", 0o644)
@@ -102,17 +110,26 @@ func TestHerald_HearsNothingOfATriumphWithoutVoxCasts(t *testing.T) {
 	}
 }
 
+// TestHerald_NilHearsNothingAndHindersNothing: without a herald the
+// invocation is performed and reverted all the same.
 func TestHerald_NilHearsNothingAndHindersNothing(t *testing.T) {
 	fx := newFixture(t)
 	write(t, fx.data, "util.kdl", "", 0o644)
-	r := fx.rite(t, `{"sanctum": "$DATA/util.kdl", "scripture": "1"},
-	  {"vox-cast": "progress"},
-	  {"incantation": "exit 1"}`)
+	r := fx.following(t, `{"name": "util", "designation": "sanctum", "vessel": "$DATA/util.kdl", "omens": {"*": "1"}}`,
+		`{"designation": "incantation", "words": "exit 1"}`)
 	out, _ := perform(t, r, Options{Aspect: "on"})
-	if out.Verdict != Reverted || len(out.Deeds) != 3 {
+	if out.Verdict != Reverted || len(out.Deeds) != 2 {
 		t.Fatalf("outcome %+v", out)
 	}
 }
+
+// fallingSubjects are a sanctum and three machine-spirits never read, the
+// second of which falls when set into "on"; each is restored by enacting
+// the omen of the former aspect, "off".
+const fallingSubjects = `{"name": "util", "designation": "sanctum", "vessel": "$DATA/util.kdl", "omens": {"*": "1"}},
+  {"name": "a", "designation": "machine-spirit", "enact": {"*": "true"}},
+  {"name": "b", "designation": "machine-spirit", "enact": {"on": "exit 3", "*": "true"}},
+  {"name": "c", "designation": "machine-spirit", "enact": {"*": "true"}}`
 
 // watcher is a hearer that also watches every real step begin.
 type watcher struct {
@@ -121,27 +138,23 @@ type watcher struct {
 }
 
 func (w *watcher) Begin(v Verse, step, steps int) {
-	w.begun = append(w.begun, fmt.Sprintf("%d %s %d/%d", v.Number, v.Kind.Key(), step, steps))
+	w.begun = append(w.begun, fmt.Sprintf("%s %d/%d", named(v), step, steps))
 }
 
+// TestWatcher_SeesEveryRealStepBegin: a watcher sees every subject begun,
+// counted among those that change, until one falls.
 func TestWatcher_SeesEveryRealStepBegin(t *testing.T) {
 	fx := newFixture(t)
 	write(t, fx.data, "util.kdl", "", 0o644)
-	r := fx.rite(t, `{"vox-cast": "progress"},
-	  {"sanctum": "$DATA/util.kdl", "scripture": "1"},
-	  {"vox-cast": "progress"},
-	  {"incantation": "true"},
-	  {"incantation": "exit 3"},
-	  {"incantation": "true"},
-	  {"vox-cast": "success"}`)
+	r := fx.riteWith(t, `"vox-cast": ["progress", "success"],`, fallingSubjects)
 	w := &watcher{}
 
-	out, _ := perform(t, r, Options{Aspect: "on", Herald: w})
+	out, _ := perform(t, r, Options{Aspect: "on", Former: "off", Herald: w})
 
 	if out.Verdict != Reverted {
 		t.Fatalf("verdict %q", out.Verdict)
 	}
-	want := []string{"2 sanctum 1/4", "4 incantation 2/4", "5 incantation 3/4"}
+	want := []string{"util 1/4", "a 2/4", "b 3/4"}
 	if !slices.Equal(w.begun, want) {
 		t.Fatalf("saw begun %q, want %q", w.begun, want)
 	}
@@ -163,26 +176,23 @@ func (w *witness) Proclaim(p Proclamation) {
 }
 
 func (w *witness) Performed(v Verse, step, steps int) {
-	w.seen = append(w.seen, fmt.Sprintf("%d %s %d/%d", v.Number, v.Kind.Key(), step, steps))
+	w.seen = append(w.seen, fmt.Sprintf("%s %d/%d", named(v), step, steps))
 }
 
+// TestWitness_SeesEveryRealStepPerformedBeforeTheVoxCastsAfterIt: a witness
+// sees every subject performed before the progress it is proclaimed by.
 func TestWitness_SeesEveryRealStepPerformedBeforeTheVoxCastsAfterIt(t *testing.T) {
 	fx := newFixture(t)
 	write(t, fx.data, "util.kdl", "", 0o644)
-	r := fx.rite(t, `{"vox-cast": "progress"},
-	  {"sanctum": "$DATA/util.kdl", "scripture": "1"},
-	  {"vox-cast": "progress"},
-	  {"incantation": "true"},
-	  {"incantation": "exit 3"},
-	  {"incantation": "true"}`)
+	r := fx.riteWith(t, `"vox-cast": ["progress"],`, fallingSubjects)
 	w := &witness{}
 
-	out, _ := perform(t, r, Options{Aspect: "on", Herald: w})
+	out, _ := perform(t, r, Options{Aspect: "on", Former: "off", Herald: w})
 
 	if out.Verdict != Reverted {
 		t.Fatalf("verdict %q", out.Verdict)
 	}
-	want := []string{"progress", "2 sanctum 1/4", "progress", "4 incantation 2/4", "failure"}
+	want := []string{"util 1/4", "progress", "a 2/4", "progress", "failure"}
 	if !slices.Equal(w.seen, want) {
 		t.Fatalf("saw %q, want %q", w.seen, want)
 	}

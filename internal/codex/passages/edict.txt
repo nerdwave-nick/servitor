@@ -9,28 +9,37 @@ heresy, and so is a rite that bears neither.
 
 An edict is invoked by its name alone, with no aspect after it, and every
 invocation performs its whole liturgy anew; nothing is passed over because
-it was performed before. Its inscriptions are runes as for any rite.
+it was performed before, for there is nothing to read. Its inscriptions are
+runes as for any rite.
+
+Its "liturgy" is a list of verses in the designation form: "designation":
+"incantation" with its "words", or "designation": "litany" with its
+"scroll" and "offerings", each with its "tongue", "patience", "reversion",
+"exalted" and "relics". Verses bear no name; they are named by their place,
+counted from one as written. Its vox-casts are no verses but the rite's own
+list under "vox-cast": "progress" tells of each verse once performed,
+"success" of the whole edict obeyed.
 
 Because an edict stands in no aspect, nothing of it may hold or reveal one:
-  - its liturgy holds only incantations, litanies and vox-casts; a sanctum,
-    a transcription or a tether in an edict is heresy, for each exists to
-    keep an aspect and bear witness to it
+  - it bears no subjects and no observances, for each exists to keep an
+    aspect or to be spoken as one changes
   - it bears no auspex, for there is no aspect to divine
   - every value is written once and plainly: an aspect map — even one keyed
-    by "*" alone — is heresy in its commands, scrolls, offerings, reversions
-    and decrees, and patience and tongue are single words as in every rite
+    by "*" alone — is heresy, and its decrees are one plain word
   - its words never speak {{aspect}} or {{former}}; {{rite.name}} and
     {{inscription.<key>}} serve it as they serve every rite
 
 All else is as for any rite: "purpose", "inscriptions" with "mandatory" and
 a decree of one plain word, "tongue", and the reversion, patience, tongue and
-offerings of its incantations and litanies. Should the servitor write an
-edict's scripture anew, it keeps "edict": true and never writes "aspects".
+offerings of its verses. Should a verse fall, the verses performed are
+reverted in reverse order, each by its own reversion words. Should the
+servitor write an edict's scripture anew, it keeps "edict": true and never
+writes "aspects".
 
-An edict may exalt its incantations and litanies: the exalted servitor,
-roused with no aspect, performs them from the sanction of its master, one
-proof asked at every proclaiming, as the passage on exaltation tells. Its
-sanction holds one plan, whose sigil is that of the whole unit.
+An edict may exalt its verses: the exalted servitor, roused with no aspect,
+performs them from the sanction of its master, one proof asked at every
+proclaiming, as the passage on exaltation tells. Its sanction holds one
+plan, whose sigil is that of the whole unit.
 
 An edict yields no omen, so it is judged by the verdict of its last
 invocation alone: dormant until first proclaimed, proclaimed after a triumph
@@ -40,19 +49,19 @@ an aspect; the census marks it "edict": true, with no aspects. The
 Inquisition weighs its scrolls and tongues once, as it bears no aspect.
 
 Kindred passages: rite, aspects, liturgy, incantation, litany, vox-cast,
-invoke, heresy, standing, augury, census, exalted
+invoke, heresy, standing, augury, census, exalted, conversion
 
 Exempla:
   // <Librarium>/rites/screenshot.json
   {
-    "pattern": "Mark I",
+    "pattern": "Mark II",
     "purpose": "Capture the visage of the machine",
     "edict": true,
     "inscriptions": {"region": {"purpose": "the slurp geometry", "decrees": "full"}},
+    "vox-cast": ["success"],
     "liturgy": [
-      {"incantation": "grim -g \"$(slurp)\" ~/pictures/{{inscription.region}}.png",
-       "patience": "2m"},
-      {"vox-cast": "success"},
+      {"designation": "incantation", "patience": "2m",
+       "words": "grim -g \"$(slurp)\" ~/pictures/{{inscription.region}}.png"},
     ],
   }
 

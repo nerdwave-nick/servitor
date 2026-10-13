@@ -30,7 +30,7 @@ func TestVox_DecidesWhetherTheDesktopHears(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			e := newEnv(t)
 			if tc.vox != "" {
-				e.addRite("servitor.json", `{"pattern": "Mark I", "vox": "`+tc.vox+`"}`)
+				e.addRite("servitor.json", `{"pattern": "Mark II", "vox": "`+tc.vox+`"}`)
 			}
 			if tc.terminal {
 				e.terminal(0)

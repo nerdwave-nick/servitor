@@ -18,8 +18,9 @@ type Petition struct {
 	// Runes are the inscription runes as written (--<key> value); a rune
 	// written "" clears the decree.
 	Runes map[string]string
-	// Foresee reveals what the invocation would do and performs nothing,
-	// not even the auspex.
+	// Foresee reveals what the invocation would do and performs nothing; the
+	// subjects of a rite of aspects are still read, for its plan rests upon
+	// what they show, though a privileged auspex never is.
 	Foresee bool
 	// Herald hears the vox-casts and the fall; nil hears nothing. The
 	// caller raises it and lets it rest afterwards.
@@ -82,6 +83,13 @@ type Result struct {
 // the intercessor (one proof of the master), the herald hearing the
 // tidings invocation.Exaltation before, and performs and reverts them in
 // their turn among the common verses, from the sanction of their master.
+// So too the exalted subjects and observances of a rite of aspects
+// ; it is raised only when one of them changes, once the subjects
+// are read and the plan is made, yet the sanction is judged before
+// anything is read, whatever changes. A rite of aspects holding subjects the
+// invoker cannot read — a privileged auspex, or an exalted vessel hidden
+// from it — always raises it: it reads them first, and the plan is made
+// anew with what it told (see behold).
 //
 // An invocation that is not foreseen is held Steadfast throughout: the
 // departure of the one who invoked it neither halts it nor leaves it half
@@ -141,9 +149,20 @@ func (s *Servitor) Invoke(ctx context.Context, p Petition) (Result, error) {
 		x invocation.Exalter
 		e *exalter
 	)
+	unread := inv.Unread()
+	if exalting != nil && !inv.Exalts() && len(unread) == 0 {
+		// Nothing exalted changes: no proof is asked of the master.
+		exalting, res.Intercessor = nil, ""
+	}
 	if exalting != nil {
 		if e, err = s.exalt(r, p, &res, exalting); err != nil {
 			return res, err
+		}
+		if len(unread) > 0 {
+			if inv, err = s.behold(r, p, inscriptions, &res, e, unread); err != nil {
+				e.abandon()
+				return res, err
+			}
 		}
 		x = e
 	}
@@ -191,6 +210,7 @@ func (s *Servitor) prepare(r *librarium.Rite, p Petition, inscriptions map[strin
 	env, orders := s.env(), s.Orders()
 	res.Options = invocation.Options{Aspect: p.Aspect, Edict: r.Edict, Inscriptions: inscriptions, Orders: orders,
 		Herald: p.Herald}
+	opts := s.auguryOf(p, inscriptions)
 	if r.Edict {
 		// An edict stands in no aspect to be read: only the inscriptions
 		// on its data-slate are wanted.
@@ -200,14 +220,41 @@ func (s *Servitor) prepare(r *librarium.Rite, p Petition, inscriptions map[strin
 			res.Options.Recorded = slate.Inscriptions
 		}
 	} else {
-		former, lament := augury.Augur(r, augury.Options{Target: p.Aspect, ForgoAuspex: p.Foresee, Orders: orders, Env: env})
+		former, lament := augury.Augur(r, opts)
 		res.lament(lament)
 		res.Former = former.Standing
 		res.Options.Former, res.Options.Recorded = former.Aspect, former.Inscriptions
+		res.Options.Readings = s.stamped(former.Readings)
+		res.Options.Reader = func(ctx context.Context, i int) invocation.Reading {
+			read := augury.ReadSubject(ctx, r, i, opts)
+			read.At = s.now()
+			return read
+		}
 	}
 	inv, err := invocation.Prepare(r, res.Options)
 	res.Foresight = inv.Foresee()
 	return inv, err
+}
+
+// auguryOf are the options the subjects of a rite of aspects are read with
+// by the invocation of the petition: they are read even when foreseen,
+// since what it would do rests upon what its subjects show, and its
+// foresight tells the omens a privileged auspex was last read to show.
+func (s *Servitor) auguryOf(p Petition, inscriptions map[string]string) augury.Options {
+	return augury.Options{Target: p.Aspect, Orders: s.Orders(), Env: s.env(), Inscriptions: inscriptions,
+		Foreseen: p.Foresee}
+}
+
+// stamped are readings, each marked as read now; a stale one keeps the
+// moment it was recorded.
+func (s *Servitor) stamped(readings []invocation.Reading) []invocation.Reading {
+	now := s.now()
+	for i := range readings {
+		if !readings[i].Stale {
+			readings[i].At = now
+		}
+	}
+	return readings
 }
 
 func (r *Result) lament(err error) {

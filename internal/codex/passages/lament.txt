@@ -1,12 +1,11 @@
 The words of a lament, as a vigil tells them
 
 Where the servitor cannot read what it needs, it laments. A census spoken
-whole speaks its laments upon stderr, apart from the census itself, and
-still counts the rite: a data-slate that cannot be read is lamented, and
-the rite is read as if it had none. A sanction that cannot be read is
-lamented too, and its rite has lapsed; a forsaken sanction, whose rite is
-gone or holds no exalted verse, is lamented after every rite, and in a
-vigil before the first.
+whole speaks its laments upon stderr, apart from the census itself, and still
+counts the rite: a data-slate that cannot be read is lamented, and the rite is
+read as if it had none. A sanction that cannot be read is lamented too, and
+its rite has lapsed; a forsaken sanction, whose rite is gone or holds nothing
+exalted, is lamented after every rite, and in a vigil before the first.
 
 While the census keeps vigil (--vigil), stdout bears binharic alone, so a
 lament is told there instead, as a line of its own under the herald

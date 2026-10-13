@@ -14,25 +14,53 @@ import (
 	"testing"
 )
 
-// exaltedLiturgy speaks a common verse, an exalted one that would leave
-// $DATA/marker behind were it ever spoken by the invoker, and a common one
-// that falls when $DATA/fall stands; each common verse reverts by word.
-const exaltedLiturgy = `
-  {"incantation": "echo 1 >> $DATA/said", "reversion": "echo undo 1 >> $DATA/said"},
-  {"incantation": "touch $DATA/marker", "reversion": "touch $DATA/marker", "exalted": true},
-  {"vox-cast": "progress"},
-  {"incantation": "test ! -e $DATA/fall && echo 4 >> $DATA/said", "reversion": "echo undo 4 >> $DATA/said"}`
+// exaltedObservances are spoken before the subject x (see spoken): a
+// common observance v1, an exalted one v2 that would leave $DATA/marker
+// behind were it ever spoken by the invoker, and a common one v3 that falls
+// when $DATA/fall stands; each common observance reverts by word.
+var exaltedObservances = []string{
+	`{"designation": "incantation", "words": "echo 1 >> $DATA/said", "reversion": "echo undo 1 >> $DATA/said"}`,
+	`{"designation": "incantation", "words": "touch $DATA/marker", "reversion": "touch $DATA/marker", "exalted": true}`,
+	`{"designation": "incantation", "words": "test ! -e $DATA/fall && echo 3 >> $DATA/said",
+	  "reversion": "echo undo 3 >> $DATA/said"}`,
+}
 
 // altar stands in for the exalted servitor: it performs and reverts the
 // exalted verses it is bidden by writing to the scroll the common verses
 // write, and never speaks their words.
 type altar struct {
 	said     string
-	fell     map[int]bool // verses that fall
-	changed  bool         // a fallen verse changed the machine all the same
-	faltered bool         // reversions falter
-	unended  error        // the finish is not heard
+	fell     map[string]bool // the items that fall, as named
+	changed  bool            // a fallen verse changed the machine all the same
+	faltered bool            // reversions falter
+	unended  error           // the finish is not heard
 	calls    []string
+	// omens are the omens the machine-spirits of a state rite are set to,
+	// by name, written to <data>/<name> as the exalted servitor would.
+	omens map[string]string
+	data  string
+}
+
+// named names the verse, or the subject or observance, of v.
+func named(v Verse) string {
+	if v.Subject+v.Observance != "" {
+		return v.Subject + v.Observance
+	}
+	return fmt.Sprint(v.Number)
+}
+
+func (a *altar) Enact(v Verse, restore string) (string, bool, error) {
+	a.note("enact %s restoring %s", v.Subject, restore)
+	if omen, ok := a.omens[v.Subject]; ok {
+		_ = os.WriteFile(filepath.Join(a.data, v.Subject), []byte(omen+"\n"), 0o644)
+	}
+	return "enacted", true, nil
+}
+
+func (a *altar) Restore(v Verse, omen string) (string, bool, error) {
+	a.note("restore %s to %s", v.Subject, omen)
+	_ = os.WriteFile(filepath.Join(a.data, v.Subject), []byte(omen+"\n"), 0o644)
+	return "restored", true, nil
 }
 
 func (a *altar) note(format string, args ...any) {
@@ -45,20 +73,20 @@ func (a *altar) note(format string, args ...any) {
 }
 
 func (a *altar) Perform(v Verse) (string, bool, error) {
-	if a.fell[v.Number] {
-		a.note("exalted %d fell", v.Number)
+	if a.fell[named(v)] {
+		a.note("exalted %s fell", named(v))
 		return "fallen words", a.changed, errors.New("the exalted verse fell")
 	}
-	a.note("exalted %d", v.Number)
-	return fmt.Sprintf("heard %d", v.Number), true, nil
+	a.note("exalted %s", named(v))
+	return fmt.Sprintf("heard %s", named(v)), true, nil
 }
 
 func (a *altar) Revert(v Verse) (string, bool, error) {
-	a.note("undo exalted %d", v.Number)
+	a.note("undo exalted %s", named(v))
 	if a.faltered {
 		return "", true, errors.New("the exalted reversion fell")
 	}
-	return fmt.Sprintf("unheard %d", v.Number), true, nil
+	return fmt.Sprintf("unheard %s", named(v)), true, nil
 }
 
 func (a *altar) Finish() error {
@@ -66,17 +94,17 @@ func (a *altar) Finish() error {
 	return a.unended
 }
 
-// TestPerform_NeverPerformsAnExaltedVerse: the invoker's servitor performs
-// no exalted verse itself. An invocation holding one may be prepared and
-// foreseen, but performed only through an exalted servitor: without one it
-// is refused, and nothing is touched.
-func TestPerform_NeverPerformsAnExaltedVerse(t *testing.T) {
+// TestPerform_NeverPerformsAnExaltedObservance: the invoker's servitor
+// performs no exalted observance itself. An invocation holding one may be
+// prepared and foreseen, but performed only through an exalted servitor:
+// without one it is refused, and nothing is touched.
+func TestPerform_NeverPerformsAnExaltedObservance(t *testing.T) {
 	fx := newFixture(t)
-	inv, err := Prepare(fx.rite(t, exaltedLiturgy), Options{Aspect: "on"})
+	inv, err := Prepare(fx.spoken(t, "", exaltedObservances...), Options{Aspect: "on"})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if f := inv.Foresee(); len(f) != 4 || !f[1].Exalted || f[0].Exalted || f[3].Exalted {
+	if f := inv.Foresee(); len(f) != 4 || !f[1].Exalted || f[0].Exalted || f[2].Exalted || f[3].Exalted {
 		t.Errorf("foresight %+v", f)
 	}
 	for name, perform := range map[string]func() (Outcome, error){
@@ -85,7 +113,7 @@ func TestPerform_NeverPerformsAnExaltedVerse(t *testing.T) {
 	} {
 		_, err := perform()
 		var hs Heresies
-		if !errors.As(err, &hs) || len(hs) != 1 || hs[0].Verse != 2 || !strings.Contains(hs[0].Message, "exalted") {
+		if !errors.As(err, &hs) || len(hs) != 1 || !strings.Contains(hs[0].Message, `the observance "v2" is exalted`) {
 			t.Errorf("%s: %v", name, err)
 		}
 	}
@@ -96,14 +124,14 @@ func TestPerform_NeverPerformsAnExaltedVerse(t *testing.T) {
 	}
 }
 
-// TestPerformExalted_InWrittenOrder: common and exalted verses are performed
-// in written order, the exalted ones by the exalted servitor alone, whose
-// words are the deed's; its work is finished once.
+// TestPerformExalted_InWrittenOrder: common and exalted observances are
+// performed in written order, the exalted ones by the exalted servitor
+// alone, whose words are the deed's; its work is finished once.
 func TestPerformExalted_InWrittenOrder(t *testing.T) {
 	fx := newFixture(t)
 	said := filepath.Join(fx.data, "said")
 	a := &altar{said: said}
-	inv, err := Prepare(fx.rite(t, exaltedLiturgy), Options{Aspect: "on"})
+	inv, err := Prepare(fx.spoken(t, "", exaltedObservances...), Options{Aspect: "on"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -111,21 +139,21 @@ func TestPerformExalted_InWrittenOrder(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if out.Verdict != Triumph || len(out.Deeds) != 4 || out.Deeds[1].Output != "heard 2" {
+	if out.Verdict != Triumph || len(out.Deeds) != 4 || out.Deeds[1].Output != "heard v2" {
 		t.Errorf("outcome %+v", out)
 	}
-	if got := lines(t, said); !slices.Equal(got, []string{"1", "exalted 2", "4"}) {
+	if got := lines(t, said); !slices.Equal(got, []string{"1", "exalted v2", "3"}) {
 		t.Errorf("said %q", got)
 	}
-	if !slices.Equal(a.calls, []string{"exalted 2", "finish"}) || exists(filepath.Join(fx.data, "marker")) {
+	if !slices.Equal(a.calls, []string{"exalted v2", "finish"}) || exists(filepath.Join(fx.data, "marker")) {
 		t.Errorf("the exalted servitor was bidden %q; marker %v", a.calls, exists(filepath.Join(fx.data, "marker")))
 	}
 }
 
-// TestPerformExalted_AFallRevertsBothKindsInReverse: when a verse falls,
-// the exalted verses performed are reverted by the exalted servitor among
-// the common ones, from the fallen verse back to the first; an exalted
-// verse that fell without changing anything is not reverted.
+// TestPerformExalted_AFallRevertsBothKindsInReverse: when an observance
+// falls, the exalted ones performed are reverted by the exalted servitor
+// among the common ones, from the fallen one back to the first; an exalted
+// observance that fell without changing anything is not reverted.
 func TestPerformExalted_AFallRevertsBothKindsInReverse(t *testing.T) {
 	for _, c := range []struct {
 		name     string
@@ -133,16 +161,16 @@ func TestPerformExalted_AFallRevertsBothKindsInReverse(t *testing.T) {
 		fall     bool
 		said     []string
 		verdict  Verdict
-		reverted []int
+		reverted []string
 	}{
-		{"a common verse falls", altar{}, true,
-			[]string{"1", "exalted 2", "undo 4", "undo exalted 2", "undo 1"}, Reverted, []int{4, 2, 1}},
-		{"the exalted verse falls having changed", altar{fell: map[int]bool{2: true}, changed: true}, false,
-			[]string{"1", "exalted 2 fell", "undo exalted 2", "undo 1"}, Reverted, []int{2, 1}},
-		{"the exalted verse falls unchanged", altar{fell: map[int]bool{2: true}}, false,
-			[]string{"1", "exalted 2 fell", "undo 1"}, Reverted, []int{1}},
+		{"a common observance falls", altar{}, true,
+			[]string{"1", "exalted v2", "undo 3", "undo exalted v2", "undo 1"}, Reverted, []string{"v3", "v2", "v1"}},
+		{"the exalted observance falls having changed", altar{fell: map[string]bool{"v2": true}, changed: true}, false,
+			[]string{"1", "exalted v2 fell", "undo exalted v2", "undo 1"}, Reverted, []string{"v2", "v1"}},
+		{"the exalted observance falls unchanged", altar{fell: map[string]bool{"v2": true}}, false,
+			[]string{"1", "exalted v2 fell", "undo 1"}, Reverted, []string{"v1"}},
 		{"the exalted reversion falters", altar{faltered: true}, true,
-			[]string{"1", "exalted 2", "undo 4", "undo exalted 2", "undo 1"}, Faltered, []int{4, 2, 1}},
+			[]string{"1", "exalted v2", "undo 3", "undo exalted v2", "undo 1"}, Faltered, []string{"v3", "v2", "v1"}},
 	} {
 		t.Run(c.name, func(t *testing.T) {
 			fx := newFixture(t)
@@ -151,7 +179,7 @@ func TestPerformExalted_AFallRevertsBothKindsInReverse(t *testing.T) {
 			}
 			a := c.altar
 			a.said = filepath.Join(fx.data, "said")
-			inv, err := Prepare(fx.rite(t, exaltedLiturgy), Options{Aspect: "on"})
+			inv, err := Prepare(fx.spoken(t, "", exaltedObservances...), Options{Aspect: "on"})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -159,9 +187,9 @@ func TestPerformExalted_AFallRevertsBothKindsInReverse(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			var reverted []int
+			var reverted []string
 			for _, r := range out.Reversions {
-				reverted = append(reverted, r.Number)
+				reverted = append(reverted, named(r.Verse))
 			}
 			if out.Verdict != c.verdict || !slices.Equal(reverted, c.reverted) {
 				t.Errorf("verdict %s, reverted %v", out.Verdict, reverted)
@@ -178,11 +206,12 @@ func TestPerformExalted_AFallRevertsBothKindsInReverse(t *testing.T) {
 
 // TestPerformExalted_AnUnheardFinishRevertsTheWhole: an exalted servitor
 // that never hears the finish reverts what it performed; so the invocation
-// is reverted whole, and falls at its last exalted verse.
+// is reverted whole — the subject x restored by enacting the omen of the
+// former aspect — and falls at its last exalted observance.
 func TestPerformExalted_AnUnheardFinishRevertsTheWhole(t *testing.T) {
 	fx := newFixture(t)
 	a := &altar{said: filepath.Join(fx.data, "said"), unended: errors.New("the channel ended")}
-	inv, err := Prepare(fx.rite(t, exaltedLiturgy), Options{Aspect: "on"})
+	inv, err := Prepare(fx.spoken(t, "", exaltedObservances...), Options{Aspect: "on", Former: "off"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -190,11 +219,11 @@ func TestPerformExalted_AnUnheardFinishRevertsTheWhole(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if out.Verdict != Reverted || out.Fell == nil || out.Fell.Number != 2 || !strings.Contains(out.Fell.Heresy.Error(),
+	if out.Verdict != Reverted || out.Fell == nil || out.Fell.Observance != "v2" || !strings.Contains(out.Fell.Heresy.Error(),
 		"the channel ended") {
 		t.Errorf("outcome %+v", out)
 	}
-	if got := lines(t, a.said); !slices.Equal(got, []string{"1", "exalted 2", "4", "undo 4", "undo exalted 2", "undo 1"}) {
+	if got := lines(t, a.said); !slices.Equal(got, []string{"1", "exalted v2", "3", "undo 3", "undo exalted v2", "undo 1"}) {
 		t.Errorf("said %q", got)
 	}
 }
@@ -216,9 +245,10 @@ func TestForesee_AVesselHiddenFromTheInvoker(t *testing.T) {
 	}
 	t.Cleanup(func() { _ = os.Chmod(filepath.Dir(veiled), 0o755) })
 	r := fx.rite(t, `
-  {"transcription": "`+hidden+`", "scripture": "kernel.x = {{aspect}}", "exalted": true},
-  {"sanctum": "`+hidden+`", "scripture": "y = 1", "exalted": true},
-  {"transcription": "`+veiled+`", "scripture": "z", "exalted": true}`)
+  {"name": "a", "designation": "transcription", "vessel": "`+hidden+`", "omens": {"*": "kernel.x = {{aspect}}"},
+   "exalted": true},
+  {"name": "b", "designation": "sanctum", "vessel": "`+hidden+`", "omens": {"*": "y = 1"}, "exalted": true},
+  {"name": "c", "designation": "transcription", "vessel": "`+veiled+`", "omens": {"*": "z"}, "exalted": true}`)
 	inv, err := Prepare(r, Options{Aspect: "on"})
 	if err != nil {
 		t.Fatal(err)
@@ -240,30 +270,33 @@ func TestForesee_AVesselHiddenFromTheInvoker(t *testing.T) {
 			got.Size != want.Size || got.Digest != want.Digest || got.BeforeSeal != want.BeforeSeal ||
 			got.AfterSeal != want.AfterSeal || got.Before != "" || got.After != "" || !got.Changed() ||
 			len(got.Diff()) != 0 {
-			t.Errorf("verse %d foreseen %+v\nwant %+v", i+1, got, want)
+			t.Errorf("subject %d foreseen %+v\nwant %+v", i+1, got, want)
 		}
 	}
 
-	r = fx.rite(t, `{"transcription": "`+hidden+`", "scripture": "kernel.x = {{aspect}}"}`)
+	r = fx.rite(t, `{"name": "a", "designation": "transcription", "vessel": "`+hidden+`",
+	  "omens": {"*": "kernel.x = {{aspect}}"}}`)
 	if _, err := Prepare(r, Options{Aspect: "on"}); err == nil || !strings.Contains(err.Error(), "denies") {
-		t.Errorf("a common verse upon a hidden vessel: %v", err)
+		t.Errorf("a common subject upon a hidden vessel: %v", err)
 	}
 }
 
 // TestPrepare_ExaltedSpeechKnowsItsTongues: the pre-flight refuses an
-// exalted verse spoken in a tongue exalted speech does not know, by the
-// name of the program it truly is; a common verse may speak it.
+// exalted observance spoken in a tongue exalted speech does not know, by
+// the name of the program it truly is; a common observance may speak it.
 func TestPrepare_ExaltedSpeechKnowsItsTongues(t *testing.T) {
 	fx := newFixture(t)
 	bin := t.TempDir()
 	write(t, bin, "python3", "#!/bin/sh\n", 0o755)
 	t.Setenv("PATH", bin+string(os.PathListSeparator)+os.Getenv("PATH"))
-	r := fx.rite(t, `{"incantation": "print(1)", "tongue": "python3"},
-  {"incantation": "print(2)", "tongue": "python3", "exalted": true},
-  {"incantation": "echo 3", "tongue": "sh", "exalted": true}`)
+	r := fx.spoken(t, "", `{"designation": "incantation", "words": "print(1)", "tongue": "python3"}`,
+		`{"designation": "incantation", "words": "print(2)", "tongue": "python3", "exalted": true}`,
+		`{"designation": "incantation", "words": "echo 3", "tongue": "sh", "exalted": true}`)
 	_, err := Prepare(r, Options{Aspect: "on"})
 	var hs Heresies
-	if !errors.As(err, &hs) || len(hs) != 1 || hs[0].Verse != 2 || !strings.Contains(hs[0].Message, "python3") {
+	if !errors.As(err, &hs) || len(hs) != 1 || !strings.Contains(hs[0].Message, "python3") ||
+		!strings.Contains(hs[0].Message, `the exalted observance "v2"`) || strings.Contains(hs[0].Message, "verse") ||
+		r.Locate("/observances/1/exalted") != hs[0].Position {
 		t.Fatalf("pre-flight: %v", err)
 	}
 }
@@ -282,15 +315,16 @@ func TestForesee_ANameHiddenFromTheInvoker(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { _ = os.Chmod(hall, 0o755) })
-	inv, err := Prepare(fx.rite(t, `{"tether": "`+hall+`/current", "anchor": "/usr/share/x", "exalted": true}`),
-		Options{Aspect: "on"})
+	inv, err := Prepare(fx.rite(t, `{"name": "t", "designation": "tether", "tether": "`+hall+`/current",
+	  "omens": {"*": "/usr/share/x"}, "exalted": true}`), Options{Aspect: "on"})
 	if err != nil {
 		t.Fatal(err)
 	}
 	if c := inv.Foresee()[0].Tether; c == nil || !c.Hidden || !c.Changed() || c.From != "" || c.To != "/usr/share/x" {
 		t.Errorf("foreseen %+v", c)
 	}
-	_, err = Prepare(fx.rite(t, `{"tether": "`+hall+`/current", "anchor": "/usr/share/x"}`), Options{Aspect: "on"})
+	_, err = Prepare(fx.rite(t, `{"name": "t", "designation": "tether", "tether": "`+hall+`/current",
+	  "omens": {"*": "/usr/share/x"}}`), Options{Aspect: "on"})
 	if err == nil || !strings.Contains(err.Error(), "denies") {
 		t.Errorf("a common tether upon a hidden name: %v", err)
 	}

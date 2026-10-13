@@ -2,7 +2,8 @@ Scripture drawn from another scripture-file rather than written inline
 
 A tome lets a sanctum or transcription draw its scripture from a separate
 scripture-file, so that long or intricate scripture need not be pressed into
-a JSON string. It is written as an object in place of the scripture:
+a JSON string. It is written as an object in place of the scripture of an
+omen:
 
   {"tome": "<path>", "illuminate": true}
 
@@ -24,14 +25,17 @@ all the same, and its words are part of the sanction: amending it lapses the
 sanction until the master sanctions the rite anew.
 
 The augury reads tomes too, to judge which aspect a vessel holds; changing a
-tome after an invocation makes the vessel no longer match its aspect.
+tome after an invocation makes the vessel no longer match its aspect, and
+the next invocation writes it anew.
 
 Kindred passages: scripture, illuminate, placeholders, sanctum, transcription, sanction
 
 Exempla:
-  {"transcription": "~/.config/alacritty/colors.toml",
-   "scripture": {"tome": "colors/{{aspect}}.toml"}}
+  {"name": "colors", "designation": "transcription",
+   "vessel": "~/.config/alacritty/colors.toml",
+   "omens": {"*": {"tome": "colors/{{aspect}}.toml"}}}
 
-  {"sanctum": "~/.config/niri/config.kdl",
-   "scripture": {"on": {"tome": "niri/gaming.kdl", "illuminate": true},
-                 "off": ""}}
+  {"name": "gaming", "designation": "sanctum",
+   "vessel": "~/.config/niri/config.kdl",
+   "omens": {"on": {"tome": "niri/gaming.kdl", "illuminate": true},
+             "off": ""}}

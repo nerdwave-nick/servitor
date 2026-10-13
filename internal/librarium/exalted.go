@@ -3,6 +3,7 @@ package librarium
 import (
 	"fmt"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/tailscale/hujson"
@@ -40,8 +41,71 @@ func (r *Rite) ExaltedVerses() []int {
 	return verses
 }
 
-// Exalted reports whether the rite holds an exalted verse.
-func (r *Rite) Exalted() bool { return len(r.ExaltedVerses()) > 0 }
+// Exalted reports whether the rite holds an exalted verse, or, a state rite
+// of pattern Mark II, an exalted subject or observance.
+func (r *Rite) Exalted() bool { return len(r.ExaltedItems()) > 0 }
+
+// ExaltedNoun names what of the rite is exalted, as laments name it: the
+// "exalted verses" of an edict, or of a rite of aspects its "exalted
+// subjects", its "exalted observances", or its "exalted subjects and
+// observances", as it holds them (the latter when it holds none).
+func (r *Rite) ExaltedNoun() string {
+	if r.Edict {
+		return "exalted verses"
+	}
+	subjects := slices.ContainsFunc(r.Subjects, Subject.Exalted)
+	observances := slices.ContainsFunc(r.Observances, Observance.Exalted)
+	switch {
+	case subjects && !observances:
+		return "exalted subjects"
+	case observances && !subjects:
+		return "exalted observances"
+	}
+	return "exalted subjects and observances"
+}
+
+// ExaltedItem is one exalted verse of a liturgy, or one exalted subject or
+// observance of a state rite of pattern Mark II.
+type ExaltedItem struct {
+	Verse               int    // counted from one; 0 for a subject or an observance
+	Subject, Observance string // its name; "" for a verse
+	Pointer             string // the JSON pointer of its "exalted"
+}
+
+// ExaltedItems returns the exalted verses of the rite's liturgy, then its
+// exalted subjects and observances, each in written order; nil when it
+// holds none.
+func (r *Rite) ExaltedItems() []ExaltedItem {
+	var items []ExaltedItem
+	for i, s := range r.Liturgy {
+		if IsExalted(s) {
+			items = append(items, ExaltedItem{Verse: r.verse(i), Pointer: r.stepPointer(i) + "/exalted"})
+		}
+	}
+	for i, s := range r.Subjects {
+		if s.Exalted() {
+			items = append(items, ExaltedItem{Subject: s.Name, Pointer: r.subjectPointer(i) + "/exalted"})
+		}
+	}
+	for j, o := range r.Observances {
+		if o.Exalted() {
+			items = append(items, ExaltedItem{Observance: o.Name, Pointer: fmt.Sprintf("/observances/%d/exalted", j)})
+		}
+	}
+	return items
+}
+
+// String names the item as laments name it: "verse 2", or the subject or
+// observance by its name.
+func (i ExaltedItem) String() string {
+	switch {
+	case i.Subject != "":
+		return fmt.Sprintf("the subject %q", i.Subject)
+	case i.Observance != "":
+		return fmt.Sprintf("the observance %q", i.Observance)
+	}
+	return fmt.Sprintf("verse %d", i.Verse)
+}
 
 // ExaltedScope is the placeholder scope of the words of the rite's exalted
 // verses, fixed when its master sanctions them: {{former}} is heresy there,
@@ -77,17 +141,29 @@ func (s stepDecoder) exaltation() bool {
 	switch {
 	case !ok:
 		return false
-	case s.kind == KindVoxCast:
+	case s.kind == kindVoxCast:
 		s.d.heresy(m.key, "a vox-cast is never exalted: it only sends word of the invocation, which needs no "+
 			"authority but its invoker's — strike \"exalted\" from verse %d", s.verse)
 		return false
 	}
 	if _, isMap := m.val.Value.(*hujson.Object); isMap {
-		s.d.heresy(m.val, "%s is written as an aspect map, yet a verse is exalted for every aspect or for none "+
-			"— write true or false", s.field("exalted"))
+		s.d.heresy(m.val, "%s is written as an aspect map, yet a %s is exalted for every aspect or for none "+
+			"— write true or false", s.field("exalted"), s.nounKind())
 		return false
 	}
 	return s.d.boolean(m.val, s.field("exalted"))
+}
+
+// nounKind is what may be exalted in the decoder's place: a verse, a
+// subject or an observance.
+func (s stepDecoder) nounKind() string {
+	switch {
+	case s.designation == "" || s.name == "":
+		return "verse"
+	case slices.Contains(SubjectDesignations, s.designation):
+		return "subject"
+	}
+	return "observance"
 }
 
 // relics decodes the relics of an incantation or litany: paths within the
@@ -149,20 +225,22 @@ func (s stepDecoder) rooted(step Step, own *hujson.Value) {
 	default:
 		return
 	}
-	r := s.d.rite
+	s.rootedPath(path, noun, own)
+}
+
+// rootedPath denounces the exalted vessel or bound name path (noun), written
+// at own, when, rendered for some aspect, it does not begin at the root or
+// lies within one of the realms.
+func (s stepDecoder) rootedPath(path, noun string, own *hujson.Value) {
 	for _, aspect := range s.d.aspects {
-		inscriptions := map[string]string{}
-		for _, in := range r.Inscriptions {
-			inscriptions[in.Key], _ = in.Decrees.For(aspect)
-		}
-		out, err := s.d.scope.Render(path, placeholder.Values{Aspect: aspect, Rite: r.Name, Inscriptions: inscriptions})
+		out, err := s.d.scope.Render(path, s.d.values(aspect))
 		if err != nil {
 			return // denounced already
 		}
 		if !filepath.IsAbs(out) {
-			s.d.heresy(own, "the %s %s of the exalted %s of verse %d does not begin at the root: the exalted "+
+			s.d.heresy(own, "the %s %s of %s does not begin at the root: the exalted "+
 				"servitor reckons no path from the invoker's home or hall, and finds its vessels from \"/\" alone "+
-				"— write the whole path", noun, out, s.kind.Key(), s.verse)
+				"— write the whole path", noun, out, s.exaltedTitle())
 			return
 		}
 		for _, realm := range realms {
@@ -180,6 +258,10 @@ func (s stepDecoder) rooted(step Step, own *hujson.Value) {
 // litany of the rite speaks: its commands and reversions.
 func (d *decoder) judgeSpeech() {
 	r := d.rite
+	if !r.markI && !r.Edict {
+		d.judgeSpeechII()
+		return
+	}
 	amid := r.Exalted()
 	for i, step := range r.Liturgy {
 		var u Utterance
@@ -188,6 +270,9 @@ func (d *decoder) judgeSpeech() {
 		switch st := step.(type) {
 		case *Incantation:
 			u, words, keys = st.Utterance, []AspectMap[string]{st.Command}, []string{"incantation"}
+			if !r.markI {
+				keys = []string{"words"}
+			}
 		case *Litany:
 			u = st.Utterance
 		default:

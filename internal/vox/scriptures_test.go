@@ -17,19 +17,26 @@ func spoken(tmpl string) *regexp.Regexp {
 	re = strings.ReplaceAll(re, regexp.QuoteMeta("{{aspect}}"), "«[^»]+»")
 	re = strings.ReplaceAll(re, regexp.QuoteMeta("{{step.kind}}"), "(sanctum|transcription|tether|incantation|litany)")
 	re = strings.ReplaceAll(re, regexp.QuoteMeta("{{rite.name}}"), `[\w.-]+`)
+	re = strings.ReplaceAll(re, regexp.QuoteMeta("{{subject}}"), `[\w.-]+`)
 	re = strings.ReplaceAll(re, regexp.QuoteMeta("{{intercessor}}"), "(sudo|run0|pkexec)")
 	re = strings.ReplaceAll(re, regexp.QuoteMeta("{{sigil}}"), "[0-9a-f]{12}")
 	return regexp.MustCompile("^" + re + "$")
 }
 
 func drawn(tid invocation.Tidings, words string) bool {
-	for _, tmpl := range append(slices.Clone(templates[tid]), edictTemplates[tid]...) {
+	for _, tmpl := range slices.Concat(templates[tid], edictTemplates[tid], subjectTemplates[tid]) {
 		if spoken(tmpl).MatchString(words) {
 			return true
 		}
 	}
 	return false
 }
+
+// toldElsewhere are lines the README and the codex show that rituals other
+// than the herald tell: the sanction standing of a foresight or of servitor
+// sanction, and the tidings of a conversion.
+var toldElsewhere = regexp.MustCompile(`^✠ The (sanction of the )?exalted (verses|subjects and observances) |` +
+	`^⋯ the rite "[^"]+" is converted to pattern "Mark II"; `)
 
 // TestScriptures_ShowTheVoxCastsAsTheyAreTold: every closing, progress and
 // awaiting line the README and the codex show is one the servitor could
@@ -48,6 +55,9 @@ func TestScriptures_ShowTheVoxCastsAsTheyAreTold(t *testing.T) {
 		}
 		for line := range strings.Lines(string(data)) {
 			line = strings.TrimSpace(line)
+			if toldElsewhere.MatchString(line) {
+				continue
+			}
 			if words, ok := strings.CutPrefix(line, "✠ "); ok {
 				shown++
 				if !drawn(invocation.Success, words) {

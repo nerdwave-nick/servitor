@@ -3,12 +3,15 @@
 //
 // In a rite (RiteMode) the marks are {{aspect}}, {{former}}, {{rite.name}}
 // and {{inscription.<key>}}. Vox-cast tidings (VoxCastMode) may additionally
-// speak {{heresy}}, {{step}}, {{steps}}, {{step.kind}} and {{step.target}}.
+// speak {{heresy}}, {{step}}, {{steps}}, {{step.kind}}, {{step.target}} and,
+// for a state rite of pattern Mark II, {{subject}}.
 // The words of an edict (Scope.Edict) bear no aspect: {{aspect}} and
 // {{former}} are heresy there.
 // The words of an exalted verse (Scope.Exalted) are fixed when its master
 // sanctions them: {{former}}, and an inscription only its rune may fill,
 // are heresy there.
+// {{omen}} names the omen a machine-spirit of pattern Mark II is enacted
+// into or tried for; it is heresy in every other word (Scope.Omen).
 // {{{{ is a literal {{; a lone }} is literal. Every other mark, an inscription
 // the rite never declared, and a mark that is never closed are heresies; they
 // are never rendered empty.
@@ -48,6 +51,9 @@ type Scope struct {
 	// Fleeting are the inscriptions whose word may come from their rune
 	// alone, at invocation: mandatory, yet not decreed for every aspect.
 	Fleeting []string
+	// Omen marks the words that enact or try an omen of a machine-spirit
+	// (pattern Mark II), the only words that may speak {{omen}}.
+	Omen bool
 }
 
 // Values are what the marks are illuminated with during one invocation.
@@ -56,6 +62,7 @@ type Values struct {
 	Former       string            // {{former}}: the aspect before; empty if unknown
 	Rite         string            // {{rite.name}}
 	Inscriptions map[string]string // {{inscription.<key>}}; an unset key is empty
+	Omen         string            // {{omen}}: the omen being enacted or tried
 	Tidings      Tidings           // only in VoxCastMode
 }
 
@@ -66,6 +73,9 @@ type Tidings struct {
 	Steps      int    // {{steps}}: number of real steps in the liturgy
 	StepKind   string // {{step.kind}}: the step's own key, e.g. "tether"
 	StepTarget string // {{step.target}}: what that key holds, e.g. a vessel
+	// Subject is {{subject}}: the subject of a state rite of pattern Mark II
+	// set last, or the one that fell.
+	Subject string
 }
 
 // Check reports every heresy in text without rendering it.
@@ -155,6 +165,11 @@ func (s Scope) resolve(name string, v Values) (string, Kind, bool) {
 		return v.Former, 0, true
 	case "rite.name":
 		return v.Rite, 0, true
+	case "omen":
+		if !s.Omen {
+			return "", Omenless, false
+		}
+		return v.Omen, 0, true
 	}
 	if key, ok := strings.CutPrefix(name, inscriptionPrefix); ok && key != "" {
 		if !slices.Contains(s.Inscriptions, key) {
@@ -174,7 +189,7 @@ func (s Scope) resolve(name string, v Values) (string, Kind, bool) {
 }
 
 // voxMarks are the marks only vox-casts may speak, in the order of the codex.
-var voxMarks = []string{"heresy", "step", "steps", "step.kind", "step.target"}
+var voxMarks = []string{"heresy", "step", "steps", "step.kind", "step.target", "subject"}
 
 func (t Tidings) resolve(name string) (string, bool) {
 	switch name {
@@ -188,6 +203,8 @@ func (t Tidings) resolve(name string) (string, bool) {
 		return t.StepKind, true
 	case "step.target":
 		return t.StepTarget, true
+	case "subject":
+		return t.Subject, true
 	}
 	return "", false
 }

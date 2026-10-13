@@ -18,8 +18,11 @@ type Entry struct {
 	Aspects    []string          `json:"aspects"`
 	Purpose    string            `json:"purpose"`
 	Desecrated bool              `json:"desecrated"`
-	LastRite   *augury.LastRite  `json:"last_rite"`
-	RecordedIn string            `json:"recorded_in"` // the rite's scripture; the first, when recorded twice
+	// Stale tells that the aspect or standing rests on an omen taken from
+	// the data-slate's record, where a live one was not heard.
+	Stale      bool             `json:"stale"`
+	LastRite   *augury.LastRite `json:"last_rite"`
+	RecordedIn string           `json:"recorded_in"` // the rite's scripture; the first, when recorded twice
 	// Canon are the inscriptions the rite declares, as the augury speaks
 	// them; [] for a heretical rite.
 	Canon []augury.Declaration `json:"canon"`
@@ -46,7 +49,7 @@ func (s *Servitor) Census(forgoAuspex bool) (entries []Entry, laments []error) {
 // entry is the census entry of the rite name read as r.
 func (s *Servitor) entry(name string, r Reading) Entry {
 	e := Entry{Rite: name, Edict: r.Edict, Aspect: r.Aspect, Standing: r.Standing, Sanction: r.Sanction, Auspex: r.Auspex,
-		Aspects: []string{}, Desecrated: r.Desecrated, LastRite: r.LastRite,
+		Aspects: []string{}, Desecrated: r.Desecrated, Stale: r.Stale(), LastRite: r.LastRite,
 		RecordedIn: s.Librarium.Scriptures[name][0], Canon: []augury.Declaration{}}
 	if r.Rite != nil {
 		e.Purpose, e.Canon = r.Rite.Purpose, r.Canon

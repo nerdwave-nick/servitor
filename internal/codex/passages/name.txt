@@ -1,0 +1,22 @@
+The name of a subject or an observance of pattern Mark II
+
+Every subject and every observance of a rite of pattern "Mark II" bears a
+"name". By it the tidings tell which subject changed or fell, the chronicle
+records where an invocation fell, and a subject names the observances it
+calls upon as its introit or recessional.
+
+A name must begin with a letter or digit and continue only with letters,
+digits, ".", "_" or "-", as the name of an aspect does. No two subjects of a
+rite may bear one name, nor may two observances; a subject and an observance
+may share one, for they are never mistaken for each other. A subject or
+observance without a name is heresy.
+
+The entries of an edict's liturgy bear no name: they are named by their
+verse, counted from one, as the steps of a liturgy always were.
+
+Kindred passages: subjects, observances, introit, recessional, verse
+
+Exempla:
+  {"name": "split-lock", "designation": "machine-spirit", ...}
+
+  {"name": "herald-silence", "designation": "incantation", ...}

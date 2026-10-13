@@ -12,7 +12,7 @@ import (
 
 // incantation examines an incantation: its command and its utterance.
 func (p *preflight) incantation(s *librarium.Incantation) performer {
-	words, okWords := p.words("incantation", s.Command)
+	words, okWords := p.words(wordsKey(s.Kind()), s.Command)
 	sp, okUtterance := p.utterance(s.Utterance)
 	if !okWords || !okUtterance {
 		return nil
@@ -28,8 +28,9 @@ func (p *preflight) incantation(s *librarium.Incantation) performer {
 // before it are performed, its offerings, rendered and with a leading "~"
 // borne to the home of the faithful, and its utterance.
 func (p *preflight) litany(s *librarium.Litany) performer {
-	field := mapField(p, "litany", s.Scroll)
-	text, okWords := p.words("litany", s.Scroll)
+	key := wordsKey(s.Kind())
+	field := mapField(p, key, s.Scroll)
+	text, okWords := p.words(key, s.Scroll)
 	sp, ok := p.utterance(s.Utterance)
 	ok = ok && okWords
 	for i, o := range s.Offerings {
@@ -55,6 +56,15 @@ func (p *preflight) litany(s *librarium.Litany) performer {
 		return nil // the exalted servitor speaks every litany's tongue
 	}
 	return p.spoken(s.Kind(), sp)
+}
+
+// wordsKey is the key the words of an observance or verse of kind k are
+// written under: "scroll" for a litany, "words" for an incantation.
+func wordsKey(k librarium.Kind) string {
+	if k == librarium.KindLitany {
+		return "scroll"
+	}
+	return "words"
 }
 
 // words renders what the invoked aspect demands of the aspect map written

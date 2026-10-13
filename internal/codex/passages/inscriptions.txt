@@ -28,12 +28,12 @@ illuminated word is spoken into the command exactly as inscribed, and the
 tongue would interpret its quotes, dollars and semicolons, whereas
 "$SERVITOR_INSCRIPTION_REASON" stays one word.
 
-The words of an exalted verse are fixed when its master sanctions them, so
-an inscription illuminated within them must take its decree alone: its rune
-is refused for that rite, heresy at invocation with the death-mark 2, and a
-mandatory inscription that some aspect does not decree may not be
-illuminated there at all. Exalted speech hears every inscription from its
-environment instead, as SERVITOR_INSCRIPTION_<KEY>; a word given there may
+The words of an exalted subject, observance or verse are fixed when its master
+sanctions them, so an inscription illuminated within them must take its decree
+alone: its rune is refused for that rite, heresy at invocation with the
+death-mark 2, and a mandatory inscription that some aspect does not decree may
+not be illuminated there at all. Exalted speech hears every inscription from
+its environment instead, as SERVITOR_INSCRIPTION_<KEY>; a word given there may
 hold at most 4 KiB, and neither NUL nor a new line.
 
 The inscriptions of an invocation are kept on the rite's data-slate, read by
@@ -54,4 +54,5 @@ Exempla:
   servitor invoke mouse-autohide-toggle off --mode ""     # clears the decree
   servitor augury mouse-autohide-toggle reason
 
-  {"incantation": "echo \"$SERVITOR_INSCRIPTION_REASON\" >> ~/.cache/dnd-reasons"}
+  {"name": "remnant", "designation": "incantation",
+   "words": "echo \"$SERVITOR_INSCRIPTION_REASON\" >> ~/.cache/dnd-reasons"}

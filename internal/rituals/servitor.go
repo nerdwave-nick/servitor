@@ -27,14 +27,16 @@ type Servitor struct {
 	// Env is the environment that sways the settings and places the
 	// data-slates; nil is the servitor's own.
 	Env librarium.Environment
-	// Now tells the moment an invocation ends; nil is time.Now.
+	// Now tells the moment an invocation ends, and the moments the
+	// subjects of a rite of aspects are read during it; nil is time.Now.
 	Now func() time.Time
 	// Sanctions is the store of the master's sanctions, which the servitor
 	// only reads; nil is the store at SanctionRoot of the uid it serves.
 	Sanctions *sanction.Store
 }
 
-// Open loads the Librarium at dir.
+// Open loads the Librarium at dir, every pure scripture of pattern Mark I
+// converted in memory (librarium.Load); Convert writes the conversions.
 func Open(dir string, runes librarium.Runes) *Servitor {
 	return &Servitor{Librarium: librarium.Load(dir), Runes: runes}
 }

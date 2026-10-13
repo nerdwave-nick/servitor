@@ -87,7 +87,7 @@ func (e *env) hold(rite string) (relinquish func()) {
 var awaitingLine = regexp.MustCompile(`(?m)^⋯ .*$`)
 
 func (e *env) voxNotifySend() {
-	e.addRite("servitor.json", `{"pattern": "Mark I", "vox": "notify-send"}`)
+	e.addRite("servitor.json", `{"pattern": "Mark II", "vox": "notify-send"}`)
 }
 
 // TestInvoke_TheAwaitingOfDominionIsToldOnceBeforeTheHeader: upon a

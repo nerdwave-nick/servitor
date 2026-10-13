@@ -9,19 +9,61 @@ On its left the cogitator lists every rite of the Librarium with the glyph
 of its standing and the aspect it stands in — an edict, which stands in none,
 with its standing alone, beside the mark ❢ of an edict; on its right it
 reveals the chosen rite: its purpose, its aspects with the current one marked,
-its standing, its last rite, its inscriptions, its liturgy with the omen of
-every verse, its auspex and where its scripture is recorded. An edict shows
-its nature in place of aspects, and its liturgy without omens, for it reveals
-none and knows no auspex. Heretical rites are shown too, with the heresy that
-taints them.
+its standing, its last rite, its inscriptions, its subjects and observances,
+its vox-casts and where its scripture is recorded. An edict shows its nature
+in place of aspects, and its liturgy, verse by verse, for it reveals no omen.
+Heretical rites are shown too, with the heresy that taints them. Scripture of
+pattern Mark I is shown converted, and a toast tells each
+conversion the cogitator writes (see conversion).
 
-A rite holding exalted verses bears the mark of its sanction beside its
-aspect, as the census marks it: ✠ sanctioned, ☓ lapsed, ○ unsanctioned; a
-rite whose sanction is forsaken bears †, and a rite without exalted verses or
-sanction bears none. The chosen rite tells its sanction beneath its standing —
-the sigil and the hour it was sanctioned, the sigil it lapsed from, or what s
-does about it — and its liturgy marks every exalted verse ✠, as foresight,
-the running panel and the lament of a fall do.
+A rite of aspects shows its subjects, one line each: the mark of its omen, the glyph of its designation —
+§ sanctum, ¶ transcription, ↣ tether, ⚙ machine-spirit — marked ✠ when
+exalted, its name, and what it was read to show: the omen a machine-spirit
+printed, or the vessel or bound name of the others. The mark is ✔ when its
+omen fits the aspect the rite stands in, ✖ when it fits another, and the
+aspects it fits are named beside it; · marks a subject that yields no omen,
+with the reason: mute, read yet fitting no aspect; unread, bearing no auspex
+that may be heard outside an invocation; awaited, its auspex still
+labouring; forgone, its auspex left unawakened. A subject whose omen is
+taken from the record of the data-slate, where no live omen is heard, is
+told stale, dimmed, with the age of its reading, as "stale · read 2h ago".
+When the omens of its subjects agree on no aspect, the rite lies
+corrupted, and each subject that fits no aspect the most of them fit is
+marked ✖ as breaking the agreement. Its observances follow, each with its
+glyph, the aspects it is spoken to and from, and its words; then the
+vox-casts the rite bears as its own, which an edict shows too. A rite bears
+no auspex of its own: each machine-spirit bears its own.
+
+The cogitator never waits upon an auspex to draw the shrine. It draws
+every rite at once, as the first heralding of census --vigil tells it: each
+subject whose auspex is yet to answer shows the omen the data-slate recorded
+in this boot, stale, or none, awaited. The list marks an aspect that rests on a stale omen with "~", as
+"~on", as the census marks it. Then the auspexes of every rite labour
+together as the vigil awakens them, and each rite is drawn anew with its
+live omens once its own have settled. A subject read by an exalted auspex
+stays stale, for that auspex is spoken at invocation alone. Every reading
+of the Librarium — r, the end of an invocation, the sealing of the wizard —
+begins anew, and slays the auspexes still labouring for the reading before,
+whose words are no longer heeded; retreating from the cogitator slays every
+auspex still labouring.
+
+The preview of such a rite tells, for every subject, the omen it was read to
+show, the omen commanded and whether it changes, with the words that would
+set it, and the observances that would be spoken. While it is invoked, the
+running panel counts subject x / n of the changing subjects alone, names the
+subject being set and the omen it is set to, and the observances spoken. The
+lament of its fall names the subject or observance that fell, the omen
+commanded, the omen read before and the omen found, its last words, and the
+verdict upon every reversion.
+
+A rite holding exalted subjects, observances or verses bears the mark of its
+sanction beside its aspect, as the census marks it: ✠ sanctioned, ☓ lapsed,
+○ unsanctioned; a rite whose sanction is forsaken bears †, and a rite that
+exalts nothing and holds no sanction bears none. The chosen rite tells its
+sanction beneath its standing — the sigil and the hour it was sanctioned, the
+sigil it lapsed from, or what s does about it — and marks every exalted
+subject, observance and verse ✠, as foresight, the running panel and the
+lament of a fall do.
 
 Roused as root, the servitor awakens no cogitator, for the cogitator performs,
 and the servitor performs nothing with the machine's own authority: it refuses
@@ -30,7 +72,7 @@ with the death-mark 2. The census, the augury and the Inquisition still read.
 From the shrine the faithful choose a rite (j and k, or the arrows; g and G
 for the first and last), invoke it with enter, cycle it to its next aspect
 with space, consecrate a new rite with n, amend one with e, replicate one
-with c, excommunicate one with d, sanction its exalted verses or abjure its
+with c, excommunicate one with d, sanction what it holds exalted or abjure its
 sanction with s, open its scripture in $EDITOR with o,
 summon the Inquisition with i, hear the words of the last invocation with O,
 read the chronicle with h, filter the rites with /, re-read the Librarium
@@ -61,53 +103,95 @@ reversion. esc returns to the chronicle, and from there to the rites. The
 cogitator reads the chronicle that the rune --chronicle, the environment or
 the settings place, as every ritual does; it never amends or strikes an entry.
 
-The consecration wizard, awakened by n, e and c, leads a rite through three
-stations. At the Rite the faithful speak its name and purpose, choose its
+The consecration wizard, awakened by n, e and c, writes every rite in pattern
+Mark II. At the Rite the faithful speak its name and purpose, choose its
 nature — a rite of aspects, or an edict — and speak its aspects, the
 inscriptions it bears — each with its purpose, whether it is mandatory, and
-its decrees per aspect — and the auspex that reads it. An edict is asked no
-aspects and no auspex, and each of its inscriptions takes one plain decree. At
-the Liturgy, a adds a step once its kind is chosen among all six, or among
-incantation, litany and vox-cast alone for an edict; enter amends the chosen
-step, d casts it out, and J and K move it down and up. Each step is written on
-pages: first its essence, then one page per aspect for the values that may
-differ between aspects, where the choice "same for every aspect" writes a
-value once, under "*", for every aspect that speaks none of its own. An edict
-speaks the command or scroll of a step, its offerings and its reversion once,
-on a single page, and is offered no such choice. Patience, seal, tongue, zeal,
-reversion and offerings rest under the further rites, unveiled only when
-needed. Upon its essence, every step but a vox-cast may be declared an
-exalted verse, performed with the machine's own authority from the sanction
-of its master; an exalted incantation or litany names its relics there, one
-per line, and lays them down once it is no longer exalted, for relics are
-borne by exalted speech alone. At the Seal the rite stands as the scripture it will become, judged by
-the Inquisition: heresy forbids the sealing, and the comments of an amended
+its decrees, spoken per aspect and always written keyed by aspect — and its
+vox-casts, of progress and of success, each borne by the rite itself. An edict
+is asked no aspects, and each of its inscriptions takes one plain decree. A
+rite of aspects then passes four stations: the Rite, the Subjects, the
+Observances, and the Seal.
+
+At the Subjects, a adds a subject once its designation is chosen — sanctum,
+transcription, tether or machine-spirit — enter amends the chosen subject, d
+strikes it, and J and K move it down and up, for the subjects are read and set
+in the order written. Each subject is written on pages: first its essence —
+its name, its purpose and its own keys, such as the vessel, the ward or the
+bound name, and whether it is exalted — then its further rites where it bears
+them, and its omens upon one grid, a row for each aspect, where an aspect may
+bear the omen of every other aspect, written once under "*". The omens of a
+machine-spirit may be left unwritten, each aspect its own omen. A
+machine-spirit has two pages more. Its auspex: the scan, the words that print
+its omen, and a trial for each omen it declares, whose death-mark 0 tells that
+the subject shows it — a trial left empty is none, and the omen without a
+trial remains when every trial fails — or the trial of every other omen, under
+"*"; the patience of the auspex; and, while the subject is exalted, whether
+the auspex is exalted too, spoken by the exalted servitor at invocation alone.
+Leaving the scan and every trial empty leaves the subject unread, set at every
+invocation. Then its enact words, a row for each omen, where an omen may be
+set by the words of every other omen, under "*"; {{omen}} and $SERVITOR_OMEN
+name the omen being set. An exalted machine-spirit names its relics upon its
+essence, its tongue and the patience of its enact words under its further
+rites; it lays down its relics and the exaltation of its auspex once it is no
+longer exalted, for they are borne by an exalted subject alone. While the rite
+bears observances, the last page of every subject chooses, for each
+observance, whether the subject names it as an introit, spoken once before the
+first changing subject that names it, as a recessional, spoken once after the
+last, or not at all.
+
+At the Observances, a adds an observance once its designation is chosen —
+incantation or litany — enter amends it, d strikes it and every naming of it
+among the subjects, and J and K move it; a renamed observance is named anew
+wherever a subject named it, and tab passes on to the Seal, with or without
+observances. Each observance is written on pages: its essence — its name,
+whether it is exalted and, exalted, its relics — its further rites, the tongue
+and patience, which also unveil its reversion and offerings; its words, or its
+scroll and offerings, and its reversion, each written once for every aspect;
+and last its guards, a toggle for every aspect it is spoken into, and for
+every aspect it is spoken out of: none turned, it is spoken whatever the
+aspect.
+
+An edict passes from the Rite through its Liturgy to the Seal. At the Liturgy,
+a adds a verse once its kind is chosen, incantation or litany; enter amends
+the chosen verse, d casts it out, and J and K move it down and up. Each verse
+is written on pages: its essence, then its further rites — patience, tongue,
+reversion and offerings, unveiled only when needed — and its words, or its
+scroll and offerings, and its reversion, each spoken once. Upon its essence a
+verse may be declared exalted, performed with the machine's own authority from
+the sanction of its master, and an exalted verse names its relics there, one
+per line, laying them down once it is no longer exalted, for relics are borne
+by exalted speech alone.
+
+At the Seal the rite stands as the scripture it will become, judged by the
+Inquisition: heresy forbids the sealing, and the comments of an amended
 scripture are foretold to be lost, for the servitor writes it anew. Once
 sealed, the scripture is read back and must yield the very rite the wizard
 holds. An edict amended or replicated stays an edict, sealed with "edict":
 true and never with aspects; a rite declared an edict, or an edict declared a
 rite of aspects, is sealed only once the Inquisition finds no heresy in what
-it has become — a sanctum, transcription or tether it still holds must first
-be cast out. The Seal judges exaltation too — an exalted vessel that does
+it has become. The Seal judges exaltation too — an exalted vessel that does
 not begin at the root, {{former}} within exalted words, a relic outside the
 rite's hall or nowhere to be found beside it — and a rite amended or
-replicated keeps every exalted verse and its relics.
+replicated keeps everything it holds exalted, and its relics.
 
-The key s opens the sanction of the chosen rite, for the cogitator attends
-as a terminal does and its master beholds what they sanction. It shows the
-exalted verses as they would be sanctioned, every aspect beneath its own
-sigil and the whole beneath one, or, when a sanction stands, only what
-changed since — the lines lost marked "-", those gained "+" — beneath the
-sigil it bore; when nothing changed it says so, and asks no proof. enter
-then asks the intercessor for the one proof that lays the sanction, and a
-asks for the one that abjures the sanction kept under the rite's name, a
-forsaken one too; esc retreats with nothing asked. A rite that holds heresy
-or no exalted verse offers nothing to sanction, and the screen tells why.
+The key s opens the sanction of the chosen rite, for the cogitator attends as
+a terminal does and its master beholds what they sanction. It shows what the
+rite holds exalted as it would be sanctioned, every aspect beneath its own
+sigil and the whole beneath one, or, when a sanction stands, only what changed
+since — the lines lost marked "-", those gained "+" — beneath the sigil it
+bore; when nothing changed it says so, and asks no proof. enter then asks the
+intercessor for the one proof that lays the sanction, and a asks for the one
+that abjures the sanction kept under the rite's name, a forsaken one too; esc
+retreats with nothing asked. A rite that holds heresy or nothing exalted
+offers nothing to sanction, and the screen tells why.
 
-The cogitator performs exalted verses as every invocation does, and never
-with its invoker's authority: after the pre-flight, one exalted servitor is
-raised through the intercessor with one proof of the master, and it alone
-performs each exalted verse in its turn among the common ones. When the
+The cogitator performs what is exalted as every invocation does, and never
+with its invoker's authority: once the pre-flight is passed and something
+exalted is to change, or a subject only the root may read is to be read, one
+exalted servitor is raised through the intercessor with one proof of the
+master, and it alone performs each exalted subject, observance and verse in
+its turn among the common ones. When the
 intercessor is sudo, the cogitator lends it the terminal while it asks for
 the master's proof, and takes it back once the exalted servitor first
 answers; the words between them never leave their channel. run0 and pkexec

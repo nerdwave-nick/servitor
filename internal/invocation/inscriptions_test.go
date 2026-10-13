@@ -21,14 +21,15 @@ func inscribedRite(t *testing.T) *librarium.Rite {
 		t.Fatal(err)
 	}
 	scripture := `{
-  "pattern": "Mark I",
+  "pattern": "Mark II",
   "aspects": ["on", "off"],
   "inscriptions": {
     "reason": {"purpose": "why"},
     "mode":   {"mandatory": true, "decrees": {"on": "auto-hide"}},
     "colour": {"decrees": {"*": "grey"}}
   },
-  "liturgy": [{"vox-cast": "success"}]
+  "vox-cast": ["success"],
+  "subjects": [{"name": "x", "designation": "machine-spirit", "enact": {"*": "true"}}]
 }`
 	if err := os.WriteFile(path, []byte(scripture), 0o644); err != nil {
 		t.Fatal(err)

@@ -1,0 +1,51 @@
+// +++ Rite of the Faithful at Play +++
+//
+// Bends the cogitator to the games of the faithful: its twin threads are
+// silenced, the split-lock penance lifted and the cosmos scheduler raised in
+// place of the kernel's own. Each subject is read before it is set, so an
+// invocation sets only what differs, and proves each one after setting it.
+// Every subject is exalted: sanction the rite once, prove yourself once per
+// invocation that changes anything.
+//
+//   servitor sanction gaming
+//   servitor invoke gaming on
+//   servitor augury gaming | jq '.omens'
+{
+  "$schema": "https://raw.githubusercontent.com/nerdwave-nick/servitor/main/schema/rite.schema.json",
+  "pattern": "Mark II",
+  "purpose": "Enable or disable the gaming optimizations of the machine",
+  "aspects": ["on", "off"],
+  "vox-cast": ["progress", "success"],
+  "subjects": [
+    {
+      "name": "smt",
+      "designation": "machine-spirit",
+      "exalted": true,
+      "omens": {"on": "off", "*": "on"},
+      "auspex": {"scan": "cat /sys/devices/system/cpu/smt/control"},
+      "enact": {"*": "echo {{omen}} > /sys/devices/system/cpu/smt/control"},
+    },
+    {
+      "name": "split-lock",
+      "designation": "machine-spirit",
+      "exalted": true,
+      "omens": {"on": "0", "*": "1"},
+      "auspex": {"scan": "sysctl -n kernel.split_lock_mitigate"},
+      "enact": {"*": "sysctl -wq kernel.split_lock_mitigate={{omen}}"},
+    },
+    {
+      "name": "scheduler",
+      "designation": "machine-spirit",
+      "exalted": true,
+      "omens": {"on": "cosmos", "*": "eevdf"},
+      // no word tells which scheduler reigns, so it is tried: the omen
+      // "cosmos" holds while its unit is active, and "eevdf", which bears no
+      // trial, when every trial fails
+      "auspex": {"trials": {"cosmos": "systemctl is-active -q scx-cosmos"}, "patience": "1s"},
+      "enact": {
+        "cosmos": "systemd-run --unit=scx-cosmos --collect scx_cosmos -p 0 -c 0",
+        "*": "systemctl stop scx-cosmos",
+      },
+    },
+  ],
+}

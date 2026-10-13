@@ -25,6 +25,9 @@ type Librarium struct {
 	Heretical  map[string]bool     // rites whose scripture holds heresy
 	Scriptures map[string][]string // every scripture found, per rite name
 	Findings   Findings
+	// Conversions are the scriptures of pattern Mark I read converted, yet
+	// not written: the settings first, then the rites by name.
+	Conversions []*Conversion
 }
 
 // Overlay substitutes one scripture, for examining a rite before it is
@@ -49,20 +52,30 @@ func (l *Librarium) Names() []string {
 }
 
 // Load reads and examines every scripture in dir's rites/ and the settings
-// kept beside them.
+// kept beside them. Every pure scripture of pattern Mark I is converted in
+// memory (Parse): its rites and settings are those converted, and
+// Conversions holds what is to be written. Nothing is written.
 func Load(dir string) *Librarium { return load(dir, nil) }
 
-// Preview loads dir as if ov were written, without touching the Librarium.
+// Preview loads dir as Load does, as if ov were written, without touching
+// the Librarium.
 func Preview(dir string, ov Overlay) *Librarium { return load(dir, &ov) }
 
-// LoadFile reads and examines one scripture; the rite is named after it.
+// LoadFile reads and examines one scripture, converted in memory as Parse
+// does; the rite is named after it.
 func LoadFile(path string) (*Rite, Findings) {
+	r, fs, _ := loadFile(path)
+	return r, fs
+}
+
+// loadFile reads and examines one scripture, converting it in memory.
+func loadFile(path string) (*Rite, Findings, *Conversion) {
 	name := strings.TrimSuffix(filepath.Base(path), filepath.Ext(path))
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return nil, Findings{readHeresy(path, name, err)}
+		return nil, Findings{readHeresy(path, name, err)}, nil
 	}
-	return Parse(name, path, data)
+	return parseConverting(name, path, data)
 }
 
 func readHeresy(path, name string, err error) Finding {
@@ -78,7 +91,11 @@ func readHeresy(path, name string, err error) Finding {
 
 func load(dir string, ov *Overlay) *Librarium {
 	lib := &Librarium{Dir: dir, Rites: map[string]*Rite{}, Heretical: map[string]bool{}}
-	lib.Settings, lib.Findings = LoadSettings(dir)
+	var settings *Conversion
+	lib.Settings, lib.Findings, settings = loadSettings(dir)
+	if settings != nil {
+		lib.Conversions = append(lib.Conversions, settings)
+	}
 	lib.Scriptures = lib.scan(ov)
 	var read []*Rite
 	for _, name := range lib.Names() {
@@ -89,10 +106,14 @@ func load(dir string, ov *Overlay) *Librarium {
 		}
 		var r *Rite
 		var fs Findings
+		var c *Conversion
 		if ov != nil && name == ov.Name {
 			r, fs = Parse(name, paths[0], ov.Data)
 		} else {
-			r, fs = LoadFile(paths[0])
+			r, fs, c = loadFile(paths[0])
+		}
+		if c != nil {
+			lib.Conversions = append(lib.Conversions, c)
 		}
 		lib.Findings = append(lib.Findings, fs...)
 		if fs.Heretical() {
@@ -156,13 +177,30 @@ func twice(name string, paths []string) Findings {
 	return fs
 }
 
-// claim is one sanctum keeping a ward in a vessel.
+// claim is one sanctum keeping a ward in a vessel: a verse of the liturgy,
+// or a subject of pattern Mark II.
 type claim struct {
-	rite  *Rite
-	index int // in the rite's liturgy
+	rite    *Rite
+	sanctum *Sanctum
+	by      string // the verse or subject, as a denunciation names it
+	ptr     string // the JSON pointer of the verse or subject
 }
 
-func (c claim) verse() int { return c.rite.verse(c.index) }
+// claims returns every sanctum of the rite r, verse or subject.
+func claims(r *Rite) []claim {
+	var cs []claim
+	for i, s := range r.Liturgy {
+		if s, ok := s.(*Sanctum); ok {
+			cs = append(cs, claim{r, s, fmt.Sprintf("verse %d", r.verse(i)), r.stepPointer(i)})
+		}
+	}
+	for i, s := range r.Subjects {
+		if st, ok := s.Matter.(*Sanctum); ok {
+			cs = append(cs, claim{r, st, fmt.Sprintf("the subject %q", s.Name), r.subjectPointer(i)})
+		}
+	}
+	return cs
+}
 
 // wardClashes denounces every sanctum whose ward another sanctum keeps in
 // the same vessel, across all rites.
@@ -170,14 +208,12 @@ func wardClashes(rites []*Rite) Findings {
 	seen := map[[2]string][]claim{}
 	var keys [][2]string
 	for _, r := range rites {
-		for i, s := range r.Liturgy {
-			if s, ok := s.(*Sanctum); ok {
-				key := [2]string{r.ResolvePath(s.Vessel), s.WardFor(r.Name)}
-				if seen[key] == nil {
-					keys = append(keys, key)
-				}
-				seen[key] = append(seen[key], claim{r, i})
+		for _, c := range claims(r) {
+			key := [2]string{r.ResolvePath(c.sanctum.Vessel), c.sanctum.WardFor(r.Name)}
+			if seen[key] == nil {
+				keys = append(keys, key)
 			}
+			seen[key] = append(seen[key], c)
 		}
 	}
 	var fs Findings
@@ -191,18 +227,25 @@ func wardClashes(rites []*Rite) Findings {
 			if i == 0 {
 				other = claims[1]
 			}
-			ptr := c.rite.stepPointer(c.index)
-			at := ptr + "/ward"
-			if c.rite.Liturgy[c.index].(*Sanctum).Ward == "" {
-				at = ptr + "/sanctum"
+			at := c.ptr + "/ward"
+			if c.sanctum.Ward == "" {
+				at = c.ptr + "/" + vesselKey(c.rite)
 			}
 			fs = append(fs, Finding{Severity: Heresy, Scripture: c.rite.Path, Rite: c.rite.Name,
 				Position: c.rite.Locate(at), Message: fmt.Sprintf("the ward %q in the vessel %s is claimed "+
-					"twice: by verse %d of the rite %q (%s) and by verse %d of the rite %q (%s); two sanctums "+
+					"twice: by %s of the rite %q (%s) and by %s of the rite %q (%s); two sanctums "+
 					"sharing one ward in one vessel would overwrite each other's scripture — give each its own "+
-					"\"ward\"", key[1], key[0], c.verse(), c.rite.Name, c.rite.Path, other.verse(), other.rite.Name,
+					"\"ward\"", key[1], key[0], c.by, c.rite.Name, c.rite.Path, other.by, other.rite.Name,
 					other.rite.Path)})
 		}
 	}
 	return fs
+}
+
+// vesselKey is the key a sanctum of the rite r names its vessel by.
+func vesselKey(r *Rite) string {
+	if !r.markI {
+		return "vessel"
+	}
+	return "sanctum"
 }

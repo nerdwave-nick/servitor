@@ -1,21 +1,22 @@
-A value written once for every aspect, or once for each aspect by name
+An object keyed by aspect, with "*" serving every aspect it does not name
 
-Many words of a rite must change with the aspect it is invoked into: the
-scripture a sanctum keeps, the anchor of a tether, the command an
-incantation speaks. Such a value may be written in either of two forms, and
-the codex calls both an aspect map.
+Some words of a rite must change with the aspect it is invoked into: the
+omen each subject bears, the word an inscription decrees. Such a value is an
+aspect map: an object whose every key names a declared aspect and holds that
+aspect's value, the key "*" serving every aspect not named. An aspect named
+in the map is always answered by its own value; "*" speaks only for the
+rest. In pattern Mark II an aspect map is always an object, even when one
+value serves every aspect: {"*": "…"}. There is no form of "a plain value
+or a map".
 
-Written as a single value, it serves every aspect alike. Written as an
-object, each key names a declared aspect and holds that aspect's value, and
-the key "*" serves every aspect not named. An aspect named in the map is
-always answered by its own value; "*" speaks only for the rest.
-
-These values may be written as aspect maps: the scripture of a sanctum or a
-transcription, the anchor of a tether, the words of an incantation, the
-scroll of a litany and each of its offerings, every reversion, and the
-decrees of an inscription. All else holds one value for every aspect — the
-vessel and the bound name, ward, glyphs, consecrate, seal, zeal, tongue and
-patience — for omens and markers must know one fixed place.
+These values are aspect maps: the "omens" of every subject, and the
+"decrees" of an inscription of a rite of aspects. The "enact" words and
+"trials" of a machine-spirit are maps of the same shape, keyed by omen in
+place of aspect. All else holds one value for every aspect — the vessel,
+the bound name, ward, glyphs, consecrate, seal, zeal, tongue and patience,
+for omens and markers must know one fixed place, and the words, scroll,
+offerings and reversion of an observance, which differ by aspect only as
+several observances guarded by "to".
 
 A key that names no declared aspect is heresy, for a misspelt aspect would
 otherwise be served in silence by nothing. An aspect map that gives an
@@ -23,24 +24,22 @@ aspect no value and holds no "*" is heresy too: were the rite invoked into
 that aspect, the servitor would not know what to do. Only decrees are
 spared this, for an inscription may leave an aspect without decree.
 
-An aspect map may still speak placeholders in each of its values, so a
-single "*" with {{aspect}} often serves where many keys would be written.
+An aspect map may still speak placeholders in each of its values: within
+an omen, {{aspect}} names the aspect whose omen it is, so a single "*"
+often serves where many keys would be written.
 
 An edict bears no aspect to key a map by, so every value of an edict is
 written once and plainly: an aspect map in an edict is heresy wherever it
-stands, even one keyed by "*" alone.
+stands, even one keyed by "*" alone, and its decree is one plain word.
 
-Kindred passages: aspects, placeholders, decrees, scripture, anchor, edict
+Kindred passages: aspects, omens, placeholders, decrees, enact, edict,
+conversion
 
 Exempla:
-  // one value, every aspect
-  {"incantation": "niri msg action load-config-file"}
-
-  // one value per aspect
-  {"sanctum": "~/.config/niri/util.kdl",
-   "scripture": {"on": "cursor {\n    hide-after-inactive-ms 400\n}",
-                 "off": ""}}
-
   // a named aspect, and "*" for every other
-  {"incantation": {"porpl": "swww img ~/walls/porpl.png",
-                   "*": "swww img ~/walls/{{aspect}}.jpg"}}
+  "omens": {"on": "do-not-disturb", "*": "default"}
+
+  // one omen for every aspect, each its own through {{aspect}}
+  "omens": {"*": "~/.config/nfluff/themes/{{aspect}}"}
+
+  "decrees": {"on": "auto-hide", "off": "always-visible"}

@@ -24,45 +24,62 @@ domain and the code; never add plain words or plain glosses to anything a user r
 | CLI tool | servitor | `servitor` |
 | config directory | Librarium | `--librarium` / `-l`, `SERVITOR_LIBRARIUM` |
 | user config file | settings | `<Librarium>/servitor.json` |
-| format version | pattern | `"pattern": "Mark I"` |
+| format version | pattern | `"pattern": "Mark II"`; `"Mark I"` is read only to be converted |
+| format migration (Mark I → Mark II) | conversion | automatic, once, on first read by a ritual that may write; the original kept in `rites/.mark-i/` (settings: `.mark-i/servitor.json`) |
 | switch / profile (named config) | rite | file in `rites/` |
 | state | aspect | `aspects` |
 | one-shot action (no state) | edict | `"edict": true` (instead of `aspects`) |
 | description | purpose | `purpose` |
-| ordered step list | liturgy | `liturgy` |
-| managed block in a file | sanctum | step key `sanctum` |
+| ordered step list | liturgy | `liturgy` (an edict's alone) |
+| managed block in a file | sanctum | `"designation": "sanctum"` |
 | block identifier | ward | `ward` |
 | comment prefix / suffix | glyph / closing glyph | `glyph`, `closing-glyph` |
 | create file if missing | consecrate | `consecrate` |
 | target file | vessel | `vessel` |
-| write whole file | transcription | step key `transcription` |
-| file content | scripture | `scripture` |
+| write whole file | transcription | `"designation": "transcription"` |
+| file content | scripture | a sanctum's or transcription's omen (Mark I key `scripture`) |
 | content from a file | tome | `{"tome": "path"}` |
 | fill placeholders in referenced content | illuminate | `"illuminate": true` |
 | file mode | seal | `seal` |
 | force overwrite | zeal | `zeal` (alias `force`) |
-| symlink step / target | tether / anchor | `tether`, `anchor` |
-| shell command step | incantation | `incantation` |
-| elevated step (runs as root) | exalted | step key `"exalted": true` |
+| symlink / target | tether / anchor | `"designation": "tether"`, `tether` (bound name); the anchor is its omen |
+| shell command | incantation | `"designation": "incantation"`, `words` |
+| elevated item (runs as root) | exalted | `"exalted": true` on a subject, observance or edict entry |
+| root-only read of a state item | exalted auspex | `"auspex": {"scan": …, "exalted": true}`; spoken by the exalted servitor alone (`read`, protocol 3) |
 | root helper process (one per invocation) | exalted servitor | hidden mode of the root-owned `/usr/bin/servitor` |
 | approve elevated steps (root-owned copy) | sanction | `servitor sanction [<rite>]`; `/var/lib/servitor/sanctions/<uid>/<rite>.json` |
-| files an elevated script reads (pinned in the approval) | relics | step key `relics` (list of paths in the rite's directory) |
+| files an elevated script reads (pinned in the approval) | relics | `relics` (list of paths in the rite's directory) |
 | approval digest | sigil | JSON `sigil`; shown in prompts, the sanction list and the chronicle |
 | revoke an approval | abjure | `servitor abjure <rite>` / `--all` |
 | approval matches / changed / missing / leftover | sanctioned / lapsed / unsanctioned / forsaken | sanction standing in census and augury |
 | elevation tool (sudo / run0 / pkexec) | intercessor | settings `intercessor`: `auto` / `sudo` / `run0` / `pkexec` |
-| script file step | litany | `litany` |
-| script arguments | offerings | `offerings` (list; templated; aspect map; leading `~/` or lone `~` → home; no other shell parsing) |
+| script file | litany | `"designation": "litany"`, `scroll` |
+| script arguments | offerings | `offerings` (list; templated; leading `~/` or lone `~` → home; no other shell parsing) |
 | shell | tongue | `tongue` (default bash) |
 | timeout | patience | `patience` |
-| rollback (per step) | reversion | `reversion` |
-| notification step | vox-cast | `vox-cast` (`progress`, `success`) |
+| rollback | reversion | restores what was read; `reversion` words only on observances and edict entries |
+| notifications | vox-cast | rite key `vox-cast`, a list (`progress`, `success`) |
+| state item | subject | `subjects` (list; each `name`, `designation`, `omens`) |
+| type discriminator | designation | `designation` (`sanctum`, `transcription`, `tether`, `machine-spirit`; `incantation`, `litany`) |
+| item read and set by commands | machine-spirit | `"designation": "machine-spirit"` |
+| read command | scan | `auspex.scan` |
+| per-state check, exit 0 = yes | trials | `auspex.trials` (keyed by omen) |
+| set command | enact | `enact` (keyed by omen) |
+| named hook | observance | `observances` (list; each `name`, `designation`) |
+| before / after hooks | introit / recessional | `introit`, `recessional` (observance names) |
+| hook guards: target / previous state | to / from | `to`, `from` |
+| hook command / script | words / scroll | `words`, `scroll` |
+| value being set or checked | omen | `{{omen}}`, `SERVITOR_OMEN` (enact words and trials only) |
 | desktop notifications (auto / always / never) | vox | settings `vox`: `auto` / `notify-send` / `off` |
 | metadata key/value | inscription | `inscriptions` (`purpose`, `mandatory`, `decrees`) |
 | per-state default values | decrees | `decrees` |
 | per-state value | aspect map | object keyed by aspect, `"*"` fallback |
-| state probe command | auspex | `auspex` (`{"rite", "patience"}` long form) |
-| observation (evidence of state) | omen | JSON `omens` |
+| state probe command | auspex | a machine-spirit's `auspex` (`scan`, `trials`, `patience`, `exalted`) |
+| observation (evidence of state) | omen | JSON `omens`; the mark an aspect leaves on a subject |
+| desired state per item | omens | `omens` (aspect map: the omen of each aspect) |
+| states fitting every item (intersection) | fitting | augury JSON `fitting` |
+| cached / last-read value | recorded omen, stale | data-slate `omens` (with `boot`); JSON `stale`, `read_at`; census table `~` |
+| items changed by an invocation | changed | chronicle `changed` |
 | state ledger file | data-slate | `$XDG_STATE_HOME/servitor/data-slates/<rite>.json` |
 | status | standing | JSON `standing` |
 | applied / never applied / inconsistent | performed / dormant / corrupted | standing values |
@@ -80,8 +97,8 @@ domain and the code; never add plain words or plain glosses to anything a user r
 | the documentation itself | codex | flavour: "as written in the codex" |
 | invocation log | chronicle | `$XDG_STATE_HOME/servitor/chronicle.jsonl`; settings `chronicle`, `--chronicle` (alias `--log`), `SERVITOR_CHRONICLE` |
 | lock (exclusive, per rite / vessel) | dominion | `$XDG_STATE_HOME/servitor/dominions/` |
-| step index | verse | JSON `verse` |
-| step kind + target in JSON | the step's own key | e.g. `"tether": "<path>"`; auspex omen `"auspex": true` |
+| step index (edicts) | verse | JSON `verse` |
+| item named in JSON | subject / observance / verse | `{"subject": "<name>", "designation": …}` / `{"observance": "<name>"}`; an edict's step by its `verse` |
 | outcome / result | verdict | JSON `verdict`: `triumph` (ok), `reverted` (failed, undone), `faltered` (failed, undo incomplete) |
 | timestamp | at | JSON `at` (RFC 3339) |
 | failing step | fell_at | chronicle `fell_at` |

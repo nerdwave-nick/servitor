@@ -16,10 +16,11 @@ import (
 // keysOfTheLibrarium are every key a rite or the settings may hold and every
 // step kind, as the librarium itself knows them.
 func keysOfTheLibrarium() []string {
-	keys := slices.Concat(librarium.RiteKeys, librarium.InscriptionKeys, librarium.AuspexKeys,
-		librarium.TomeKeys, librarium.SettingsKeys)
-	for _, k := range librarium.Kinds {
-		keys = append(keys, librarium.StepKeys(k)...)
+	keys := slices.Concat(librarium.RiteKeys, librarium.InscriptionKeys, librarium.TomeKeys,
+		librarium.SettingsKeys, librarium.SubjectKeys, librarium.SpiritAuspexKeys, librarium.ObservanceKeys,
+		librarium.SubjectDesignations, librarium.SpeechDesignations)
+	for _, d := range slices.Concat(librarium.SubjectDesignations, librarium.SpeechDesignations) {
+		keys = append(keys, librarium.DesignationKeys(d)...)
 	}
 	return keys
 }
@@ -197,7 +198,7 @@ var plainWords = regexp.MustCompile(`(?i)\b(` + strings.Join([]string{
 	`step index`, `comment (prefix|suffix)`, `file content`, `force`, `flags?`, `subcommands?`,
 	`arguments?`, `errors?`, `warnings?`, `verify`, `logs?`, `results?`, `help`, `locks?`,
 	`approv(e|es|ed|ing|als?)`, `digests?`, `revok(e|es|ed|ing)`, `elevat(e|es|ed|ing|ion)`, `superusers?`,
-	`privileged`, `privileges?`,
+	`privileged`, `privileges?`, `hooks?`, `probes?`, `discriminators?`, `desired states?`,
 }, "|") + `)\b`)
 
 // names are the machine's own words — paths (~/.config/niri/config.kdl) and
@@ -259,7 +260,7 @@ func TestScripturesOfTheFaithful_SpeakNoPlainGloss(t *testing.T) {
 func TestPlainWords_DenyGlossesButNotOrdinaryWords(t *testing.T) {
 	for _, plain := range []string{"the config", "a symlink", "dry run", "Shell", "status", "the --json rune", "force", "a dry-run", "a lock",
 		"an approval", "the digest", "elevate", "an elevated step", "elevation", "approve", "approved", "revoked",
-		"the superuser", "privileged"} {
+		"the superuser", "privileged", "a hook", "the hooks", "a probe", "the discriminator", "the desired state"} {
 		if plainWord(plain) == "" {
 			t.Errorf("%q passes the guard", plain)
 		}

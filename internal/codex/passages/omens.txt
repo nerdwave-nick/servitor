@@ -1,41 +1,81 @@
-What each step of a rite reveals of the aspect the machine stands in
+The mark an aspect leaves upon a subject, and how the omens agree
 
-The servitor does not trust its memory alone. To know which aspect a rite
-stands in, it reads the machine itself, and every step that can be observed
-yields an omen — the aspect that step bears witness to.
+An omen is the mark an aspect leaves upon a subject: the scripture a sanctum
+or transcribed vessel holds in that aspect, the anchor a tether leads to, or
+the words a machine-spirit shows. Under "omens" each subject of a rite of
+pattern Mark II declares the omen of each aspect, as an object keyed by
+aspect with "*" serving every aspect not named. An omen shared by several
+aspects fits them all. A machine-spirit without "omens" bears the name of
+each aspect as its omen. Within an omen, {{aspect}} names the aspect whose
+omen it is, so {"*": "~/.config/nfluff/themes/{{aspect}}"} gives every aspect
+an anchor of its own; inscriptions spliced into an omen take the
+data-slate's words when reading, and the invocation's when setting.
 
-  sanctum         the aspect recorded in its begin marker
-  tether          the aspect whose anchor the bound name leads to; a name
-                  unbound bears witness to an aspect whose anchor is null
-  transcription   the aspect whose scripture its vessel holds; a vessel
-                  absent bears witness to an aspect whose scripture is null
-  auspex          the aspect the rite's own scanning command proclaims
+The servitor does not trust its memory alone: to know which aspect a rite
+stands in, it reads every subject, and each yields as its omen the set of
+aspects it fits:
 
-Incantations, litanies and vox-casts leave nothing behind to be read, and so
-give no omen; neither does a vessel that cannot be read, nor a step whose
-observation fits several aspects at once. The auspex gives none when it
-exceeds its patience, when it ends bearing a death-mark, or when it speaks
-anything but a declared aspect. An edict yields no omen at all: it holds only
-incantations, litanies and vox-casts and bears no auspex, and its standing
-is judged from its data-slate alone.
+  sanctum         the aspect its begin marker records
+  transcription   every aspect whose rendered scripture its vessel holds;
+                  a vessel absent fits every aspect whose omen is null
+  tether          every aspect whose rendered anchor the bound name leads
+                  to; a name unbound fits every aspect whose omen is null
+  machine-spirit  every aspect whose omen its auspex reads (see scan and
+                  trials)
 
-To compare, the servitor renders each observed field for every aspect, with
-the inscriptions its data-slate recorded for that aspect, or else that
-aspect's decrees; so inscriptions may dwell in an anchor and still be read.
+A subject that fits no aspect, a mute auspex, a machine-spirit without an
+auspex, and one whose auspex is exalted — never spoken by the augury —
+yield no omen of their own.
 
-From the omens the standing is judged: all agreeing name the aspect, any
-disagreement corrupts the rite, and where no omen speaks the data-slate is
-heeded. The augury lists every omen in written order, the auspex last, each
-named by its verse and its own key. The litanies of completion never awaken
-the auspex, and neither does foreseeing.
+The omens agree by intersection: each narrows the aspects the machine may
+stand in, and the aspects every omen fits are the rite's "fitting". When
+they fit none, the rite is corrupted, though each omen be shared by two
+aspects; one names its aspect; several name the aspect of the data-slate
+when it is among them, else none, and the rite is desecrated when the
+data-slate recorded another, dormant when it recorded none. When no subject
+yields an omen, the data-slate is heeded. The passage on the standing tells
+all.
 
-Kindred passages: standing, auspex, augury, data-slate, verse
+Every invocation of a rite of aspects records on the data-slate the omen
+each machine-spirit was known to show at its end. Where the live omen of a
+subject is not heard — its auspex is exalted, spared by --spare-auspex or
+by completion, or still labouring in the first telling of a vigil or the
+cogitator — that recorded omen serves in its stead, marked "stale": true
+with "read_at", the hour it was read, and fits aspects as a live one does.
+It is ignored when it was recorded in another boot of the machine, or when
+it is no longer a declared omen of the subject. A stale omen never
+desecrates a rite on its own: it was recorded together with the data-slate's
+aspect, so only a live omen bears witness against that aspect. An
+invocation never trusts a recorded omen: it reads every subject live.
+
+The augury lists every omen in written order, named by its subject and
+designation, with "omen" — the words read, when a machine-spirit showed one
+declared omen — "aspects", every aspect it fits, and "aspect" when it fits
+but one. The litanies of completion never awaken an auspex; neither does a
+foresight speak an auspex marked exalted. An edict yields no omen at all:
+it reads and sets nothing, and its standing is judged from its data-slate
+alone.
+
+Kindred passages: standing, auspex, scan, trials, augury, data-slate,
+subjects, machine-spirit, spare-auspex, vigil
 
 Exempla:
-  servitor augury theme
+  "omens": {"on": "off", "*": "on"}
+
+  servitor augury gaming
+
+  "fitting": ["balanced"],
+  "omens": [
+    {"subject": "smt", "designation": "machine-spirit", "omen": "on",
+     "aspects": ["balanced", "powersave"]},
+    {"subject": "governor", "designation": "machine-spirit",
+     "omen": "balanced", "aspects": ["balanced"], "aspect": "balanced"},
+    {"subject": "visage", "designation": "tether",
+     "aspects": ["balanced"], "aspect": "balanced"}]
+
+  servitor augury firewall
 
   "omens": [
-    {"verse": 1, "sanctum": "~/.config/niri/util.kdl", "aspect": "porpl"},
-    {"verse": 2, "tether": "~/.local/share/nfluff/current-theme",
-     "aspect": "porpl"},
-    {"auspex": true, "aspect": "porpl"}]
+    {"subject": "nft", "designation": "machine-spirit", "omen": "gaming",
+     "aspects": ["on"], "aspect": "on", "stale": true,
+     "read_at": "2026-10-13T20:00:00Z"}]

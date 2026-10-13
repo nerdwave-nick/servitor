@@ -1,59 +1,107 @@
-A step performed with the machine's own authority, from a sanction
+A subject, observance or verse set with the machine's own authority, from a sanction
 
-Some steps reach beyond what their invoker may touch: the knobs of the
+Some subjects reach beyond what their invoker may touch: the knobs of the
 kernel beneath /sys, sysctl, the scriptures of /etc, the units of the
-machine itself. Write "exalted": true upon such a step, and it is performed
-not with its invoker's authority but with the machine's own, by an exalted
+machine itself. Write "exalted": true upon such a subject, and it is set not
+with its invoker's authority but with the machine's own, by an exalted
 servitor raised for that one invocation — and only as its master sanctioned
-it. Every other verse is performed as ever, with the invoker's authority.
+it. Everything else is performed as ever, with the invoker's authority.
 
-Any step but a vox-cast may be exalted, in rites and edicts alike (an edict
-exalts its incantations and litanies). "exalted" is true for every aspect or
-for none, never an aspect map; false is as if unwritten.
+"exalted": true may stand upon a subject of any designation, upon an
+observance, and upon a verse of an edict's liturgy. It is true or false,
+never an aspect map; false is as if unwritten. It exalts what sets the
+subject — the writing of a sanctum, transcription or tether, or the enact
+words of a machine-spirit — and the words of an observance or verse; never
+the auspex that reads a subject, which speaks with its invoker's authority
+unless it is itself marked "exalted".
 
-The words of an exalted verse are fixed when its master sanctions them:
-commands, reversions, vessels, anchors, offerings, and scripture inline or
-illuminated from a tome. {{aspect}}, {{rite.name}} and an inscription taken
-from its decrees may be spliced into them; {{former}} may not, nor a
-mandatory inscription that some aspect does not decree, for their words are
-given only at invocation. Exalted speech hears them from its environment
-instead: "$SERVITOR_FORMER_ASPECT" and "$SERVITOR_INSCRIPTION_<KEY>".
+The words of what is exalted are fixed when its master sanctions them:
+enact words, words, scrolls, reversions, vessels, bound names, omens,
+offerings, and scripture inline or illuminated from a tome. {{aspect}},
+{{rite.name}}, {{omen}} — every omen a machine-spirit declares is fixed at
+the sanction — and an inscription taken from its decrees may be spliced into
+them; {{former}} may not, nor a mandatory inscription that some aspect does
+not decree, for their words are given only at invocation. Exalted speech
+hears them from its environment instead: "$SERVITOR_FORMER_ASPECT",
+"$SERVITOR_INSCRIPTION_<KEY>" and, for enact words, "$SERVITOR_OMEN".
 
 An exalted vessel or bound name must begin at the root once rendered, and
-may not lie beneath /proc, /sys or /dev: the knobs of the kernel are written
-by exalted incantations, never as vessels. Scriptures that exalted speech
-reads beside its scroll are named among its relics.
+may not lie beneath /proc, /sys or /dev: the knobs of the kernel are set by
+the enact words of an exalted machine-spirit, never as vessels. Scriptures
+that exalted speech reads beside its scroll are named among its relics.
 
-No exalted verse is performed without the sanction of its master, laid with
-servitor sanction <rite> and withdrawn with servitor abjure <rite>, and none
-is ever performed by the servitor that invokes it. Invoked, the rite's
-pre-flight compares the sigil of its exalted verses for the aspect with the
-sanction: unsanctioned or lapsed, the invocation is refused before any proof
-is asked, its death-mark 2, and the words name servitor sanction <rite>.
-Sanctioned, the intercessor asks the master's proof once, after the
-pre-flight, and raises one exalted servitor, which performs each exalted
-verse in its turn among the common verses, from the sanctioned copy alone,
-and reverts them, should the invocation fall, among the common reversions,
-without a second proof. A proof dismissed touches nothing (death-mark 2,
-no chronicle). The chronicle names the intercessor and the sigil.
---foresee reveals what it would do, marks each exalted verse ✠ and tells the
-sanction standing, and never exalts. The cogitator performs them alike,
-lending sudo its terminal while it asks, and sanctions and abjures with s.
+No exalted subject, observance or verse is performed without the sanction of
+its master, laid with servitor sanction <rite> and withdrawn with servitor
+abjure <rite>, and none is ever performed by the servitor that invokes it.
+Invoked, the rite's pre-flight compares the sigil of the plan for the
+aspect with the sanction: unsanctioned or lapsed, the invocation is refused
+before any proof is asked — even when nothing exalted would change — its
+death-mark 2, and the words name servitor sanction <rite>.
+
+Sanctioned, the rite reads every subject first and plans what changes: the
+exalted servitor is raised only when an exalted subject or observance is to
+change, so an invocation that changes nothing exalted asks no proof of the
+master. Raised, the intercessor asks the master's proof once and raises one
+exalted servitor, which sets each exalted subject in its place among the
+common ones and speaks each exalted observance in its place, its "to" and
+"from" heeded, from the sanctioned copy alone. The invoker proves each
+machine-spirit by its own auspex; should the invocation fall, the exalted
+servitor restores each exalted subject — a machine-spirit to the omen it was
+read to show, by the restoring words its master sanctioned — among the
+common reversions, without a second proof. A proof dismissed touches nothing
+(death-mark 2, no chronicle). The chronicle names the intercessor and the
+sigil. An edict raises the exalted servitor at every proclaiming that holds
+an exalted verse.
+
+What only the root can read — nft list ruleset, /sys/kernel/debug, a
+scroll sealed 0600 — an exalted subject reads by an auspex itself marked
+"exalted": {"scan": "nft list table inet gaming", "exalted": true}. Its
+words, tongue, patience and relics are part of the sanction, so editing
+them lapses every aspect. A rite holding such an auspex always raises the
+exalted servitor, since what changes cannot be known without it; it reads
+every such subject at once, before anything is performed, and matches what
+each printed against the subject's declared omens itself, telling only the
+omens that fit, or none: never the words printed. So too an exalted
+sanctum, transcription or tether its invoker may not read: the exalted
+servitor tells only whether it already stands as the aspect demands, never
+its scripture. Then the plan is whole, and what stands as demanded is
+passed over. The exalted servitor proves what it set or restored of such a
+subject by the same auspex, and the omens it was told to show are kept on
+the data-slate, marked "exalted". The augury, the census, the vigil,
+completion and foresight never speak such an auspex; they tell the omen
+last recorded, stale, and foresight that it is read at invocation when none
+is.
+
+--foresee reveals what the invocation would do, marks each exalted subject,
+observance and verse ✠ and tells the sanction standing, and never exalts.
+The cogitator performs them alike, lending sudo its terminal while it asks,
+and sanctions and abjures with s.
 
 The inquisition notes the impurities of exaltation: sudo, run0, pkexec or
 doas within words that are not exalted (write "exalted": true instead),
 exalted speech reaching into the invoker's home ($HOME, ~) or for scripture
-beside it that is not among its relics, and a program the machine guards by
-an intercessor of its own (systemctl, hostnamectl, …) called by a verse that
-is not exalted beside exalted ones.
+beside it that is not among its relics, a program the machine guards by an
+intercessor of its own (systemctl, hostnamectl, …) called by words that are
+not exalted beside exalted ones, and an exalted machine-spirit without an
+auspex, set as root at every invocation, whose remedy is an auspex itself
+marked exalted.
 
 Kindred passages: sanction, abjure, sigil, relics, intercessor, exalted-servitor,
-incantation, litany, transcription, invoke, foresee, dominion, cogitator
+subjects, machine-spirit, observances, invoke, foresee, dominion, cogitator
 
 Exempla:
-  {"incantation": {"on": "sysctl -wq kernel.split_lock_mitigate=0",
-                   "*":  "sysctl -wq kernel.split_lock_mitigate=1"},
-   "exalted": true}
+  {"name": "penance", "designation": "machine-spirit", "exalted": true,
+   "omens": {"on": "0", "*": "1"},
+   "auspex": {"scan": "sysctl -n kernel.split_lock_mitigate"},
+   "enact": {"*": "sysctl -wq kernel.split_lock_mitigate={{omen}}"}}
 
-  {"transcription": "/etc/sysctl.d/90-{{rite.name}}.conf", "exalted": true,
-   "scripture": "kernel.split_lock_mitigate = 0"}
+  {"name": "remembrance", "designation": "transcription", "exalted": true,
+   "vessel": "/etc/sysctl.d/90-{{rite.name}}.conf",
+   "omens": {"on": "kernel.split_lock_mitigate = 0\n", "off": null}}
+
+  {"name": "nft", "designation": "machine-spirit", "exalted": true,
+   "omens": {"on": "gaming", "*": "plain"},
+   "auspex": {"scan": "nft list table inet gaming >/dev/null && echo gaming || echo plain",
+              "exalted": true},
+   "enact": {"gaming": "nft -f /etc/nftables.d/gaming.nft",
+             "*": "nft delete table inet gaming"}}

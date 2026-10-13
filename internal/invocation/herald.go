@@ -1,24 +1,25 @@
 package invocation
 
 import (
-	"context"
 	"maps"
+	"slices"
 
 	"github.com/nerdwave-nick/servitor/internal/librarium"
 	"github.com/nerdwave-nick/servitor/internal/placeholder"
 )
 
-// Herald hears the vox-casts of an invocation while it is performed: one
-// proclamation for every vox-cast step reached, and one, unbidden, when a
-// step falls and the reversions are done. Proclaim is called on the
+// Herald hears the vox-casts the rite bears as its own key while it is
+// performed: a progress for every real step performed (a subject set, or
+// a verse of an edict), a success once the whole is performed, and one
+// proclamation, unbidden, when a step falls and the reversions are done. Proclaim is called on the
 // performing goroutine, in written order; it must not fail the invocation,
 // so it returns nothing. A nil herald hears nothing.
 type Herald interface {
 	Proclaim(Proclamation)
 }
 
-// Watcher is a herald that also watches every real step — every step that
-// is no vox-cast — as it is begun, for a vessel of the servitor that shows
+// Watcher is a herald that also watches every real step — every subject
+// set and every verse of an edict, never an observance — as it is begun, for a vessel of the servitor that shows
 // the invocation while it is performed. A step never begun, once the
 // invocation is halted, is not seen.
 type Watcher interface {
@@ -30,8 +31,9 @@ type Watcher interface {
 
 // Witness is a herald that also sees every real step once it is performed,
 // before any vox-cast that follows it is proclaimed: a vessel of the
-// servitor that tells the faithful, verse by verse, what was done. A step
-// that falls is not seen; the fall is proclaimed.
+// servitor that tells the faithful, verse by verse, what was done. It sees
+// every observance of a rite of aspects spoken too, which counts as no step. A
+// step that falls is not seen; the fall is proclaimed.
 type Witness interface {
 	Herald
 	// Performed is told once the step of verse v is performed: it is the
@@ -92,52 +94,75 @@ type Proclamation struct {
 type crier struct {
 	herald Herald
 	edict  bool // an edict is proclaimed
+	// casts are the vox-casts the rite bears as a key of its own: progress
+	// once every real step is performed, success once the whole is.
+	casts  []string
 	values placeholder.Values
 	steps  int   // real steps in the liturgy
 	done   int   // real steps performed
 	last   Verse // the real step performed last
 }
 
-// newCrier counts the real steps among steps; it is nil without a herald.
-func newCrier(h Herald, edict bool, v placeholder.Values, steps []performer) *crier {
+// newCrier counts the real steps among steps of the rite r; it is nil
+// without a herald.
+func newCrier(h Herald, r *librarium.Rite, v placeholder.Values, steps []performer) *crier {
 	if h == nil {
 		return nil
 	}
-	c := &crier{herald: h, edict: edict, values: v}
+	c := &crier{herald: h, edict: r.Edict, casts: r.VoxCasts, values: v}
 	for _, s := range steps {
-		if _, vox := s.(voxCast); !vox {
+		if counted(s) {
 			c.steps++
 		}
 	}
 	return c
 }
 
-// performed notes that step was performed and tells a witnessing herald;
-// a vox-cast is proclaimed.
+// counted reports whether step is counted among the real steps: a subject
+// or a verse, never an observance, which a rite of aspects speaks around
+// its subjects.
+func counted(step performer) bool { return step.verse().Observance == "" }
+
+// performed notes that step was performed, tells a witnessing herald and
+// proclaims its progress when the rite bears one. An observance is told to a witnessing herald
+// alone, counted as nothing.
 func (c *crier) performed(step performer) {
 	if c == nil {
 		return
 	}
-	vox, ok := step.(voxCast)
-	if !ok {
-		c.done++
-		c.last = step.verse()
+	if v := step.verse(); v.Observance != "" {
 		if w, witnessing := c.herald.(Witness); witnessing {
-			w.Performed(c.last, c.done, c.steps)
+			w.Performed(v, c.done, c.steps)
 		}
 		return
 	}
-	c.proclaim(vox.tidings, c.done, c.last, "", nil)
+	c.done++
+	c.last = step.verse()
+	if w, witnessing := c.herald.(Witness); witnessing {
+		w.Performed(c.last, c.done, c.steps)
+	}
+	if slices.Contains(c.casts, librarium.VoxProgress) {
+		c.proclaim(Progress, c.done, c.last, "", nil)
+	}
 }
 
-// begin tells a watching herald that step is begun; vox-casts are not
+// triumphed proclaims the success the rite bears as a key of its own, once
+// the whole liturgy is performed and nothing fell.
+func (c *crier) triumphed(out Outcome) {
+	if c == nil || out.Fell != nil || !slices.Contains(c.casts, librarium.VoxSuccess) {
+		return
+	}
+	c.proclaim(Success, c.done, c.last, "", nil)
+}
+
+// begin tells a watching herald that step is begun; observances are not
 // steps it watches.
 func (c *crier) begin(step performer) {
 	if c == nil {
 		return
 	}
 	w, watching := c.herald.(Watcher)
-	if _, vox := step.(voxCast); vox || !watching {
+	if !counted(step) || !watching {
 		return
 	}
 	w.Begin(step.verse(), c.done+1, c.steps)
@@ -160,19 +185,7 @@ func (c *crier) proclaim(t Tidings, step int, v Verse, heresy string, out *Outco
 	values.Inscriptions = maps.Clone(values.Inscriptions)
 	values.Tidings = placeholder.Tidings{
 		Heresy: heresy, Step: step, Steps: c.steps,
-		StepKind: v.Kind.Key(), StepTarget: v.Target,
+		StepKind: v.Kind.Key(), StepTarget: v.Target, Subject: v.Subject,
 	}
 	c.herald.Proclaim(Proclamation{Tidings: t, Edict: c.edict, Values: values, Verse: v, Outcome: out})
 }
-
-// voxCast is a vox-cast step; performing it changes nothing, for the crier
-// proclaims it.
-type voxCast struct {
-	v       Verse
-	tidings Tidings
-}
-
-func (s voxCast) verse() Verse                { return s.v }
-func (s voxCast) foresee() Foresight          { return Foresight{Verse: s.v} }
-func (voxCast) perform(context.Context) error { return nil }
-func (voxCast) revert() (bool, error)         { return false, nil }

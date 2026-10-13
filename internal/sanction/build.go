@@ -35,8 +35,10 @@ func (o Options) lookPath(name string) (string, error) {
 }
 
 // Build draws the exalted unit of the rite r, which must not be heretical,
-// reading its tomes, scrolls and relics afresh. The error is ErrUnexalted
-// for a rite without exalted verses, else names what cannot be drawn.
+// reading its tomes, scrolls and relics afresh: the exalted subjects and
+// observances of a state rite, or the exalted verses of an edict. The
+// error is ErrUnexalted for a rite without exalted verses, else names what
+// cannot be drawn.
 func Build(r *librarium.Rite, o Options) (*Unit, error) {
 	if !r.Exalted() {
 		return nil, ErrUnexalted
@@ -47,17 +49,18 @@ func Build(r *librarium.Rite, o Options) (*Unit, error) {
 		aspects = []string{""}
 	}
 	for _, aspect := range aspects {
-		d := &drawer{rite: r, opts: o, aspect: aspect, scope: r.ExaltedScope(),
-			values: placeholder.Values{Aspect: aspect, Rite: r.Name, Inscriptions: map[string]string{}}}
-		for _, in := range r.Inscriptions {
-			d.values.Inscriptions[in.Key], _ = in.Decrees.For(aspect)
-		}
+		d := &drawer{rite: r, opts: o, aspect: aspect, scope: r.ExaltedScope(), values: decreed(r, aspect)}
 		plan := Plan{Aspect: aspect, Inscriptions: map[string]string{}}
-		for i, step := range r.Liturgy {
+		if u.State() {
+			if err := d.state(&plan); err != nil {
+				return nil, err
+			}
+		}
+		for i, step := range r.Liturgy { // an edict's alone
 			if !librarium.IsExalted(step) {
 				continue
 			}
-			d.verse = i + 1
+			d.verse, d.what = i+1, fmt.Sprintf("verse %d", i+1)
 			v, err := d.draw(step)
 			if err != nil {
 				return nil, err
@@ -72,19 +75,34 @@ func Build(r *librarium.Rite, o Options) (*Unit, error) {
 	return u, nil
 }
 
+// decreed are the placeholder values of the exalted words of r for aspect:
+// every inscription takes its decree.
+func decreed(r *librarium.Rite, aspect string) placeholder.Values {
+	v := placeholder.Values{Aspect: aspect, Rite: r.Name, Inscriptions: map[string]string{}}
+	for _, in := range r.Inscriptions {
+		v.Inscriptions[in.Key], _ = in.Decrees.For(aspect)
+	}
+	return v
+}
+
 // environment names the variables exalted speech of r hears: its rite, its
-// aspect and former aspect (never for an edict) and every inscription.
+// aspect, former aspect and the omen a machine-spirit is set to (never for
+// an edict), and every inscription, under the environment of Pattern.
 func environment(r *librarium.Rite) Environment {
 	keys := []string{"SERVITOR_RITE"}
 	if !r.Edict {
-		keys = append(keys, "SERVITOR_ASPECT", "SERVITOR_FORMER_ASPECT")
+		keys = append(keys, "SERVITOR_ASPECT", "SERVITOR_FORMER_ASPECT", OmenVariable)
 	}
 	for _, in := range r.Inscriptions {
 		keys = append(keys, placeholder.InscriptionVariable(in.Key))
 	}
 	slices.Sort(keys)
-	return Environment{Pattern: EnvironmentPattern, Keys: slices.Compact(keys)}
+	return Environment{Pattern: Pattern, Keys: slices.Compact(keys)}
 }
+
+// OmenVariable is the variable the enact words of a machine-spirit hear the
+// omen they set as.
+const OmenVariable = "SERVITOR_OMEN"
 
 // drawer draws the exalted verses of a rite for one aspect.
 type drawer struct {
@@ -93,28 +111,34 @@ type drawer struct {
 	aspect  string
 	scope   placeholder.Scope
 	values  placeholder.Values
-	verse   int      // the verse being drawn
+	verse   int      // the verse being drawn; 0 for a subject or an observance
+	what    string   // what is being drawn, as laments name it
 	spliced []string // the inscriptions spliced so far, in the order first spoken
 }
 
-// lament is why the verse being drawn cannot be drawn into the unit.
+// lament is why the verse, subject or observance being drawn cannot be
+// drawn into the unit.
 func (d *drawer) lament(format string, args ...any) error {
 	of := fmt.Sprintf("for the aspect %q", d.aspect)
 	if d.rite.Edict {
 		of = "for the edict"
 	}
-	return fmt.Errorf("verse %d of %q cannot be drawn into its sanction %s: %s", d.verse, d.rite.Name, of,
+	return fmt.Errorf("%s of %q cannot be drawn into its sanction %s: %s", d.what, d.rite.Name, of,
 		fmt.Sprintf(format, args...))
 }
 
 // render illuminates text with the words fixed at sanction.
-func (d *drawer) render(text string) (string, error) {
-	for _, key := range d.scope.Spliced(text) {
+func (d *drawer) render(text string) (string, error) { return d.renderIn(d.scope, text, d.values) }
+
+// renderIn illuminates text in scope with values, the words fixed at
+// sanction.
+func (d *drawer) renderIn(scope placeholder.Scope, text string, values placeholder.Values) (string, error) {
+	for _, key := range scope.Spliced(text) {
 		if !slices.Contains(d.spliced, key) {
 			d.spliced = append(d.spliced, key)
 		}
 	}
-	out, err := d.scope.Render(text, d.values)
+	out, err := scope.Render(text, values)
 	if err != nil {
 		return "", d.lament("%v", err)
 	}

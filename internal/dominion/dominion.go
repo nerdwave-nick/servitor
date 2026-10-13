@@ -75,12 +75,7 @@ func (d *Dominion) Relinquish() {
 
 // seize takes dominion over one place, raising it when it does not stand.
 func seize(ctx context.Context, place string, await func()) (*os.File, error) {
-	if err := os.MkdirAll(filepath.Dir(place), 0o755); err != nil {
-		return nil, err
-	}
-	// os.OpenFile opens upon close-on-exec: no process the invocation
-	// summons inherits its dominion.
-	f, err := os.OpenFile(place, os.O_RDONLY|os.O_CREATE, 0o644)
+	f, err := open(place)
 	if err != nil {
 		return nil, err
 	}
@@ -110,6 +105,16 @@ func seize(ctx context.Context, place string, await func()) (*os.File, error) {
 	}
 }
 
+// open opens a place of dominion, raising it when it does not stand.
+func open(place string) (*os.File, error) {
+	if err := os.MkdirAll(filepath.Dir(place), 0o755); err != nil {
+		return nil, err
+	}
+	// os.OpenFile opens upon close-on-exec: no process the invocation
+	// summons inherits its dominion.
+	return os.OpenFile(place, os.O_RDONLY|os.O_CREATE, 0o644)
+}
+
 // flock is syscall.Flock, begun anew when a signal interrupts it.
 func flock(f *os.File, how int) error {
 	for {
@@ -118,4 +123,29 @@ func flock(f *os.File, how int) error {
 			return err
 		}
 	}
+}
+
+// Try takes dominion over every place, as Seize does, yet never waits:
+// when another holds any of them, nothing stays held and ok is false. On
+// any error nothing stays held.
+func Try(places []string) (d *Dominion, ok bool, err error) {
+	d = &Dominion{}
+	for _, place := range places {
+		f, err := open(place)
+		if err == nil {
+			err = flock(f, syscall.LOCK_EX|syscall.LOCK_NB)
+			if err != nil {
+				_ = f.Close()
+			}
+		}
+		if err != nil {
+			d.Relinquish()
+			if errors.Is(err, syscall.EWOULDBLOCK) {
+				return nil, false, nil
+			}
+			return nil, false, err
+		}
+		d.held = append(d.held, f)
+	}
+	return d, true, nil
 }

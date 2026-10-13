@@ -45,18 +45,27 @@ type Settings struct {
 // SettingsPath returns where the settings of the Librarium dir are kept.
 func SettingsPath(dir string) string { return filepath.Join(dir, SettingsName) }
 
-// LoadSettings reads and examines the settings of the Librarium dir. A
-// Librarium without settings yields unwritten settings and no finding.
+// LoadSettings reads and examines the settings of the Librarium dir, those
+// of pattern Mark I converted in memory. A Librarium without settings yields
+// unwritten settings and no finding.
 func LoadSettings(dir string) (*Settings, Findings) {
+	s, fs, _ := loadSettings(dir)
+	return s, fs
+}
+
+// loadSettings reads and examines the settings of the Librarium dir,
+// converting them in memory (convertSettings).
+func loadSettings(dir string) (*Settings, Findings, *Conversion) {
 	path := SettingsPath(dir)
 	data, err := os.ReadFile(path)
 	switch {
 	case errors.Is(err, fs.ErrNotExist):
-		return &Settings{Path: path}, nil
+		return &Settings{Path: path}, nil, nil
 	case err != nil:
-		return &Settings{Path: path}, Findings{readHeresy(path, "", err)}
+		return &Settings{Path: path}, Findings{readHeresy(path, "", err)}, nil
 	}
-	return ParseSettings(path, data)
+	s, found := ParseSettings(path, data)
+	return convertSettings(s, found, data)
 }
 
 // ParseSettings reads the settings' scripture data kept at path. The
@@ -86,7 +95,7 @@ func (d *decoder) decodeSettings(root *hujson.Value, s *Settings) {
 		d.wrongForm(root, "the settings", "one object of keys between { and }")
 		return
 	}
-	if !d.decodePattern(root, obj) {
+	if _, ok := d.decodePattern(root, obj); !ok {
 		return
 	}
 	fs, _ := d.object(root, "the settings", SettingsKeys)

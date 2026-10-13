@@ -5,29 +5,32 @@ faith in it. It is written as a span the machine understands: a number with
 its measure, such as "500ms", "5s", "2m" or "1h30m"; it must be greater than
 nothing.
 
-An incantation or litany labours under the patience of its step, else the
-patience of the settings, else 30s; its reversion is granted the same. When
-the patience runs out, the servitor slays the command together with every
-process it summoned, and the step falls — whereupon the invocation is
-reverted. An auspex has a patience of its own, written in its long form
-{"rite": …, "patience": …}, and 2s when none is written; an auspex that runs
-out of patience simply gives no omen.
+The enact words of a machine-spirit, an observance and a verse of an edict
+labour under their own patience, else the patience of the settings, else
+30s; a reversion is granted the same. When the patience runs out, the
+servitor slays the command together with every process it summoned, and it
+falls — whereupon the invocation is reverted. An auspex has a patience of
+its own, written within it, {"scan": …, "patience": …}, and 2s when none is
+written; it bounds the scan and every trial together, and an auspex that
+runs out of patience is mute and gives no omen.
 
-Patience written in the settings serves every incantation and litany of the
-Librarium that names none; it never sways the auspex. A patience the
-servitor cannot read is heresy. The patience of an exalted incantation or
-litany, wherever it was written, is part of its sanction: changing it, in the
-step or in the settings, lapses the sanction.
+Patience written in the settings serves every enact word, observance and
+verse of the Librarium that names none; it never sways an auspex. A patience the
+servitor cannot read is heresy. The patience of exalted words, wherever it
+was written, is part of their sanction: changing it, upon them or in the
+settings, lapses the sanction; so does the patience of an auspex itself
+marked exalted.
 
 Kindred passages: incantation, litany, auspex, reversion, tongue, sanction
 
 Exempla:
-  // on a step
-  {"litany": "scripts/rebuild-cache", "patience": "2m"}
+  // on an observance
+  {"name": "rebuild", "designation": "litany",
+   "scroll": "scripts/rebuild-cache", "patience": "2m"}
 
   // on an auspex
-  "auspex": {"rite": "test -e /run/user/1000/veiled && echo on || echo off",
+  "auspex": {"scan": "test -e /run/user/1000/veiled && echo on || echo off",
              "patience": "500ms"}
 
   // in servitor.json
-  {"pattern": "Mark I", "patience": "10s"}
+  {"pattern": "Mark II", "patience": "10s"}

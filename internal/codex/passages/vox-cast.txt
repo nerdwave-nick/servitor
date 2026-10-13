@@ -1,59 +1,55 @@
-A step that sends word of the invocation's progress or triumph
+The rite's list of tidings it sends of progress and of triumph
 
-A vox-cast is a step that does nothing to the machine and everything for its
-master: it sends tidings of the invocation as it is performed. Its own key
-holds which tidings to proclaim, and the codex knows but two:
+A rite's "vox-cast" names which tidings of an invocation it sends its master,
+as a list of "progress" and "success", each at most once and in any order.
+Without the key, only a fall is proclaimed. Any other value, or one given
+twice, is heresy.
 
-  "progress"  tells of the kind of step performed last and how far the
-              liturgy has come, counting only the steps that act upon the
-              machine (a progress cast before any such step tells that the
-              liturgy begins)
-  "success"   proclaims the triumph of the rite and the aspect it now bears,
-              or that an edict is obeyed
+  "progress"  a rite of aspects tells of each subject once it is set and
+              proven, counting "subject x / n" among the subjects that
+              change; an edict tells of each verse once it is performed
+  "success"   proclaims the triumph of the rite and the aspect it now
+              bears — even when no subject needed to change — or that an
+              edict is obeyed
 
-Tidings of failure need no step: should a step fall, the servitor proclaims
-the heresy, the fallen step and how the reversion went, unbidden. The words
-themselves are drawn at random from the servitor's own litanies of progress,
-triumph and lament, and speak of the aspect, written «aspect», and of the
-step's own key; a rite does not write them. An edict's vox-casts are drawn
-from litanies of their own, which name "the edict" and its name and never
-speak an aspect:
+Observances are not counted, and proclaim nothing of their own. Tidings of
+failure need no word: should an invocation fall, the servitor proclaims the
+heresy, what fell and how the reversion went, unbidden — for a subject, the
+omen commanded and the omen found. The words themselves are drawn at random
+from the servitor's own litanies of progress, triumph and lament, and speak
+of the aspect, written «aspect», and of the subject by its name; a rite does
+not write them. An edict's vox-casts are drawn from litanies of their own,
+which name "the edict" and its name and never speak an aspect:
 
   ✠ The edict screenshot is proclaimed, and the machine obeys.
 
 Where the tidings are heard depends on whence the servitor was roused. With
-a controlling terminal, each vox-cast is told in its place within the
-report of the invocation (see invoke): a progress as a line of its own,
-ending in the count of steps done, and the triumph as the report's closing
-line. A fall is told by the lament alone.
+a controlling terminal, each is told in its place within the report of the
+invocation (see invoke): a progress as a line of its own, ending in the count
+of subjects done, and the triumph as the report's closing line. A fall is
+told by the lament alone.
 
-    ✔ verse 2 · tether ~/.local/share/nfluff/current-theme
-    ⋯ Incense burns; the tether is complete.  (2/3)
-    ✔ verse 4 · litany scripts/recite-hooks
-  ✠ Binharic hymns resound: the aspect «porpl» is attained.
+    ✔ observance veil · incantation
+    ✔ subject visage · tether ~/.local/share/nfluff/current-theme
+    ⋯ Cogs turn: visage now bears the aspect «porpl».  (1/1)
+    ✔ observance awaken · litany
+  ✠ Every rune turned, every litany sung: the aspect «porpl» prevails.
 
-Without one — invoked from a hotkey or a launcher — every vox-cast of the
+Without one — invoked from a hotkey or a launcher — every tiding of the
 invocation becomes one missive upon the desktop through notify-send, headed by
 the rite and its aspect ("theme → porpl"), or by an edict's name alone
-("screenshot"), and replaced in place by the next: progress tells "step x / n"
-and lingers until the rite ends, triumph fades as the desktop wills, and a
-fall is proclaimed with critical urgency so that it cannot pass unseen. Should
-notify-send be absent or fall silent, the servitor stays silent too; a
-vox-cast never fails an invocation. The settings' "vox" may send the vox-casts
+("screenshot"), and replaced in place by the next: progress tells "subject
+x / n" and lingers until the rite ends, triumph fades as the desktop wills,
+and a fall is proclaimed with critical urgency so that it cannot pass unseen.
+Should notify-send be absent or fall silent, the servitor stays silent too; a
+vox-cast never fails an invocation. The settings' "vox" may send the tidings
 of a terminal's invocations to the desktop as well ("notify-send"), or silence
 the desktop altogether ("off"); when foreseeing, nothing is proclaimed at all.
 
-A "success" vox-cast that is not the last step is an impurity, for it would
-proclaim a triumph not yet won. Any other value is heresy.
-
-Kindred passages: vox, liturgy, verdicts, invoke
+Kindred passages: vox, invoke, verdicts, edict, subjects, conversion
 
 Exempla:
-  "liturgy": [
-    {"vox-cast": "progress"},
-    {"tether": "~/.local/share/nfluff/current-theme",
-     "anchor": "~/.config/nfluff/themes/{{aspect}}"},
-    {"vox-cast": "progress"},
-    {"litany": "scripts/reload-theme"},
-    {"vox-cast": "success"}
-  ]
+  "vox-cast": ["progress", "success"]
+
+  // only the triumph, for a hotkey that shows no terminal
+  "vox-cast": ["success"]

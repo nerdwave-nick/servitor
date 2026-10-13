@@ -31,3 +31,7 @@ as corrupted until an aspect is invoked again.
   changed nothing.
 - `--foresee` renders everything (diffs, tether changes, commands) and performs
   nothing, not even the auspex.
+- *(Amended by ADR 0008: in pattern Mark II a subject is restored to what was read
+  before it was set — a machine-spirit by enacting the omen it showed, then proven — and
+  hand-written reversions remain only for observances and edict entries. Foresight reads
+  every subject an invoker may read, for it cannot tell what would change otherwise.)*

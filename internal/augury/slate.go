@@ -8,6 +8,7 @@ import (
 	"maps"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/nerdwave-nick/servitor/internal/invocation"
@@ -32,6 +33,35 @@ type Slate struct {
 	Inscriptions map[string]string `json:"inscriptions"`
 	// LastRite is how the last invocation ended.
 	LastRite *LastRite `json:"last_rite"`
+	// Boot is the boot of the machine the last invocation of a state rite
+	// of pattern Mark II was performed in (BootPath); "" when it could not
+	// be read, and for every other rite.
+	Boot string `json:"boot,omitempty"`
+	// Omens are the omens the last invocation of a state rite of pattern
+	// Mark II knew at its end, by subject; nil for every other rite.
+	Omens map[string]Recorded `json:"omens,omitzero"`
+}
+
+// Recorded is an omen recorded on the data-slate: what one subject was
+// last read to show, and when.
+type Recorded struct {
+	Omen string    `json:"omen"` // a declared omen of the subject
+	At   time.Time `json:"at"`   // in UTC, to the second
+	// Exalted marks an omen the exalted servitor read, the invoker being
+	// unable to.
+	Exalted bool `json:"exalted,omitempty"`
+}
+
+// BootPath names the boot of the machine: it changes with every boot.
+const BootPath = "/proc/sys/kernel/random/boot_id"
+
+// Boot is the boot of the machine; "" when it cannot be read.
+func Boot() string {
+	b, err := os.ReadFile(BootPath)
+	if err != nil {
+		return ""
+	}
+	return strings.TrimSpace(string(b))
 }
 
 // MarshalJSON writes the slate as the codex shows it; an edict's bears no
@@ -122,7 +152,9 @@ func WriteSlate(env librarium.Environment, rite string, s Slate) (err error) {
 // former aspect and the inscriptions recorded before, which the reversion
 // meant to restore. An edict's slate keeps its inscriptions alike, but no
 // aspect. The verdict is kept with the moment at, in UTC to the
-// second.
+// second. A state rite of pattern Mark II records the omens its subjects
+// were known to show at the end (invocation.Outcome.Known), whatever the
+// verdict, each with the moment it was read; every other is struck.
 func SlateOf(out invocation.Outcome, opts invocation.Options, at time.Time) Slate {
 	s := Slate{Edict: opts.Edict, Aspect: opts.Former, Inscriptions: maps.Clone(opts.Recorded),
 		LastRite: &LastRite{Verdict: out.Verdict, At: at.UTC().Truncate(time.Second)}}
@@ -132,11 +164,27 @@ func SlateOf(out invocation.Outcome, opts invocation.Options, at time.Time) Slat
 	if s.Inscriptions == nil {
 		s.Inscriptions = map[string]string{}
 	}
+	if out.Known != nil {
+		s.Omens = map[string]Recorded{}
+		for name, read := range out.Known {
+			when := read.At
+			if when.IsZero() {
+				when = at // a reading untold of its moment is as old as the verdict
+			}
+			s.Omens[name] = Recorded{Omen: read.Omen, At: when.UTC().Truncate(time.Second), Exalted: read.Exalted}
+		}
+	}
 	return s
 }
 
 // Record writes the data-slate an invocation of the rite named rite,
-// performed with opts and ended in out, leaves at the moment at.
+// performed with opts and ended in out, leaves at the moment at; that of a
+// state rite of pattern Mark II also records the omens known at its end,
+// and the boot they were read in.
 func Record(env librarium.Environment, rite string, out invocation.Outcome, opts invocation.Options, at time.Time) error {
-	return WriteSlate(env, rite, SlateOf(out, opts, at))
+	s := SlateOf(out, opts, at)
+	if s.Omens != nil {
+		s.Boot = Boot()
+	}
+	return WriteSlate(env, rite, s)
 }

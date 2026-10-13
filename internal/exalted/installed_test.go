@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -58,20 +59,22 @@ func TestServe_RefusesUnlessItStandsEnshrined(t *testing.T) {
 // master install the servitor anew; only an answer of this protocol is
 // heard strictly.
 func TestAnswer_TellsTheProtocolOfTheInstalledServitor(t *testing.T) {
+	this, later := strconv.Itoa(Protocol), strconv.Itoa(Protocol+1)
 	for what, c := range map[string]struct {
 		line      string
 		installed int // the protocol of a Mismatch; -1 for none
 		verdict   Verdict
 		fails     bool // another lament than a Mismatch
 	}{
-		"accepted":                {line: `{"to":"handshake","verdict":"accepted","protocol":1,"verses":[1,3]}`, installed: -1, verdict: Accepted},
-		"refused":                 {line: `{"to":"handshake","verdict":"refused","protocol":1,"lament":"no"}`, installed: -1, verdict: Refused},
-		"a later forging":         {line: `{"to":"handshake","verdict":"refused","protocol":2,"lament":"x","omen":{"a":1}}`, installed: 2},
+		"accepted":                {line: `{"to":"handshake","verdict":"accepted","protocol":` + this + `,"verses":[1,3]}`, installed: -1, verdict: Accepted},
+		"refused":                 {line: `{"to":"handshake","verdict":"refused","protocol":` + this + `,"lament":"no"}`, installed: -1, verdict: Refused},
+		"a later forging":         {line: `{"to":"handshake","verdict":"refused","protocol":` + later + `,"lament":"x","omen":{"a":1}}`, installed: Protocol + 1},
+		"the forging of Mark I":   {line: `{"to":"handshake","verdict":"refused","protocol":1,"lament":"x"}`, installed: 1},
 		"an earlier forging":      {line: `{"to":"handshake","verdict":"accepted","verses":[1]}`, installed: 0},
 		"no protocol at all":      {line: `{"verdict":"refused","lament":"the protocol is unknown"}`, installed: 0},
 		"words of another tongue": {line: `{"protocol":"one"}`, installed: -1, fails: true},
 		"no true word":            {line: `ritual __exalt is unknown`, installed: -1, fails: true},
-		"an unknown member of this protocol": {line: `{"to":"handshake","verdict":"accepted","protocol":1,"omen":1}`,
+		"an unknown member of this protocol": {line: `{"to":"handshake","verdict":"accepted","protocol":` + this + `,"omen":1}`,
 			installed: -1, fails: true},
 	} {
 		t.Run(what, func(t *testing.T) {

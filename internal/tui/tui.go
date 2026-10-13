@@ -39,6 +39,7 @@ func Run(opt Options) error {
 	m.send = p.Send
 	_, err := p.Run()
 	close(m.gone)
+	m.forsake()      // no auspex outlives the cogitator
 	m.running.Wait() // a rite is never abandoned half performed
 	return err
 }
@@ -110,6 +111,11 @@ type model struct {
 	gone    chan struct{}  // closed once the cogitator has ended
 	// exec lends the terminal to a command, as tea.Exec does.
 	exec func(tea.ExecCommand, tea.ExecCallback) tea.Cmd
+	now  func() time.Time // tells the age of stale omens
+	// kept are the sanctions kept, by rite, as last read.
+	kept     map[string]*rituals.Sanctioned
+	vigil    vigil          // the vigil of the current reading
+	watching sync.WaitGroup // every vigil whose auspexes may still labour
 }
 
 func newModel(dir string, runes librarium.Runes) *model {
@@ -117,14 +123,14 @@ func newModel(dir string, runes librarium.Runes) *model {
 	f.Prompt = "/ "
 	m := &model{dir: dir, runes: runes, t: newTheme(), filter: f, send: func(tea.Msg) {},
 		thought: int(time.Now().UnixNano() % int64(len(lexicon.Thoughts))), width: 100, height: 30,
-		gone: make(chan struct{}), exec: tea.Exec}
+		gone: make(chan struct{}), exec: tea.Exec, now: time.Now,
+		vigil: vigil{halt: func() {}}}
 	m.reload("")
 	return m
 }
 
-func (m *model) Init() tea.Cmd { return nil }
-
-// reload re-reads the configuration and keeps the selection on name.
+// reload re-reads the configuration and keeps the selection on name. It
+// never waits for an auspex: their vigil tells them as they settle.
 func (m *model) reload(selected string) {
 	if selected == "" {
 		if r := m.current(); r != nil {
@@ -132,27 +138,13 @@ func (m *model) reload(selected string) {
 		}
 	}
 	m.s = rituals.Open(m.dir, m.runes)
-	lib := m.s.Librarium
+	m.converted(m.s.Convert())
 	kept := map[string]*rituals.Sanctioned{}
 	list, _ := m.s.ListSanctions() // a sanction that cannot be read lapses its rite in the augury
 	for i := range list {
 		kept[list[i].Rite] = &list[i]
 	}
-	m.all = m.all[:0]
-	for _, name := range lib.Names() {
-		reading, _ := m.s.Augur(name, false)
-		r := row{name: name, reading: reading, paths: lib.Scriptures[name], sanction: reading.Sanction,
-			kept: kept[name]}
-		if r.kept != nil && r.kept.Standing == sanction.Forsaken {
-			r.sanction = sanction.Forsaken
-		}
-		for _, f := range lib.Findings {
-			if f.Rite == name && f.Severity == librarium.Heresy {
-				r.heresies = append(r.heresies, f)
-			}
-		}
-		m.all = append(m.all, r)
-	}
+	m.read(m.s.Librarium, kept)
 	m.applyFilter(selected)
 }
 
@@ -181,12 +173,23 @@ func (m *model) current() *row {
 
 func (m *model) notify(kind toastKind, text string) tea.Cmd {
 	m.toast = toast{text: text, kind: kind, id: m.toast.id + 1}
-	id := m.toast.id
+	return fade(m.toast.id)
+}
+
+// fade lets the toast id fade after a while.
+func fade(id int) tea.Cmd {
 	return tea.Tick(6*time.Second, func(time.Time) tea.Msg { return toastExpiredMsg{id: id} })
 }
 
 func (m *model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	defer m.watch() // a reading awakens its auspexes once the cogitator listens
 	switch msg := msg.(type) {
+	case settledMsg:
+		m.settled(msg)
+		return m, nil
+	case attendedMsg:
+		m.attended(msg)
+		return m, nil
 	case tea.WindowSizeMsg:
 		m.width, m.height = msg.Width, msg.Height
 	case toastExpiredMsg:

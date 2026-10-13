@@ -13,7 +13,10 @@ type Entry struct {
 	Rite   string
 	Aspect string // "" for an edict
 	Verse  int    // 0 for an act of the session itself
-	Sigil  string // the first twelve letters
+	// Subject and Observance name the item of a state rite of pattern Mark
+	// II acted upon.
+	Subject, Observance string
+	Sigil               string // the first twelve letters
 	// Former is the sigil a sanction replaced (its first twelve letters),
 	// "none" or "unreadable"; only a sanctioning tells it.
 	Former  string
@@ -31,6 +34,12 @@ func (e Entry) String() string {
 	}
 	if e.Verse > 0 {
 		fmt.Fprintf(&b, " verse=%d", e.Verse)
+	}
+	if e.Subject != "" {
+		fmt.Fprintf(&b, " subject=%s", strconv.Quote(e.Subject))
+	}
+	if e.Observance != "" {
+		fmt.Fprintf(&b, " observance=%s", strconv.Quote(e.Observance))
 	}
 	fmt.Fprintf(&b, " sigil=%s", e.Sigil)
 	if e.Former != "" {

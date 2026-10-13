@@ -23,28 +23,28 @@ func newFixture(t *testing.T) fixture {
 	return fixture{lib: t.TempDir(), data: t.TempDir()}
 }
 
-// rite writes a rite of aspects on and off with the given liturgy ($DATA is
-// the vessels' place) into the Librarium and loads it.
-func (fx fixture) rite(t *testing.T, liturgy string) *librarium.Rite {
+// rite writes a rite of aspects on and off with the given subjects ($DATA
+// is the vessels' place) into the Librarium and loads it.
+func (fx fixture) rite(t *testing.T, subjects string) *librarium.Rite {
 	t.Helper()
-	return fx.riteWith(t, "", liturgy)
+	return fx.riteWith(t, "", subjects)
 }
 
 // riteWith is rite with further keys of the rite itself (e.g. `"tongue":
-// "zsh",`) written before its liturgy.
-func (fx fixture) riteWith(t *testing.T, keys, liturgy string) *librarium.Rite {
+// "zsh",` or its observances) written before its subjects.
+func (fx fixture) riteWith(t *testing.T, keys, subjects string) *librarium.Rite {
 	t.Helper()
 	scripture := fmt.Sprintf(`{
-  "pattern": "Mark I",%s
+  "pattern": "Mark II",%s
   "aspects": ["on", "off"],
   "inscriptions": {"reason": {"purpose": "why"}},
-  "liturgy": [%s]
-}`, keys, strings.ReplaceAll(liturgy, "$DATA", fx.data))
+  "subjects": [%s]
+}`, keys, subjects)
 	path := filepath.Join(fx.lib, "rites", "mouse.json")
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	if err := os.WriteFile(path, []byte(scripture), 0o644); err != nil {
+	if err := os.WriteFile(path, []byte(strings.ReplaceAll(scripture, "$DATA", fx.data)), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	r, findings := librarium.LoadFile(path)
@@ -52,6 +52,40 @@ func (fx fixture) riteWith(t *testing.T, keys, liturgy string) *librarium.Rite {
 		t.Fatalf("rite is heretical:\n%v", findings)
 	}
 	return r
+}
+
+// observed names the observances given v1, v2, … in order, and returns
+// them as the "observances" key of a rite, with their names.
+func observed(observances []string) (key string, names []string) {
+	named := make([]string, len(observances))
+	for i, o := range observances {
+		names = append(names, fmt.Sprintf("%q", fmt.Sprintf("v%d", i+1)))
+		named[i] = strings.Replace(o, "{", `{"name": `+names[i]+`, `, 1)
+	}
+	return `"observances": [` + strings.Join(named, ",\n  ") + `],`, names
+}
+
+// spoken writes a rite of aspects on and off whose one subject, the
+// machine-spirit "x", is never read and so enacted at every invocation,
+// after the observances given (named v1, v2, … in order) are spoken as its
+// introits; keys are further keys of the rite. Deeds and foresight name the
+// observances first, then x.
+func (fx fixture) spoken(t *testing.T, keys string, observances ...string) *librarium.Rite {
+	t.Helper()
+	key, names := observed(observances)
+	return fx.riteWith(t, keys+key, `{"name": "x", "designation": "machine-spirit", "tongue": "bash",
+  "enact": {"*": "true"}, "introit": [`+strings.Join(names, ", ")+`]}`)
+}
+
+// following writes a rite of aspects on and off whose one subject, given,
+// is followed by the observances given (named v1, v2, … in order) as its
+// recessionals, spoken once it changed. Deeds and foresight name the
+// subject first, then the observances.
+func (fx fixture) following(t *testing.T, subject string, observances ...string) *librarium.Rite {
+	t.Helper()
+	key, names := observed(observances)
+	at := strings.LastIndex(subject, "}")
+	return fx.riteWith(t, key, subject[:at]+`, "recessional": [`+strings.Join(names, ", ")+`]`+subject[at:])
 }
 
 // write writes content with mode to rel within dir, creating directories.

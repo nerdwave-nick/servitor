@@ -1,43 +1,48 @@
-The examination of every step before an invocation touches the machine
+The examination of a whole invocation before it touches the machine
 
-Before a single step is performed, the servitor examines the whole liturgy
-against a shadow of the machine, changing nothing. This is the pre-flight,
-and every invocation passes through it.
+Before a single subject is set or a verse spoken, the servitor examines the
+whole invocation against a shadow of the machine, changing nothing. This is
+the pre-flight, and every invocation passes through it.
 
 In the pre-flight the servitor resolves the inscriptions — runes first, then
 the decrees of the aspect, or an edict's one decree — and denounces a
-mandatory inscription left without value. It renders every placeholder of
-every step for the aspect invoked (an edict's for none), and reads every tome
-afresh. An aspect offered to an edict is refused. It checks that each vessel
-may be written: that the halls above it stand, that a sanctum's vessel exists
-or may be consecrated, that a transcription replaces only scripture of the
-rite's own aspects unless with zeal, and that a tether rebinds only a tether.
-It seeks every tongue along the machine's PATH, and the scroll of every
-litany.
+mandatory inscription left without value. It renders every placeholder for
+the aspect invoked (an edict's for none): every omen, every enact word,
+every observance — those its guards will pass over too — and every verse,
+and reads every tome afresh. An aspect offered to an edict is refused. It
+checks that each vessel may be written: that the halls above it stand, that
+a sanctum's vessel exists or may be consecrated, that a transcription
+replaces only scripture of the rite's own aspects unless with zeal, and that
+a tether rebinds only a tether. It seeks every tongue along the machine's
+PATH, and the scroll of every litany.
 
-For a rite with exalted verses the pre-flight does more, before any proof
-is asked: it draws the exalted verses for the aspect into their unit and
-compares its sigil with the sanction (unsanctioned or lapsed is refused,
-naming servitor sanction <rite>); it judges the servitor installed at
+For a rite with exalted subjects, observances or verses the pre-flight does
+more, before any proof is asked and before any subject is read: it draws
+them for the aspect into their unit and compares its sigil with the sanction
+(unsanctioned or lapsed is refused, naming servitor sanction <rite>, even
+when nothing exalted would change); it judges the servitor installed at
 /usr/bin/servitor and finds the intercessor; it refuses a rune of an
 inscription spliced into exalted words, a word exalted speech could not
 hear, and an exalted tongue other than bash, zsh, fish, sh or dash. An
-exalted vessel its invoker may not read is no heresy: it is planned with
-its change unknown, for the exalted servitor reads it.
+exalted vessel its invoker may not read is no heresy: the exalted servitor
+decides it at invocation.
 
-Each step is planned upon the shadow as the steps before it left it, so a
-litany may recite a scroll that a transcription earlier in the same liturgy
-brings into being, and a sanctum may follow a tether bound a verse before.
+Each subject is planned upon the shadow as the subjects before it left it,
+and the observances and verses upon the shadow the subjects leave, so a
+litany may recite a scroll that a transcription of the same rite brings into
+being; the scroll is sought on the disk again ere it is recited.
 
 Should any heresy be found, the invocation is refused whole: every heresy is
-spoken, nothing is performed, and neither the data-slate nor the chronicle is
-touched. The servitor then bears the death-mark 2, and in binharic speaks
-the heresies under "forbidden". Only when the pre-flight is pure does the liturgy begin; whatever
-falls thereafter falls in the performance, and is reverted.
+spoken, nothing is read or performed, and neither the data-slate nor the
+chronicle is touched. The servitor then bears the death-mark 2, and in
+binharic speaks the heresies under "forbidden". Only when the pre-flight is
+pure are the subjects read and set; whatever falls thereafter falls in the
+performance, and is reverted.
 
-To foresee is to halt after the pre-flight and reveal what it planned: each
-vessel's changes, each tether's rebinding, each command as it would be
-spoken — without awakening even the auspex.
+To foresee is to halt after the pre-flight and the reading, and reveal what
+was planned: each subject unchanged or changing, each vessel's changes, each
+tether's rebinding, each command as it would be spoken — without speaking an
+enact word, an observance, a verse, or an auspex marked exalted.
 
 Kindred passages: invoke, foresee, heresy, inscriptions, placeholders
 

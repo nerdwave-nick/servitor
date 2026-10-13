@@ -8,9 +8,12 @@ import (
 
 // Heralding is one word of a vigil: a rite as it stands, or a lament.
 type Heralding struct {
-	Entry  *Entry // the rite as it stands, whole; nil for a lament
-	Rite   string // the rite a lament concerns
-	Lament error  // a data-slate or sanction that could not be read, or a forsaken sanction
+	Entry *Entry // the rite as it stands, whole; nil for a lament
+	// Reading is the augury Entry was told from, its auspex marked as
+	// Entry's is; nil for a lament.
+	Reading *Reading
+	Rite    string // the rite a lament concerns
+	Lament  error  // a data-slate or sanction that could not be read, or a forsaken sanction
 }
 
 // Vigil keeps the census as a vigil, telling it as it is learnt. tell
@@ -27,14 +30,20 @@ type Heralding struct {
 // process group, and Vigil returns once none labours. tell is heard on the
 // caller's goroutine, one heralding at a time.
 func (s *Servitor) Vigil(ctx context.Context, forgoAuspex bool, tell func(Heralding)) {
+	s.Attend(ctx, s.Herald(ctx, forgoAuspex, tell), tell)
+}
+
+// Herald is the first telling of a vigil: the forsaken sanctions, then
+// every rite by name as it stands without its auspex, and it returns the
+// rites awaited, by name, for Attend. It awakens no auspex.
+func (s *Servitor) Herald(ctx context.Context, forgoAuspex bool, tell func(Heralding)) (awaited []string) {
 	names := s.Librarium.Names()
 	for _, f := range s.forsaken() {
 		tell(Heralding{Rite: f.(*ForsakenSanction).Rite, Lament: f})
 	}
-	var awaited []string
 	for _, a := range s.read(ctx, names, true) {
 		if ctx.Err() != nil {
-			return
+			return nil
 		}
 		if a.lament != nil {
 			tell(Heralding{Rite: names[a.at], Lament: a.lament})
@@ -43,14 +52,20 @@ func (s *Servitor) Vigil(ctx context.Context, forgoAuspex bool, tell func(Herald
 			continue
 		}
 		if a.entry.Auspex == augury.Forgone && !forgoAuspex {
-			a.entry.Auspex = augury.Awaited
+			a.entry.Auspex, a.reading.Auspex = augury.Awaited, augury.Awaited
 			awaited = append(awaited, names[a.at])
 		}
-		tell(Heralding{Entry: a.entry})
+		tell(Heralding{Entry: a.entry, Reading: a.reading})
 	}
+	return awaited
+}
+
+// Attend is the rest of a vigil: it awakens the auspexes of the rites
+// awaited together, and tells each rite once more, whole, as it settles.
+func (s *Servitor) Attend(ctx context.Context, awaited []string, tell func(Heralding)) {
 	s.gather(ctx, awaited, false, func(a augural) {
 		if a.entry != nil && ctx.Err() == nil {
-			tell(Heralding{Entry: a.entry})
+			tell(Heralding{Entry: a.entry, Reading: a.reading})
 		}
 	})
 }

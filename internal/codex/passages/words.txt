@@ -1,0 +1,20 @@
+The words an observance or an entry of an edict speaks
+
+Under "words" an observance or an edict's entry designated "incantation"
+holds the line it speaks in its tongue, in the rite's hall, anointed with
+SERVITOR_RITE, the inscriptions and, for a rite of aspects, SERVITOR_ASPECT
+and SERVITOR_FORMER_ASPECT. A death-mark other than 0 makes it fall.
+
+The words are written once for every aspect, never as an aspect map, and
+may not be empty. They may speak every placeholder of a rite's words save
+{{omen}}; an edict's words speak neither {{aspect}} nor {{former}}. Exalted
+words are fixed at their sanction.
+
+Kindred passages: incantation, observances, edict, tongue, patience,
+reversion
+
+Exempla:
+  {"name": "screen-transition", "designation": "incantation",
+   "words": "niri msg action do-screen-transition -d 200"}
+
+  {"designation": "incantation", "words": "wl-copy < ~/pictures/visage.png"}

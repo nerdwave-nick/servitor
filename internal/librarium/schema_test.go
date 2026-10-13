@@ -10,14 +10,14 @@ const riteSchemaURL = "https://raw.githubusercontent.com/nerdwave-nick/servitor/
 // TestParse_SchemaIsAcceptedAndKept: "$schema" guides the faithful's editors;
 // the servitor accepts it, heeds it not, and keeps it for writing.
 func TestParse_SchemaIsAcceptedAndKept(t *testing.T) {
-	r, fs := parse(t, `{"$schema": "`+riteSchemaURL+`", "pattern": "Mark I", "aspects": ["on"]}`)
+	r, fs := readRite(t, `{"$schema": "`+riteSchemaURL+`", "pattern": "Mark I", "aspects": ["on"]}`)
 	if len(fs) != 0 {
 		t.Fatalf("findings:\n%v", fs)
 	}
 	if r.Schema != riteSchemaURL {
 		t.Fatalf("schema %q, want %q", r.Schema, riteSchemaURL)
 	}
-	bare, _ := parse(t, `{"pattern": "Mark I", "aspects": ["on"]}`)
+	bare, _ := readRite(t, `{"pattern": "Mark I", "aspects": ["on"]}`)
 	r.Schema = ""
 	if !r.Equal(bare) {
 		t.Fatalf("a rite bearing \"$schema\" must differ from its bare twin in nothing else")
@@ -26,7 +26,7 @@ func TestParse_SchemaIsAcceptedAndKept(t *testing.T) {
 
 func TestParse_SchemaMustBeAString(t *testing.T) {
 	scripture := `{"pattern": "Mark I", "$schema": 7, "aspects": ["on"]}`
-	_, fs := parse(t, scripture)
+	_, fs := readRite(t, scripture)
 	got := findingsWith(fs, `the "$schema" of a rite must be written as a string`)
 	if len(got) != 1 || got[0].Severity != Heresy || got[0].Position != posOf(t, scripture, `7,`, 0) {
 		t.Fatalf("findings:\n%v", fs)
@@ -34,12 +34,14 @@ func TestParse_SchemaMustBeAString(t *testing.T) {
 }
 
 func TestMarshal_KeepsTheSchemaFirst(t *testing.T) {
-	r := &Rite{Name: "x", Schema: riteSchemaURL, Aspects: []string{"on"}}
+	spirit := []Subject{{Name: "s", Matter: &MachineSpirit{Auspex: &SpiritAuspex{Scan: "cat s"},
+		Enact: PerAspect(Entry[string]{"*", "echo {{omen}} > s"})}}}
+	r := &Rite{Name: "x", Schema: riteSchemaURL, Aspects: []string{"on", "off"}, Subjects: spirit}
 	data := string(roundTrip(t, r))
-	if want := "{\n  \"$schema\": \"" + riteSchemaURL + "\",\n  \"pattern\": \"Mark I\",\n"; !strings.HasPrefix(data, want) {
+	if want := "{\n  \"$schema\": \"" + riteSchemaURL + "\",\n  \"pattern\": \"Mark II\",\n"; !strings.HasPrefix(data, want) {
 		t.Fatalf("scripture must begin with its \"$schema\":\n%s", data)
 	}
-	if data := string(roundTrip(t, &Rite{Name: "x", Aspects: []string{"on"}})); strings.Contains(data, "$schema") {
+	if data := string(roundTrip(t, &Rite{Name: "x", Aspects: []string{"on", "off"}, Subjects: spirit})); strings.Contains(data, "$schema") {
 		t.Fatalf("a rite without \"$schema\" must be written without it:\n%s", data)
 	}
 }

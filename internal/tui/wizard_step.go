@@ -2,7 +2,6 @@ package tui
 
 import (
 	"errors"
-	"fmt"
 	"regexp"
 	"strings"
 	"time"
@@ -18,14 +17,21 @@ var furtherHints = map[librarium.Kind]string{
 	librarium.KindTether:        "Unveil the zeal of the tether; rarely needed.",
 	librarium.KindIncantation:   "Unveil tongue, patience and reversion; rarely needed.",
 	librarium.KindLitany:        "Unveil offerings, tongue, patience and reversion.",
+	kindMachineSpirit:           "Unveil the tongue and patience of its enact words; rarely needed.",
 }
 
-// essencePage writes the essential fields of the step: those holding one
-// value for every aspect.
+// essencePage writes the essential fields of the step, subject or
+// observance: those holding one value for every aspect.
 func (w *wizard) essencePage(m *model) tea.Cmd {
 	sd := w.work
 	f := newForm(m.t)
 	k := sd.kind
+	switch {
+	case w.station == stationObservances:
+		w.observanceFields(f)
+	case w.d.bearsSubjects():
+		w.subjectFields(f)
+	}
 	switch k {
 	case librarium.KindSanctum:
 		glyph, closing := librarium.DefaultGlyphs(sd.fixed["sanctum"])
@@ -48,11 +54,8 @@ func (w *wizard) essencePage(m *model) tea.Cmd {
 		f.addText("tether", "Bound name", sd.fixed["tether"], "~/.local/share/nfluff/current-theme",
 			"The name the tether binds; each aspect binds it to its own anchor.",
 			required("a tether must name what it binds"))
-	case librarium.KindVoxCast:
-		f.addChoice("vox-cast", "Tidings", []string{librarium.VoxProgress, librarium.VoxSuccess}, sd.fixed["vox-cast"],
-			"progress tells of the step before it; success proclaims triumph and belongs last.")
 	}
-	addExaltation(f, sd)
+	addExaltation(f, sd, w.exaltedNoun())
 	if hasFurther(k) {
 		f.addToggle("further", "Further rites", sd.further, furtherHints[k])
 	}
@@ -65,6 +68,14 @@ func (w *wizard) keepEssence() {
 		switch fl.key {
 		case "further":
 			w.work.further = fl.on
+		case "name":
+			if w.station == stationObservances {
+				w.observance.name = strings.TrimSpace(fl.value())
+			} else {
+				w.subject.name = strings.TrimSpace(fl.value())
+			}
+		case "purpose":
+			w.subject.purpose = strings.TrimSpace(fl.value())
 		case "relics":
 			w.work.relics = keptRelics(fl.value(), w.work.relics)
 		default:
@@ -96,78 +107,24 @@ func (w *wizard) furtherPage(m *model) tea.Cmd {
 	return w.setForm(m, pageFurther, 0, f)
 }
 
-// varying names the fields of a kind that vary per aspect, and how they
-// are called on its pages.
+// varying names the words of an incantation or litany, spoken once, and
+// how they are called on its page.
 func (w *wizard) varying() [][2]string {
 	switch w.work.kind {
-	case librarium.KindSanctum, librarium.KindTranscription:
-		return [][2]string{{"scripture", "scripture"}}
-	case librarium.KindTether:
-		return [][2]string{{"anchor", "anchor"}}
 	case librarium.KindIncantation:
-		if w.work.further {
-			return [][2]string{{"command", "command"}, {"reversion", "reversion"}}
+		command := "command"
+		if w.station == stationObservances {
+			command = "words" // as the observance writes it
 		}
-		return [][2]string{{"command", "command"}}
+		if w.work.further {
+			return [][2]string{{"command", command}, {"reversion", "reversion"}}
+		}
+		return [][2]string{{"command", command}}
 	}
 	if w.work.further {
 		return [][2]string{{"command", "scroll"}, {"offerings", "offerings"}, {"reversion", "reversion"}}
 	}
 	return [][2]string{{"command", "scroll"}}
-}
-
-// aspectPage writes the fields of the step that vary per aspect, for the
-// aspect i; each bears the choice to be the same for every aspect. An
-// edict, which bears no aspect, speaks them once on a single page.
-func (w *wizard) aspectPage(m *model, i int) tea.Cmd {
-	if w.d.edict {
-		return w.oncePage(m)
-	}
-	sd := &w.work
-	a := w.d.aspectList()[i]
-	f := newForm(m.t)
-	for _, v := range w.varying() {
-		key, name := v[0], v[1]
-		var same bool
-		switch key {
-		case "scripture":
-			var sc librarium.Scripture
-			sc, same = sd.scripture.value(a)
-			text := sc.Text
-			f.addArea("scripture", fmt.Sprintf("Scripture for aspect %q", a), text,
-				"The lines kept in the vessel in this aspect; empty is allowed.")
-			f.addText("tome", "Tome", sc.Tome, "", "Draw the scripture from this tome instead; a relative path "+
-				"lies beside the rite's scripture.", nil)
-			f.addToggle("illuminate", "Illuminate the tome", sc.Illuminate, "Fill the tome's placeholders.")
-			if sd.kind == librarium.KindTranscription {
-				f.addToggle("null", "Strike the vessel", sc.Null, "In this aspect the vessel shall not be.")
-			}
-		case "anchor":
-			var an librarium.Anchor
-			an, same = sd.anchor.value(a)
-			f.addText("anchor", fmt.Sprintf("Anchor for aspect %q", a), an.Path, "~/.config/nfluff/themes/{{aspect}}",
-				"Where the tether leads in this aspect.", nil)
-			f.addToggle("unbind", "Unbind the tether", an.Null, "In this aspect the tether shall lead nowhere.")
-		case "offerings":
-			var list []string
-			list, same = sd.offerings.value(a)
-			f.addArea("offerings", fmt.Sprintf("Offerings for aspect %q, one per line", a), strings.Join(list, "\n"),
-				"Given to the scroll exactly as written, each illuminated.")
-		default:
-			var text string
-			text, same = w.textOf(key).value(a)
-			label := strings.ToUpper(name[:1]) + name[1:]
-			var check func(string) error
-			if key == "command" {
-				check = required("the " + name + " must be spoken")
-			}
-			f.addText(key, fmt.Sprintf("%s for aspect %q", label, a), text, "", "Placeholders such as "+
-				"{{aspect}} are illuminated.", check)
-		}
-		f.addToggle("same:"+key, "Same "+name+" for every aspect", same,
-			`Written under "*": every aspect without a value of its own shares it.`)
-	}
-	return w.setForm(m, pageAspect, i, f)
 }
 
 // textOf is the varied text the key names.
@@ -176,51 +133,6 @@ func (w *wizard) textOf(key string) *varied[string] {
 		return &w.work.reversion
 	}
 	return &w.work.command
-}
-
-// keepAspect keeps the page of the aspect w.index and reports whether the
-// step is complete: the last aspect is written, or every value of the
-// page is the same for every aspect and no later aspect speaks its own.
-func (w *wizard) keepAspect() bool {
-	if w.d.edict {
-		w.keepOnce()
-		return true
-	}
-	f, sd := w.form, &w.work
-	aspects := w.d.aspectList()
-	a := aspects[w.index]
-	done := true
-	for _, v := range w.varying() {
-		key := v[0]
-		same := f.get("same:"+key) == "true"
-		switch key {
-		case "scripture":
-			sc := librarium.Inline(f.get("scripture"))
-			if tome := strings.TrimSpace(f.get("tome")); tome != "" {
-				sc = librarium.Tome(tome, f.get("illuminate") == "true")
-			}
-			if f.get("null") == "true" {
-				sc = librarium.Scripture{Null: true}
-			}
-			sd.scripture.set(a, sc, same)
-			done = done && same && !sd.scripture.ownAfter(aspects, w.index)
-		case "anchor":
-			an := librarium.Anchor{Path: strings.TrimSpace(f.get("anchor")), Null: f.get("unbind") == "true"}
-			if an.Null {
-				an.Path = ""
-			}
-			sd.anchor.set(a, an, same)
-			done = done && same && !sd.anchor.ownAfter(aspects, w.index)
-		case "offerings":
-			sd.offerings.set(a, lines(f.get("offerings")), same)
-			done = done && same && !sd.offerings.ownAfter(aspects, w.index)
-		default:
-			t := w.textOf(key)
-			t.set(a, strings.TrimSpace(f.get(key)), same)
-			done = done && same && !t.ownAfter(aspects, w.index)
-		}
-	}
-	return done || w.index == len(aspects)-1
 }
 
 // lines are the lines of text, trailing empty ones dropped.
@@ -234,16 +146,7 @@ func lines(text string) []string {
 
 // finishStep places the step written into the liturgy.
 func (w *wizard) finishStep() tea.Cmd {
-	if w.widx < 0 {
-		at := 0
-		if len(w.d.steps) > 0 {
-			at = w.cursor + 1
-		}
-		w.d.steps = append(w.d.steps[:at], append([]stepDraft{w.work}, w.d.steps[at:]...)...)
-		w.cursor = at
-	} else {
-		w.d.steps[w.widx] = w.work
-	}
+	w.d.steps = place(w.d.steps, w.widx, &w.cursor, w.work)
 	w.form = nil
 	return nil
 }

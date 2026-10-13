@@ -15,11 +15,11 @@ func mine(uid uint32) bool { return uid == uint32(os.Getuid()) }
 // sanction laid as the store keeps it; none laid is no sanction and no
 // lament.
 func TestReadHallowed_ReadsTheSanctionLaid(t *testing.T) {
-	u := build(t, splitLock, splitLockFiles())
+	u := buildGaming(t, gaming, gamingFiles())
 	root := t.TempDir()
-	lay(t, root, "split-lock", New(u, at))
+	lay(t, root, "gaming", New(u, at))
 	st := Store{Root: root, UID: 1000}
-	s, err := st.ReadHallowed("split-lock", mine)
+	s, err := st.ReadHallowed("gaming", mine)
 	if err != nil || s == nil {
 		t.Fatalf("ReadHallowed = %v, %v", s, err)
 	}
@@ -27,7 +27,7 @@ func TestReadHallowed_ReadsTheSanctionLaid(t *testing.T) {
 		t.Errorf("read %s\n%s", s.Sigil, s.Canonical())
 	}
 	for _, st := range []Store{{Root: root, UID: 1001}, {Root: filepath.Join(root, "nowhere"), UID: 1000}} {
-		if s, err := st.ReadHallowed("split-lock", mine); s != nil || err != nil {
+		if s, err := st.ReadHallowed("gaming", mine); s != nil || err != nil {
 			t.Errorf("%+v: ReadHallowed = %v, %v; want nothing", st, s, err)
 		}
 	}
@@ -40,7 +40,7 @@ func TestReadHallowed_ReadsTheSanctionLaid(t *testing.T) {
 // way, a hall or sanction others may write, or one the root does not own,
 // is lamented and is no sanction; so is a sanction of another rite.
 func TestReadHallowed_RefusesWhatTheRootDidNotLay(t *testing.T) {
-	u := build(t, splitLock, splitLockFiles())
+	u := buildGaming(t, gaming, gamingFiles())
 	for what, c := range map[string]struct {
 		mar       func(t *testing.T, root, laid string) string // returns the store's root
 		sovereign func(uint32) bool
@@ -87,7 +87,7 @@ func TestReadHallowed_RefusesWhatTheRootDidNotLay(t *testing.T) {
 	} {
 		t.Run(what, func(t *testing.T) {
 			root := t.TempDir()
-			laid := lay(t, root, "split-lock", New(u, at))
+			laid := lay(t, root, "gaming", New(u, at))
 			store := root
 			if c.mar != nil {
 				store = c.mar(t, root, laid)
@@ -97,7 +97,7 @@ func TestReadHallowed_RefusesWhatTheRootDidNotLay(t *testing.T) {
 				sovereign = mine
 			}
 			if rite == "" {
-				rite = "split-lock"
+				rite = "gaming"
 			}
 			s, err := Store{Root: store, UID: 1000}.ReadHallowed(rite, sovereign)
 			if s != nil || err == nil {

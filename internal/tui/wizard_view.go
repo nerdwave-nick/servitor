@@ -39,14 +39,21 @@ func indentLines(s, prefix string) string {
 // stations renders the breadcrumb of the wizard.
 func (w *wizard) stations(m *model) string {
 	t := m.t
-	names := []string{"Rite", "Liturgy", "Seal"}
-	parts := make([]string, len(names))
-	for i, n := range names {
+	stations := []station{stationRite, stationLiturgy, stationSeal}
+	names := map[station]string{stationRite: "Rite", stationLiturgy: "Liturgy", stationObservances: "Observances",
+		stationSeal: "Seal"}
+	if w.d.bearsSubjects() {
+		stations = []station{stationRite, stationLiturgy, stationObservances, stationSeal}
+		names[stationLiturgy] = "Subjects"
+	}
+	parts := make([]string, len(stations))
+	for i, s := range stations {
+		n := names[s]
 		label := fmt.Sprintf("%d %s", i+1, n)
 		switch {
-		case station(i) == w.station:
+		case s == w.station:
 			parts[i] = t.selected.Render(" " + label + " ")
-		case station(i) < w.station:
+		case s < w.station:
 			parts[i] = t.ok.Render("✔ " + n)
 		default:
 			parts[i] = t.dim.Render(label)
@@ -60,49 +67,40 @@ func (w *wizard) formHeading(m *model) string {
 	t := m.t
 	switch w.page {
 	case pageRite:
+		pattern := "\n" + t.dim.Render("Its scripture is written in pattern "+librarium.Pattern+".")
 		if w.d.edict {
-			return t.text.Render("Speak the name and purpose of the edict and the inscriptions it bears.")
+			return t.text.Render("Speak the name and purpose of the edict, the inscriptions it bears and its "+
+				"vox-casts.") + pattern
 		}
-		return t.text.Render("Speak the name, purpose and aspects of the rite, or declare it an edict, the " +
-			"inscriptions it bears and the auspex that reads it.")
+		return t.text.Render("Speak the name, purpose and aspects of the rite, or declare it an edict, the "+
+			"inscriptions it bears and its vox-casts.") + pattern
 	case pageInscription:
 		return t.bold.Render(fmt.Sprintf("Inscription %q", w.d.inscriptions[w.index].key)) +
 			t.dim.Render(fmt.Sprintf("  ·  %d/%d", w.index+1, len(w.d.inscriptions)))
+	}
+	if w.d.bearsSubjects() {
+		return w.courseHeading(m)
 	}
 	verse := "New verse"
 	if w.widx >= 0 {
 		verse = fmt.Sprintf("Verse %d", w.widx+1)
 	}
 	k := w.work.kind
-	aspects := w.d.aspectList()
-	spoken := len(aspects) // the pages of the words: one per aspect, or one for an edict
-	if w.d.edict {
-		spoken = 1
-	}
-	pages := 1
-	if k != librarium.KindVoxCast {
-		pages += spoken
-	}
+	pages := 2 // the essence, and the words spoken once
 	if w.work.further && hasFurther(k) {
 		pages++
 	}
 	page, at := "essence", 1
-	switch {
-	case w.page == pageFurther:
+	switch w.page {
+	case pageFurther:
 		page, at = "further rites", 2
-	case w.page == pageAspect && w.d.edict:
+	case pageAspect:
 		page, at = w.varying()[0][1], pages
-	case w.page == pageAspect:
-		page, at = "aspect "+t.accent.Render(aspects[w.index]), pages-len(aspects)+w.index+1
 	}
 	head := t.bold.Render(verse) + t.dim.Render("  ·  ") + t.accent.Render(kindGlyph(k)+" "+k.Key()) +
 		t.dim.Render("  ·  ") + t.dim.Render(page) + t.dim.Render(fmt.Sprintf("  ·  %d/%d", at, pages))
-	if w.page == pageEssence && (k == librarium.KindIncantation || k == librarium.KindLitany) {
-		where := "the pages of the aspects that follow"
-		if w.d.edict {
-			where = "the page that follows"
-		}
-		head += "\n" + t.dim.Render("Its "+w.varying()[0][1]+" is spoken on "+where+".")
+	if w.page == pageEssence {
+		head += "\n" + t.dim.Render("Its "+w.varying()[0][1]+" is spoken on the page that follows.")
 	}
 	return head
 }
@@ -116,6 +114,12 @@ func (w *wizard) hints(m *model) [][2]string {
 	case w.choosing:
 		return [][2]string{{"j/k", "choose"}, {fmt.Sprintf("1-%d", len(w.kinds())), "swift choice"}, {"enter", "take it"},
 			{"esc", "withdraw"}}
+	case w.station == stationObservances:
+		return [][2]string{{"a", "add an observance"}, {"enter", "amend"}, {"d", "strike"},
+			{"J/K", "reorder"}, {"tab", "onward to the seal"}, {"esc", "back"}}
+	case w.d.bearsSubjects():
+		return [][2]string{{"a", "add a subject"}, {"enter", "amend"}, {"d", "strike"},
+			{"J/K", "reorder"}, {"tab", "onward to the observances"}, {"esc", "back"}}
 	}
 	return [][2]string{{"a", "add a step"}, {"enter", "amend"}, {"d", "cast out"},
 		{"J/K", "reorder"}, {"tab", "onward to the seal"}, {"esc", "back"}}

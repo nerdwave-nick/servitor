@@ -4,50 +4,83 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/nerdwave-nick/servitor/internal/librarium"
 	"github.com/nerdwave-nick/servitor/internal/placeholder"
 )
 
-// preflight examines the steps of a rite one after another without
-// changing anything, planning each against a shadow of the machine.
+// preflight examines the subjects and observances of a rite of aspects, or
+// the verses of an edict, one after another without changing anything,
+// planning each against a shadow of the machine.
 type preflight struct {
-	rite     *librarium.Rite
-	opts     Options
-	values   placeholder.Values
-	world    *shadow
-	index    int  // index of the step being examined
-	exalted  bool // the step being examined is exalted
-	heresies Heresies
+	rite    *librarium.Rite
+	opts    Options
+	values  placeholder.Values
+	world   *shadow
+	index   int  // index of the step, the subject or the observance being examined
+	exalted bool // the step being examined is exalted
+	// subject names the subject of a rite of aspects being examined,
+	// observance its observance; both "" for a verse of an edict.
+	subject, observance string
+	heresies            Heresies
+	unread              []string // the subjects the exalted servitor reads in the invoker's stead
 }
 
-// prepare examines one step; it returns nil when the step is heretical.
+// prepare examines one verse of an edict, an incantation or a litany; it
+// returns nil when the verse is heretical.
 func (p *preflight) prepare(s librarium.Step) performer {
 	switch s := s.(type) {
-	case *librarium.Sanctum:
-		return p.sanctum(s)
-	case *librarium.Transcription:
-		return p.transcription(s)
-	case *librarium.Tether:
-		return p.tether(s)
 	case *librarium.Incantation:
 		return p.incantation(s)
 	case *librarium.Litany:
 		return p.litany(s)
-	case *librarium.VoxCast:
-		return voxCast{v: p.verse(s.Kind(), s.Tidings), tidings: Tidings(s.Tidings)}
 	}
 	return nil
 }
 
-// verse names the step being examined.
+// verse names the step, the subject or the observance being examined.
 func (p *preflight) verse(k librarium.Kind, target string) Verse {
+	switch {
+	case p.subject != "":
+		return Verse{Kind: k, Target: target, Subject: p.subject, Exalted: p.exalted}
+	case p.observance != "":
+		return Verse{Kind: k, Target: target, Observance: p.observance, Exalted: p.exalted}
+	}
 	return Verse{Number: p.index + 1, Kind: k, Target: target, Exalted: p.exalted}
 }
 
-// pointer is the JSON pointer of field within the step being examined.
+// subjectFields are the keys a built-in subject writes in place of the keys
+// its step names them by when it is examined.
+var subjectFields = map[string]string{"sanctum": "vessel", "transcription": "vessel", "scripture": "omens",
+	"anchor": "omens"}
+
+// pointer is the JSON pointer of field within the step, the subject or the
+// observance being examined.
 func (p *preflight) pointer(field string) string {
-	return fmt.Sprintf("/liturgy/%d/%s", p.index, field)
+	switch {
+	case p.observance != "":
+		return fmt.Sprintf("/observances/%d/%s", p.index, field)
+	case p.subject == "":
+		return fmt.Sprintf("/liturgy/%d/%s", p.index, field)
+	}
+	key, rest, _ := strings.Cut(field, "/")
+	if own, ok := subjectFields[key]; ok {
+		key = own
+	}
+	if rest != "" {
+		key += "/" + rest
+	}
+	return fmt.Sprintf("/subjects/%d/%s", p.index, key)
+}
+
+// numbered is the verse a heresy found in the pre-flight is told at: none
+// for a subject or an observance.
+func (p *preflight) numbered() int {
+	if p.subject != "" || p.observance != "" {
+		return 0
+	}
+	return p.index + 1
 }
 
 // mapField is the field of an aspect map that answers for the invoked
@@ -61,7 +94,7 @@ func mapField[T any](p *preflight, field string, m librarium.AspectMap[T]) strin
 
 // denounce records a heresy at field of the step being examined.
 func (p *preflight) denounce(field, format string, args ...any) {
-	p.heresies = append(p.heresies, Heresy{Verse: p.index + 1, Finding: librarium.Finding{
+	p.heresies = append(p.heresies, Heresy{Verse: p.numbered(), Finding: librarium.Finding{
 		Severity: librarium.Heresy, Scripture: p.rite.Path, Rite: p.rite.Name,
 		Position: p.rite.Locate(p.pointer(field)), Message: fmt.Sprintf(format, args...),
 	}})
@@ -127,7 +160,7 @@ func (p *preflight) scripture(field string, m librarium.AspectMap[librarium.Scri
 	var hs placeholder.Heresies
 	if errors.As(err, &hs) {
 		for _, h := range hs {
-			p.heresies = append(p.heresies, Heresy{Verse: p.index + 1, Finding: librarium.Finding{
+			p.heresies = append(p.heresies, Heresy{Verse: p.numbered(), Finding: librarium.Finding{
 				Severity: librarium.Heresy, Scripture: tomePath, Rite: p.rite.Name,
 				Position: librarium.Position{Line: h.Pos.Line, Column: h.Pos.Column},
 				Message:  "within the illuminated tome: " + h.Message(),

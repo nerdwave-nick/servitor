@@ -1,37 +1,41 @@
 // +++ Rite of the Split-Lock Penance +++
 //
 // Lifts the kernel's split-lock penance for the games of the faithful, and
-// lays it upon the machine again. Both verses reach beyond the invoker into the
-// kernel and /etc: they are exalted, performed by the machine's own authority
-// as their master sanctioned them, with one proof at every invocation.
+// lays it upon the machine again. Both subjects reach beyond the invoker into
+// the kernel and /etc: they are exalted, set by the machine's own authority
+// as their master sanctioned them, with one proof at every invocation that
+// changes them, and none at all when both already bear the aspect invoked.
 //
-//   servitor sanction split-lock                  # behold the verses, prove yourself once
-//   servitor invoke split-lock on --foresee       # ✠ marks the exalted verses
+//   servitor sanction split-lock                  # behold the subjects, prove yourself once
+//   servitor invoke split-lock on --foresee       # ✠ marks the exalted subjects
 //   servitor invoke split-lock on                 # the intercessor asks one proof
+//   servitor invoke split-lock on                 # nothing changes, and nothing is asked
 //   servitor augury split-lock sanction           # sanctioned
 {
   "$schema": "https://raw.githubusercontent.com/nerdwave-nick/servitor/main/schema/rite.schema.json",
-  "pattern": "Mark I",
+  "pattern": "Mark II",
   "purpose": "Lift the kernel's split-lock penance while the faithful play",
   "aspects": ["on", "off"],
-  // the knob is read by its invoker, and needs no exaltation
-  "auspex": "[ \"$(sysctl -n kernel.split_lock_mitigate)\" = 0 ] && echo on || echo off",
-  "liturgy": [
+  "vox-cast": ["success"],
+  "subjects": [
     {
-      "incantation": {"on": "sysctl -wq kernel.split_lock_mitigate=0",
-                      "*":  "sysctl -wq kernel.split_lock_mitigate=1"},
+      "name": "penance",
+      "designation": "machine-spirit",
       "exalted": true,
-      // exalted words may not speak {{former}}: its words come at invocation,
-      // after the sanction, so the former aspect is heard from the environment
-      "reversion": "if [ \"$SERVITOR_FORMER_ASPECT\" = on ]; then sysctl -wq kernel.split_lock_mitigate=0; else sysctl -wq kernel.split_lock_mitigate=1; fi",
+      "omens": {"on": "0", "*": "1"},
+      // the knob is read by its invoker, and needs no exaltation
+      "auspex": {"scan": "sysctl -n kernel.split_lock_mitigate"},
+      // {{omen}} is fixed at the sanction, and may be spoken in exalted words
+      "enact": {"*": "sysctl -wq kernel.split_lock_mitigate={{omen}}"},
     },
-    // the knob forgets at every boot; this vessel keeps the aspect, and is
-    // struck again when the penance returns
     {
-      "transcription": "/etc/sysctl.d/90-split-lock.conf",
+      // the knob forgets at every boot; this vessel keeps the aspect, and is
+      // struck again when the penance returns
+      "name": "remembrance",
+      "designation": "transcription",
       "exalted": true,
-      "scripture": {"on": "kernel.split_lock_mitigate = 0\n", "off": null},
+      "vessel": "/etc/sysctl.d/90-split-lock.conf",
+      "omens": {"on": "kernel.split_lock_mitigate = 0\n", "off": null},
     },
-    {"vox-cast": "success"},
   ],
 }
