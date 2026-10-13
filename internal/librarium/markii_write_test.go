@@ -42,7 +42,7 @@ func TestMarshal_ForgedMarkIIRitesRoundTrip(t *testing.T) {
 				{Name: "t", Introit: []string{}, Matter: &Tether{Name: "/t", Zeal: true,
 					Anchor: PerAspect(Entry[Anchor]{"on", Anchor{Path: "/a"}}, Entry[Anchor]{"*", Anchor{Null: true}})}},
 				{Name: "m", Matter: &MachineSpirit{Exalted: true, Tongue: "sh", Patience: 3 * time.Second, Relics: []string{"r.conf"},
-					Omens: PerAspect(Entry[string]{"on", "1"}, Entry[string]{"*", "0"}),
+					Omens:  PerAspect(Entry[string]{"on", "1"}, Entry[string]{"*", "0"}),
 					Auspex: &SpiritAuspex{Scan: "cat /m", Trials: PerAspect(Entry[string]{"1", "test -e /m1"}), Patience: time.Second, Exalted: true},
 					Enact:  PerAspect(Entry[string]{"1", "echo 1 > /m"}, Entry[string]{"*", "echo {{omen}} > /m"})}},
 				{Name: "n", Matter: &MachineSpirit{Auspex: &SpiritAuspex{Trials: PerAspect(Entry[string]{"on", "true"}, Entry[string]{"*", "false"})},
@@ -100,7 +100,7 @@ func TestMarshal_RefusesWhatMarkIICannotWrite(t *testing.T) {
 	cases := map[string]*Rite{
 		"words keyed by aspect": {Name: "x", MarkII: true, Edict: true, Liturgy: []Step{
 			&Incantation{Command: PerAspect(Entry[string]{"on", "a"}, Entry[string]{"*", "b"})}}},
-		"a sanctum in an edict": {Name: "x", MarkII: true, Edict: true, Liturgy: []Step{&Sanctum{Vessel: "/v"}}},
+		"a sanctum in an edict":  {Name: "x", MarkII: true, Edict: true, Liturgy: []Step{&Sanctum{Vessel: "/v"}}},
 		"a subject of no matter": {Name: "x", MarkII: true, Aspects: []string{"on"}, Subjects: []Subject{{Name: "s"}}},
 		"a vox-cast step":        {Name: "x", MarkII: true, Edict: true, Liturgy: []Step{&VoxCast{Tidings: VoxSuccess}}},
 	}
