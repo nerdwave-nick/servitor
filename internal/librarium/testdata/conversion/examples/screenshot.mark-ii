@@ -1,0 +1,25 @@
+{
+  "$schema": "https://raw.githubusercontent.com/nerdwave-nick/servitor/main/schema/rite.schema.json",
+  "pattern": "Mark II",
+  "purpose": "Capture the visage of the machine",
+  "edict": true,
+  "inscriptions": {
+    "region": {
+      "purpose": "\"chosen\" lets slurp mark the region, \"whole\" takes every output",
+      "decrees": "chosen"
+    }
+  },
+  "vox-cast": ["success"],
+  "liturgy": [
+    {
+      "designation": "incantation",
+      "words": "if [ \"$SERVITOR_INSCRIPTION_REGION\" = whole ]; then grim ~/pictures/visage.png; else grim -g \"$(slurp)\" ~/pictures/visage.png; fi",
+      "patience": "2m0s",
+      "reversion": "rm -f ~/pictures/visage.png"
+    },
+    {
+      "designation": "incantation",
+      "words": "wl-copy --type image/png < ~/pictures/visage.png"
+    }
+  ]
+}

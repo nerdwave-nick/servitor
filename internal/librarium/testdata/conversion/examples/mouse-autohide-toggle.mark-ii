@@ -1,0 +1,40 @@
+{
+  "$schema": "https://raw.githubusercontent.com/nerdwave-nick/servitor/main/schema/rite.schema.json",
+  "pattern": "Mark II",
+  "purpose": "Hide the cursor after 400ms of stillness",
+  "aspects": ["on", "off"],
+  "inscriptions": {
+    "reason": {"purpose": "why the cursor's bearing was changed"},
+    "mode": {
+      "mandatory": true,
+      "decrees": {"on": "auto-hide", "off": "always-visible"}
+    }
+  },
+  "vox-cast": ["success"],
+  "subjects": [
+    {
+      "name": "sanctum-1",
+      "designation": "sanctum",
+      "vessel": "~/.config/niri/util.kdl",
+      "ward": "mouse-autohide",
+      "consecrate": true,
+      "omens": {
+        "on": [
+          "cursor {",
+          "    hide-after-inactive-ms 400",
+          "}"
+        ],
+        "off": ""
+      },
+      "recessional": ["incantation-2"]
+    }
+  ],
+  "observances": [
+    {
+      "name": "incantation-2",
+      "designation": "incantation",
+      "words": "niri msg action load-config-file",
+      "patience": "5s"
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+  "pattern": "Mark II",
+  "purpose": "Hide the cursor of the machine automatically - or don't",
+  "aspects": ["on", "off"],
+  "inscriptions": {
+    "reason": {
+      "purpose": "why the rite was invoked",
+      "decrees": {"off": "some stupid reason probably"}
+    },
+    "time_ms": {
+      "purpose": "the actual autohide timeout",
+      "decrees": {"on": "400"}
+    }
+  },
+  "tongue": "bash",
+  "vox-cast": ["success"],
+  // pattern "Mark I" read the aspect of the whole rite by the auspex "grep -Fq \"hide-after-inactive-ms\" ~/.config/niri/util.kdl && echo \"on\" || echo \"off\"" (patience 300ms);
+  // it is struck, for each subject is read by itself, and no machine-spirit is left to bear it
+  "subjects": [
+    {
+      "name": "sanctum-1",
+      "designation": "sanctum",
+      "vessel": "~/.config/niri/util.kdl",
+      "ward": "mouse-autohide-toggle",
+      "glyph": "//",
+      "consecrate": true,
+      "omens": {
+        "on": [
+          "cursor {",
+          "  hide-after-inactive-ms {{inscription.time_ms}}",
+          "}"
+        ],
+        "*": [
+          "cursor {",
+          "}"
+        ]
+      }
+    }
+  ]
+}

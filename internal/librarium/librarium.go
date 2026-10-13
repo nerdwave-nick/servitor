@@ -25,6 +25,10 @@ type Librarium struct {
 	Heretical  map[string]bool     // rites whose scripture holds heresy
 	Scriptures map[string][]string // every scripture found, per rite name
 	Findings   Findings
+	// Conversions are the scriptures of pattern Mark I read converted, yet
+	// not written (LoadConverting): the settings first, then the rites by
+	// name.
+	Conversions []*Conversion
 }
 
 // Overlay substitutes one scripture, for examining a rite before it is
@@ -50,19 +54,35 @@ func (l *Librarium) Names() []string {
 
 // Load reads and examines every scripture in dir's rites/ and the settings
 // kept beside them.
-func Load(dir string) *Librarium { return load(dir, nil) }
+func Load(dir string) *Librarium { return load(dir, nil, false) }
+
+// LoadConverting reads and examines the Librarium dir as Load does, yet
+// converts every pure scripture of pattern Mark I in memory
+// (ParseConverting): its rites and settings are those converted, and
+// Conversions holds what is to be written. Nothing is written.
+func LoadConverting(dir string) *Librarium { return load(dir, nil, true) }
 
 // Preview loads dir as if ov were written, without touching the Librarium.
-func Preview(dir string, ov Overlay) *Librarium { return load(dir, &ov) }
+func Preview(dir string, ov Overlay) *Librarium { return load(dir, &ov, false) }
 
 // LoadFile reads and examines one scripture; the rite is named after it.
 func LoadFile(path string) (*Rite, Findings) {
+	r, fs, _ := loadFile(path, false)
+	return r, fs
+}
+
+// loadFile reads and examines one scripture, converting it when convert.
+func loadFile(path string, convert bool) (*Rite, Findings, *Conversion) {
 	name := strings.TrimSuffix(filepath.Base(path), filepath.Ext(path))
 	data, err := os.ReadFile(path)
 	if err != nil {
-		return nil, Findings{readHeresy(path, name, err)}
+		return nil, Findings{readHeresy(path, name, err)}, nil
 	}
-	return Parse(name, path, data)
+	if convert {
+		return ParseConverting(name, path, data)
+	}
+	r, fs := Parse(name, path, data)
+	return r, fs, nil
 }
 
 func readHeresy(path, name string, err error) Finding {
@@ -76,9 +96,13 @@ func readHeresy(path, name string, err error) Finding {
 	return Finding{Severity: Heresy, Scripture: path, Rite: name, Position: Position{1, 1}, Message: msg}
 }
 
-func load(dir string, ov *Overlay) *Librarium {
+func load(dir string, ov *Overlay, convert bool) *Librarium {
 	lib := &Librarium{Dir: dir, Rites: map[string]*Rite{}, Heretical: map[string]bool{}}
-	lib.Settings, lib.Findings = LoadSettings(dir)
+	var settings *Conversion
+	lib.Settings, lib.Findings, settings = loadSettings(dir, convert)
+	if settings != nil {
+		lib.Conversions = append(lib.Conversions, settings)
+	}
 	lib.Scriptures = lib.scan(ov)
 	var read []*Rite
 	for _, name := range lib.Names() {
@@ -89,10 +113,14 @@ func load(dir string, ov *Overlay) *Librarium {
 		}
 		var r *Rite
 		var fs Findings
+		var c *Conversion
 		if ov != nil && name == ov.Name {
 			r, fs = Parse(name, paths[0], ov.Data)
 		} else {
-			r, fs = LoadFile(paths[0])
+			r, fs, c = loadFile(paths[0], convert)
+		}
+		if c != nil {
+			lib.Conversions = append(lib.Conversions, c)
 		}
 		lib.Findings = append(lib.Findings, fs...)
 		if fs.Heretical() {

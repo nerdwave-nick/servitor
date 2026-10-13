@@ -1,0 +1,35 @@
+{
+  "$schema": "https://raw.githubusercontent.com/nerdwave-nick/servitor/main/schema/rite.schema.json",
+  "pattern": "Mark II",
+  "purpose": "The visage of the machine",
+  "aspects": ["default", "finii", "porpl"],
+  "inscriptions": {
+    "reason": {"purpose": "why the visage was changed"}
+  },
+  "vox-cast": ["progress", "success"],
+  "subjects": [
+    {
+      "name": "tether-2",
+      "designation": "tether",
+      "tether": "~/.local/share/nfluff/current-theme",
+      "omens": {"*": "~/.config/nfluff/themes/{{aspect}}"},
+      "introit": ["incantation-1"],
+      "recessional": ["litany-4"]
+    }
+  ],
+  "observances": [
+    {
+      "name": "incantation-1",
+      "designation": "incantation",
+      "words": "niri msg action do-screen-transition --delay-ms 200 || true"
+    },
+    {
+      "name": "litany-4",
+      "designation": "litany",
+      "scroll": "scripts/recite-hooks",
+      "offerings": ["~/.config/nfluff/themes/{{aspect}}"],
+      "patience": "1m0s",
+      "reversion": "test -z \"$SERVITOR_FORMER_ASPECT\" || scripts/recite-hooks ~/.config/nfluff/themes/\"$SERVITOR_FORMER_ASPECT\""
+    }
+  ]
+}
