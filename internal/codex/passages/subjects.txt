@@ -18,13 +18,14 @@ read or set can bring the machine into no aspect, and is heresy. An edict
 bears no subjects. A subject may be exalted, set with the machine's own
 authority from a sanction; its words are then fixed at that sanction.
 
-A rite holding an exalted subject or observance is not yet performed by
-this servitor: its rite of performance for those is not yet forged, so it
-refuses to invoke or foresee such a rite, and reads and touches nothing of
-it.
+An exalted subject is set by the exalted servitor alone, and only when it
+is to change (see exalted). A rite holding a subject whose auspex is itself
+marked "exalted" is not yet performed by this servitor: its rite of
+performance for that auspex is not yet forged, so it refuses to invoke or
+foresee such a rite, and reads and touches nothing of it.
 
 Kindred passages: designation, omens, machine-spirit, observances, introit,
-recessional, pattern
+recessional, pattern, exalted, sanction
 
 Exempla:
   "subjects": [
