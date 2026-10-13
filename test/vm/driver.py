@@ -45,9 +45,10 @@ KEPT = "/etc/sysctl.d/90-split-lock.conf"
 # What only the root may read: the omen of trial-gaming's subject
 # incantation-3, read by its exalted auspex alone.
 HIDDEN = "/etc/servitor-trial-hidden"
-# sudo asks "servitor: authenticate to perform <rite> (sigil <sigil>): ", or
-# "[sudo] password for tester: "; the agents of polkit ask "Password: ".
-PROMPT = re.compile(rb"(password[^\n]*:|authenticate to [^\n]*\):)\s*$", re.I)
+# sudo asks "servitor: authenticate to perform <rite> (sigil <sigil>): ",
+# "servitor: authenticate to abjure the sanction of <rite>: " or "[sudo]
+# password for tester: "; the agents of polkit ask "Password: ".
+PROMPT = re.compile(rb"(password[^\n]*:|authenticate to [^\n]*:)\s*$", re.I)
 ANSI = re.compile(r"\x1b\[[0-9;?<>=]*[ -/]*[@-~]|\x1b\][^\x07\x1b]*(?:\x07|\x1b\\)|\x1b[()][0-9A-Za-z]|\x1b[=>78]")
 
 LOG = open(f"{SHARE}/trial.log", "a", buffering=1)
