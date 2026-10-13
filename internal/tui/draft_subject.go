@@ -1,61 +1,78 @@
 package tui
 
 import (
+	"slices"
+
 	"github.com/nerdwave-nick/servitor/internal/librarium"
 )
+
+// kindMachineSpirit is the kind of the step draft that writes a
+// machine-spirit, which no liturgy bears: its tongue, patience, exaltation
+// and relics stand in the step's fixed values and relics, as for speech.
+const kindMachineSpirit librarium.Kind = 0
 
 // subjectDraft is the editable form of one subject of a rite of pattern
 // Mark II. A sanctum, transcription or tether is written as the step of
 // its kind: its own keys in the step's fixed values, its omens as the
-// step's scripture or anchor, varied per aspect.
+// step's scripture or anchor, varied per aspect. A machine-spirit keeps
+// its omens, auspex and enact words in spirit.
 type subjectDraft struct {
-	name, purpose string
-	// introit and recessional are kept as read, until the wizard knows
-	// the observances they name.
-	introit, recessional []string
+	name, purpose        string
+	introit, recessional []string // the observances it names; nil when unwritten
 	step                 stepDraft
+	spirit               spiritDraft
 }
 
 // subjectDesignations are the designations of the subjects the wizard
 // writes, as the kinds of step that write them, in the order of the codex.
-var subjectDesignations = []librarium.Kind{librarium.KindSanctum, librarium.KindTranscription, librarium.KindTether}
+var subjectDesignations = []librarium.Kind{librarium.KindSanctum, librarium.KindTranscription, librarium.KindTether,
+	kindMachineSpirit}
 
-// wizardWrites reports whether the consecration wizard writes every form
-// the rite holds: of pattern Mark II, it knows edicts and the rites whose
-// subjects are sanctums, transcriptions and tethers, without observances.
-func wizardWrites(r *librarium.Rite) bool {
-	if !r.MarkII || r.Edict {
-		return true
+// kindKey names the kind k as the scripture does: its step key, or the
+// designation machine-spirit.
+func kindKey(k librarium.Kind) string {
+	if k == kindMachineSpirit {
+		return librarium.DesignationMachineSpirit
 	}
-	if len(r.Observances) > 0 {
-		return false
-	}
-	for _, s := range r.Subjects {
-		switch s.Matter.(type) {
-		case *librarium.Sanctum, *librarium.Transcription, *librarium.Tether:
-		default:
-			return false
-		}
-	}
-	return true
+	return k.Key()
 }
 
 // subjectFrom is the subject s as the wizard edits it.
 func subjectFrom(s librarium.Subject) subjectDraft {
 	sd := subjectDraft{name: s.Name, purpose: s.Purpose, introit: s.Introit, recessional: s.Recessional}
-	if step, ok := s.Matter.(librarium.Step); ok {
-		sd.step = stepFrom(step)
+	switch m := s.Matter.(type) {
+	case *librarium.MachineSpirit:
+		sd.step, sd.spirit = spiritFrom(m)
+	case librarium.Step:
+		sd.step = stepFrom(m)
 	}
 	return sd
 }
 
 // newSubjectDraft is a new subject of designation k.
-func newSubjectDraft(k librarium.Kind) subjectDraft { return subjectDraft{step: newStepDraft(k)} }
+func newSubjectDraft(k librarium.Kind) subjectDraft {
+	return subjectDraft{step: newStepDraft(k), spirit: newSpiritDraft()}
+}
 
-// toSubject writes the subject for a rite of aspects, its omens as an
-// object, as pattern Mark II writes every map.
-func (sd subjectDraft) toSubject(aspects []string) librarium.Subject {
+// clone is the subject with maps and lists of its own, so that amending it
+// leaves the draft it came from as it was.
+func (sd subjectDraft) clone() subjectDraft {
+	sd.introit, sd.recessional = slices.Clone(sd.introit), slices.Clone(sd.recessional)
+	sd.spirit.omens.own = copyMap(sd.spirit.omens.own)
+	sd.spirit.trials.own = copyMap(sd.spirit.trials.own)
+	sd.spirit.enact.own = copyMap(sd.spirit.enact.own)
+	return sd
+}
+
+// toSubject writes the subject for the rite of aspects the draft d holds,
+// its maps as objects, as pattern Mark II writes every map.
+func (sd subjectDraft) toSubject(d riteDraft) librarium.Subject {
+	aspects := d.aspectList()
 	s := librarium.Subject{Name: sd.name, Purpose: sd.purpose, Introit: sd.introit, Recessional: sd.recessional}
+	if sd.step.kind == kindMachineSpirit {
+		s.Matter = sd.spirit.toSpirit(sd.step, aspects, d.declaredOmens(sd.spirit))
+		return s
+	}
 	switch st := sd.step.toStep(aspects).(type) {
 	case *librarium.Sanctum:
 		st.Scripture = omensObject(st.Scripture)
@@ -68,6 +85,22 @@ func (sd subjectDraft) toSubject(aspects []string) librarium.Subject {
 		s.Matter = st
 	}
 	return s
+}
+
+// subjectWords is what the list of subjects tells of sd: the vessel or
+// bound name of a built-in subject, or the scan of a machine-spirit, else
+// its first enact words.
+func subjectWords(sd subjectDraft, aspects []string) string {
+	if sd.step.kind != kindMachineSpirit {
+		return stepWords(sd.step.toStep(aspects), "")
+	}
+	if sd.spirit.scan != "" {
+		return sd.spirit.scan
+	}
+	if e := sd.spirit.enact.toMap(nil).Entries(); len(e) > 0 {
+		return e[0].Value
+	}
+	return ""
 }
 
 // object is the aspect map m written as an object, even when it holds one

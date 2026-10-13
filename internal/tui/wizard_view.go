@@ -39,17 +39,21 @@ func indentLines(s, prefix string) string {
 // stations renders the breadcrumb of the wizard.
 func (w *wizard) stations(m *model) string {
 	t := m.t
-	names := []string{"Rite", "Liturgy", "Seal"}
+	stations := []station{stationRite, stationLiturgy, stationSeal}
+	names := map[station]string{stationRite: "Rite", stationLiturgy: "Liturgy", stationObservances: "Observances",
+		stationSeal: "Seal"}
 	if w.d.bearsSubjects() {
+		stations = []station{stationRite, stationLiturgy, stationObservances, stationSeal}
 		names[stationLiturgy] = "Subjects"
 	}
-	parts := make([]string, len(names))
-	for i, n := range names {
+	parts := make([]string, len(stations))
+	for i, s := range stations {
+		n := names[s]
 		label := fmt.Sprintf("%d %s", i+1, n)
 		switch {
-		case station(i) == w.station:
+		case s == w.station:
 			parts[i] = t.selected.Render(" " + label + " ")
-		case station(i) < w.station:
+		case s < w.station:
 			parts[i] = t.ok.Render("✔ " + n)
 		default:
 			parts[i] = t.dim.Render(label)
@@ -81,7 +85,7 @@ func (w *wizard) formHeading(m *model) string {
 			t.dim.Render(fmt.Sprintf("  ·  %d/%d", w.index+1, len(w.d.inscriptions)))
 	}
 	if w.d.bearsSubjects() {
-		return w.subjectHeading(m)
+		return w.courseHeading(m)
 	}
 	verse := "New verse"
 	if w.widx >= 0 {
@@ -130,41 +134,13 @@ func (w *wizard) hints(m *model) [][2]string {
 	case w.choosing:
 		return [][2]string{{"j/k", "choose"}, {fmt.Sprintf("1-%d", len(w.kinds())), "swift choice"}, {"enter", "take it"},
 			{"esc", "withdraw"}}
+	case w.station == stationObservances:
+		return [][2]string{{"a", "add an observance"}, {"enter", "amend"}, {"d", "strike"},
+			{"J/K", "reorder"}, {"tab", "onward to the seal"}, {"esc", "back"}}
 	case w.d.bearsSubjects():
 		return [][2]string{{"a", "add a subject"}, {"enter", "amend"}, {"d", "strike"},
-			{"J/K", "reorder"}, {"tab", "onward to the seal"}, {"esc", "back"}}
+			{"J/K", "reorder"}, {"tab", "onward to the observances"}, {"esc", "back"}}
 	}
 	return [][2]string{{"a", "add a step"}, {"enter", "amend"}, {"d", "cast out"},
 		{"J/K", "reorder"}, {"tab", "onward to the seal"}, {"esc", "back"}}
-}
-
-// subjectHeading tells which subject the page writes, and which page.
-func (w *wizard) subjectHeading(m *model) string {
-	t := m.t
-	subject := "New subject"
-	if w.widx >= 0 {
-		subject = fmt.Sprintf("Subject %d", w.widx+1)
-	}
-	k := w.work.kind
-	page, at, pages := "essence", 1, 2
-	if w.work.further && hasFurther(k) {
-		pages++
-	}
-	switch w.page {
-	case pageFurther:
-		page, at = "further rites", 2
-	case pageOmens:
-		page, at = "omens", pages
-	}
-	head := t.bold.Render(subject) + t.dim.Render("  ·  ") + t.accent.Render(kindGlyph(k)+" "+k.Key()) +
-		t.dim.Render("  ·  ") + t.dim.Render(page) + t.dim.Render(fmt.Sprintf("  ·  %d/%d", at, pages))
-	switch w.page {
-	case pageEssence:
-		head += "\n" + t.dim.Render("Its omens, the mark each aspect leaves upon it, are written on the page "+
-			"of omens.")
-	case pageOmens:
-		head += "\n" + t.dim.Render(`Each aspect bears an omen of its own, or the omen of every other aspect, `+
-			`written under "*".`)
-	}
-	return head
 }

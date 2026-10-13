@@ -13,8 +13,8 @@ import (
 // riteDraft is the editable form of a rite, as the consecration wizard
 // holds it between its stations. Values are kept as typed; the forms have
 // examined them before they are stored. A rite of pattern Mark II (markII)
-// is written from its subjects, or, as an edict, from its steps; its
-// vox-casts are a list of the rite, and it bears no auspex.
+// is written from its subjects and observances, or, as an edict, from its
+// steps; its vox-casts are a list of the rite, and it bears no auspex.
 type riteDraft struct {
 	origName, origPath string // the rite amended; empty for a new one
 	name, purpose      string
@@ -29,6 +29,7 @@ type riteDraft struct {
 	tongue             string
 	steps              []stepDraft
 	subjects           []subjectDraft // of a rite of aspects of pattern Mark II
+	observances        []observanceDraft
 }
 
 // inscriptionDraft is one declared inscription; its decrees are keyed by
@@ -63,6 +64,9 @@ func riteDraftFrom(r *librarium.Rite) riteDraft {
 	}
 	for _, s := range r.Subjects {
 		d.subjects = append(d.subjects, subjectFrom(s))
+	}
+	for _, o := range r.Observances {
+		d.observances = append(d.observances, observanceFrom(o))
 	}
 	return d
 }
@@ -158,7 +162,10 @@ func (d riteDraft) toRite(path string) *librarium.Rite {
 	}
 	if d.bearsSubjects() {
 		for _, sd := range d.subjects {
-			r.Subjects = append(r.Subjects, sd.toSubject(aspects))
+			r.Subjects = append(r.Subjects, sd.toSubject(d))
+		}
+		for _, od := range d.observances {
+			r.Observances = append(r.Observances, od.toObservance())
 		}
 		return r
 	}

@@ -57,6 +57,8 @@ func (w *wizard) keepOnce() {
 // aspects of Mark II bears subjects, of the designations the wizard writes.
 func (w *wizard) kinds() []librarium.Kind {
 	switch {
+	case w.station == stationObservances:
+		return observanceDesignations
 	case w.d.bearsSubjects():
 		return subjectDesignations
 	case w.d.edict && w.d.markII:

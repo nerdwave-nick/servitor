@@ -51,7 +51,7 @@ func TestWizard_ConsecrateASanctumRiteOfMarkII(t *testing.T) {
 	h.keys("tab", "tab", "tab", "tab")
 	h.typeText("plain")
 	h.keys("ctrl+s")
-	h.mustShow("✔ Rite", "2 Subjects", "3 Seal", "The subjects of the rite cursor", "No subject is declared yet")
+	h.mustShow("✔ Rite", "2 Subjects", "3 Observances", "4 Seal", "The subjects of the rite cursor", "No subject is declared yet")
 	h.mustNotShow("Liturgy")
 
 	h.keys("a")
@@ -76,6 +76,8 @@ func TestWizard_ConsecrateASanctumRiteOfMarkII(t *testing.T) {
 	h.keys("ctrl+s")
 	h.mustShow("1 § niri")
 
+	h.keys("tab")
+	h.mustShow("No observance is declared yet")
 	h.keys("tab")
 	h.mustShow("The rite is pure", `"pattern": "Mark II"`, "rites/cursor.json")
 	h.keys("enter")
@@ -176,7 +178,7 @@ func TestWizard_ConsecrateATetherRiteOfMarkII(t *testing.T) {
 	h.keys("d")
 	h.mustNotShow("doomed")
 
-	h.keys("tab")
+	h.keys("tab", "tab")
 	h.mustShow("The rite is pure")
 	h.keys("enter")
 	h.mustShow("The rite theme is consecrated")
@@ -330,9 +332,9 @@ func TestWizard_AmendAndReplicateMarkII(t *testing.T) {
 		shown           []string // shown upon the pages amended
 	}{
 		{"cursor", sanctumsII, []string{"ctrl+s", "ctrl+s", "ctrl+s", "enter", "ctrl+s", "ctrl+s", "j", "enter",
-			"ctrl+s", "ctrl+s", "tab"}, []string{"1 § niri", "2 § css"}},
+			"ctrl+s", "ctrl+s", "tab", "tab"}, []string{"1 § niri", "2 § css"}},
 		{"theme", tetherII, []string{"ctrl+s", "enter", "ctrl+s", "ctrl+s", "ctrl+s", "j", "enter", "ctrl+s",
-			"ctrl+s", "ctrl+s", "tab"}, []string{"1 ↣ current", "2 ¶ palette"}},
+			"ctrl+s", "ctrl+s", "tab", "tab"}, []string{"1 ↣ current", "2 ¶ palette"}},
 		{"capture", edictII, []string{"ctrl+s", "ctrl+s", "enter", "ctrl+s", "ctrl+s", "ctrl+s", "j", "enter",
 			"ctrl+s", "ctrl+s", "ctrl+s", "tab"}, []string{"1 » echo", "2 ≡ "}},
 	}
@@ -353,9 +355,14 @@ func TestWizard_AmendAndReplicateMarkII(t *testing.T) {
 			h.keys("enter", "e")
 			h.mustShow("Amendment of the", c.name, "pattern Mark II")
 			h.mustNotShow("Pattern", "Auspex")
-			h.keys(c.amend[:len(c.amend)-1]...)
+			// the trailing tabs pass from the list to the Seal
+			pages := len(c.amend)
+			for c.amend[pages-1] == "tab" {
+				pages--
+			}
+			h.keys(c.amend[:pages]...)
 			h.mustShow(c.shown...)
-			h.keys(c.amend[len(c.amend)-1])
+			h.keys(c.amend[pages:]...)
 			h.mustShow("is pure", `"pattern": "Mark II"`)
 			h.keys("enter")
 			h.mustShow("is amended")
