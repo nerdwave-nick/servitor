@@ -40,8 +40,11 @@ speaks no enact word. It tells each subject on a line of its own: a
 machine-spirit with the omen read and the omen commanded, "(mute)" when its
 auspex named no aspect and "(no auspex)" when it has none, and whether it is
 unchanged or changing; beneath a changing one, the words or the comparison of
-lines it would perform:
+lines it would perform. Each observance that would be spoken stands in its
+place among them, with its words and its reversion:
 
+  observance veil · incantation
+    spoken in the tongue bash, with the patience of 30s: bash -c "niri msg …"
   subject smt · machine-spirit: "on" → "off", changing
     spoken in the tongue bash, with the patience of 30s: bash -c "echo off > …"
   subject theme · tether ~/.local/share/nfluff/current-theme: unchanged
