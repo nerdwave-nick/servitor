@@ -27,6 +27,13 @@ import (
 // a forsaken sanction, the servitor installed at /usr/bin/servitor missing
 // or open to others while a rite holds exalted verses — and heresy for a
 // vessel whose sanctum markers are broken. An edict's machine is examined once, as it bears no aspect.
+//
+// A state rite of pattern Mark II is examined subject by subject and
+// observance by observance as Mark I's liturgy is verse by verse: the tomes
+// of its sanctum and transcription subjects, the relics and tongues of its
+// exalted machine-spirits and observances, the scrolls of its observances,
+// the vessels and anchors of its subjects, and every tongue — that of a
+// machine-spirit's auspex noted apart, at the auspex.
 func (s *Servitor) Inquire(names []string, spareVessels bool) (librarium.Findings, error) {
 	lib := s.Librarium
 	for _, n := range names {
@@ -119,12 +126,19 @@ func (e *examiner) path(aspect, text string) (string, bool) {
 // field is the JSON pointer of field within the step at index i.
 func field(i int, f string) string { return fmt.Sprintf("/liturgy/%d/%s", i, f) }
 
-// mapField is the JSON pointer of the entry of m that answers for aspect.
+// mapField is the JSON pointer of the entry of m, the field f of the step
+// at index i, that answers for aspect.
 func mapField[T any](i int, f string, m librarium.AspectMap[T], aspect string) string {
+	return mapPointer(field(i, f), m, aspect)
+}
+
+// mapPointer is the JSON pointer of the entry of m, written at ptr, that
+// answers for aspect.
+func mapPointer[T any](ptr string, m librarium.AspectMap[T], aspect string) string {
 	if key, ok := m.Key(aspect); ok && !m.IsUniform() {
-		return field(i, f+"/"+key)
+		return ptr + "/" + key
 	}
-	return field(i, f)
+	return ptr
 }
 
 // tomes opens every tome of the rite's sanctums and transcriptions.
@@ -150,6 +164,7 @@ func (e *examiner) tomes() {
 			}
 		}
 	}
+	e.subjectTomes()
 }
 
 // tome opens the tome at p, written at ptr, and examines its placeholders

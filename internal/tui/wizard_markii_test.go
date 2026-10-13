@@ -340,6 +340,12 @@ func TestWizard_AmendAndReplicateMarkII(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			h := newHarness(t)
 			write(t, filepath.Join(h.dir, "rites", "tomes", "off.kdl"), "show-cursor\n")
+			// The tome and the anchors of the theme stand, so that the
+			// Inquisition at the Seal finds the machine pure.
+			write(t, filepath.Join(h.dir, "rites", "p.conf"), "porpl\n")
+			for _, anchor := range []string{"dark", "porpl"} {
+				write(t, filepath.Join(h.dir, "rites", "themes", anchor), anchor+"\n")
+			}
 			h.writeRite(c.name, c.scripture)
 			before := *h.loadRite(c.name)
 			h.keys("r", "/")
