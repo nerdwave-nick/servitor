@@ -24,7 +24,7 @@ domain and the code; never add plain words or plain glosses to anything a user r
 | CLI tool | servitor | `servitor` |
 | config directory | Librarium | `--librarium` / `-l`, `SERVITOR_LIBRARIUM` |
 | user config file | settings | `<Librarium>/servitor.json` |
-| format version | pattern | `"pattern": "Mark I"` |
+| format version | pattern | `"pattern": "Mark I"` or `"Mark II"` (read side by side until Mark I is retired) |
 | switch / profile (named config) | rite | file in `rites/` |
 | state | aspect | `aspects` |
 | one-shot action (no state) | edict | `"edict": true` (instead of `aspects`) |
@@ -56,7 +56,18 @@ domain and the code; never add plain words or plain glosses to anything a user r
 | shell | tongue | `tongue` (default bash) |
 | timeout | patience | `patience` |
 | rollback (per step) | reversion | `reversion` |
-| notification step | vox-cast | `vox-cast` (`progress`, `success`) |
+| notification step | vox-cast | `vox-cast` (`progress`, `success`); Mark II: a rite key, a list |
+| state item (Mark II) | subject | `subjects` (list; each `name`, `designation`, `omens`) |
+| type discriminator (Mark II) | designation | `designation` (`sanctum`, `transcription`, `tether`, `machine-spirit`; `incantation`, `litany`) |
+| item read and set by commands (Mark II) | machine-spirit | `"designation": "machine-spirit"` |
+| read command (Mark II) | scan | `auspex.scan` |
+| per-state check, exit 0 = yes (Mark II) | trials | `auspex.trials` (keyed by omen) |
+| set command (Mark II) | enact | `enact` (keyed by omen) |
+| named hook (Mark II) | observance | `observances` (list; each `name`, `designation`) |
+| before / after hooks (Mark II) | introit / recessional | `introit`, `recessional` (observance names) |
+| hook guards: target / previous state (Mark II) | to / from | `to`, `from` |
+| hook command / script (Mark II) | words / scroll | `words`, `scroll` |
+| value being set or checked (Mark II) | omen | `{{omen}}`, `SERVITOR_OMEN` (enact words and trials only) |
 | desktop notifications (auto / always / never) | vox | settings `vox`: `auto` / `notify-send` / `off` |
 | metadata key/value | inscription | `inscriptions` (`purpose`, `mandatory`, `decrees`) |
 | per-state default values | decrees | `decrees` |

@@ -1,0 +1,32 @@
+The key that tells which shape a subject, observance or entry takes
+
+In pattern "Mark II" every object that may take several shapes names its
+shape under "designation", and the keys it may hold follow from it alone.
+A subject is designated:
+
+  "sanctum"         a warded region of a vessel: "vessel", "ward", "glyph",
+                    "closing-glyph", "consecrate"; its omens are scripture
+  "transcription"   a vessel written whole: "vessel", "seal", "zeal"; its
+                    omens are scripture, or null where the vessel shall not be
+  "tether"          a bound name: "tether", "zeal"; its omens are anchors, or
+                    null where the name shall be unbound
+  "machine-spirit"  read by its "auspex", set by its "enact" words, spoken in
+                    its "tongue" with its "patience" and "relics"
+
+An observance, and an entry of an edict's liturgy, is designated
+"incantation", speaking its "words", or "litany", reciting its "scroll" with
+its "offerings".
+
+A designation missing, or one the codex does not know for its place, is
+heresy; so is a key that belongs to another designation. A sanctum,
+transcription or tether reads and sets itself by its vessel or its link, and
+bears no auspex, enact words, tongue, patience or relics of its own.
+
+Kindred passages: subjects, observances, machine-spirit, sanctum,
+transcription, tether, incantation, litany
+
+Exempla:
+  {"name": "mako", "designation": "machine-spirit",
+   "auspex": {"scan": "makoctl mode"}, "enact": {"*": "makoctl mode -s {{omen}}"}}
+
+  {"name": "herald", "designation": "incantation", "words": "notify-send hush"}

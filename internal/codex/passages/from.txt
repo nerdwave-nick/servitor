@@ -1,0 +1,17 @@
+The aspects an observance is spoken out of
+
+Under "from" an observance lists the declared aspects it is spoken out of:
+it is spoken only when the machine stood, before the invocation, in one of
+them. The former aspect is the one the subjects agreed upon when read, or
+the data-slate's among several; when it cannot be told, no observance
+guarded by "from" is spoken. Without "from" an observance is spoken out of
+every aspect.
+
+Every aspect named must be declared by the rite, else heresy. "to" and
+"from" may guard one observance together; both must admit the invocation.
+
+Kindred passages: to, observances, introit, recessional, data-slate
+
+Exempla:
+  {"name": "welcome-back", "designation": "incantation", "from": ["away"],
+   "to": ["present"], "words": "notify-send 'Welcome back'"}

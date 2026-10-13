@@ -1,0 +1,23 @@
+The words of an auspex that print the omen a machine-spirit shows
+
+The "scan" of a machine-spirit's auspex is spoken once; what it prints, its
+whitespace trimmed and at most four kibibytes of it, is the omen read. The
+aspects whose omen, rendered and trimmed, equals it are the aspects the
+subject fits; a machine-spirit without "omens" must print aspect names, and
+fits every one it prints.
+
+A scan that falls, outlasts the auspex's patience, prints nothing or prints
+an omen never declared leaves the subject mute. Beside "trials", the scan
+reads and the trials only prove what was set. An auspex holding neither
+"scan" nor "trials" is heresy.
+
+The scan is spoken with the invoker's own authority unless the auspex is
+itself exalted. It hears SERVITOR_RITE, the inscriptions and SERVITOR_ASPECT,
+but never {{omen}}, for it reads the omen rather than setting one.
+
+Kindred passages: auspex, trials, machine-spirit, omens, patience
+
+Exempla:
+  "auspex": {"scan": "cat /sys/devices/system/cpu/smt/control"}
+
+  "auspex": {"scan": "makoctl mode", "patience": "1s"}

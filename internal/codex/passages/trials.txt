@@ -1,0 +1,20 @@
+The words of an auspex that try, one omen each, which one a subject shows
+
+Under "trials" a machine-spirit's auspex holds one trial per omen, keyed by
+a declared omen or "*". Every trial is spoken at once under the auspex's one
+patience; an omen fits when its trial ends with the death-mark 0. When no
+trial succeeds, the omens bearing no trial fit, for they are what remains.
+Each trial hears its own omen as {{omen}} and SERVITOR_OMEN.
+
+A trial that outlasts the patience, cannot be spoken or is slain mutes the
+whole auspex, as does a reading that no omen fits. A key naming no declared
+omen is heresy. Not every omen needs a trial.
+
+Beside a "scan", the trials are not spoken while reading: they only prove,
+after a subject is set, that the omen invoked now shows.
+
+Kindred passages: auspex, scan, machine-spirit, omens, death-marks
+
+Exempla:
+  "auspex": {"trials": {"cosmos": "systemctl is-active -q scx-cosmos"},
+             "patience": "1s"}

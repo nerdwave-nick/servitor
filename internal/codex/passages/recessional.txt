@@ -1,0 +1,20 @@
+The observances spoken after a subject changed
+
+Under "recessional" a subject names the observances to be spoken after it
+was set. Each named observance is spoken once in an invocation, just after
+the last changing subject that names it, and only when its guards admit
+the invocation; when no subject naming it changes, it is not spoken.
+
+A name in "recessional" that names no declared observance is heresy, and so
+is an observance named both as an introit and as a recessional. Should the
+invocation fall, a spoken observance speaks its reversion, in reverse order
+with everything else performed.
+
+Kindred passages: introit, observances, subjects, to, from
+
+Exempla:
+  {"name": "mako", "designation": "machine-spirit",
+   "omens": {"on": "do-not-disturb", "*": "default"},
+   "auspex": {"scan": "makoctl mode"},
+   "enact": {"*": "makoctl mode -s \"$SERVITOR_OMEN\""},
+   "recessional": ["herald-silence"]}

@@ -1,0 +1,18 @@
+The scroll an observance or an entry of an edict recites
+
+Under "scroll" an observance or an edict's entry designated "litany" names
+the scroll it recites: by its own shebang when the machine may execute it,
+else through its tongue. A path that does not begin at the root is reckoned
+from the hall of the rite's scripture. Its "offerings" are laid before it,
+each written once and handed over exactly as written.
+
+The scroll is named once for every aspect, never as an aspect map, and may
+not be empty. Exalted, its words are sealed into the sanction, and the
+scriptures it reads beside it are named among its "relics".
+
+Kindred passages: litany, offerings, observances, edict, relics
+
+Exempla:
+  {"name": "recite-hooks", "designation": "litany",
+   "scroll": "scripts/recite-hooks",
+   "offerings": ["~/.config/nfluff/themes/{{aspect}}"]}
