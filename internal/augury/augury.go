@@ -1,5 +1,5 @@
-// Package augury reads which aspect a rite of pattern Mark I stands in, and
-// how it stands, and keeps each rite's data-slate.
+// Package augury reads which aspect a rite stands in, and how it stands,
+// and keeps each rite's data-slate.
 //
 // Every step that can be observed yields an omen: a sanctum the aspect its
 // marker records, a tether the aspect whose rendered anchor it leads to
@@ -15,6 +15,11 @@
 // either the rite lies dormant. Omens agreeing on an aspect the data-slate
 // did not record mark the rite desecrated, a sanctum whose scripture other
 // hands altered taints it, and a last invocation that faltered corrupts it.
+//
+// A state rite of pattern Mark II reads its subjects instead (readSubjects):
+// each yields every aspect it fits, a machine-spirit through the scan or
+// the trials of its auspex, and the omens agree by intersection
+// (intersect). An exalted auspex is never spoken here.
 //
 // An edict bears no aspect and yields no omen: it lies dormant until first
 // proclaimed, stands proclaimed after a last invocation that ended in
@@ -83,24 +88,41 @@ type Augury struct {
 	LastRite     *LastRite // nil when the rite was never invoked
 	Omens        []Omen    // in written order, the auspex's last
 	Taint        []Taint   // in written order
+	// MarkII marks the augury of a state rite of pattern Mark II, whose
+	// omens are named by subject and agree by intersection.
+	MarkII bool
+	// Fitting are the aspects every omen of a state rite fits, in the order
+	// of the rite's aspects; empty when they fit none, or when no subject
+	// yielded an omen.
+	Fitting []string
 	// Canon are the inscriptions the rite declares, in written order; a
 	// heretical rite declares none.
 	Canon []Declaration
 }
 
-// Omen is what one step, or the auspex, reveals about the aspect.
+// Omen is what one step, or the auspex, reveals about the aspect; or, for
+// a state rite of pattern Mark II, what one subject reveals.
 type Omen struct {
 	// Verse names the step: its verse, its own key, and what that key holds
-	// rendered for Aspect (not resolved). Zero for the auspex.
+	// rendered for Aspect (not resolved). Zero for the auspex, and for a
+	// subject.
 	invocation.Verse
 	Auspex bool // the omen of the rite's auspex
+	// Aspect is the aspect the omen names; for a subject, the one aspect it
+	// fits, "" when it fits several.
 	Aspect string
+
+	Subject     string   // the subject's name; "" for a step or the auspex
+	Designation string   // the subject's designation
+	Read        string   // the omen a machine-spirit was read to show; "" when no single one
+	Aspects     []string // every aspect the subject fits, in the order of the rite's
 }
 
 // Taint is a sanctum whose scripture other hands altered: it no longer
 // holds the scripture of the aspect its marker records.
 type Taint struct {
 	invocation.Verse
+	Subject string // the sanctum subject's name; "" for a step
 }
 
 // Options are what an augury is read with.
@@ -119,6 +141,9 @@ type Options struct {
 	// Env is the environment that places the data-slates; nil reads the
 	// servitor's own.
 	Env librarium.Environment
+	// Places bound how many processes of auspexes labour at once, shared
+	// by every augury read with them; nil bounds none.
+	Places Places
 }
 
 func (o Options) env() librarium.Environment {
@@ -147,6 +172,12 @@ func AugurContext(ctx context.Context, r *librarium.Rite, opts Options) (Augury,
 		return a, err
 	}
 	s := newSeer(r, slate)
+	if r.MarkII {
+		a.MarkII = true
+		a.readSubjects(ctx, s, opts)
+		a.intersect(slate)
+		return a, err
+	}
 	for i, step := range r.Liturgy {
 		omen, taint := s.observe(i, step)
 		if omen != nil {
@@ -211,6 +242,12 @@ func (a *Augury) judge(slate *Slate) {
 			a.Desecrated, a.Former, a.Standing = true, recorded, Desecrated
 		}
 	}
+	a.weigh(slate)
+}
+
+// weigh lays the graver standings upon the one the omens name: taint,
+// unless the omens disagree, and a last invocation that faltered.
+func (a *Augury) weigh(slate *Slate) {
 	if len(a.Taint) > 0 && a.Standing != Corrupted {
 		a.Standing = Tainted
 	}
