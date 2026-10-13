@@ -188,3 +188,49 @@ func ended(pid int) bool {
 	_, after, _ := strings.Cut(string(stat), ") ")
 	return strings.HasPrefix(after, "Z")
 }
+
+// TestVigil_HeraldThenAttendIsTheVigilWithItsReadings: the vigil parted in
+// two — Herald tells every rite as it stands without its auspex and names
+// the rites awaited, Attend tells those once their auspexes settle — tells
+// what the vigil tells; every rite told bears the reading it was told from,
+// an awaited one marked awaited as its entry is.
+func TestVigil_HeraldThenAttendIsTheVigilWithItsReadings(t *testing.T) {
+	fx := newFixture(t)
+	fx.vessel("util.kdl", "")
+	fx.rite("mouse", mouse)
+	fx.rite("capture", capture)
+	fx.rite("broken", `{"pattern": "Mark I", "aspects": []}`)
+	fx.rite("slow", `{"pattern": "Mark I", "aspects": ["on", "off"], "auspex": "sleep 0.2; echo on", "liturgy": []}`)
+	s := fx.servitor()
+
+	var parted []Heralding
+	tell := func(h Heralding) { parted = append(parted, h) }
+	awaited := s.Herald(context.Background(), false, tell)
+	if !slices.Equal(awaited, []string{"slow"}) {
+		t.Errorf("awaited %v, want [slow]", awaited)
+	}
+	first := len(parted)
+	s.Attend(context.Background(), awaited, tell)
+
+	whole := keepVigil(context.Background(), s, false)
+	if len(parted) != len(whole) || first != len(s.Librarium.Names()) {
+		t.Fatalf("parted vigil told %d (%d first), whole %d", len(parted), first, len(whole))
+	}
+	for i, h := range parted {
+		if got, want := marshal(t, h.Entry), marshal(t, whole[i].Entry); got != want {
+			t.Errorf("heralding %d: %s, want %s", i, got, want)
+		}
+		if h.Reading == nil {
+			t.Fatalf("heralding %d of %s bears no reading", i, h.Entry.Rite)
+		}
+		if got, want := marshal(t, s.entry(h.Entry.Rite, *h.Reading)), marshal(t, h.Entry); got != want {
+			t.Errorf("the reading of %s tells %s, want %s", h.Entry.Rite, got, want)
+		}
+	}
+	if r := parted[slices.IndexFunc(parted, func(h Heralding) bool { return h.Entry.Rite == "slow" })].Reading; r.Auspex != augury.Awaited {
+		t.Errorf("slow first read with auspex %q, want awaited", r.Auspex)
+	}
+	if r := parted[len(parted)-1].Reading; r.Rite.Name != "slow" || r.Auspex != augury.Heeded || r.Aspect != "on" {
+		t.Errorf("slow settled as %+v", r.Augury)
+	}
+}
