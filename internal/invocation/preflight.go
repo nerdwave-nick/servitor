@@ -50,8 +50,8 @@ func (p *preflight) verse(k librarium.Kind, target string) Verse {
 	return Verse{Number: p.index + 1, Kind: k, Target: target, Exalted: p.exalted}
 }
 
-// subjectFields are the keys a built-in subject writes in place of those of
-// the Mark I step it is examined as.
+// subjectFields are the keys a built-in subject writes in place of the keys
+// its step names them by when it is examined.
 var subjectFields = map[string]string{"sanctum": "vessel", "transcription": "vessel", "scripture": "omens",
 	"anchor": "omens"}
 

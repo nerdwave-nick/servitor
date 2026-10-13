@@ -15,7 +15,7 @@ func (a *app) newSanctionCmd() *cobra.Command {
 	var binharic bool
 	cmd := &cobra.Command{
 		Use:   "sanction [rite]",
-		Short: "Sanction the exalted verses of a rite with one proof, or list the sanctions and how each stands",
+		Short: "Sanction what a rite holds exalted with one proof, or list the sanctions and how each stands",
 		Args: func(_ *cobra.Command, args []string) error {
 			if len(args) > 1 {
 				return &ExitError{Code: 2, Err: fmt.Errorf("the sanction names at most one rite, yet %d words were "+

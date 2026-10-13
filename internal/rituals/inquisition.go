@@ -29,7 +29,7 @@ import (
 // vessel whose sanctum markers are broken. An edict's machine is examined once, as it bears no aspect.
 //
 // A rite of aspects is examined subject by subject and
-// observance by observance as Mark I's liturgy is verse by verse: the tomes
+// observance by observance, an edict verse by verse: the tomes
 // of its sanctum and transcription subjects, the relics and tongues of its
 // exalted machine-spirits and observances, the scrolls of its observances,
 // the vessels and anchors of its subjects, and every tongue — that of a

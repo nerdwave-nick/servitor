@@ -94,7 +94,7 @@ type settler interface {
 }
 
 // builtInSubject is a changing sanctum, transcription or tether subject: it
-// is performed as its step of Mark I, then proven by planning it anew
+// is performed as the step it holds, then proven by planning it anew
 // against the machine, which must find nothing left to change.
 type builtInSubject struct {
 	performer
