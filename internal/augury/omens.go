@@ -22,6 +22,7 @@ type seer struct {
 	// rite: they render the omens of target first.
 	target       string
 	inscriptions map[string]string
+	booted       *string // the boot of the machine, once read
 	variants     map[string][]placeholder.Values
 	scrolls      map[string]scroll
 	bonds        map[string]bond

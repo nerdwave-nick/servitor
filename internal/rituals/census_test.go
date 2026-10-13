@@ -98,11 +98,11 @@ func TestCensus_EveryRiteInTheShapeOfTheCodex(t *testing.T) {
 		t.Fatal(err)
 	}
 	want := `[{"rite":"broken","edict":false,"aspect":"","standing":"heretical","sanction":"","auspex":"","aspects":[],"purpose":"",` +
-		`"desecrated":false,"last_rite":null,"recorded_in":"` + broken + `","canon":[]},` +
+		`"desecrated":false,"stale":false,"last_rite":null,"recorded_in":"` + broken + `","canon":[]},` +
 		`{"rite":"dnd","edict":false,"aspect":"","standing":"dormant","sanction":"","auspex":"forgone","aspects":["on","off"],"purpose":"",` +
-		`"desecrated":false,"last_rite":null,"recorded_in":"` + filepath.Join(fx.lib, "rites", "dnd.json") + `","canon":[]},` +
+		`"desecrated":false,"stale":false,"last_rite":null,"recorded_in":"` + filepath.Join(fx.lib, "rites", "dnd.json") + `","canon":[]},` +
 		`{"rite":"mouse","edict":false,"aspect":"on","standing":"performed","sanction":"","auspex":"","aspects":["on","off"],` +
-		`"purpose":"Hide the cursor after inactivity","desecrated":false,` +
+		`"purpose":"Hide the cursor after inactivity","desecrated":false,"stale":false,` +
 		`"last_rite":{"verdict":"triumph","at":"2026-10-10T13:30:00Z"},"recorded_in":"` + path + `",` +
 		`"canon":[{"key":"reason","purpose":"why the rite was invoked","mandatory":false,"decrees":{"off":"restored"},"decree":null}]}]`
 	if string(data) != want {
@@ -133,10 +133,10 @@ func TestCensus_AnEdictBearsNoAspects(t *testing.T) {
 		t.Fatal(err)
 	}
 	want := `[{"rite":"capture","edict":true,"aspect":"","standing":"proclaimed","sanction":"","auspex":"","aspects":[],` +
-		`"purpose":"Capture the visage of the machine","desecrated":false,` +
+		`"purpose":"Capture the visage of the machine","desecrated":false,"stale":false,` +
 		`"last_rite":{"verdict":"triumph","at":"2026-10-10T13:30:00Z"},"recorded_in":"` + path + `",` +
 		`"canon":[{"key":"region","purpose":"the slurp geometry","mandatory":false,"decrees":{},"decree":"full"}]},` +
-		`{"rite":"dormant","edict":true,"aspect":"","standing":"dormant","sanction":"","auspex":"","aspects":[],"purpose":"","desecrated":false,` +
+		`{"rite":"dormant","edict":true,"aspect":"","standing":"dormant","sanction":"","auspex":"","aspects":[],"purpose":"","desecrated":false,"stale":false,` +
 		`"last_rite":null,"recorded_in":"` + filepath.Join(fx.lib, "rites", "dormant.json") + `","canon":[]}]`
 	if string(data) != want {
 		t.Fatalf("census\n%s\nwant\n%s", data, want)

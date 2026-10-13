@@ -157,7 +157,7 @@ func TestSanction_CensusAndAuguryTellEachStanding(t *testing.T) {
 		t.Fatal(err)
 	}
 	shape := `{"rite":"split-lock","edict":false,"aspect":"","standing":"dormant","sanction":"sanctioned",` +
-		`"auspex":"","aspects":["on","off"],"purpose":"","desecrated":false,"last_rite":null,` +
+		`"auspex":"","aspects":["on","off"],"purpose":"","desecrated":false,"stale":false,"last_rite":null,` +
 		`"recorded_in":"` + filepath.Join(sc.lib, "rites", "split-lock.json") + `","canon":[]}`
 	if string(got) != shape {
 		t.Errorf("census entry\n got %s\nwant %s", got, shape)

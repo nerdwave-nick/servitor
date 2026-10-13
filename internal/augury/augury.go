@@ -21,7 +21,12 @@
 // the trials of its auspex, and the omens agree by intersection
 // (intersect). An exalted auspex is never spoken here. What each subject
 // showed is kept for the invocation that plans by it (Augury.Readings), and
-// ReadSubject reads one subject anew to prove it once set.
+// ReadSubject reads one subject anew to prove it once set. Where the live
+// omen of a machine-spirit is not heard — its auspex exalted or forgone —
+// the omen its data-slate recorded at the last invocation serves, marked
+// stale (remembered), unless recorded in another boot or no longer
+// declared; a stale omen alone never desecrates the rite. An invocation
+// never trusts one.
 //
 // An edict bears no aspect and yields no omen: it lies dormant until first
 // proclaimed, stands proclaimed after a last invocation that ended in
@@ -31,6 +36,8 @@ package augury
 import (
 	"context"
 	"os"
+	"slices"
+	"time"
 
 	"github.com/nerdwave-nick/servitor/internal/invocation"
 	"github.com/nerdwave-nick/servitor/internal/librarium"
@@ -122,6 +129,16 @@ type Omen struct {
 	Designation string   // the subject's designation
 	Read        string   // the omen a machine-spirit was read to show; "" when no single one
 	Aspects     []string // every aspect the subject fits, in the order of the rite's
+	// Stale marks an omen taken from the data-slate's record, where the
+	// live omen of the subject was not heard; ReadAt is when it was read.
+	Stale  bool
+	ReadAt time.Time
+}
+
+// Stale tells whether any omen of the augury was taken from the data-slate's
+// record.
+func (a Augury) Stale() bool {
+	return slices.ContainsFunc(a.Omens, func(o Omen) bool { return o.Stale })
 }
 
 // Taint is a sanctum whose scripture other hands altered: it no longer

@@ -35,7 +35,7 @@ func (a *app) newCensusCmd() *cobra.Command {
 			tw := tabwriter.NewWriter(cmd.OutOrStdout(), 0, 4, 2, ' ', 0)
 			fmt.Fprintln(tw, "RITE\tASPECT\tSTANDING\tASPECTS\tLAST RITE\tPURPOSE")
 			for _, e := range entries {
-				fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%s\t%s\n", marked(e), orDot(e.Aspect), standing(e),
+				fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%s\t%s\n", marked(e), aspect(e), standing(e),
 					orDot(strings.Join(e.Aspects, "|")), lastRite(e.LastRite), e.Purpose)
 			}
 			return tw.Flush()
@@ -55,6 +55,15 @@ func marked(e rituals.Entry) string {
 		return e.Rite + " " + g
 	}
 	return e.Rite
+}
+
+// aspect is the aspect the rite stands in, marked "~" when it rests on a
+// stale omen.
+func aspect(e rituals.Entry) string {
+	if e.Stale && e.Aspect != "" {
+		return "~" + e.Aspect
+	}
+	return orDot(e.Aspect)
 }
 
 func orDot(s string) string {
