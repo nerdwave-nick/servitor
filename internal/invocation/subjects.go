@@ -19,32 +19,27 @@ import (
 // aspect, and is proven again.
 
 // subjects examines every subject of the state rite, foreseeing each and
-// making the changing ones ready to be performed.
+// making the changing ones ready to be performed, then every observance;
+// the observances admitted are set around the changing subjects (see
+// observances.go).
 func (inv *Invocation) subjects(p *preflight) {
+	subjects := make([]examined, len(p.rite.Subjects))
 	for i, sub := range p.rite.Subjects {
 		p.index, p.subject, p.exalted = i, sub.Name, false
-		var (
-			f    *Foresight
-			step performer
-		)
+		e := &subjects[i]
 		switch m := sub.Matter.(type) {
 		case *librarium.Sanctum:
-			f, step = p.builtIn(p.sanctum(m))
+			e.foresight, e.step = p.builtIn(p.sanctum(m))
 		case *librarium.Transcription:
-			f, step = p.builtIn(p.transcription(m))
+			e.foresight, e.step = p.builtIn(p.transcription(m))
 		case *librarium.Tether:
-			f, step = p.builtIn(p.tether(m))
+			e.foresight, e.step = p.builtIn(p.tether(m))
 		case *librarium.MachineSpirit:
-			f, step = p.spirit(i, m)
-		}
-		if f != nil {
-			inv.foresight = append(inv.foresight, *f)
-		}
-		if step != nil {
-			inv.steps = append(inv.steps, step)
+			e.foresight, e.step = p.spirit(i, m)
 		}
 	}
 	p.subject = ""
+	inv.ordain(subjects, p.observances())
 }
 
 // builtIn plans a sanctum, transcription or tether subject by the change
@@ -109,11 +104,11 @@ func (t *tethered) unsettled() (bool, error) {
 }
 
 // changed names the subjects of deeds set and proven, in written order;
-// never nil.
+// never nil. Observances are no subjects.
 func changed(deeds []Deed) []string {
 	names := []string{}
 	for _, d := range deeds {
-		if d.Heresy == nil {
+		if d.Heresy == nil && d.Subject != "" {
 			names = append(names, d.Subject)
 		}
 	}

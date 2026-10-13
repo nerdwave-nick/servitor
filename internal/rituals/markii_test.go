@@ -8,18 +8,20 @@ import (
 	"testing"
 )
 
-// TestInvoke_RefusesAStateRiteNamingAnObservance: the servitor performs no
-// state rite of pattern Mark II whose subject names an observance, nor
-// foresees it: no subject or observance is touched, and nothing is kept on
-// the data-slate or in the chronicle. Other state rites are invoked (see
-// invoke_markii_test.go), and edicts proclaimed (see edict_markii_test.go).
-func TestInvoke_RefusesAStateRiteNamingAnObservance(t *testing.T) {
+// TestInvoke_RefusesAStateRiteNamingAnExaltedObservance: the servitor
+// performs no state rite of pattern Mark II whose subject names an exalted
+// observance, nor foresees it: no subject or observance is touched, and
+// nothing is kept on the data-slate or in the chronicle. Other state rites
+// are invoked (see invoke_markii_test.go and observances_markii_test.go),
+// and edicts proclaimed (see edict_markii_test.go).
+func TestInvoke_RefusesAStateRiteNamingAnExaltedObservance(t *testing.T) {
 	fx := newFixture(t)
 	marker := fx.vessel("marker", "")
 	fx.rite("gaming", `{"pattern": "Mark II", "aspects": ["on", "off"], "subjects": [
 	  {"name": "m", "designation": "machine-spirit", "auspex": {"scan": "echo touched >> $DATA/marker; cat $DATA/m"},
 	   "enact": {"*": "echo {{omen}} >> $DATA/marker"}, "introit": ["herald"]}],
-	  "observances": [{"name": "herald", "designation": "incantation", "words": "echo heard >> $DATA/marker"}]}`)
+	  "observances": [{"name": "herald", "designation": "incantation", "exalted": true,
+	    "words": "echo heard >> $DATA/marker"}]}`)
 	s := fx.servitor()
 	for _, p := range []Petition{{Rite: "gaming", Aspect: "on"}, {Rite: "gaming", Aspect: "off", Foresee: true}} {
 		res, err := s.Invoke(context.Background(), p)

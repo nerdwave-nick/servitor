@@ -116,9 +116,7 @@ func (s *spiritStep) uttered() (said, unsaid string) { return s.said, s.unsaid }
 // voice speaks argv as the enact words of omen are spoken: in the rite's
 // hall, with the environment of the rite's commands and the omen.
 func (s *spiritStep) voice(argv []string, omen string) voice {
-	env := slices.DeleteFunc(environ(s.rite.Dir(), false, s.values, s.rite.InscriptionKeys()), func(kv string) bool {
-		return strings.HasPrefix(kv, envOmen+"=")
-	})
+	env := unomened(environ(s.rite.Dir(), false, s.values, s.rite.InscriptionKeys()))
 	return voice{argv: argv, dir: s.rite.Dir(), env: append(env, envOmen+"="+omen), patience: s.speech.Patience}
 }
 

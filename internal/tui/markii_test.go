@@ -14,7 +14,7 @@ import (
 // TestMarkII_TheCogitatorStandsFirmAndPerformsNothing: rites of pattern
 // Mark II are listed and shown beside those of Mark I, and every key upon
 // them answers without the cogitator falling; a state rite whose subject
-// names an observance is not performed (its edicts are proclaimed, see
+// names an exalted observance is not performed (its edicts are proclaimed, see
 // edict_markii_test.go, and other state rites invoked, see
 // TestMarkII_TheCogitatorInvokesAStateRite). The wizard opens upon an
 // edict, and refuses to amend or replicate a rite of machine-spirits, whose
@@ -24,7 +24,7 @@ func TestMarkII_TheCogitatorStandsFirmAndPerformsNothing(t *testing.T) {
 	gaming := h.writeRite("gaming", `{"pattern": "Mark II", "aspects": ["on", "off"], "subjects": [
 	  {"name": "m", "designation": "machine-spirit", "auspex": {"scan": "cat $DATA/m"}, "enact": {"*": "echo {{omen}} > $DATA/m"},
 	   "introit": ["herald"]}],
-	  "observances": [{"name": "herald", "designation": "incantation", "words": "touch $DATA/herald"}]}`)
+	  "observances": [{"name": "herald", "designation": "incantation", "exalted": true, "words": "touch $DATA/herald"}]}`)
 	h.writeRite("capture", `{"pattern": "Mark II", "edict": true, "liturgy": [
 	  {"designation": "incantation", "words": "touch $DATA/captured"}]}`)
 	scripture, _ := os.ReadFile(gaming)
@@ -98,6 +98,35 @@ func TestMarkII_TheFallOfAStateRiteNamesItsSubjects(t *testing.T) {
 	}
 	whole := ansi.Strip(h.m.chronicled(entries[0]))
 	for _, want := range []string{"It fell at subject z", "subject z could not be undone", "subject m could not be undone"} {
+		if !strings.Contains(whole, want) {
+			t.Errorf("the entry lacks %q:\n%s", want, whole)
+		}
+	}
+	if strings.Contains(whole, "verse") {
+		t.Errorf("the entry names a verse:\n%s", whole)
+	}
+}
+
+// TestMarkII_TheFallOfAnObservanceNamesIt: the fall of a state rite at an
+// observance, and its entry in the chronicle, name the observance that fell
+// and every observance reverted, never a verse.
+func TestMarkII_TheFallOfAnObservanceNamesIt(t *testing.T) {
+	h := newHarness(t)
+	h.writeRite("gaming", `{"pattern": "Mark II", "aspects": ["on", "off"], "subjects": [
+	  {"name": "m", "designation": "machine-spirit", "auspex": {"scan": "cat $DATA/m"}, "enact": {"*": "echo {{omen}} > $DATA/m"},
+	   "introit": ["veil"], "recessional": ["hooks"]}],
+	  "observances": [{"name": "veil", "designation": "incantation", "words": "true", "reversion": "true"},
+	    {"name": "hooks", "designation": "incantation", "words": "exit 3", "reversion": "true"}]}`)
+	h.keys("r", "g", "enter", "enter")
+	h.await()
+	h.mustShow("It fell at observance hooks", "observance hooks is undone", "observance veil is undone")
+	h.mustNotShow("verse 0")
+	entries, err := chronicle.Read(filepath.Join(os.Getenv("XDG_STATE_HOME"), "servitor", "chronicle.jsonl"))
+	if err != nil || len(entries) != 1 {
+		t.Fatalf("chronicle %v, %v", entries, err)
+	}
+	whole := ansi.Strip(h.m.chronicled(entries[0]))
+	for _, want := range []string{"It fell at observance hooks", "observance hooks is undone", "observance veil is undone"} {
 		if !strings.Contains(whole, want) {
 			t.Errorf("the entry lacks %q:\n%s", want, whole)
 		}

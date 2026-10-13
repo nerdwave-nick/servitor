@@ -184,11 +184,14 @@ func TestEntry_NamesTheIntercessorAndTheSigilOfExaltedVerses(t *testing.T) {
 // TestEntry_OfAStateRiteNamesItsSubjects: the line of a state rite of
 // pattern Mark II keeps the shape of Mark I, adds the subjects it changed
 // ("changed", present even when none changed), and names the fallen subject
-// and every subject reverted by "subject" in place of a verse; it reads back
-// whole.
+// and every subject reverted by "subject" in place of a verse, an
+// observance by "observance"; it reads back whole.
 func TestEntry_OfAStateRiteNamesItsSubjects(t *testing.T) {
 	subject := func(name string, k librarium.Kind, target string) invocation.Verse {
 		return invocation.Verse{Subject: name, Kind: k, Target: target}
+	}
+	observance := func(name, words string) invocation.Verse {
+		return invocation.Verse{Observance: name, Kind: librarium.KindIncantation, Target: words}
 	}
 	opts := invocation.Options{Aspect: "on", Former: "off"}
 	for _, tc := range []struct {
@@ -208,6 +211,14 @@ func TestEntry_OfAStateRiteNamesItsSubjects(t *testing.T) {
 				`"verdict":"reverted","fell_at":{"subject":"scheduler"},"heresy":"the subject shows another omen",` +
 				`"reversions":[{"subject":"scheduler","verdict":"triumph"},{"subject":"theme","verdict":"faltered"},` +
 				`{"subject":"smt","verdict":"triumph"}],"changed":["smt","theme"]}`},
+		{"fallen at an observance", invocation.Outcome{Verdict: invocation.Faltered, Changed: []string{"mako"},
+			Fell: &invocation.Fall{Verse: observance("hooks", "echo hooks"), Heresy: errors.New("the observance fell")},
+			Reversions: []invocation.Reversion{{Verse: observance("hooks", "echo hooks"), Heresy: errors.New("fell")},
+				{Verse: subject("mako", 0, "")}, {Verse: observance("veil", "echo veil")}}},
+			`{"at":"2026-10-10T13:30:00Z","rite":"gaming","aspect":"on","former":"off","inscriptions":{},` +
+				`"verdict":"faltered","fell_at":{"observance":"hooks"},"heresy":"the observance fell",` +
+				`"reversions":[{"observance":"hooks","verdict":"faltered"},{"subject":"mako","verdict":"triumph"},` +
+				`{"observance":"veil","verdict":"triumph"}],"changed":["mako"]}`},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			e := New(moment, "gaming", opts, tc.out)

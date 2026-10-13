@@ -2,7 +2,8 @@
 // pattern Mark II, into one aspect, or proclaims an edict, which bears none,
 // of pattern Mark I or Mark II. A state rite is performed by its subjects
 // rather than a liturgy (see subjects.go): only those that do not already
-// show the omen of the aspect are set, each proven by a reading afresh.
+// show the omen of the aspect are set, each proven by a reading afresh, and
+// its observances are spoken in place around them (see observances.go).
 //
 // Prepare runs the pre-flight: it renders every placeholder, reads every
 // tome afresh, and examines every vessel and tether, without changing
@@ -91,6 +92,10 @@ type Verse struct {
 	// verse sets; Number is then zero. A built-in subject keeps its Kind
 	// and Target, a machine-spirit bears neither.
 	Subject string
+	// Observance names the observance of a state rite of pattern Mark II
+	// the verse speaks; Number is then zero, and Kind and Target are those
+	// of its speech.
+	Observance string
 }
 
 // performer is a step made ready by the pre-flight.

@@ -324,8 +324,9 @@ func TestInvokeII_ForeseesEverySubjectWithoutPerforming(t *testing.T) {
 }
 
 // TestInvokeII_RefusesWhatIsNotYetForged: a state rite holding an exalted
-// subject or observance, a privileged auspex, or a subject naming an
-// observance is refused before anything is read or touched.
+// subject or observance, or a privileged auspex, is refused before anything
+// is read or touched. Observances that are not exalted are spoken (see
+// observances_markii_test.go).
 func TestInvokeII_RefusesWhatIsNotYetForged(t *testing.T) {
 	spirit := `{"name": "m", "designation": "machine-spirit", "auspex": {"scan": "echo read >> $DATA/marker; echo on"},
 	   "enact": {"*": "echo {{omen}} >> $DATA/marker"}`
@@ -335,10 +336,8 @@ func TestInvokeII_RefusesWhatIsNotYetForged(t *testing.T) {
 		   "auspex": {"scan": "echo on", "exalted": true}, "enact": {"*": "true"}}`, ``, `the subject "m" is exalted`},
 		"exalted observance": {spirit + `}`, `, "observances": [{"name": "o", "designation": "incantation", "exalted": true,
 		   "words": "true"}]`, `the observance "o" is exalted`},
-		"introit": {spirit + `, "introit": ["o"]}`, `, "observances": [{"name": "o", "designation": "incantation",
-		   "words": "true"}]`, `the subject "m" names the observance "o"`},
-		"recessional": {spirit + `, "recessional": ["o"]}`, `, "observances": [{"name": "o", "designation": "incantation",
-		   "words": "true"}]`, `the subject "m" names the observance "o"`},
+		"exalted introit": {spirit + `, "introit": ["o"]}`, `, "observances": [{"name": "o", "designation": "incantation",
+		   "exalted": true, "words": "true"}]`, `the observance "o" is exalted`},
 	} {
 		t.Run(name, func(t *testing.T) {
 			fx := newFixture(t)

@@ -17,12 +17,12 @@ type preflight struct {
 	opts    Options
 	values  placeholder.Values
 	world   *shadow
-	index   int  // index of the step, or of the subject, being examined
+	index   int  // index of the step, the subject or the observance being examined
 	exalted bool // the step being examined is exalted
 	// subject names the subject of a state rite of pattern Mark II being
-	// examined; "" for a step of a liturgy.
-	subject  string
-	heresies Heresies
+	// examined, observance its observance; both "" for a step of a liturgy.
+	subject, observance string
+	heresies            Heresies
 }
 
 // prepare examines one step; it returns nil when the step is heretical.
@@ -44,10 +44,13 @@ func (p *preflight) prepare(s librarium.Step) performer {
 	return nil
 }
 
-// verse names the step, or the subject, being examined.
+// verse names the step, the subject or the observance being examined.
 func (p *preflight) verse(k librarium.Kind, target string) Verse {
-	if p.subject != "" {
+	switch {
+	case p.subject != "":
 		return Verse{Kind: k, Target: target, Subject: p.subject}
+	case p.observance != "":
+		return Verse{Kind: k, Target: target, Observance: p.observance}
 	}
 	return Verse{Number: p.index + 1, Kind: k, Target: target, Exalted: p.exalted}
 }
@@ -57,10 +60,13 @@ func (p *preflight) verse(k librarium.Kind, target string) Verse {
 var subjectFields = map[string]string{"sanctum": "vessel", "transcription": "vessel", "scripture": "omens",
 	"anchor": "omens"}
 
-// pointer is the JSON pointer of field within the step, or the subject,
-// being examined.
+// pointer is the JSON pointer of field within the step, the subject or the
+// observance being examined.
 func (p *preflight) pointer(field string) string {
-	if p.subject == "" {
+	switch {
+	case p.observance != "":
+		return fmt.Sprintf("/observances/%d/%s", p.index, field)
+	case p.subject == "":
 		return fmt.Sprintf("/liturgy/%d/%s", p.index, field)
 	}
 	key, rest, _ := strings.Cut(field, "/")
@@ -74,9 +80,9 @@ func (p *preflight) pointer(field string) string {
 }
 
 // numbered is the verse a heresy found in the pre-flight is told at: none
-// for a subject.
+// for a subject or an observance.
 func (p *preflight) numbered() int {
-	if p.subject != "" {
+	if p.subject != "" || p.observance != "" {
 		return 0
 	}
 	return p.index + 1
