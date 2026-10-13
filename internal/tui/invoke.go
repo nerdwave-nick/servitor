@@ -181,7 +181,11 @@ func (m *model) foresight(res rituals.Result, err error) string {
 		b = append(b, line, "")
 	}
 	for _, f := range res.Foresight {
-		b = append(b, t.bold.Render(verseName(f.Verse)))
+		head := named(res.Rite, f.Verse)
+		if f.Plan != nil {
+			head += ": " + foreseenPlan(*f.Plan, spirit(res.Rite, f.Verse))
+		}
+		b = append(b, t.bold.Render(head))
 		for _, line := range foreseen(f) {
 			st := t.text
 			switch {
