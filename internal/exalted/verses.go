@@ -74,24 +74,30 @@ func (s *session) speak(ctx context.Context, v sanction.Verse) (Reply, *deed) {
 
 // enact sets the machine-spirit v by the enact words of the omen of the
 // plan's aspect; however they end, it is reverted by the enact words of
-// the omen restore, which none may be.
+// the omen restore, which none may be. A privileged one is proven by the
+// exalted servitor itself, set and restored alike: read anew, it must show
+// the omen enacted, and the omens it fits are told.
 func (s *session) enact(ctx context.Context, v sanction.Verse, restore string) (Reply, *deed) {
 	r := Reply{To: "perform", Verdict: Triumph, Changed: true}
 	heard, err := s.speakOmen(ctx, v, v.Omen)
 	r.Heard = heard
+	if err == nil {
+		r.Omens, err = s.prove(ctx, v, v.Omen)
+	}
 	if err != nil {
 		r.Verdict, r.Lament = Fell, err.Error()
 	}
-	return r, &deed{verse: v, omen: restore, restore: func(ctx context.Context, omen string) (string, error) {
+	return r, &deed{verse: v, omen: restore, restore: func(ctx context.Context, omen string) (string, []string, error) {
 		if omen == "" {
-			return "", fmt.Errorf("%s cannot be restored: no omen it showed before was named, and the exalted "+
+			return "", nil, fmt.Errorf("%s cannot be restored: no omen it showed before was named, and the exalted "+
 				"servitor knows none to enact", v.Named())
 		}
 		heard, err := s.speakOmen(ctx, v, omen)
 		if err != nil {
-			return heard, fmt.Errorf("the restoration of the omen %q fell: %w", omen, err)
+			return heard, nil, fmt.Errorf("the restoration of the omen %q fell: %w", omen, err)
 		}
-		return heard, nil
+		omens, err := s.prove(ctx, v, omen)
+		return heard, omens, err
 	}}
 }
 

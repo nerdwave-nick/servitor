@@ -1,0 +1,57 @@
+rite "firewall" · uid 1000 · pattern Mark II
+sigil 69de0aa5de297e7f4f1970a3bc789b9cde1f18a43c21659083c25926bdd99ea4
+environment Mark II: SERVITOR_ASPECT, SERVITOR_FORMER_ASPECT, SERVITOR_INSCRIPTION_TABLE, SERVITOR_OMEN, SERVITOR_RITE
+  ✠ aspect "on" · sigil 0be49da1cec853b325b905d73f9fd67c12cecbe2e72cb63f3590d9085c8ba083
+    inscription table: gaming
+    subject nft · machine-spirit · place 1
+      omen: gaming
+      enact gaming: nft -f /etc/nftables.d/$SERVITOR_OMEN.nft
+      enact none: nft -f /etc/nftables.d/$SERVITOR_OMEN.nft
+      exalted auspex scan: nft list tables | grep -qw gaming && echo gaming || echo none
+      exalted auspex patience: 3s
+      tongue: /usr/bin/bash
+      patience: 30s
+      relic nft/rules.conf:
+        │ table inet gaming
+    subject msr · machine-spirit · place 2
+      omen: on
+      enact off: wrmsr -a 0x1a4 off
+      enact on: wrmsr -a 0x1a4 on
+      exalted auspex trial on: rdmsr 0x1a4 | grep -qx onf
+      exalted auspex patience: 2s
+      exalted auspex prints the names of aspects
+      tongue: /usr/bin/bash
+      patience: 30s
+    subject smt · machine-spirit · place 3
+      omen: off
+      enact off: echo off > /sys/devices/system/cpu/smt/control
+      enact on: echo on > /sys/devices/system/cpu/smt/control
+      tongue: /usr/bin/bash
+      patience: 30s
+  ✠ aspect "off" · sigil 269222e7fb40699327e1e2153b98fca580fa8ea9609f8ab1206f5f6b5ab70fc5
+    inscription table: gaming
+    subject nft · machine-spirit · place 1
+      omen: none
+      enact gaming: nft -f /etc/nftables.d/$SERVITOR_OMEN.nft
+      enact none: nft -f /etc/nftables.d/$SERVITOR_OMEN.nft
+      exalted auspex scan: nft list tables | grep -qw gaming && echo gaming || echo none
+      exalted auspex patience: 3s
+      tongue: /usr/bin/bash
+      patience: 30s
+      relic nft/rules.conf:
+        │ table inet gaming
+    subject msr · machine-spirit · place 2
+      omen: off
+      enact off: wrmsr -a 0x1a4 off
+      enact on: wrmsr -a 0x1a4 on
+      exalted auspex trial on: rdmsr 0x1a4 | grep -qx onf
+      exalted auspex patience: 2s
+      exalted auspex prints the names of aspects
+      tongue: /usr/bin/bash
+      patience: 30s
+    subject smt · machine-spirit · place 3
+      omen: on
+      enact off: echo off > /sys/devices/system/cpu/smt/control
+      enact on: echo on > /sys/devices/system/cpu/smt/control
+      tongue: /usr/bin/bash
+      patience: 30s

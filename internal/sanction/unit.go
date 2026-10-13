@@ -107,6 +107,22 @@ type Verse struct {
 	// name it so.
 	From                 []string
 	Introit, Recessional []int
+	// Auspex is the privileged auspex of an exalted machine-spirit, which
+	// the exalted servitor alone speaks; nil when its auspex is common, or
+	// it has none.
+	Auspex *Auspex
+}
+
+// Auspex is the privileged auspex of an exalted machine-spirit, resolved
+// for the aspect of its plan: its scan, or its trials keyed by every
+// declared omen that bears one (each hearing its omen as {{omen}}), and
+// its patience. NamesAspects tells that the spirit declares no omens, so
+// that its scan prints the names of aspects, each an omen.
+type Auspex struct {
+	Scan         string
+	Trials       map[string]string
+	Patience     time.Duration
+	NamesAspects bool
 }
 
 // Relic is one scripture exalted speech reads beside its scroll.

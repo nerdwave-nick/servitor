@@ -176,6 +176,11 @@ func (v *voice) Speak(_ context.Context, verse sanction.Verse) (string, Undo, er
 	return "spoke " + n, func(context.Context) (string, error) { v.record("undo " + n); return "", nil }, nil
 }
 
+func (v *voice) Hear(context.Context, sanction.Verse, string, string) (string, bool, error) {
+	v.record("hear")
+	return "", false, nil
+}
+
 func (v *voice) Close() error { v.record("close"); return nil }
 
 // TestSession_HoldsTheRootSideDominion: the session is accepted only once

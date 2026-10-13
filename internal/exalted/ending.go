@@ -15,7 +15,10 @@ func (s *session) undo() Reply {
 		Verdict: Reverted}
 	undo := d.undo
 	if d.restore != nil {
-		undo = func(ctx context.Context) (string, error) { return d.restore(ctx, d.omen) }
+		undo = func(ctx context.Context) (heard string, err error) {
+			heard, r.Omens, err = d.restore(ctx, d.omen)
+			return heard, err
+		}
 	}
 	if undo != nil {
 		heard, err := undo(context.Background())
