@@ -1,0 +1,39 @@
+The hall where scripture of pattern Mark I is kept once converted
+
+When the servitor converts a scripture of pattern "Mark I" to "Mark II", it
+first keeps the scripture as it was read, byte for byte and remarks and all,
+in a hall named .mark-i beside it:
+
+  <Librarium>/rites/.mark-i/<name>.json     a rite (or .jsonc, as written)
+  <Librarium>/.mark-i/servitor.json         the settings
+
+The hall is raised when the first copy is kept. A copy is opened so that
+one already standing is never written over: should a copy stand that
+differs from the scripture, the conversion is refused, lamented, and the
+scripture stays of pattern Mark I until that copy is moved aside; it is
+then converted at its next reading.
+A copy that is the scripture itself, kept by a conversion felled before it
+could write, lets the conversion proceed.
+
+The Librarium never reads .mark-i: it passes over halls and every name
+that begins with ".", so a copy is never a rite, never counted by the
+census and never judged by the Inquisition. The servitor never strikes a
+copy either; strike it yourself once the converted rite has served you
+well.
+
+To return to the elder scripture, the faithful have but one road: the
+servitor reads no Mark I without converting it, and converts nothing back.
+Read the copy to learn what a rite said before, and write what it should
+now say in pattern Mark II; the remarks of the converted scripture name
+whatever was struck or changed in meaning. Should the conversion itself be
+wanted anew, move the copy back into the place of the converted scripture:
+the next ritual that may write converts it again, and keeps its copy anew.
+
+Kindred passages: conversion, pattern, librarium, rite
+
+Exempla:
+  ls ~/.config/servitor/rites/.mark-i/
+  diff ~/.config/servitor/rites/.mark-i/dnd.json ~/.config/servitor/rites/dnd.json
+
+  mv ~/.config/servitor/rites/.mark-i/dnd.json ~/.config/servitor/rites/dnd.json
+  servitor census    # converts dnd anew, and keeps its copy again

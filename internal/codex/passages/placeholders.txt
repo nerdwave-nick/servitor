@@ -1,17 +1,24 @@
 The {{…}} marks the servitor fills in a rite's words at invocation
 
 Hear how one scripture serves many aspects: wherever a rite's words would
-differ only by the aspect, the rite, or an inscription, the scribe sets a
-placeholder, and at every invocation the servitor illuminates it — fills the
-mark with what the invocation knows, before a single step is performed.
+differ only by the aspect, the rite, an inscription or the omen, the scribe
+sets a placeholder, and at every invocation the servitor illuminates it —
+fills the mark with what the invocation knows, before a single subject is
+set.
 
 These marks are known in every word of a rite:
-  {{aspect}}              the aspect being invoked
+  {{aspect}}              the aspect being invoked; within an omen, the
+                          aspect whose omen it is
   {{former}}              the aspect the rite stood in before; empty when
                           the servitor cannot know it
   {{rite.name}}           the rite's own name
   {{inscription.<key>}}   the inscription of that key, from its rune or its
                           decree; empty when neither gives it
+
+And one more, in two places alone:
+  {{omen}}                the omen a machine-spirit is enacted into, within
+                          its "enact" words, or tried for, within a trial of
+                          its auspex; anywhere else it is heresy
 
 An edict bears no aspect, so in its words {{aspect}} and {{former}} are
 heresy; {{rite.name}} and {{inscription.<key>}} serve it as they serve every
@@ -19,19 +26,21 @@ rite.
 
 The tidings a vox-cast sends are drawn from the servitor's own embedded
 lists of tidings, and those alone speak the further marks of the invocation:
-{{heresy}} (why it fell), {{step}} (the verse just performed), {{steps}}
-(how many true steps the liturgy holds), {{step.kind}} (that step's own key,
-such as "tether") and {{step.target}} (what that key holds); those of a rite
-of pattern Mark II speak {{subject}} (the subject set last, or the one that
-fell) in place of the step's key and target. No word a scribe writes into a
-rite may speak them; there they are heresy.
+{{heresy}} (why it fell), {{subject}} (the subject set last, or the one that
+fell), {{step}} and {{steps}} (the count a progress tells, "x / n"), and,
+for an edict and for a fallen observance, {{step.kind}} (its designation)
+and {{step.target}} (its words or scroll). No word a scribe writes into a rite may speak them; there
+they are heresy.
 
 Placeholders are illuminated in the vessels of sanctums and transcriptions,
-the names and anchors of tethers, the words of incantations, the scrolls and
-offerings of litanies, every reversion, inline scripture, the paths of tomes
-and the scripture of tomes that are illuminated, and the auspex. They are
-never illuminated in wards, glyphs, tongues, seals, patience, decrees or
-purposes, nor in the names of aspects, inscriptions and keys.
+the bound names of tethers, every omen, the enact words and the scan and
+trials of a machine-spirit, the words and scrolls and offerings of
+observances and verses, every reversion, the paths of tomes and the
+scripture of tomes that are illuminated. An omen is rendered for its own
+aspect, with the data-slate's inscriptions when it is read and with the
+invocation's when it is set. Placeholders are never illuminated in names,
+designations, wards, glyphs, tongues, seals, patience, decrees or purposes,
+nor in the names of aspects, inscriptions and keys.
 
 A mark the codex does not know, an inscription the rite never declared, and
 a mark opened with {{ but never closed are heresy: the inquisition and every
@@ -39,38 +48,41 @@ pre-flight denounce them, and they are never rendered empty in silence. A
 mark admits no spaces within its braces. To inscribe a literal {{, write
 {{{{; a lone }} is taken as written.
 
-Incantations, litanies and the auspex also receive the same knowledge through
-the environment: SERVITOR_ASPECT, SERVITOR_FORMER_ASPECT, SERVITOR_RITE, and
-for every declared inscription SERVITOR_INSCRIPTION_<KEY> — the key in
-capitals, each "-" and "." made "_" (empty when unset). An edict's
-incantations and litanies receive no SERVITOR_ASPECT and no
-SERVITOR_FORMER_ASPECT. Prefer these over placeholders within the words a
-tongue will speak: a placeholder pastes its value into the words before the
-tongue reads them, so a quote, a "$" or a ";" within an inscription would be
-interpreted by the tongue as part of the command. A variable of the
-environment is read by the tongue as one word, untouched, when written within
-double quotes.
+Every word the servitor speaks also receives the same knowledge through the
+environment: SERVITOR_ASPECT, SERVITOR_FORMER_ASPECT, SERVITOR_RITE, for
+every declared inscription SERVITOR_INSCRIPTION_<KEY> — the key in capitals,
+each "-" and "." made "_" (empty when unset) — and, for enact words and
+trials alone, SERVITOR_OMEN. An edict's words receive no SERVITOR_ASPECT and
+no SERVITOR_FORMER_ASPECT. Prefer these over placeholders within the words
+a tongue will speak: a placeholder pastes its value into the words before
+the tongue reads them, so a quote, a "$" or a ";" within an inscription —
+or within an omen that holds one — would be interpreted by the tongue as
+part of the command. A variable of the environment is read by the tongue as
+one word, untouched, when written within double quotes.
 
-The words of an exalted verse are fixed when its master sanctions them, and
-only marks whose value is known then may be illuminated in them: {{aspect}},
-{{rite.name}}, and {{inscription.<key>}}, whose word is then its decree alone
-— its rune is refused for that rite, and a mandatory inscription that some
-aspect does not decree may not be illuminated there. {{former}} is heresy
-there; exalted speech hears the former aspect and the words of runes from
-"$SERVITOR_FORMER_ASPECT" and "$SERVITOR_INSCRIPTION_<KEY>" instead.
+The words of an exalted subject, observance or verse are fixed when its
+master sanctions them, and only marks whose value is known then may be
+illuminated in them: {{aspect}}, {{rite.name}}, {{omen}} — every declared
+omen is fixed at the sanction — and {{inscription.<key>}}, whose word is then
+its decree alone: its rune is refused for that rite, and a mandatory
+inscription that some aspect does not decree may not be illuminated there.
+An omen of an exalted subject that splices an inscription is held to the
+same rule. {{former}} is heresy there; exalted speech hears the former
+aspect and the words of runes from "$SERVITOR_FORMER_ASPECT" and
+"$SERVITOR_INSCRIPTION_<KEY>" instead.
 
-Kindred passages: aspect-maps, inscriptions, illuminate, incantation, vox-cast,
-edict, exalted
+Kindred passages: aspect-maps, omens, enact, trials, inscriptions,
+illuminate, vox-cast, edict, exalted
 
 Exempla:
-  {"sanctum": "~/.config/niri/util.kdl",
-   "scripture": "// {{rite.name}} invoked as {{aspect}}, formerly {{former}}"}
+  "omens": {"*": "~/.config/nfluff/themes/{{aspect}}"}
+
+  "enact": {"*": "echo {{omen}} > /sys/devices/system/cpu/smt/control"}
 
   // heeded: the tongue receives the reason as one word, whatever it holds
-  {"incantation": "notify-send servitor \"$SERVITOR_INSCRIPTION_REASON\""}
+  {"name": "remnant", "designation": "incantation",
+   "words": "notify-send servitor \"$SERVITOR_INSCRIPTION_REASON\""}
 
   // perilous: a reason of  it's done; reboot  is spoken as commands
-  {"incantation": "notify-send servitor '{{inscription.reason}}'"}
-
-  {"tether": "~/.local/share/nfluff/current-theme",
-   "anchor": "~/.config/nfluff/themes/{{aspect}}"}
+  {"name": "remnant", "designation": "incantation",
+   "words": "notify-send servitor '{{inscription.reason}}'"}

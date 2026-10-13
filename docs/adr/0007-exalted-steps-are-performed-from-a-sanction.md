@@ -155,3 +155,8 @@ issue 12d5c7fe, and `docs/research/elevation-tools.md`.
 
   Not verified: the graphical polkit agent, and a long-lived cogitator invoking run0
   twice.
+- *(Amended by ADR 0008: in pattern Mark II every subject designation, observance and
+  edict entry may be exalted; the unit holds each exalted machine-spirit's enact words for
+  every declared omen, so a rollback can restore the omen read before; `perform` names its
+  item and may skip forward, never back; the exalted servitor is raised only when an
+  exalted item changes or an exalted auspex must be read (`read`, protocol 3).)*

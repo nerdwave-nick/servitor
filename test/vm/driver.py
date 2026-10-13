@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""The driver of test/vm/run.sh: the trial of exalted verses upon sudo, run0 and pkexec.
+"""The driver of test/vm/run.sh: the trial of exalted subjects upon sudo, run0 and pkexec.
 
 It runs inside the VM as "tester", in the session auto-logged-in on tty1, so
 that polkit judges it active, as on a desktop. Every scenario runs in a
@@ -8,6 +8,11 @@ password whenever a proof is asked and counts the proofs. Each assertion is one
 line of /mnt/share/trial.log, "ok - …" or "not ok - …", with what was seen
 beneath a failure; guest.sh adds the root's assertions and the verdict.
 Every transcript of servitor at a terminal is kept in /mnt/share/transcripts.log.
+
+Every rite is of pattern Mark II but one: trial-gaming is laid in pattern
+Mark I with exalted verses, converted as the servitor converts (test/vm/convert),
+and then given auspexes by its master as the faithful would, one of them an
+exalted auspex the invoker cannot read.
 
 The cogitator is driven by its keys: sudo is lent its terminal (and Ctrl-C at
 sudo's prompt is tried), while run0 and pkexec, called upon apart from any
@@ -32,8 +37,13 @@ HOME = os.path.expanduser("~")
 LIB = f"{HOME}/.config/servitor"
 RITES = f"{LIB}/rites"
 CHRONICLE = f"{HOME}/.local/state/servitor/chronicle.jsonl"
+SLATES = f"{HOME}/.local/state/servitor/data-slates"
+FORGE = f"{HOME}/servitor"
 KNOB = "/proc/sys/kernel/split_lock_mitigate"
 KEPT = "/etc/sysctl.d/90-split-lock.conf"
+# What only the root may read: the omen of trial-gaming's subject
+# incantation-3, read by its exalted auspex alone.
+HIDDEN = "/etc/servitor-trial-hidden"
 # sudo asks "servitor: authenticate to perform <rite> (sigil <sigil>): ", or
 # "[sudo] password for tester: "; the agents of polkit ask "Password: ".
 PROMPT = re.compile(rb"(password[^\n]*:|authenticate to [^\n]*\):)\s*$", re.I)
@@ -179,34 +189,96 @@ def chronicle_count():
         return 0
 
 
+def slate(name):
+    try:
+        with open(f"{SLATES}/{name}.json") as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {}
+
+
 def settings(intercessor=None):
-    s = {"pattern": "Mark I"}
+    s = {"pattern": "Mark II"}
     if intercessor:
         s["intercessor"] = intercessor
     with open(f"{LIB}/servitor.json", "w") as f:
         json.dump(s, f)
 
 
-def rite(name, aspects=("on", "off"), liturgy=()):
+def rite(name, subjects, aspects=("on", "off")):
     with open(f"{RITES}/{name}.json", "w") as f:
-        json.dump({"pattern": "Mark I", "purpose": f"the trial {name}", "aspects": list(aspects),
-                   "liturgy": list(liturgy)}, f, indent=1)
+        json.dump({"pattern": "Mark II", "purpose": f"the trial {name}", "aspects": list(aspects),
+                   "subjects": list(subjects)}, f, indent=1)
 
 
 def lay_the_librarium():
     os.makedirs(RITES, exist_ok=True)
-    shutil.copy(f"{HOME}/servitor/examples/rites/split-lock.json", f"{RITES}/split-lock.json")
-    rite("trial-unsanctioned", liturgy=[{"incantation": "true", "exalted": True}])
-    rite("trial-fall", liturgy=[
-        {"transcription": "/etc/servitor-trial-fall.conf", "exalted": True, "scripture": "fallen {{aspect}}"},
-        {"incantation": "echo performed > fall.mark", "reversion": "echo reverted > fall.mark"},
-        {"incantation": "exit 7", "exalted": True},
+    shutil.copy(f"{FORGE}/examples/rites/split-lock.json", f"{RITES}/split-lock.json")
+    rite("trial-unsanctioned", [
+        {"name": "nothing", "designation": "machine-spirit", "exalted": True, "enact": {"*": "true"}},
     ])
-    rite("trial-slain", liturgy=[
-        {"transcription": "/etc/servitor-trial-slain.conf", "exalted": True, "scripture": "slain {{aspect}}"},
-        {"incantation": "touch slain.mark; sleep 120", "patience": "5m"},
+    # The exalted subject "wrong" never shows the omen "on": its proof fails,
+    # and everything set before it is restored to what was read.
+    rite("trial-fall", [
+        {"name": "vessel", "designation": "transcription", "exalted": True,
+         "vessel": "/etc/servitor-trial-fall.conf", "omens": {"on": "fallen on\n", "*": None}},
+        {"name": "mark", "designation": "machine-spirit", "omens": {"on": "performed", "*": "reverted"},
+         "auspex": {"scan": "cat fall.mark 2>/dev/null || echo reverted"}, "enact": {"*": "echo {{omen}} > fall.mark"}},
+        {"name": "wrong", "designation": "machine-spirit", "exalted": True,
+         "auspex": {"scan": "cat /etc/servitor-trial-wrong 2>/dev/null || echo off"},
+         "enact": {"*": "rm -f /etc/servitor-trial-wrong"}},
+    ])
+    rite("trial-slain", [
+        {"name": "vessel", "designation": "transcription", "exalted": True,
+         "vessel": "/etc/servitor-trial-slain.conf", "omens": {"on": "slain on\n", "*": None}},
+        {"name": "sleeper", "designation": "machine-spirit", "enact": {"*": "touch slain.mark; sleep 120"},
+         "patience": "5m"},
     ])
     settings()
+
+
+def convert_trial_gaming():
+    """trial-gaming, laid in pattern Mark I with exalted verses, is converted
+    as the servitor converts on its first reading, then given its auspexes
+    by its master: the knob is read by the invoker, the hidden omen by an
+    exalted auspex alone."""
+    path = f"{RITES}/trial-gaming.json"
+    with open(path, "w") as f:
+        json.dump({"pattern": "Mark I", "purpose": "the trial trial-gaming", "aspects": ["on", "off"], "liturgy": [
+            {"incantation": {"on": "sysctl -wq kernel.split_lock_mitigate=0",
+                             "*": "sysctl -wq kernel.split_lock_mitigate=1"}, "exalted": True},
+            {"vox-cast": "progress"},
+            {"incantation": {"on": f"umask 077; echo on > {HIDDEN}", "*": f"umask 077; echo off > {HIDDEN}"},
+             "exalted": True},
+            {"vox-cast": "success"},
+        ]}, f, indent=1)
+    env = dict(os.environ, GOTOOLCHAIN="local", GOFLAGS="-mod=readonly -modcacherw")
+    gopath = f"{FORGE}/packaging/arch/src/gopath"
+    if os.path.isdir(gopath):
+        env["GOPATH"] = gopath
+    p = subprocess.run(["go", "run", "./test/vm/convert", LIB], cwd=FORGE, env=env, capture_output=True,
+                       text=True, timeout=900)
+    with open(path) as f:
+        converted = json.load(f)
+    check(p.returncode == 0 and 'the rite "trial-gaming" is converted to pattern "Mark II"' in p.stdout
+          and "servitor sanction trial-gaming" in p.stdout,
+          "trial-gaming is converted, and the tidings bid it be sanctioned anew", p.stdout + p.stderr)
+    check(converted.get("pattern") == "Mark II" and os.path.exists(f"{RITES}/.mark-i/trial-gaming.json")
+          and [(s["name"], s["designation"], s.get("exalted")) for s in converted["subjects"]]
+          == [("incantation-1", "machine-spirit", True), ("incantation-3", "machine-spirit", True)],
+          "the converted trial-gaming holds two exalted machine-spirits, its elder scripture kept in .mark-i",
+          json.dumps(converted))
+    spirits = {s["name"]: s for s in converted["subjects"]}
+    spirits["incantation-1"]["auspex"] = {
+        "scan": '[ "$(cat /proc/sys/kernel/split_lock_mitigate)" = 0 ] && echo on || echo off'}
+    spirits["incantation-3"]["auspex"] = {"scan": f"cat {HIDDEN}", "exalted": True}
+    with open(path, "w") as f:
+        json.dump(converted, f, indent=1)
+    t = servitor("invoke", "trial-gaming", "on")
+    check(t.code == 2 and t.proofs == 0 and "stands unsanctioned" in t.text(),
+          "the converted trial-gaming is refused before any proof until it is sanctioned", t.text())
+    t = servitor("sanction", "trial-gaming")
+    check(t.code == 0 and t.proofs == 1, "sanction trial-gaming: one proof, exit 0", t.text())
 
 
 def tell_the_machine():
@@ -243,6 +315,40 @@ def sanction_split_lock():
           "servitor sanction lists split-lock sanctioned", t.text())
 
 
+def unchanged_through(tool, agent):
+    """split-lock already bears "on": nothing exalted changes, and nothing is
+    asked; its auspex is the invoker's own."""
+    lines = chronicle_count()
+    t = servitor("invoke", "split-lock", "on", agent=agent)
+    entry = last_chronicle()
+    check(t.code == 0 and t.proofs == 0, f"{tool}: split-lock invoked again into on asks no proof, exit 0", t.text())
+    check(chronicle_count() == lines + 1 and entry.get("verdict") == "triumph" and entry.get("changed") == []
+          and "intercessor" not in entry, f"{tool}: the unchanged invocation is chronicled, no intercessor called",
+          json.dumps(entry))
+
+
+def gaming_through(tool, agent):
+    """The converted trial-gaming asks one proof at every invocation, for its
+    exalted auspex is read by the exalted servitor alone; the subjects that
+    already bear the aspect are not set again."""
+    both = ["incantation-1", "incantation-3"]
+    for aspect, value, changed in (("on", "0", both), ("on", "0", []), ("off", "1", both)):
+        lines = chronicle_count()
+        t = servitor("invoke", "trial-gaming", aspect, agent=agent)
+        entry = last_chronicle()
+        again = " again" if not changed else ""
+        check(t.code == 0 and t.proofs == 1,
+              f"{tool}: invoke trial-gaming {aspect}{again} asks exactly one proof, exit 0", t.text())
+        check(knob() == value, f"{tool}: trial-gaming {aspect}{again}: split_lock_mitigate is {value}", knob())
+        check(chronicle_count() == lines + 1 and entry.get("verdict") == "triumph"
+              and entry.get("changed") == changed and entry.get("intercessor") == tool,
+              f"{tool}: trial-gaming {aspect}{again} is chronicled changing {changed or 'nothing'}", json.dumps(entry))
+        recorded = slate("trial-gaming").get("omens", {}).get("incantation-3", {})
+        check(recorded.get("omen") == aspect and recorded.get("exalted") is True,
+              f"{tool}: the data-slate records the hidden omen {aspect}, read by the exalted servitor",
+              json.dumps(slate("trial-gaming")))
+
+
 def invoke_through(tool, agent=None):
     settings(tool)
     for aspect, value in (("on", "0"), ("off", "1")):
@@ -258,6 +364,9 @@ def invoke_through(tool, agent=None):
         check(chronicle_count() == lines + 1 and entry.get("verdict") == "triumph"
               and entry.get("intercessor") == tool and len(entry.get("sigil", "")) == 12,
               f"{tool}: the chronicle names the intercessor and the sigil", json.dumps(entry))
+        if aspect == "on":
+            unchanged_through(tool, agent)
+    gaming_through(tool, agent)
     settings()
 
 
@@ -280,8 +389,8 @@ def lapsed():
     with open(path) as f:
         sanctioned = f.read()
     with open(path, "w") as f:
-        f.write(sanctioned.replace('"sysctl -wq kernel.split_lock_mitigate=0"',
-                                   '"sysctl -wq kernel.split_lock_mitigate=0 # amended"'))
+        f.write(sanctioned.replace('"sysctl -wq kernel.split_lock_mitigate={{omen}}"',
+                                   '"sysctl -wq kernel.split_lock_mitigate={{omen}} # amended"'))
     before = knob()
     t = servitor("invoke", "split-lock", "on")
     check(t.code == 2 and t.proofs == 0 and "has lapsed" in t.text() and "servitor sanction split-lock" in t.text(),
@@ -295,18 +404,21 @@ def lapsed():
     check(t.text().strip() == "sanctioned", "restored, split-lock stands sanctioned again", t.text())
 
 
-def a_verse_falls():
+def a_proof_fails():
     t = servitor("sanction", "trial-fall")
     check(t.code == 0 and t.proofs == 1, "sanction trial-fall: one proof", t.text())
     t = servitor("invoke", "trial-fall", "on")
     entry = last_chronicle()
-    check(t.code == 1 and t.proofs == 1, "the exalted verse 3 of trial-fall falls: exit 1, and no second proof",
-          t.text())
-    check(not os.path.exists("/etc/servitor-trial-fall.conf"), "the exalted vessel of verse 1 is struck again")
+    check(t.code == 1 and t.proofs == 1,
+          "the exalted subject wrong of trial-fall fails its proof: exit 1, and no second proof", t.text())
+    check('the subject "wrong" shows the omen "off"; "on" was commanded' in t.text(),
+          "the lament names the subject, the omen found and the omen commanded", t.text())
+    check(not os.path.exists("/etc/servitor-trial-fall.conf"), "the exalted vessel set before it is struck again")
     mark = open(f"{RITES}/fall.mark").read().strip() if os.path.exists(f"{RITES}/fall.mark") else ""
-    check(mark == "reverted", "the common verse 2 between them is reverted", mark)
+    check(mark == "reverted", "the common subject between them is restored to the omen read", mark)
     check(entry.get("rite") == "trial-fall" and entry.get("verdict") == "reverted"
-          and entry.get("intercessor") == "sudo", "the chronicle tells trial-fall reverted", json.dumps(entry))
+          and entry.get("fell_at") == {"subject": "wrong"} and entry.get("intercessor") == "sudo",
+          "the chronicle tells trial-fall reverted at the subject wrong", json.dumps(entry))
 
 
 def the_parent_is_slain():
@@ -427,11 +539,13 @@ def main():
     subprocess.run(["sudo", "-K"])
     refusals_before_any_proof("unsanctioned")
     sanction_split_lock()
+    convert_trial_gaming()
+    check(not os.access(HIDDEN, os.R_OK), f"the invoker may not read {HIDDEN}")
     for tool in ("sudo", "run0"):
         invoke_through(tool)
     pkexec_at_a_terminal()
     lapsed()
-    a_verse_falls()
+    a_proof_fails()
     the_parent_is_slain()
     under_sudo()
     cogitator_sudo()
@@ -439,6 +553,10 @@ def main():
         cogitator_through_an_agent(tool)
     abjure()
     check(knob() == "1" and not os.path.exists(KEPT), "the machine ends as it began")
+    t = servitor("augury", "trial-gaming")
+    omen = next((o for o in json.loads(t.text() or "{}").get("omens", []) if o.get("subject") == "incantation-3"), {})
+    check(omen.get("omen") == "off" and omen.get("stale") is True and "read_at" in omen,
+          "outside an invocation the augury tells the hidden omen as recorded, stale", t.text())
 
 
 if __name__ == "__main__":

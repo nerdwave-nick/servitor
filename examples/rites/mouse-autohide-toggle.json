@@ -7,26 +7,32 @@
 //   servitor augury mouse-autohide-toggle mode
 {
   "$schema": "https://raw.githubusercontent.com/nerdwave-nick/servitor/main/schema/rite.schema.json",
-  "pattern": "Mark I",
+  "pattern": "Mark II",
   "purpose": "Hide the cursor after 400ms of stillness",
   "aspects": ["on", "off"],
   "inscriptions": {
     "reason": {"purpose": "why the cursor's bearing was changed"},
     "mode": {"mandatory": true, "decrees": {"on": "auto-hide", "off": "always-visible"}},
   },
-  "liturgy": [
+  // a hotkey has no terminal: let the desktop hear of the triumph
+  "vox-cast": ["success"],
+  "subjects": [
     {
-      "sanctum": "~/.config/niri/util.kdl",
+      "name": "cursor",
+      "designation": "sanctum",
+      "vessel": "~/.config/niri/util.kdl",
       "ward": "mouse-autohide",   // default: the rite's name
       "consecrate": true,         // bring util.kdl into being if it is missing
-      "scripture": {
+      "omens": {
         "on": ["cursor {", "    hide-after-inactive-ms 400", "}"],
         "off": "",
       },
+      "recessional": ["reread"],
     },
-    // bid niri read its scripture anew, and grant it five seconds to obey
-    {"incantation": "niri msg action load-config-file", "patience": "5s"},
-    // a hotkey has no terminal: let the desktop hear of the triumph
-    {"vox-cast": "success"},
+  ],
+  "observances": [
+    // bid niri read its scripture anew once the sanctum changed, and grant it
+    // five seconds to obey
+    {"name": "reread", "designation": "incantation", "words": "niri msg action load-config-file", "patience": "5s"},
   ],
 }

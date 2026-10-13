@@ -3,8 +3,21 @@ The Mark of the form in which a scripture is written
 Every scripture of the Librarium — each rite in rites/ and the settings in
 servitor.json — must declare at its head the Mark of the form it is written
 in. The key is "pattern", and its value is the word "Mark" followed by
-numerals of the old tongue: "Mark I", "Mark II", "Mark IV" and so forth. This
-servitor was forged to read pattern "Mark I", and that Mark alone.
+numerals of the old tongue: "Mark I", "Mark II", "Mark IV" and so forth.
+
+This servitor writes and performs pattern "Mark II". A rite of Mark II is
+either a rite of aspects, which declares its "subjects" — each read and set by
+itself — and the "observances" spoken when they change, or an edict, which
+keeps a "liturgy" of incantations and litanies in the designation form. The
+settings of Mark II keep the keys they always had.
+
+The elder pattern "Mark I", whose rites performed one liturgy of steps, is
+still read, but never kept: the first ritual that reads pure scripture of
+Mark I and may write converts it to Mark II, once, keeps the elder scripture
+in the hall .mark-i beside it and tells what changed. Rituals that only read
+convert it in their memory alone. Scripture of Mark I that holds heresy is
+not converted; it stands heretical until its heresies are purged. The
+passages on conversion and mark-i tell all.
 
 The pattern is examined before anything else. A scripture that bears no
 pattern, a pattern that is no Mark at all, or a Mark this servitor does not
@@ -12,21 +25,23 @@ know is heresy — and it is then the only heresy denounced, for the servitor
 will not guess at the meaning of a form it was never taught, nor heap
 complaints about unknown keys upon scripture of another age. Such a rite
 stands heretical; such settings are not heeded, and the servitor keeps to its
-defaults.
+defaults. Scripture of the eldest form, which knew no pattern at all, is heresy,
+and nothing of it is converted: write it anew.
 
-There is no conversion of elder scripture, and no form is read implicitly:
-whoever keeps rites written for an earlier servitor must rewrite them in
-pattern Mark I by hand, and the inquisition will denounce every one that is
-left unrewritten.
-
-Kindred passages: rite, librarium, inquisition, heresy
+Kindred passages: rite, conversion, mark-i, subjects, edict, librarium,
+inquisition, heresy
 
 Exempla:
   {
-    "pattern": "Mark I",
+    "pattern": "Mark II",
     "aspects": ["on", "off"],
-    "liturgy": [{"incantation": "makoctl mode -t do-not-disturb"}]
+    "subjects": [
+      {"name": "mako", "designation": "machine-spirit",
+       "omens": {"on": "do-not-disturb", "*": "default"},
+       "auspex": {"scan": "makoctl mode"},
+       "enact": {"*": "makoctl mode -s \"$SERVITOR_OMEN\""}}
+    ]
   }
 
   // servitor.json, the settings beside the rites
-  {"pattern": "Mark I", "tongue": "bash", "patience": "30s"}
+  {"pattern": "Mark II", "tongue": "bash", "patience": "30s"}

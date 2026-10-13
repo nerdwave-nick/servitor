@@ -7,7 +7,7 @@ sources — with a blessing, and does nothing else.
 
 Do not confuse the servitor's own pattern with the pattern of scripture: the
 key "pattern" of a rite or of the settings names the form the scripture is
-written in, "Mark I" for this servitor, while the rune --version names the
+written in, "Mark II" for this servitor, while the rune --version names the
 forging of the servitor itself.
 
 Kindred passages: pattern, expound

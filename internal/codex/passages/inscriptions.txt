@@ -54,4 +54,5 @@ Exempla:
   servitor invoke mouse-autohide-toggle off --mode ""     # clears the decree
   servitor augury mouse-autohide-toggle reason
 
-  {"incantation": "echo \"$SERVITOR_INSCRIPTION_REASON\" >> ~/.cache/dnd-reasons"}
+  {"name": "remnant", "designation": "incantation",
+   "words": "echo \"$SERVITOR_INSCRIPTION_REASON\" >> ~/.cache/dnd-reasons"}

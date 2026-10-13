@@ -18,8 +18,8 @@ tome object.
 Kindred passages: tome, scripture, placeholders, inscriptions
 
 Exempla:
-  {"sanctum": "~/.config/mako/config",
-   "scripture": {"tome": "mako/visage.ini", "illuminate": true}}
+  {"name": "mako", "designation": "sanctum", "vessel": "~/.config/mako/config",
+   "omens": {"*": {"tome": "mako/visage.ini", "illuminate": true}}}
 
   The tome mako/visage.ini may then speak:
     background-color={{inscription.hue}}

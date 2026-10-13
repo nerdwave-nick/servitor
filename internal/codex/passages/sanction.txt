@@ -1,8 +1,9 @@
 Sanction the exalted verses of a rite with one proof, or list the sanctions and how each stands
 
-No exalted verse is performed but as its master sanctioned it. A sanction is
-a copy of a rite's exalted verses laid where only the machine's own
-authority writes, sealed by its sigil:
+Nothing exalted is performed but as its master sanctioned it. A sanction is
+a copy of what a rite exalts — its exalted subjects and observances, or an
+edict's exalted verses — laid where only the machine's own authority writes,
+sealed by its sigil:
 
   /var/lib/servitor/sanctions/<uid>/<rite>.json
 
@@ -47,7 +48,7 @@ census and the augury tell under the key "sanction":
   lapsed        ☓  they changed since, or can no longer be read whole
   unsanctioned  ○  it holds exalted verses, yet no sanction
   forsaken      †  a sanction whose rite is gone, or holds no exalted verse
-  ""               the rite holds no exalted verse and needs no sanction
+  ""               the rite exalts nothing and needs no sanction
 
 The glyphs mark the rites of the census table and the sanctions of the
 list. A forsaken sanction belongs to no rite of the census: the census

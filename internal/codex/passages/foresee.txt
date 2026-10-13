@@ -3,63 +3,70 @@ Divine what an invocation would do, without performing any of it
 The rune --foresee (shorthand -f) is given to the ritual invoke. The
 servitor then performs the whole pre-flight — illuminating every placeholder,
 reading every tome, weighing every vessel, tether and tongue, resolving every
-inscription — and reveals, verse by verse, what the invocation would do:
-the changes to each vessel as a comparison of its lines, a seal that would
-change, a vessel that would be consecrated or struck from the machine, each
-tether that would be bound, rebound or unbound, and each incantation and
-litany as it would be spoken, with its tongue, its patience and its
-reversion. Should the pre-flight find heresy, the heresies are recited
-instead, exactly as a true invocation would recite them.
+inscription — and reveals what the invocation would do. Should the
+pre-flight find heresy, the heresies are recited instead, exactly as a true
+invocation would recite them.
 
-Nothing is performed. No vessel or tether is touched, no command is spoken,
-not even the rite's auspex is awakened; no vox-cast is sent, the data-slate
-is not written and the chronicle is not added to. The former aspect shown is
-read from the omens of the steps and the data-slate alone. An edict is
-foreseen alike, its header naming the edict alone, for it has no aspect to
-leave or to enter:
+A rite of aspects cannot tell what it would do without reading its
+subjects, so its foresight awakens their auspexes, as an augury does, yet
+speaks no enact word. It tells each subject on a line of its own, in
+written order: a machine-spirit with the omen read and the omen commanded,
+"(mute)" when its auspex named no omen and "(no auspex)" when it has none,
+and whether it is unchanged or changing; beneath a changing one, the words
+it would speak, or for a sanctum and transcription the changes to the vessel
+as a comparison of its lines, a seal that would change, a vessel that would
+be consecrated or struck, and for a tether how it would be bound, rebound or
+unbound. Each observance that would be spoken stands in its place among
+them, with its tongue, its patience and its reversion:
+
+  +++ Foreseen: the rite theme, (dormant) → porpl +++
+  observance veil · incantation
+    spoken in the tongue bash, with the patience of 30s: bash -c "niri msg …"
+  subject visage · tether ~/.local/share/nfluff/current-theme: changing
+    the tether is bound to ~/.config/nfluff/themes/porpl (it led to nothing)
+  observance awaken · litany
+    recited by its own shebang, with the patience of 1m0s: …/recite-hooks …
+  Nothing was performed.
+
+An edict is foreseen verse by verse, its header naming the edict alone, for
+it has no aspect to leave or to enter:
 
   +++ Foreseen: the edict screenshot +++
 
+Nothing is performed. No vessel or tether is touched, no enact word,
+observance or verse is spoken, no vox-cast is sent, the data-slate is not
+written and the chronicle is not added to. Scripture of pattern Mark I is
+foreseen converted in memory alone, and is not written.
+
 Foresight never exalts: no proof is asked and the exalted servitor is never
-raised. The foresight of a rite with exalted verses first tells how their
-plan for the aspect stands towards its sanction — sanctioned under its
-sigil, or unsanctioned or lapsed, naming servitor sanction <rite> — and
-marks each exalted verse ✠ after its name. A vessel of an exalted verse its
-invoker may not read is foreseen by its owner, seal and size, and for a
-transcription by the SHA-256 of the scripture it shall hold, with "contents
-hidden — change unknown", never as undisturbed; the bound name of an exalted
-tether its invoker may not behold, alike.
+raised. The foresight of a rite with exalted subjects, observances or verses
+first tells how their plan for the aspect stands towards its sanction —
+sanctioned under its sigil, or unsanctioned or lapsed, naming servitor
+sanction <rite> — and marks each exalted one ✠ after its name. An auspex
+itself marked exalted is never spoken: its subject tells the omen the
+data-slate last recorded in this boot, "(stale, read <hour>)", and is
+planned from it, or "(read at invocation)" when none serves, and is planned
+changing. A vessel of an exalted subject its invoker may not read is
+foreseen by its owner, seal and size, and for a transcription by the
+SHA-256 of the scripture it shall hold, with "contents hidden — change
+unknown", never as undisturbed; the bound name of an exalted tether its
+invoker may not behold, alike.
 
 Foresight is heeded even of a servitor roused as root, which refuses every
 true invocation; under sudo it foresees upon the Librarium and the vessels of
 the one who spoke sudo, and writes nothing.
 
-A rite of pattern Mark II cannot tell what it would do without reading its
-subjects, so its foresight awakens their auspexes, as an augury does, yet
-speaks no enact word, and never an auspex itself marked "exalted", which
-only the exalted servitor speaks at invocation: such a subject tells the
-omen the data-slate last recorded, "(stale, read <hour>)", or "(read at
-invocation)" when none serves. It tells each subject on a line of its own: a
-machine-spirit with the omen read and the omen commanded, "(mute)" when its
-auspex named no aspect and "(no auspex)" when it has none, and whether it is
-unchanged or changing; beneath a changing one, the words or the comparison of
-lines it would perform. Each observance that would be spoken stands in its
-place among them, with its words and its reversion:
-
-  observance veil · incantation
-    spoken in the tongue bash, with the patience of 30s: bash -c "niri msg …"
-  subject smt · machine-spirit: "on" → "off", changing
-    spoken in the tongue bash, with the patience of 30s: bash -c "echo off > …"
-  subject theme · tether ~/.local/share/nfluff/current-theme: unchanged
-    the tether stays bound to ~/.config/nfluff/themes/porpl
-
 Foresee before every invocation you are not certain of, and before invoking
 a rite whose scripture was newly amended.
 
-Kindred passages: invoke, pre-flight, silence, auspex, chronicle, exalted,
-sanction
+Kindred passages: invoke, pre-flight, silence, auspex, subjects,
+observances, chronicle, exalted, sanction
 
 Exempla:
   servitor invoke theme porpl --foresee
   servitor invoke mouse-autohide-toggle on -f --reason "gaming remnant"
-  servitor invoke screenshot -f --region full
+  servitor invoke screenshot -f --region whole
+
+  subject smt · machine-spirit ✠: "on" → "off", changing
+    spoken in the tongue bash, with the patience of 30s: bash -c "echo off > …"
+  subject nft · machine-spirit ✠: (read at invocation) → "gaming", changing

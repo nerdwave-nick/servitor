@@ -1,30 +1,36 @@
-The place of a step within its liturgy, counted from one
+The place of a verse within an edict's liturgy, counted from one
 
-The steps of a liturgy are its verses, and each is named by its place: the
-first step written is verse 1, the next verse 2, and so on to the last,
-vox-casts included. Wherever the servitor speaks of one step, it names the
-verse and then the step by its own key and what that key holds — never by a
-bare number, but as the liturgy itself would say it.
+The verses of an edict's liturgy are named by their place: the first written
+is verse 1, the next verse 2, and so on to the last. Wherever the servitor
+speaks of one verse, it names its place and then its designation and what it
+holds — never a bare number, but as the liturgy itself would say it. A rite
+of aspects keeps no liturgy, and names each subject and observance by its
+"name" instead: "subject smt · machine-spirit", "observance veil ·
+incantation".
 
-In the binharic of an augury, every omen and every taint bears "verse" beside
-the step's own key: {"verse": 2, "tether": "…"}. The chronicle names the step
-that fell as "fell_at": {"verse": 3, "incantation": "…"}, and each reversion
-by its verse and verdict. On the terminal, foresight, summaries and laments
-speak "verse 1 · sanctum ~/.config/niri/util.kdl".
+The chronicle names the verse of an edict that fell by its place and its
+designation, "fell_at": {"verse": 2, "incantation": "…"}, and each reversion by its verse and verdict, as it names a
+subject or observance of a rite of aspects by {"subject": …} or
+{"observance": …}. On the terminal, foresight, reports and laments speak
+"verse 1 · incantation grim …". The vox-casts of an edict's progress tell
+how many of its verses are performed, and their tidings may name the verse
+just performed as {{step}}.
 
-The heresies of a step are found by line and column within the scripture,
-not by verse; the verse names the step in what the servitor performed or
-observed. The vox-casts of progress tell "step x / n", counting only the true
-steps, and their tidings may name the verse just performed as {{step}}.
+The heresies of a verse are found by line and column within the scripture,
+not by verse; the verse names it in what the servitor performed.
 
-Kindred passages: liturgy, omens, chronicle, verdicts, foresee
+In the elder pattern "Mark I" every rite kept a liturgy of steps, each a
+verse, vox-casts among them, and omens, taints and the chronicle named a
+step by its verse and its own key: {"verse": 2, "tether": "…"}. Conversion
+names each subject and observance it makes after the verse it was:
+"tether-2", "incantation-1-on" (see conversion).
+
+Kindred passages: liturgy, edict, chronicle, verdicts, foresee, conversion
 
 Exempla:
-  servitor invoke theme porpl --foresee
+  servitor invoke screenshot --foresee
 
-  verse 1 · vox-cast progress
-  verse 2 · tether ~/.local/share/nfluff/current-theme
-  verse 3 · incantation source ~/.config/nfluff/themes/porpl/hooks
+  verse 1 · incantation grim -g "$(slurp)" ~/pictures/visage.png
+  verse 2 · incantation wl-copy --type image/png < ~/pictures/visage.png
 
-  {"verse": 2, "tether": "~/.local/share/nfluff/current-theme",
-   "aspect": "porpl"}
+  "fell_at": {"verse": 2, "incantation": "wl-copy --type image/png < …"}

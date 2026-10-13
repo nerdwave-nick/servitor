@@ -32,6 +32,12 @@ func drawn(tid invocation.Tidings, words string) bool {
 	return false
 }
 
+// toldElsewhere are lines the README and the codex show that rituals other
+// than the herald tell: the sanction standing of a foresight or of servitor
+// sanction, and the tidings of a conversion.
+var toldElsewhere = regexp.MustCompile(`^✠ The (sanction of the )?exalted (verses|subjects and observances) |` +
+	`^⋯ the rite "[^"]+" is converted to pattern "Mark II"; `)
+
 // TestScriptures_ShowTheVoxCastsAsTheyAreTold: every closing, progress and
 // awaiting line the README and the codex show is one the servitor could
 // tell: an awaiting of dominion, or of the master's proof.
@@ -49,6 +55,9 @@ func TestScriptures_ShowTheVoxCastsAsTheyAreTold(t *testing.T) {
 		}
 		for line := range strings.Lines(string(data)) {
 			line = strings.TrimSpace(line)
+			if toldElsewhere.MatchString(line) {
+				continue
+			}
 			if words, ok := strings.CutPrefix(line, "✠ "); ok {
 				shown++
 				if !drawn(invocation.Success, words) {

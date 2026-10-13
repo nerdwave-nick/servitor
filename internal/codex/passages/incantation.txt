@@ -1,12 +1,15 @@
-A step that speaks one line of words in the rite's tongue
+An observance or edict verse that speaks one line of words in a tongue
 
-An incantation is the plainest of the servitor's prayers: one line of words,
-spoken in a tongue exactly as a supplicant would speak it at a cogitator's
-prompt. The step's own key holds those words, and they may differ for every
-aspect as an aspect map, or serve all aspects through placeholders such as
-{{aspect}}. The words are handed whole to the tongue — the servitor awakens
-"<tongue> -c <words>" — so every pipe, conjunction and quotation of the
-tongue is yours to command.
+An incantation is the plainest of the servitor's prayers: one line of
+words, spoken in a tongue exactly as a supplicant would speak it at a
+cogitator's prompt. It is the designation of an observance, or of a verse of
+an edict's liturgy, that holds its line under "words": {"designation":
+"incantation", "words": "…"}. The words are written once, never as an aspect
+map, and may speak placeholders such as {{aspect}}. They are handed whole to
+the tongue — the servitor awakens "<tongue> -c <words>" — so every pipe,
+conjunction and quotation of the tongue is yours to command. (The enact words
+of a machine-spirit are spoken alike, yet they are its own key, keyed by
+omen.)
 
 The words are spoken in the hall where the rite's scripture is kept, with
 nothing offered upon their input. Their environment is the servitor's own,
@@ -24,49 +27,54 @@ the environment is read as a value and nothing more.
 An incantation that ends with the death-mark 0 triumphs; any other death-mark
 makes it fall, and the invocation is reverted. A failure you mean to tolerate
 is written into the words themselves ("cmd || true"); the servitor knows no
-other leave. The step labours under its patience (30s unless the settings or
-the step say otherwise); when it runs out, the servitor slays the step
-together with every process it summoned, and the step falls.
+other leave. It labours under its patience (30s unless the settings or the
+incantation say otherwise); when it runs out, the servitor slays it together
+with every process it summoned, and it falls.
 
-What the words utter is captured, never printed: the lament of a fallen step
-shows its last words. Children sent into the background by a triumphant
-incantation live on, but the servitor listens to them only a moment longer —
-send their words elsewhere ("cmd >/dev/null 2>&1 &"), lest one that keeps
-speaking into the silenced channel be struck down. Interactive words are
-unsupported: no terminal is lent to them, neither in the cogitator nor when
-the servitor is roused from a hotkey, and their input is empty.
+What the words utter is captured, never printed: the lament of a fallen
+incantation shows its last words. Children sent into the background by a
+triumphant incantation live on, but the servitor listens to them only a
+moment longer — send their words elsewhere ("cmd >/dev/null 2>&1 &"), lest
+one that keeps speaking into the silenced channel be struck down.
+Interactive words are unsupported: no terminal is lent to them, neither in
+the cogitator nor when the servitor is roused from a hotkey, and their input
+is empty.
 
 An incantation yields no omen. Should the invocation fall, its "reversion" is
 spoken in the same tongue to undo what it did.
 
 An exalted incantation is spoken by the exalted servitor in its turn among
-the common verses, with the machine's own authority, as its master
-sanctioned it, never as the scripture stands now: "<tongue> -c <words>", its
-tongue bidden to read no scripture of its own (bash, zsh, fish, sh or dash
-alone; see tongue), in a working hall of its own holding its relics, never
-in the rite's hall. Its environment is no longer the servitor's: it hears
+the common ones, with the machine's own authority, as its master sanctioned
+it, never as the scripture stands now: "<tongue> -c <words>", its tongue
+bidden to read no scripture of its own (bash, zsh, fish, sh or dash alone;
+see tongue), in a working hall of its own holding its relics, never in the
+rite's hall. Its environment is no longer the servitor's: it hears
 PATH=/usr/local/sbin:/usr/local/bin:/usr/bin, HOME=/root, the locale, and
 the SERVITOR_ variables above, nothing more. Children it sends into the
 background are slain when the invocation ends; a root process meant to last
 belongs in a unit of the machine ("systemd-run --unit=…").
 
-Kindred passages: tongue, patience, reversion, litany, placeholders,
-inscriptions, exalted, exalted-servitor
+In the elder pattern "Mark I" the incantation was a step of the liturgy,
+its own key holding its words, which might differ per aspect. Conversion
+makes it an observance beside the subjects it was spoken among — one per
+distinct word, guarded by "to" — or, in a rite of speech alone, a
+machine-spirit enacting its words (see conversion).
+
+Kindred passages: words, tongue, patience, reversion, litany, observances,
+liturgy, placeholders, inscriptions, exalted, exalted-servitor
 
 Exempla:
-  {"incantation": "niri msg action do-screen-transition"}
-
-  {"incantation": {"on": "makoctl mode -a do-not-disturb",
-                   "off": "makoctl mode -r do-not-disturb"},
-   "reversion": {"on": "makoctl mode -r do-not-disturb",
-                 "off": "makoctl mode -a do-not-disturb"}}
+  {"name": "veil", "designation": "incantation",
+   "words": "niri msg action do-screen-transition --delay-ms 200 || true"}
 
   // the inscription is read from the environment, never pasted into the words
-  {"incantation": "echo \"$SERVITOR_INSCRIPTION_REASON\" >> ~/.cache/remnants",
-   "patience": "5s"}
+  {"name": "remnant", "designation": "incantation", "patience": "5s",
+   "words": "echo \"$SERVITOR_INSCRIPTION_REASON\" >> ~/.cache/remnants"}
 
-  {"incantation": "swaybg -i ~/walls/{{aspect}}.png >/dev/null 2>&1 &"}
+  {"designation": "incantation",
+   "words": "swaybg -i ~/walls/visage.png >/dev/null 2>&1 &"}
 
   // with the machine's authority; the lasting process dwells in a unit
-  {"incantation": "systemd-run --unit=servitor-fan-curve fancontrol", "exalted": true,
+  {"name": "fans", "designation": "incantation", "exalted": true,
+   "words": "systemd-run --unit=servitor-fan-curve fancontrol",
    "reversion": "systemctl stop servitor-fan-curve"}

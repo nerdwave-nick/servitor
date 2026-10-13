@@ -1,6 +1,6 @@
 The form-codex of a rite and of the settings, for the editors of the faithful
 
-The servitor bears two schemas of pattern Mark I, written in JSON Schema, the
+The servitor bears two schemas, written in JSON Schema, the
 common tongue of form that the machine spirits of many editors understand:
 one for the scripture of a rite, one for the settings in servitor.json. An
 editor that knows them offers every key as it is written, names the forms
@@ -30,23 +30,30 @@ cannot tell whether an aspect map names only declared aspects and serves
 them all, whether a placeholder is known, or whether a tome stands where it
 is named. The Inquisition alone judges these.
 
-The schema of a rite knows the two forms of a rite: one of aspects, which
-demands "aspects", and the edict, marked "edict": true, which bears no
-"aspects" and no auspex, holds only incantations, litanies and vox-casts,
-and writes its commands, scrolls, offerings, reversions and decrees plainly.
-That an edict's words speak no {{aspect}} nor {{former}} is again for the
-Inquisition alone.
+The schema of a rite chooses its form by the "pattern". In pattern Mark II it
+knows the two kinds of a rite: one of aspects, which demands "aspects" and
+"subjects" and may bear "observances", and the edict, marked "edict": true,
+which bears a "liturgy" of incantations and litanies and writes its words,
+scrolls, offerings, reversions and decrees plainly. Every subject,
+observance and verse is told apart by its "designation", whose word alone
+decides the keys it may hold. Scripture of the elder pattern Mark I is
+judged in its own elder form until it is converted. That an edict's words
+speak no {{aspect}} nor {{former}}, that an omen, enact word or trial names
+only declared aspects and omens, and that an observance named is declared,
+is again for the Inquisition alone.
 
 Kindred passages: expound, inquisition, rite, pattern, aspect-maps
 
 Exempla:
   {"$schema": "https://raw.githubusercontent.com/nerdwave-nick/servitor/main/schema/rite.schema.json",
-   "pattern": "Mark I",
-   "aspects": ["on", "off"]}
+   "pattern": "Mark II",
+   "aspects": ["on", "off"],
+   "subjects": […]}
 
   {"$schema": "https://raw.githubusercontent.com/nerdwave-nick/servitor/main/schema/rite.schema.json",
-   "pattern": "Mark I",
-   "edict": true}
+   "pattern": "Mark II",
+   "edict": true,
+   "liturgy": […]}
 
   servitor expound --schema > ~/.config/servitor/rite.schema.json
   servitor expound --schema settings

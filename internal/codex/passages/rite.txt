@@ -1,10 +1,11 @@
-A named liturgy that brings the machine into an aspect, or proclaims an edict
+A named scripture that brings the machine into an aspect, or proclaims an edict
 
 A rite is the servitor's unit of devotion: one scripture-file in the rites/
 hall of the Librarium, written in JSONC — JSON that suffers comments and
-trailing commas — and bearing "pattern": "Mark I". The rite is named after
+trailing commas — and bearing "pattern": "Mark II". The rite is named after
 its scripture-file without the extension: rites/theme.json (or theme.jsonc)
-is the rite "theme". Only the rites/ hall is read.
+is the rite "theme". Only the rites/ hall is read; its halls and every name
+beginning with "." are passed over.
 
 A rite's name must begin with a letter or digit and continue only with
 letters, digits, ".", "_" or "-". Two scriptures for one name — theme.json
@@ -12,35 +13,54 @@ beside theme.jsonc — is heresy, and neither is believed. Every key of the
 scripture is examined, and a key the codex does not know is heresy, so a
 misspelt key never passes in silence.
 
-The keys of a rite are "pattern", "purpose", "aspects", "edict",
-"inscriptions", "auspex", "tongue" and "liturgy"; only the pattern is
-demanded, and beside it exactly one of "aspects" and "edict": true. A rite of
-aspects brings the machine into one of them; an edict bears none and is
-proclaimed whole each time it is invoked. A heretical rite is shown in the
-census and the cogitator with its heresies, but it cannot be invoked until it
-is purified.
+A rite is of one of two kinds. A rite of aspects declares its "aspects" and
+its "subjects": every thing of the machine it reads and sets, each by
+itself, in written order, and the "observances" spoken when they change. It
+keeps no liturgy and no auspex of its own: each subject bears its own omens,
+and a machine-spirit its own auspex. An edict declares "edict": true in
+place of aspects, and keeps a "liturgy" of incantations and litanies,
+proclaimed whole each time it is invoked; it bears no subjects and no
+observances.
 
-Know also that "rite" is a key of its own within the long form of the
-auspex, where it holds the words the auspex speaks:
-{"auspex": {"rite": "<words>", "patience": "5s"}}.
+The keys of a rite are "pattern", "purpose", "aspects" or "edict",
+"inscriptions", "tongue", "vox-cast", and "subjects" and "observances" for a
+rite of aspects or "liturgy" for an edict; only the pattern is demanded,
+and beside it exactly one of "aspects" and "edict": true. A "liturgy" or an
+"auspex" upon a rite of aspects is heresy, and the words name where its
+deeds now dwell: its subjects, the auspex of a machine-spirit, its
+observances. A heretical rite is shown in the census and the cogitator
+with its heresies, but it cannot be invoked until it is purified.
+
+A rite of the elder pattern "Mark I", which performed one liturgy of steps
+and might bear an auspex of its own, is converted to Mark II on its first
+reading (see conversion). Know also that "rite" is a key of its own within
+the long form of the auspex of Mark I, where it held the words the auspex
+spoke: {"auspex": {"rite": "<words>", "patience": "5s"}}; converted, those
+words become the scan of a machine-spirit, or are struck.
 
 Each rite becomes a ritual of its own beneath invoke, with its aspects (an
 edict has none) for completion and its inscriptions as runes; {{rite.name}}
-illuminates as its name, and its commands receive it as SERVITOR_RITE.
+illuminates as its name, and its words receive it as SERVITOR_RITE.
 
-Kindred passages: pattern, aspects, edict, liturgy, inscriptions, auspex,
-librarium
+Kindred passages: pattern, aspects, edict, subjects, observances, liturgy,
+inscriptions, conversion, librarium
 
 Exempla:
   // <Librarium>/rites/mouse-autohide-toggle.json
   {
-    "pattern": "Mark I",
-    "purpose": "Hide the mouse cursor after inactivity",
+    "pattern": "Mark II",
+    "purpose": "Hide the cursor after 400ms of stillness",
     "aspects": ["on", "off"],
-    "liturgy": [
-      {"sanctum": "~/.config/niri/util.kdl",
-       "scripture": {"on": "cursor {\n    hide-after-inactive-ms 400\n}", "off": ""}},
-      {"incantation": "niri msg action do-screen-transition"},
+    "vox-cast": ["success"],
+    "subjects": [
+      {"name": "cursor", "designation": "sanctum",
+       "vessel": "~/.config/niri/util.kdl", "ward": "mouse-autohide",
+       "omens": {"on": "cursor {\n    hide-after-inactive-ms 400\n}", "off": ""},
+       "recessional": ["reread"]},
+    ],
+    "observances": [
+      {"name": "reread", "designation": "incantation",
+       "words": "niri msg action load-config-file"},
     ],
   }
 

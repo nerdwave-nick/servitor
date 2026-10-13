@@ -1,0 +1,34 @@
+// +++ Rite of the Vow of Silence +++
+//
+// Bids the machine spirit of mako hold its heralds, and release them again.
+// mako itself is asked which mode it keeps, so a vow raised from the bar is
+// read as truly as one raised by the servitor.
+//
+//   servitor invoke do-not-disturb on
+//   servitor invoke do-not-disturb off
+//   servitor augury do-not-disturb aspect
+{
+  "$schema": "https://raw.githubusercontent.com/nerdwave-nick/servitor/main/schema/rite.schema.json",
+  "pattern": "Mark II",
+  "purpose": "Silence the heralds of the machine",
+  "aspects": ["on", "off"],
+  "vox-cast": ["success"],
+  "subjects": [
+    {
+      "name": "mako",
+      "designation": "machine-spirit",
+      // the omen each aspect leaves upon mako: the mode it keeps
+      "omens": {"on": "do-not-disturb", "*": "default"},
+      "auspex": {"scan": "makoctl mode"},
+      // $SERVITOR_OMEN is the omen being set: "do-not-disturb" or "default"
+      "enact": {"*": "makoctl mode -s \"$SERVITOR_OMEN\""},
+      "introit": ["herald-silence"],
+    },
+  ],
+  "observances": [
+    // spoken before the vow is taken, for once it is taken no herald is heard;
+    // only when entering "on", never when the vow is lifted
+    {"name": "herald-silence", "designation": "incantation", "to": ["on"],
+     "words": "notify-send -t 2000 'The heralds fall silent'"},
+  ],
+}

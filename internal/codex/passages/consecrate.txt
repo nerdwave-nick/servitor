@@ -24,5 +24,6 @@ alone, and holds one truth for every aspect.
 Kindred passages: sanctum, vessel, pre-flight, inquisition
 
 Exempla:
-  {"sanctum": "~/.config/niri/overrides.kdl", "consecrate": true,
-   "scripture": {"on": "prefer-no-csd", "off": ""}}
+  {"name": "csd", "designation": "sanctum",
+   "vessel": "~/.config/niri/overrides.kdl", "consecrate": true,
+   "omens": {"on": "prefer-no-csd", "off": ""}}

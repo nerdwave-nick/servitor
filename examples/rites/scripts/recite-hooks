@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# +++ Litany of the Theme's Hooks +++
+# +++ Litany of the Theme's Awakening +++
 #
-# Recites the hooks of the nfluff theme laid before it as its first offering:
+# Recites the litany of awakening the nfluff theme keeps beside it, the
+# theme laid before it as its first offering:
 #
 #   recite-hooks ~/.config/nfluff/themes/porpl
 set -euo pipefail
@@ -14,7 +15,7 @@ if [[ ! -d $THEME_PATH ]]; then
     exit 1
 fi
 
-# The hooks summon children into the background. Their words are sent
+# The theme's litany summons children into the background. Their words are sent
 # elsewhere, lest they hold the ear of the servitor long after the litany ends.
 exec >/dev/null 2>&1
 # shellcheck source=/dev/null

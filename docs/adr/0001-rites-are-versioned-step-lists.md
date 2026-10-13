@@ -70,3 +70,6 @@ rite file declares its format as a pattern, `"pattern": "Mark I"`.
 - Elevated steps (sudo/pkexec/run0) are **out of scope** for this pattern; the
   research in `docs/research/elevation-tools.md` and the tracker map hold the work
   done so far. *(Superseded by ADR 0007: exalted steps are performed from a sanction.)*
+- *(Amended by ADR 0008: in pattern Mark II a rite of aspects is a list of subjects,
+  each read and set by its designation, and only an edict keeps a liturgy; every
+  per-aspect value is always a map. Mark I scripture is converted once, on first read.)*

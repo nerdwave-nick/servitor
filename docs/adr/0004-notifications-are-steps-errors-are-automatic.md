@@ -23,3 +23,6 @@ is also appended as one JSON line to the chronicle (default
 - Progress messages describe the previous step and count real steps ("step x / n"),
   which mako also renders as a progress bar.
 - The settings file can silence desktop notifications globally (`"vox": "off"`).
+- *(Amended by ADR 0008: in pattern Mark II `vox-cast` is a rite key, a list of
+  `"progress"` and `"success"`; progress tells each subject that changed, "subject x / n",
+  and the "success not last" impurity no longer applies. Edicts keep the list as well.)*
