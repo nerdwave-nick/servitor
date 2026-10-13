@@ -14,9 +14,14 @@ upon each line of stdout, and every object names its kind under the key
   first    one "rite" line for every rite, by name. A rite whose auspex is
            yet to answer bears "auspex": "awaited"; a rite without auspex,
            an edict and a heretical rite are told whole at once, and are
-           never told again
+           never told again. A rite of aspects of pattern Mark II is
+           first told from the omens its data-slate recorded in place of
+           its awaited auspexes, so the first line already names the
+           aspect it likely stands in, bearing "stale": true
   then     one further "rite" line for every awaited rite, in the order
-           their auspexes settle, bearing "heeded" or "mute"
+           their auspexes settle, bearing "heeded" or "mute", and told
+           from the live omens; a subject whose auspex is exalted is never
+           heard, and stays stale in both
   last     exactly one "concluded", once every rite is settled
 
 A "lament" line — a data-slate that cannot be read, naming its rite — may

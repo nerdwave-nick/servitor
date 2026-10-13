@@ -29,8 +29,11 @@ to read:
 The augury of a rite of pattern Mark II also bears "fitting", the aspects
 every omen fits ([] when they fit none, or when no subject yielded an
 omen); its omens are named by subject, and so are the sanctums of its
-taint ({"subject": "niri", "designation": "sanctum"}). The passage on the
-omens tells all.
+taint ({"subject": "niri", "designation": "sanctum"}). An omen taken from
+the data-slate's record, where the live omen of its subject was not heard,
+bears "stale": true and "read_at", the hour it was read; the augury awaits
+every live auspex, so only an exalted auspex, or one spared by
+--spare-auspex, is ever told stale. The passage on the omens tells all.
 
 The key "former", naming the aspect the data-slate recorded, appears only
 when the rite is desecrated. The key "auspex" tells what the rite's auspex
