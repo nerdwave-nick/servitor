@@ -1,4 +1,4 @@
-The servitor roused with the machine's own authority to perform the exalted verses of one invocation
+The servitor roused with the machine's own authority to perform what one invocation holds exalted
 
 The exalted servitor is no ritual of its own. It is the servitor installed at
 /usr/bin/servitor, roused by the intercessor for one invocation alone, as
@@ -40,21 +40,22 @@ beneath /run/servitor/dominions/, over the master's rite and over every
 exalted vessel and bound name, waiting as every invocation waits. A dominion
 it cannot hold refuses the invocation before anything is touched.
 
-Thereafter it hears four words alone: perform the next exalted verse, revert
-the last one performed, finish, abort; and, for a rite of aspects of pattern
-Mark II, read, once, before anything is performed. A word out of its order,
-or a second plan, is refused, and ends the session. For a rite of aspects of pattern
-Mark II, perform names an exalted subject or observance of the plan, which
-must lie after every one performed before it — a subject at its place, an
-observance at the place of a subject that names it, and an observance once —
-so that it may skip what does not change, but never go back; an observance
-whose "from" does not admit the former aspect is refused. A machine-spirit
-is set by the enact words of the omen of its aspect, which alone hear
-SERVITOR_OMEN, and perform names the declared omen to restore it to should
-the session fall (none, when the invoker knows none, and then it cannot be
-restored). Revert names the subject or observance last performed, and for a
-machine-spirit the declared omen it restores; it speaks only the enact words
-its sanction holds, and an omen the sanction does not declare is refused.
+Thereafter it hears four words alone: perform the next exalted subject,
+observance or verse — skipping forward but never back — revert the last one
+performed, finish, abort; and, for a rite of aspects of pattern Mark II, read,
+once, before anything is performed. A word out of its order, or a second plan,
+is refused, and ends the session. For a rite of aspects of pattern Mark II,
+perform names an exalted subject or observance of the plan, which must lie
+after every one performed before it — a subject at its place, an observance at
+the place of a subject that names it, and an observance once — so that it may
+skip what does not change, but never go back; an observance whose "from" does
+not admit the former aspect is refused. A machine-spirit is set by the enact
+words of the omen of its aspect, which alone hear SERVITOR_OMEN, and perform
+names the declared omen to restore it to should the session fall (none, when
+the invoker knows none, and then it cannot be restored). Revert names the
+subject or observance last performed, and for a machine-spirit the declared
+omen it restores; it speaks only the enact words its sanction holds, and an
+omen the sanction does not declare is refused.
 
 Read names the subjects of the plan its invoker cannot read itself: every
 machine-spirit whose auspex is itself exalted, and every sanctum,

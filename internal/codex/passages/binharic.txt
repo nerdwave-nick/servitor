@@ -12,16 +12,16 @@ Inquisition in binharic is a list of findings, each bearing scripture, line,
 column, rite, judgement ("heresy" or "impurity") and denunciation; its exit
 remains 1 when any heresy was found.
 
-An invocation in binharic speaks one line upon stdout: the very line it
-added to the chronicle — at, rite, edict, aspect, former, inscriptions,
-verdict, fell_at, heresy and reversions, an edict bearing no aspect and no
-former, and intercessor and sigil when exalted verses were performed —
-drawn from the same record, so the two never disagree. The tidings that the
-exalted verses await the master's proof go to stderr with the report. Should the
-pre-flight forbid it, it speaks instead the rite, the aspect and every heresy
-under "forbidden". Its report and laments go to stderr, so stdout bears the
-binharic alone, at a terminal or without one; its death-mark tells the
-verdict all the same. Foresight knows no binharic.
+An invocation in binharic speaks one line upon stdout: the very line it added
+to the chronicle — at, rite, edict, aspect, former, inscriptions, verdict,
+fell_at, heresy and reversions, an edict bearing no aspect and no former, and
+intercessor and sigil when anything exalted was performed — drawn from the
+same record, so the two never disagree. The tidings that the exalted deeds
+await the master's proof go to stderr with the report. Should the pre-flight
+forbid it, it speaks instead the rite, the aspect and every heresy under
+"forbidden". Its report and laments go to stderr, so stdout bears the binharic
+alone, at a terminal or without one; its death-mark tells the verdict all the
+same. Foresight knows no binharic.
 
 The census keeping vigil (--vigil) speaks binharic with or without the
 rune, one object upon each line, each named by its "herald".

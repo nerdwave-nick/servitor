@@ -30,10 +30,10 @@ vessels missing without "consecrate", anchors missing for some aspect, the
 scroll of an edict's litany that stands nowhere, mandatory inscriptions
 without a decree for some aspect, a "success" vox-cast that is not the last
 step, tainted sanctums, desecrated rites, an exalted rite that stands
-unsanctioned or whose sanction lapsed, a forsaken sanction, found at the
-head of its sanction, and, while a rite examined holds exalted verses, the
-servitor installed at /usr/bin/servitor missing or not standing where the
-root alone may write, found at /usr/bin/servitor itself.
+unsanctioned or whose sanction lapsed, a forsaken sanction, found at the head
+of its sanction, and, while a rite examined holds anything exalted, the
+servitor installed at /usr/bin/servitor missing or not standing where the root
+alone may write, found at /usr/bin/servitor itself.
 
 A rite of pattern "Mark II" is weighed subject by subject and observance by
 observance, and each finding names the subject or observance it belongs to.
