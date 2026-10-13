@@ -49,8 +49,16 @@ interpreted by the tongue as part of the command. A variable of the
 environment is read by the tongue as one word, untouched, when written within
 double quotes.
 
+The words of an exalted verse are fixed when its master sanctions them, and
+only marks whose value is known then may be illuminated in them: {{aspect}},
+{{rite.name}}, and {{inscription.<key>}}, whose word is then its decree alone
+— its rune is refused for that rite, and a mandatory inscription that some
+aspect does not decree may not be illuminated there. {{former}} is heresy
+there; exalted speech hears the former aspect and the words of runes from
+"$SERVITOR_FORMER_ASPECT" and "$SERVITOR_INSCRIPTION_<KEY>" instead.
+
 Kindred passages: aspect-maps, inscriptions, illuminate, incantation, vox-cast,
-edict
+edict, exalted
 
 Exempla:
   {"sanctum": "~/.config/niri/util.kdl",

@@ -157,13 +157,14 @@ func TestInquisition_Vessels(t *testing.T) {
 }
 
 // TestInquisition_TheExamplesArePure: the example Librarium shown to the
-// faithful — two rites and an edict — passes the inquisition, its vessels
-// spared, and the scroll its theme rite recites stands ready to be executed.
+// faithful — three rites, one of them exalted, and an edict — passes the
+// inquisition, its vessels spared, and the scroll its theme rite recites
+// stands ready to be executed.
 func TestInquisition_TheExamplesArePure(t *testing.T) {
 	t.Setenv("HOME", t.TempDir())
 	var out, errb bytes.Buffer
 	code := Execute([]string{"--librarium", "../../examples", "inquisition", "--spare-vessels"}, &out, &errb)
-	if code != 0 || out.String() != "" || !strings.Contains(errb.String(), "examined 3 rites in") {
+	if code != 0 || out.String() != "" || !strings.Contains(errb.String(), "examined 4 rites in") {
 		t.Fatalf("code=%d\nstdout: %s\nstderr: %s", code, out.String(), errb.String())
 	}
 	if info, err := os.Stat("../../examples/rites/scripts/recite-hooks"); err != nil || info.Mode()&0o111 == 0 {

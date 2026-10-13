@@ -32,7 +32,7 @@ anchors, tomes and litany scrolls — are reckoned from the hall rites/ of the
 Librarium, where the rite's scripture is kept, and incantations, litanies and
 the auspex are spoken in that hall.
 
-Kindred passages: rite, chronicle, pattern, vessel, tongue, patience, vox
+Kindred passages: rite, chronicle, pattern, vessel, tongue, patience, vox, intercessor
 
 Exempla:
   servitor --librarium ~/dotfiles/servitor census

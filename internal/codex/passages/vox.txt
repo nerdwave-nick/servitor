@@ -17,7 +17,10 @@ tells its vox-casts in its report, whatever the vox commands. Should
 notify-send be missing from the machine, the servitor stays silent rather than
 fail. Any other value is heresy, denounced by the inquisition with its place.
 
-Kindred passages: vox-cast, invoke, librarium
+The tidings that a rite's exalted verses await the master's proof never
+reach the desktop: without a terminal the intercessor's own dialog asks.
+
+Kindred passages: vox-cast, invoke, librarium, intercessor
 
 Exempla:
   // servitor.json
