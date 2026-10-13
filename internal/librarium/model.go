@@ -1,13 +1,16 @@
-// Package librarium reads, examines and writes rites of pattern Mark I kept
-// in a Librarium's rites/ directory, and reads the settings kept beside them
-// in servitor.json (LoadSettings; Settings.Resolve applies runes, the
-// environment and the defaults).
+// Package librarium reads, examines and writes rites of pattern Mark I and
+// of pattern Mark II kept in a Librarium's rites/ directory, and reads the
+// settings kept beside them in servitor.json (LoadSettings; Settings.Resolve
+// applies runes, the environment and the defaults). Both patterns are read
+// side by side until Mark I is retired; a rite of Mark II bears MarkII, its
+// Subjects and Observances, or an edict's Liturgy in the designation form.
 //
 // A rite's scripture is JSONC. Every key is examined: unknown keys, malformed
 // values, undeclared aspects, unknown placeholders and the other heresies of
 // the codex are reported as Findings with line and column. Parse reads one
 // scripture, Load the whole Librarium (where clashing wards and rites recorded
-// twice are found), and Marshal writes a rite back as Mark I scripture.
+// twice are found), and Marshal writes a rite back as scripture of its
+// pattern.
 //
 // These values may vary per aspect (an AspectMap): the scripture of sanctums
 // and transcriptions, a tether's anchor, an incantation's command, a litany's
@@ -37,14 +40,15 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/placeholder"
 )
 
-// Pattern is the only pattern this package reads and writes.
+// Pattern is the pattern of a liturgy of steps: Mark I. PatternMarkII is
+// read and written beside it.
 const Pattern = "Mark I"
 
 // DefaultAuspexPatience is how long an auspex may labour when its rite does
 // not say otherwise.
 const DefaultAuspexPatience = 2 * time.Second
 
-// Rite is one rite of pattern Mark I.
+// Rite is one rite of pattern Mark I, or of pattern Mark II (MarkII).
 type Rite struct {
 	Name string // the rite's name: its scripture's file name without extension
 	Path string // where the scripture was read from; "" when never read
