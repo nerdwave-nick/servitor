@@ -93,7 +93,7 @@ func (sn *Sanction) untrue(rite string, uid int) string {
 	switch {
 	case !slices.Contains(Patterns, sn.Pattern):
 		return fmt.Sprintf("its pattern is %q, yet this servitor reads only %q and %q", sn.Pattern, Pattern,
-			PatternMarkII)
+			PatternMarkI)
 	case sn.Misshapen() != "":
 		return sn.Misshapen()
 	case sn.Rite != rite:

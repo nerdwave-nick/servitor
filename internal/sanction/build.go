@@ -35,13 +35,20 @@ func (o Options) lookPath(name string) (string, error) {
 }
 
 // Build draws the exalted unit of the rite r, which must not be heretical,
-// reading its tomes, scrolls and relics afresh. The error is ErrUnexalted
-// for a rite without exalted verses, else names what cannot be drawn.
+// reading its tomes, scrolls and relics afresh: the exalted subjects and
+// observances of a state rite, or the exalted verses of an edict. The
+// error is ErrUnexalted for a rite without exalted verses, else names what
+// cannot be drawn; a rite read as pattern Mark I, never converted, is drawn
+// into no unit.
 func Build(r *librarium.Rite, o Options) (*Unit, error) {
+	if !r.MarkII {
+		return nil, fmt.Errorf("the rite %q is read as pattern %q, whose verses are drawn into no unit; it is "+
+			"sanctioned once converted to pattern %q", r.Name, PatternMarkI, Pattern)
+	}
 	if !r.Exalted() {
 		return nil, ErrUnexalted
 	}
-	u := &Unit{Pattern: patternOf(r), UID: o.UID, Rite: r.Name, Edict: r.Edict, Environment: environment(r)}
+	u := &Unit{Pattern: Pattern, UID: o.UID, Rite: r.Name, Edict: r.Edict, Environment: environment(r)}
 	aspects := r.Aspects
 	if r.Edict {
 		aspects = []string{""}
@@ -54,7 +61,7 @@ func Build(r *librarium.Rite, o Options) (*Unit, error) {
 				return nil, err
 			}
 		}
-		for i, step := range r.Liturgy {
+		for i, step := range r.Liturgy { // an edict's alone
 			if !librarium.IsExalted(step) {
 				continue
 			}
@@ -73,14 +80,6 @@ func Build(r *librarium.Rite, o Options) (*Unit, error) {
 	return u, nil
 }
 
-// patternOf is the pattern of the unit of r: that of its scripture.
-func patternOf(r *librarium.Rite) string {
-	if r.MarkII {
-		return PatternMarkII
-	}
-	return Pattern
-}
-
 // decreed are the placeholder values of the exalted words of r for aspect:
 // every inscription takes its decree.
 func decreed(r *librarium.Rite, aspect string) placeholder.Values {
@@ -92,26 +91,18 @@ func decreed(r *librarium.Rite, aspect string) placeholder.Values {
 }
 
 // environment names the variables exalted speech of r hears: its rite, its
-// aspect and former aspect (never for an edict), the omen a machine-spirit
-// is set to (a state rite of pattern Mark II alone) and every inscription.
-// A rite of pattern Mark II hears the environment of that pattern.
+// aspect, former aspect and the omen a machine-spirit is set to (never for
+// an edict), and every inscription, under the environment of Pattern.
 func environment(r *librarium.Rite) Environment {
 	keys := []string{"SERVITOR_RITE"}
 	if !r.Edict {
-		keys = append(keys, "SERVITOR_ASPECT", "SERVITOR_FORMER_ASPECT")
-	}
-	if r.MarkII && !r.Edict {
-		keys = append(keys, OmenVariable)
+		keys = append(keys, "SERVITOR_ASPECT", "SERVITOR_FORMER_ASPECT", OmenVariable)
 	}
 	for _, in := range r.Inscriptions {
 		keys = append(keys, placeholder.InscriptionVariable(in.Key))
 	}
 	slices.Sort(keys)
-	pattern := EnvironmentPattern
-	if r.MarkII {
-		pattern = PatternMarkII
-	}
-	return Environment{Pattern: pattern, Keys: slices.Compact(keys)}
+	return Environment{Pattern: Pattern, Keys: slices.Compact(keys)}
 }
 
 // OmenVariable is the variable the enact words of a machine-spirit hear the

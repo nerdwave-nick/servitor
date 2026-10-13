@@ -67,7 +67,7 @@ func owned(t *testing.T, path string, gid int, seal fs.FileMode) {
 // 0640, where the servitor and the exalted servitor read it.
 func TestLay_RaisesTheStoreOnFirstUse(t *testing.T) {
 	k := newKeeping(t)
-	u := build(t, splitLock, splitLockFiles())
+	u := buildGaming(t, gaming, gamingFiles())
 	was, err := k.store.Lay(New(u, at), k.keeper)
 	if err != nil || was.Stood {
 		t.Fatalf("Lay = %+v, %v", was, err)
@@ -76,13 +76,13 @@ func TestLay_RaisesTheStoreOnFirstUse(t *testing.T) {
 	owned(t, filepath.Join(k.lib, "servitor"), gid, 0o755)
 	owned(t, k.store.Root, gid, 0o755)
 	owned(t, filepath.Join(k.store.Root, "1000"), k.kin, 0o750)
-	owned(t, k.store.Path("split-lock"), k.kin, 0o640)
+	owned(t, k.store.Path("gaming"), k.kin, 0o640)
 	if !slices.Equal(k.asked, []int{1000}) {
 		t.Errorf("the keeper sought the group of %v, want [1000]", k.asked)
 	}
 	for _, read := range []func() (*Sanction, error){
-		func() (*Sanction, error) { return k.store.Read("split-lock") },
-		func() (*Sanction, error) { return k.store.ReadHallowed("split-lock", mine) },
+		func() (*Sanction, error) { return k.store.Read("gaming") },
+		func() (*Sanction, error) { return k.store.ReadHallowed("gaming", mine) },
 	} {
 		if s, err := read(); err != nil || s == nil || s.Sigil != u.Sigil() || !s.SanctionedAt.Equal(at) {
 			t.Errorf("the sanction laid reads as %+v, %v", s, err)
@@ -99,29 +99,28 @@ func TestLay_RaisesTheStoreOnFirstUse(t *testing.T) {
 // sanction is replaced all the same, its sigil unknown.
 func TestLay_ReplacesTheFormerAtomically(t *testing.T) {
 	k := newKeeping(t)
-	first := build(t, splitLock, splitLockFiles())
+	first := buildGaming(t, gaming, gamingFiles())
 	if _, err := k.store.Lay(New(first, at), k.keeper); err != nil {
 		t.Fatal(err)
 	}
-	before, err := os.Stat(k.store.Path("split-lock"))
+	before, err := os.Stat(k.store.Path("gaming"))
 	must(t, err)
-	second := build(t, strings.Replace(splitLock, "kernel.split_lock_mitigate=0", "kernel.split_lock_mitigate=2", 1),
-		splitLockFiles())
+	second := buildGaming(t, strings.Replace(gaming, `"logger war"`, `"logger wars"`, 1), gamingFiles())
 	was, err := k.store.Lay(New(second, at), k.keeper)
 	if err != nil || !was.Stood || was.Sigil != first.Sigil() {
 		t.Fatalf("Lay = %+v, %v; want the former sigil %s", was, err, first.Sigil())
 	}
-	after, err := os.Stat(k.store.Path("split-lock"))
+	after, err := os.Stat(k.store.Path("gaming"))
 	must(t, err)
 	if os.SameFile(before, after) {
 		t.Error("the former scroll was written over in place, not replaced")
 	}
-	if s, err := k.store.Read("split-lock"); err != nil || s.Sigil != second.Sigil() {
+	if s, err := k.store.Read("gaming"); err != nil || s.Sigil != second.Sigil() {
 		t.Errorf("the store holds %v, %v", s, err)
 	}
-	owned(t, k.store.Path("split-lock"), k.kin, 0o640)
+	owned(t, k.store.Path("gaming"), k.kin, 0o640)
 
-	must(t, os.WriteFile(k.store.Path("split-lock"), []byte("{corrupt"), 0o640))
+	must(t, os.WriteFile(k.store.Path("gaming"), []byte("{corrupt"), 0o640))
 	was, err = k.store.Lay(New(first, at), k.keeper)
 	if err != nil || !was.Stood || was.Sigil != "" {
 		t.Fatalf("Lay over a corrupt sanction = %+v, %v", was, err)
@@ -135,7 +134,7 @@ func TestLay_ReplacesTheFormerAtomically(t *testing.T) {
 // the root owns and alone may write, following no bond; a sanction of
 // another master or rite is never laid. Nothing is written upon a refusal.
 func TestLay_RefusesWhatTheRootDidNotLay(t *testing.T) {
-	u := build(t, splitLock, splitLockFiles())
+	u := buildGaming(t, gaming, gamingFiles())
 	for what, mar := range map[string]func(t *testing.T, k *keeping) *Sanction{
 		"a hall above the store others may write": func(t *testing.T, k *keeping) *Sanction {
 			must(t, os.Chmod(k.lib, 0o777))
@@ -154,8 +153,8 @@ func TestLay_RefusesWhatTheRootDidNotLay(t *testing.T) {
 			return New(u, at)
 		},
 		"a bond for the sanction": func(t *testing.T, k *keeping) *Sanction {
-			must(t, os.MkdirAll(filepath.Dir(k.store.Path("split-lock")), 0o750))
-			must(t, os.Symlink(filepath.Join(k.lib, "x"), k.store.Path("split-lock")))
+			must(t, os.MkdirAll(filepath.Dir(k.store.Path("gaming")), 0o750))
+			must(t, os.Symlink(filepath.Join(k.lib, "x"), k.store.Path("gaming")))
 			return New(u, at)
 		},
 		"a store the root does not own": func(t *testing.T, k *keeping) *Sanction {
@@ -185,7 +184,7 @@ func TestLay_RefusesWhatTheRootDidNotLay(t *testing.T) {
 			} else if !strings.Contains(err.Error(), "sanction") {
 				t.Errorf("the lament does not name the sanction: %v", err)
 			}
-			if fi, err := os.Stat(k.store.Path("split-lock")); err == nil && fi.Mode().IsRegular() {
+			if fi, err := os.Stat(k.store.Path("gaming")); err == nil && fi.Mode().IsRegular() {
 				t.Error("a sanction was laid")
 			}
 		})
@@ -196,21 +195,21 @@ func TestLay_RefusesWhatTheRootDidNotLay(t *testing.T) {
 // sigil, even one that is no true sanction; none kept is fs.ErrNotExist.
 func TestStrike_RemovesTheSanction(t *testing.T) {
 	k := newKeeping(t)
-	if _, err := k.store.Strike("split-lock", k.keeper); !errors.Is(err, fs.ErrNotExist) {
+	if _, err := k.store.Strike("gaming", k.keeper); !errors.Is(err, fs.ErrNotExist) {
 		t.Errorf("Strike of a store never raised = %v; want fs.ErrNotExist", err)
 	}
-	u := build(t, splitLock, splitLockFiles())
+	u := buildGaming(t, gaming, gamingFiles())
 	if _, err := k.store.Lay(New(u, at), k.keeper); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := k.store.Strike("other", k.keeper); !errors.Is(err, fs.ErrNotExist) {
 		t.Errorf("Strike(other) = %v; want fs.ErrNotExist", err)
 	}
-	was, err := k.store.Strike("split-lock", k.keeper)
+	was, err := k.store.Strike("gaming", k.keeper)
 	if err != nil || !was.Stood || was.Sigil != u.Sigil() {
 		t.Fatalf("Strike = %+v, %v", was, err)
 	}
-	if _, err := os.Lstat(k.store.Path("split-lock")); !errors.Is(err, fs.ErrNotExist) {
+	if _, err := os.Lstat(k.store.Path("gaming")); !errors.Is(err, fs.ErrNotExist) {
 		t.Errorf("the sanction stands: %v", err)
 	}
 	must(t, os.WriteFile(k.store.Path("broken"), []byte("{"), 0o640))
@@ -218,7 +217,7 @@ func TestStrike_RemovesTheSanction(t *testing.T) {
 		t.Errorf("Strike(broken) = %+v, %v", was, err)
 	}
 	must(t, os.Chmod(filepath.Join(k.store.Root, "1000"), 0o770))
-	if _, err := k.store.Strike("split-lock", k.keeper); err == nil || errors.Is(err, fs.ErrNotExist) {
+	if _, err := k.store.Strike("gaming", k.keeper); err == nil || errors.Is(err, fs.ErrNotExist) {
 		t.Errorf("Strike through a hall others may write = %v; want a lament", err)
 	}
 }
@@ -230,7 +229,7 @@ func TestKept_NamesEveryRiteKept(t *testing.T) {
 	if names, err := k.store.Kept(k.keeper); err != nil || len(names) != 0 {
 		t.Errorf("Kept of a store never raised = %v, %v", names, err)
 	}
-	u := build(t, splitLock, splitLockFiles())
+	u := buildGaming(t, gaming, gamingFiles())
 	for _, rite := range []string{"zeta", "alpha"} {
 		v := *u
 		v.Rite = rite

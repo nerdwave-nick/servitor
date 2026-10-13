@@ -88,7 +88,7 @@ func TestSanction_LaysTheUnitOfTheMaster(t *testing.T) {
 	sh, kin := keepingShrine(t)
 	u := hallowUnit()
 	// a scripture longer than one part
-	u.Aspects[0].Liturgy[0].Scripture = bytes.Repeat([]byte("kernel.hallow = on\n"), PartCap/10)
+	u.Aspects[0].Subjects[0].Scripture = bytes.Repeat([]byte("kernel.hallow = on\n"), PartCap/10)
 	inv := sh.sanctionFor(u, "")
 	if r := inv.answer(); r.To != "sanction" || r.Verdict != Sanctioned || r.Protocol != Protocol {
 		t.Fatalf("answered %+v", r)
@@ -117,7 +117,7 @@ func TestSanction_LaysTheUnitOfTheMaster(t *testing.T) {
 	}
 
 	// sanctioned anew, it names the sigil it replaced
-	u.Aspects[1].Liturgy[1].Scripture = []byte("mode = off, anew")
+	u.Aspects[1].Subjects[1].Scripture = []byte("mode = off, anew")
 	inv = sh.sanctionFor(u, "")
 	if r := inv.answer(); r.Verdict != Sanctioned {
 		t.Fatalf("answered %+v", r)
@@ -181,13 +181,18 @@ func TestSanction_RefusesWhatItWasNotBidden(t *testing.T) {
 		}, lament: "xenos"},
 		"the unit of another master": {mar: func(_ *shrine, u *sanction.Unit) { u.UID = me + 1 }, lament: "uid"},
 		"a vessel beneath /proc": {mar: func(_ *shrine, u *sanction.Unit) {
-			u.Aspects[1].Liturgy[0].Target = "/proc/sys/kernel/hallow"
+			u.Aspects[1].Subjects[0].Target = "/proc/sys/kernel/hallow"
 		}, lament: "/proc"},
 		"a vessel not from the root": {mar: func(_ *shrine, u *sanction.Unit) {
-			u.Aspects[0].Liturgy[2].Target = "etc/hallow-theme"
+			u.Aspects[0].Subjects[2].Target = "etc/hallow-theme"
 		}, lament: "root"},
-		"a plan without verses": {mar: func(_ *shrine, u *sanction.Unit) { u.Aspects[1].Liturgy = nil },
-			lament: "no exalted verse"},
+		"plans without subjects": {mar: func(_ *shrine, u *sanction.Unit) {
+			for i := range u.Aspects {
+				u.Aspects[i].Subjects = nil
+			}
+		}, lament: "no exalted subject or observance"},
+		"a unit of pattern Mark I": {mar: func(_ *shrine, u *sanction.Unit) { *u = *elderUnit() },
+			lament: `only units of the pattern "Mark II"`},
 		"an edict of an aspect": {mar: func(_ *shrine, u *sanction.Unit) { u.Edict = true; u.Aspects = u.Aspects[:1] },
 			lament: "edict"},
 		"two plans of one aspect": {mar: func(_ *shrine, u *sanction.Unit) { u.Aspects[1].Aspect = "on" },
@@ -195,12 +200,13 @@ func TestSanction_RefusesWhatItWasNotBidden(t *testing.T) {
 		"another pattern": {mar: func(_ *shrine, u *sanction.Unit) { u.Pattern = "Mark III" }, lament: "Mark III"},
 		"speech it cannot speak": {mar: func(sh *shrine, u *sanction.Unit) {
 			for i := range u.Aspects {
-				u.Aspects[i].Liturgy = append(u.Aspects[i].Liturgy, sanction.Verse{Verse: 9,
-					Kind: librarium.KindIncantation, Target: "echo", Tongue: "/usr/bin/bash", Patience: time.Second})
+				u.Aspects[i].Observances = append(u.Aspects[i].Observances, sanction.Verse{Observance: "chant",
+					Kind: librarium.KindIncantation, Target: "echo", Tongue: "/usr/bin/bash", Patience: time.Second,
+					Introit: []int{2}, Recessional: []int{}})
 			}
 			sh.cfg.Voice = func(Sitting) (Speaker, error) { return nil, errors.New("never") }
-			sh.cfg.Weigh = func(Sitting) error { return errors.New("the tongue of verse 9 is no program of the root") }
-		}, lament: "verse 9"},
+			sh.cfg.Weigh = func(Sitting) error { return errors.New("the tongue of chant is no program of the root") }
+		}, lament: "chant"},
 		"a master of no group": {mar: func(sh *shrine, _ *sanction.Unit) {
 			sh.cfg.Kin = func(int) (int, error) { return -1, errors.New("no such master") }
 		}, lament: "no such master"},

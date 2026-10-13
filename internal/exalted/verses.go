@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"slices"
 	"strings"
 
 	"github.com/nerdwave-nick/servitor/internal/hallowed"
@@ -194,13 +193,12 @@ func (s *session) transcription(v sanction.Verse) (Reply, *hallowed.Memory, erro
 	return r, mem, err
 }
 
-// known reports whether scripture is that of the verse or subject of the
-// transcription for some aspect of the sanction; one final newline is
-// forgiven.
+// known reports whether scripture is that of the transcription subject for
+// some aspect of the sanction; one final newline is forgiven.
 func (s *session) known(of sanction.Verse, scripture []byte) bool {
 	got := strings.TrimSuffix(string(scripture), "\n")
 	for _, p := range s.sn.Aspects {
-		for _, v := range slices.Concat(p.Liturgy, p.Subjects) {
+		for _, v := range p.Subjects {
 			if v.Named() == of.Named() && !v.Null && strings.TrimSuffix(string(v.Scripture), "\n") == got {
 				return true
 			}

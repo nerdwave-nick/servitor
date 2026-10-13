@@ -13,28 +13,34 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/librarium"
 )
 
-// An exalted subject or observance of a state rite of pattern Mark II is
+// An exalted subject or observance of a state rite is
 // written by its name and designation, as the scripture writes it, with
 // the keys of that designation: a subject also by its place among the
 // rite's subjects, an observance by the places of the subjects that name
 // it as introit or recessional and by its "from".
 
 // Misshapen tells why the plans of the unit do not hold what its pattern
-// holds; "" when they do. A plan of a state rite of pattern Mark II holds
-// subjects and observances alone, every other plan exalted verses alone.
+// holds; "" when they do. A plan of a rite of aspects holds subjects and
+// observances alone; the plan of an edict exalted verses alone, each an
+// incantation or a litany. A unit of PatternMarkI, read from a sanction of
+// old, holds verses of every kind.
 func (u *Unit) Misshapen() string {
 	for _, p := range u.Aspects {
 		switch {
 		case u.State() && len(p.Liturgy) > 0:
-			return fmt.Sprintf("the plan of %q holds verses, yet a state rite of pattern %s holds subjects and "+
-				"observances", p.Aspect, PatternMarkII)
+			return fmt.Sprintf("the plan of %q holds verses, yet a rite of aspects of pattern %s holds subjects "+
+				"and observances", p.Aspect, Pattern)
 		case !u.State() && len(p.Subjects)+len(p.Observances) > 0:
-			return fmt.Sprintf("the plan of %q holds subjects or observances, which only a state rite of pattern %s "+
-				"holds", p.Aspect, PatternMarkII)
+			return fmt.Sprintf("the plan of %q holds subjects or observances, which only a rite of aspects of "+
+				"pattern %s holds", p.Aspect, Pattern)
 		}
 		for _, v := range p.Liturgy {
-			if v.Verse < 1 || v.Subject != "" || v.Observance != "" {
+			switch {
+			case v.Verse < 1 || v.Subject != "" || v.Observance != "":
 				return fmt.Sprintf("the plan of %q holds %s among its verses", p.Aspect, v.Named())
+			case u.Pattern == Pattern && v.Kind != librarium.KindIncantation && v.Kind != librarium.KindLitany:
+				return fmt.Sprintf("the plan of %q holds %s, a %s, yet an edict of pattern %s speaks only "+
+					"incantations and litanies", p.Aspect, v.Named(), v.Kind.Key(), Pattern)
 			}
 		}
 		for _, v := range p.Subjects {

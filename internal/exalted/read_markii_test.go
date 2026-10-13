@@ -55,8 +55,8 @@ func privilegedShrine(t *testing.T) (*shrine, string) {
 					Patience: patience, Relics: []sanction.Relic{}},
 			}}
 	}
-	u := &sanction.Unit{Pattern: sanction.PatternMarkII, UID: me, Rite: "hallow",
-		Environment: sanction.Environment{Pattern: sanction.PatternMarkII, Keys: []string{"SERVITOR_ASPECT",
+	u := &sanction.Unit{Pattern: sanction.Pattern, UID: me, Rite: "hallow",
+		Environment: sanction.Environment{Pattern: sanction.Pattern, Keys: []string{"SERVITOR_ASPECT",
 			"SERVITOR_FORMER_ASPECT", "SERVITOR_INSCRIPTION_WHO", "SERVITOR_OMEN", "SERVITOR_RITE"}},
 		Aspects: []sanction.Plan{plan("on", "gaming"), plan("off", "none")}}
 	return speakingShrine(t, u), hall
