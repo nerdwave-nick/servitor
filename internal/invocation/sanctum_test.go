@@ -8,9 +8,20 @@ import (
 	"testing"
 )
 
-const mouseSanctum = `{"sanctum": "$DATA/util.kdl",
-  "scripture": {"on": "cursor {\n    hide-after-inactive-ms 400\n}", "off": ""}}`
+// mouseSanctum is a sanctum subject keeping the cursor in $DATA/util.kdl
+// under the rite's own ward.
+const mouseSanctum = `{"name": "cursor", "designation": "sanctum", "vessel": "$DATA/util.kdl",
+  "omens": {"on": "cursor {\n    hide-after-inactive-ms 400\n}", "off": ""}}`
 
+// sanctumSubject is a sanctum subject named s in vessel, with further keys
+// (ending in a comma) and its omens.
+func sanctumSubject(vessel, keys, omens string) string {
+	return `{"name": "s", "designation": "sanctum", "vessel": "` + vessel + `", ` + keys + ` "omens": ` + omens + `}`
+}
+
+// TestSanctum_WritesAndRewritesItsSanctum: a sanctum subject writes its
+// warded region, keeps the vessel's seal, rewrites it for another aspect,
+// and changes nothing when invoked again into the aspect it bears.
 func TestSanctum_WritesAndRewritesItsSanctum(t *testing.T) {
 	fx := newFixture(t)
 	r := fx.rite(t, mouseSanctum)
@@ -40,6 +51,8 @@ func TestSanctum_WritesAndRewritesItsSanctum(t *testing.T) {
 	}
 }
 
+// TestSanctum_Consecration: a missing vessel is consecrated only when the
+// sanctum may, and never in a hall that does not stand.
 func TestSanctum_Consecration(t *testing.T) {
 	fx := newFixture(t)
 	p := filepath.Join(fx.data, "util.kdl")
@@ -49,7 +62,7 @@ func TestSanctum_Consecration(t *testing.T) {
 	refused(t, r, Options{Aspect: "on"}, "consecrate")
 	sameTree(t, before, tree(t, fx.data))
 
-	r = fx.rite(t, `{"sanctum": "$DATA/util.kdl", "consecrate": true, "scripture": "x"}`)
+	r = fx.rite(t, sanctumSubject("$DATA/util.kdl", `"consecrate": true,`, `{"*": "x"}`))
 	invoke(t, r, "on")
 	if got := read(t, p); got != "// +++ begin of sanctum mouse -- aspect|on +++\nx\n// +++ end of sanctum mouse +++\n" {
 		t.Fatalf("consecrated vessel holds %q", got)
@@ -58,25 +71,27 @@ func TestSanctum_Consecration(t *testing.T) {
 		t.Fatalf("consecrated vessel sealed %v", sealOf(t, p))
 	}
 
-	r = fx.rite(t, `{"sanctum": "$DATA/absent/util.kdl", "consecrate": true, "scripture": "x"}`)
+	r = fx.rite(t, sanctumSubject("$DATA/absent/util.kdl", `"consecrate": true,`, `{"*": "x"}`))
 	before = tree(t, fx.data)
 	refused(t, r, Options{Aspect: "on"}, "absent")
 	sameTree(t, before, tree(t, fx.data))
 }
 
+// TestSanctum_ReadsTomesAfresh: a tome is read afresh at every invocation,
+// illuminated only when it says so; a heresy within it is found there.
 func TestSanctum_ReadsTomesAfresh(t *testing.T) {
 	fx := newFixture(t)
 	p := write(t, fx.data, "util.kdl", "", 0o644)
 	tomes := filepath.Join(fx.lib, "rites", "tomes")
 	write(t, tomes, "on.kdl", "a {{aspect}}\n", 0o644)
 
-	r := fx.rite(t, `{"sanctum": "$DATA/util.kdl", "scripture": {"tome": "tomes/{{aspect}}.kdl"}}`)
+	r := fx.rite(t, sanctumSubject("$DATA/util.kdl", "", `{"*": {"tome": "tomes/{{aspect}}.kdl"}}`))
 	invoke(t, r, "on")
 	if got := read(t, p); !strings.Contains(got, "+++\na {{aspect}}\n//") {
 		t.Fatalf("a tome not illuminated must be placed verbatim:\n%s", got)
 	}
 
-	r = fx.rite(t, `{"sanctum": "$DATA/util.kdl", "scripture": {"tome": "tomes/{{aspect}}.kdl", "illuminate": true}}`)
+	r = fx.rite(t, sanctumSubject("$DATA/util.kdl", "", `{"*": {"tome": "tomes/{{aspect}}.kdl", "illuminate": true}}`))
 	write(t, tomes, "on.kdl", "b {{aspect}} {{rite.name}}\n", 0o644)
 	invoke(t, r, "on")
 	if got := read(t, p); !strings.Contains(got, "+++\nb on mouse\n//") {
@@ -87,14 +102,16 @@ func TestSanctum_ReadsTomesAfresh(t *testing.T) {
 
 	tome := write(t, tomes, "on.kdl", "fine\n  {{nope}}\n", 0o644)
 	hs := refused(t, r, Options{Aspect: "on"}, "{{nope}}")
-	if hs[0].Scripture != tome || hs[0].Line != 2 || hs[0].Column != 3 || hs[0].Verse != 1 {
+	if hs[0].Scripture != tome || hs[0].Line != 2 || hs[0].Column != 3 || hs[0].Verse != 0 {
 		t.Fatalf("heresy within the tome located at %+v", hs[0])
 	}
 }
 
+// TestSanctum_FollowsBondsAndKeepsThem: a vessel behind a bond is written
+// where the bond leads, and the bond is kept.
 func TestSanctum_FollowsBondsAndKeepsThem(t *testing.T) {
 	fx := newFixture(t)
-	r := fx.rite(t, `{"sanctum": "$DATA/util.kdl", "consecrate": true, "scripture": "x"}`)
+	r := fx.rite(t, sanctumSubject("$DATA/util.kdl", `"consecrate": true,`, `{"on": "x", "off": "y"}`))
 	real := write(t, fx.data, "dotfiles/util.kdl", "", 0o600)
 	name := filepath.Join(fx.data, "util.kdl")
 	link(t, "dotfiles/util.kdl", name)
@@ -116,11 +133,14 @@ func TestSanctum_FollowsBondsAndKeepsThem(t *testing.T) {
 	}
 }
 
+// TestSanctum_ManyWardsInOneVessel: two sanctum subjects keep their wards
+// in one vessel, the second planned upon what the first will write.
 func TestSanctum_ManyWardsInOneVessel(t *testing.T) {
 	fx := newFixture(t)
 	p := filepath.Join(fx.data, "util.kdl")
-	r := fx.rite(t, `{"sanctum": "$DATA/util.kdl", "ward": "a", "consecrate": true, "scripture": "1"},
-	  {"sanctum": "$DATA/util.kdl", "ward": "b", "glyph": "#", "scripture": "2"}`)
+	r := fx.rite(t, `{"name": "a", "designation": "sanctum", "vessel": "$DATA/util.kdl", "ward": "a", "consecrate": true,
+	  "omens": {"*": "1"}},
+	  {"name": "b", "designation": "sanctum", "vessel": "$DATA/util.kdl", "ward": "b", "glyph": "#", "omens": {"*": "2"}}`)
 
 	inv, err := Prepare(r, Options{Aspect: "on"})
 	if err != nil {
@@ -142,15 +162,20 @@ func TestSanctum_ManyWardsInOneVessel(t *testing.T) {
 	}
 }
 
+// TestSanctum_InfersGlyphsFromTheVessel: the glyphs of a sanctum are
+// inferred from its vessel's extension.
 func TestSanctum_InfersGlyphsFromTheVessel(t *testing.T) {
 	fx := newFixture(t)
 	p := write(t, fx.data, "style.css", "", 0o644)
-	invoke(t, fx.rite(t, `{"sanctum": "$DATA/style.css", "ward": "w", "scripture": ""}`), "on")
+	invoke(t, fx.rite(t, sanctumSubject("$DATA/style.css", `"ward": "w",`, `{"*": ""}`)), "on")
 	if got := read(t, p); got != "/* +++ begin of sanctum w -- aspect|on +++ */\n/* +++ end of sanctum w +++ */\n" {
 		t.Fatalf("got %q", got)
 	}
 }
 
+// TestSanctum_Refusals: a defiled vessel, scripture bearing the sanctum's
+// own marker and a vessel that is a hall refuse the invocation before
+// anything is touched, the heresy found in place.
 func TestSanctum_Refusals(t *testing.T) {
 	cases := map[string]struct {
 		vessel  string
@@ -158,9 +183,9 @@ func TestSanctum_Refusals(t *testing.T) {
 		want    string
 	}{
 		"broken sanctum": {"// +++ begin of sanctum mouse -- aspect|on +++\n", mouseSanctum, "never sealed"},
-		"own marker in scripture": {"", `{"sanctum": "$DATA/util.kdl",
-		  "scripture": "// +++ end of sanctum mouse +++"}`, "marker"},
-		"vessel is a hall": {"", `{"sanctum": "$DATA", "scripture": ""}`, "no vessel that can hold"},
+		"own marker in scripture": {"", sanctumSubject("$DATA/util.kdl", "", `{"*": "// +++ end of sanctum mouse +++"}`),
+			"marker"},
+		"vessel is a hall": {"", sanctumSubject("$DATA", "", `{"*": ""}`), "no vessel that can hold"},
 	}
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {
@@ -179,18 +204,22 @@ func TestSanctum_Refusals(t *testing.T) {
 	}
 }
 
+// TestPrepare_AbortsWithNothingChanged: a heresy of the second subject
+// refuses the invocation before the first is touched.
 func TestPrepare_AbortsWithNothingChanged(t *testing.T) {
 	fx := newFixture(t)
 	write(t, fx.data, "util.kdl", "", 0o644)
-	r := fx.rite(t, mouseSanctum+`, {"sanctum": "$DATA/missing.kdl", "scripture": ""}`)
+	r := fx.rite(t, mouseSanctum+`, `+sanctumSubject("$DATA/missing.kdl", "", `{"*": ""}`))
 	before := tree(t, fx.data)
 	hs := refused(t, r, Options{Aspect: "on"}, "missing.kdl")
-	if len(hs) != 1 || hs[0].Verse != 2 || hs[0].Line != 6 {
+	if len(hs) != 1 || hs[0].Verse != 0 || hs[0].Line != 6 {
 		t.Fatalf("heresies %+v", hs)
 	}
 	sameTree(t, before, tree(t, fx.data))
 }
 
+// TestPrepare_RefusesAnUndeclaredAspect: an aspect the rite does not
+// declare is refused at its aspects.
 func TestPrepare_RefusesAnUndeclaredAspect(t *testing.T) {
 	fx := newFixture(t)
 	hs := refused(t, fx.rite(t, mouseSanctum), Options{Aspect: "sideways"}, `"sideways"`)
@@ -200,6 +229,8 @@ func TestPrepare_RefusesAnUndeclaredAspect(t *testing.T) {
 	}
 }
 
+// TestSanctum_RefusesBondsInEndlessCircles: bonds that lead in a circle
+// refuse the invocation.
 func TestSanctum_RefusesBondsInEndlessCircles(t *testing.T) {
 	fx := newFixture(t)
 	link(t, "b.kdl", filepath.Join(fx.data, "util.kdl"))

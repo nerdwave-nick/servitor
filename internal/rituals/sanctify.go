@@ -49,7 +49,7 @@ type Unsanctionable struct {
 func (u *Unsanctionable) Error() string {
 	why := u.Err.Error()
 	if errors.Is(u.Err, sanction.ErrUnexalted) {
-		why = fmt.Sprintf("the rite %q holds no exalted verse, and there is nothing to sanction", u.Rite)
+		why = fmt.Sprintf("the rite %q holds nothing exalted, and there is nothing to sanction", u.Rite)
 	}
 	if u.Forsaken {
 		why += fmt.Sprintf("; the sanction kept under its name is forsaken and serves nothing — abjure it: "+
@@ -91,11 +91,11 @@ func (s *Servitor) Offer(name string) (*Offering, error) {
 	}
 	u, err := s.Unit(r)
 	if err != nil {
-		return nil, fmt.Errorf("the exalted verses of %q cannot be drawn into one unit: %w", name, err)
+		return nil, fmt.Errorf("the %s of %q cannot be drawn into one unit: %w", r.ExaltedNoun(), name, err)
 	}
 	if size := len(u.Canonical()); size > exalted.UnitCap {
-		return nil, fmt.Errorf("the exalted verses of %q hold %d bytes, more than the %d a sanction may hold", name,
-			size, exalted.UnitCap)
+		return nil, fmt.Errorf("the %s of %q hold %d bytes, more than the %d a sanction may hold", r.ExaltedNoun(),
+			name, size, exalted.UnitCap)
 	}
 	kept, lament := s.sanctions().Read(name)
 	return &Offering{Rite: r, Unit: u, Kept: kept, Lament: lament}, nil

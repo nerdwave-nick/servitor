@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-const visage = `{"transcription": "$DATA/visage.conf", "scripture": {"off": null, "*": "visage {{aspect}}"}`
+const visage = `{"name": "t", "designation": "transcription", "vessel": "$DATA/visage.conf", "omens": {"off": null, "*": "visage {{aspect}}"}`
 
 func TestTranscription_WritesRewritesAndStrikes(t *testing.T) {
 	fx := newFixture(t)
@@ -37,19 +37,19 @@ func TestTranscription_Seals(t *testing.T) {
 	fx := newFixture(t)
 	p := write(t, fx.data, "visage.conf", "visage off", 0o640)
 
-	invoke(t, fx.rite(t, `{"transcription": "$DATA/visage.conf", "scripture": "visage {{aspect}}"}`), "on")
+	invoke(t, fx.rite(t, `{"name": "t", "designation": "transcription", "vessel": "$DATA/visage.conf", "omens": {"*": "visage {{aspect}}"}}`), "on")
 	if read(t, p) != "visage on" || sealOf(t, p) != 0o640 {
 		t.Fatalf("got %q sealed %v; the seal must be kept", read(t, p), sealOf(t, p))
 	}
 
-	r := fx.rite(t, `{"transcription": "$DATA/visage.conf", "scripture": "visage {{aspect}}", "seal": "0600"}`)
+	r := fx.rite(t, `{"name": "t", "designation": "transcription", "vessel": "$DATA/visage.conf", "omens": {"*": "visage {{aspect}}"}, "seal": "0600"}`)
 	seen := invoke(t, r, "on")
 	if sealOf(t, p) != 0o600 || !seen[0].Vessel.Changed() {
 		t.Fatalf("seal %v, foresight %+v", sealOf(t, p), seen[0].Vessel)
 	}
 
 	q := filepath.Join(fx.data, "new.conf")
-	invoke(t, fx.rite(t, `{"transcription": "$DATA/new.conf", "scripture": "x", "seal": "600"}`), "on")
+	invoke(t, fx.rite(t, `{"name": "t", "designation": "transcription", "vessel": "$DATA/new.conf", "omens": {"*": "x"}, "seal": "600"}`), "on")
 	if sealOf(t, q) != 0o600 {
 		t.Fatalf("new vessel sealed %v", sealOf(t, q))
 	}
@@ -100,9 +100,9 @@ func TestTranscription_ReplacesOnlyItsOwnVessels(t *testing.T) {
 }
 
 const (
-	uniform  = `{"transcription": "$DATA/visage.conf", "scripture": "visage {{aspect}}"}`
-	reasoned = `{"transcription": "$DATA/visage.conf", "scripture": "why {{inscription.reason}}"}`
-	tomed    = `{"transcription": "$DATA/visage.conf", "scripture": {"on": {"tome": "tomes/on.conf", "illuminate": true}, "*": "plain"}}`
+	uniform  = `{"name": "t", "designation": "transcription", "vessel": "$DATA/visage.conf", "omens": {"*": "visage {{aspect}}"}}`
+	reasoned = `{"name": "t", "designation": "transcription", "vessel": "$DATA/visage.conf", "omens": {"*": "why {{inscription.reason}}"}}`
+	tomed    = `{"name": "t", "designation": "transcription", "vessel": "$DATA/visage.conf", "omens": {"on": {"tome": "tomes/on.conf", "illuminate": true}, "*": "plain"}}`
 )
 
 func TestTranscription_FollowsBonds(t *testing.T) {
@@ -129,8 +129,8 @@ func TestTranscription_FollowsBonds(t *testing.T) {
 
 func TestTranscription_Refusals(t *testing.T) {
 	cases := map[string]struct{ liturgy, want string }{
-		"absent hall":      {`{"transcription": "$DATA/absent/visage.conf", "scripture": "x"}`, "hall"},
-		"vessel is a hall": {`{"transcription": "$DATA", "scripture": "x"}`, "no vessel"},
+		"absent hall":      {`{"name": "t", "designation": "transcription", "vessel": "$DATA/absent/visage.conf", "omens": {"*": "x"}}`, "hall"},
+		"vessel is a hall": {`{"name": "t", "designation": "transcription", "vessel": "$DATA", "omens": {"*": "x"}}`, "no vessel"},
 	}
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {

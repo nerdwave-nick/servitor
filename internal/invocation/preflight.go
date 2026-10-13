@@ -10,8 +10,9 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/placeholder"
 )
 
-// preflight examines the steps of a rite one after another without
-// changing anything, planning each against a shadow of the machine.
+// preflight examines the subjects and observances of a rite of aspects, or
+// the verses of an edict, one after another without changing anything,
+// planning each against a shadow of the machine.
 type preflight struct {
 	rite    *librarium.Rite
 	opts    Options
@@ -19,28 +20,21 @@ type preflight struct {
 	world   *shadow
 	index   int  // index of the step, the subject or the observance being examined
 	exalted bool // the step being examined is exalted
-	// subject names the subject of a state rite of pattern Mark II being
-	// examined, observance its observance; both "" for a step of a liturgy.
+	// subject names the subject of a rite of aspects being examined,
+	// observance its observance; both "" for a verse of an edict.
 	subject, observance string
 	heresies            Heresies
 	unread              []string // the subjects the exalted servitor reads in the invoker's stead
 }
 
-// prepare examines one step; it returns nil when the step is heretical.
+// prepare examines one verse of an edict, an incantation or a litany; it
+// returns nil when the verse is heretical.
 func (p *preflight) prepare(s librarium.Step) performer {
 	switch s := s.(type) {
-	case *librarium.Sanctum:
-		return p.sanctum(s)
-	case *librarium.Transcription:
-		return p.transcription(s)
-	case *librarium.Tether:
-		return p.tether(s)
 	case *librarium.Incantation:
 		return p.incantation(s)
 	case *librarium.Litany:
 		return p.litany(s)
-	case *librarium.VoxCast:
-		return voxCast{v: p.verse(s.Kind(), s.Tidings), tidings: Tidings(s.Tidings)}
 	}
 	return nil
 }

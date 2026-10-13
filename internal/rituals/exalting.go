@@ -119,12 +119,13 @@ func unsanctioned(r *librarium.Rite, aspect string, st sanction.Standing) error 
 }
 
 // unexalted refuses the invocation of r, with a heresy for each exalted
-// verse — or exalted subject and observance of a state rite — that tells
-// why: nothing exalted is ever performed with its invoker's authority.
+// subject and observance of a rite of aspects, or verse of an edict, that
+// tells why: nothing exalted is ever performed with its invoker's
+// authority.
 func unexalted(r *librarium.Rite, why string) error {
-	noun := "verse"
-	if r.MarkII && !r.Edict {
-		noun = "subject or observance"
+	noun := "subject or observance"
+	if r.Edict {
+		noun = "verse"
 	}
 	var hs invocation.Heresies
 	for _, item := range r.ExaltedItems() {

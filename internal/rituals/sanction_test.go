@@ -118,7 +118,7 @@ func (sc *sanctuary) sigil(name string) string {
 var forsakenWords = []string{
 	`the sanction of "a-gone" is forsaken: no rite named "a-gone" is recorded in the Librarium any more, and ` +
 		`the sanction serves nothing — abjure it: servitor abjure a-gone`,
-	`the sanction of "plain" is forsaken: the rite "plain" holds no exalted verse any more, and the sanction ` +
+	`the sanction of "plain" is forsaken: the rite "plain" holds nothing exalted any more, and the sanction ` +
 		`serves nothing — abjure it: servitor abjure plain`,
 }
 

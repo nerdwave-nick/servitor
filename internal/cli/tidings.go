@@ -17,7 +17,7 @@ import (
 )
 
 // verseName names a verse of r as "verse 2 · tether <target>", a subject
-// of a state rite as "subject smt · machine-spirit", a built-in one with
+// of a rite of aspects as "subject smt · machine-spirit", a built-in one with
 // its target, and an observance as "observance veil · incantation": the
 // home of the faithful is spoken as "~", and a litany's scroll beside the
 // rite as it is written.

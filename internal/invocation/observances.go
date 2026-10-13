@@ -9,7 +9,7 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/librarium"
 )
 
-// The observances of a state rite of pattern Mark II are spoken in place
+// The observances of a rite of aspects are spoken in place
 // among its subjects, never deferred. Each changing subject is preceded by
 // its introits not yet spoken, and followed by the recessionals it is the
 // last changing subject to name; an unchanged subject passes them over.
@@ -19,14 +19,14 @@ import (
 // I's incantations and litanies, with their tongue, patience, offerings and
 // reversion; a fall reverts them among the subjects, in reverse order.
 
-// examined is a subject of a state rite as the pre-flight examined it: its
+// examined is a subject of a rite of aspects as the pre-flight examined it: its
 // foresight, nil when it is heretical, and its step, nil unless it changes.
 type examined struct {
 	foresight *Foresight
 	step      performer
 }
 
-// observances examines every observance of the state rite for the aspect
+// observances examines every observance of the rite of aspects for the aspect
 // invoked, whether or not it will be spoken, and makes each ready by its
 // name; one found heretical is absent.
 func (p *preflight) observances() map[string]performer {

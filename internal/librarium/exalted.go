@@ -45,14 +45,23 @@ func (r *Rite) ExaltedVerses() []int {
 // of pattern Mark II, an exalted subject or observance.
 func (r *Rite) Exalted() bool { return len(r.ExaltedItems()) > 0 }
 
-// ExaltedNoun names what of the rite is exalted, as laments name it: its
-// "exalted verses", or the "exalted subjects and observances" of a state
-// rite of pattern Mark II.
+// ExaltedNoun names what of the rite is exalted, as laments name it: the
+// "exalted verses" of an edict, or of a rite of aspects its "exalted
+// subjects", its "exalted observances", or its "exalted subjects and
+// observances", as it holds them (the latter when it holds none).
 func (r *Rite) ExaltedNoun() string {
-	if r.MarkII && !r.Edict {
-		return "exalted subjects and observances"
+	if r.Edict {
+		return "exalted verses"
 	}
-	return "exalted verses"
+	subjects := slices.ContainsFunc(r.Subjects, Subject.Exalted)
+	observances := slices.ContainsFunc(r.Observances, Observance.Exalted)
+	switch {
+	case subjects && !observances:
+		return "exalted subjects"
+	case observances && !subjects:
+		return "exalted observances"
+	}
+	return "exalted subjects and observances"
 }
 
 // ExaltedItem is one exalted verse of a liturgy, or one exalted subject or

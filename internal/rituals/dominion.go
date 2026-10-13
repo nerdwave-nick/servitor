@@ -178,8 +178,8 @@ func (d *dominions) amiss() error {
 // performed without dominion over what (and the rite): no dominion could be
 // held over it (err).
 func exaltedUnheld(r *librarium.Rite, aspect, what string, err error) error {
-	return fmt.Errorf("%s is refused, and nothing was touched: a rite with exalted verses is performed only "+
-		"under dominion, yet no dominion could be held over %s: %w", invocationOf(r, aspect), what, err)
+	return fmt.Errorf("%s is refused, and nothing was touched: a rite with %s is performed only under "+
+		"dominion, yet no dominion could be held over %s: %w", invocationOf(r, aspect), r.ExaltedNoun(), what, err)
 }
 
 // relinquish lets go of the vessels, then the rite.

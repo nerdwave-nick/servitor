@@ -1,26 +1,27 @@
-// Package invocation performs a rite of pattern Mark I, or a state rite of
-// pattern Mark II, into one aspect, or proclaims an edict, which bears none,
-// of pattern Mark I or Mark II. A state rite is performed by its subjects
-// rather than a liturgy (see subjects.go): only those that do not already
-// show the omen of the aspect are set, each proven by a reading afresh, and
-// its observances are spoken in place around them (see observances.go).
+// Package invocation performs a rite of aspects into one aspect, or
+// proclaims an edict, which bears none. A rite of aspects is performed by
+// its subjects (see subjects.go): only those that do not already show the
+// omen of the aspect are set, each proven by a reading afresh, and its
+// observances are spoken in place around them (see observances.go). An
+// edict performs its liturgy, verse by verse.
 //
 // Prepare runs the pre-flight: it renders every placeholder, reads every
 // tome afresh, and examines every vessel and tether, without changing
-// anything. It plans the steps one after another against a shadow of the
-// machine, so a step sees what the steps before it will have done. Foresee
-// tells what the invocation would do; Perform does it, step by step in
+// anything. It plans the subjects, observances or verses one after another
+// against a shadow of the machine, so each sees what those before it will
+// have done. Foresee tells what the invocation would do; Perform does it in
 // written order, and when step k falls it reverts steps k … 1 in reverse
 // order and reports every reversion.
 //
 // Relative vessels, tethers, anchors and tomes resolve against the
 // directory of the rite's scripture (librarium.Rite.ResolvePath).
 //
-// Steps of every kind join the same ordered loop through the performer
-// interface. Incantations and litanies are spoken by real processes (see
-// speak.go); vox-casts and failures are proclaimed to the Options' Herald
-// (see herald.go). An edict of pattern Mark II bears its vox-casts as a key
-// of the rite, not as steps: progress after each verse, success at the end.
+// Subjects, observances and verses join the same ordered loop through the
+// performer interface. Incantations, litanies and enact words are spoken by
+// real processes (see speak.go); the vox-casts the rite bears as a key of
+// its own, and failures, are proclaimed to the Options' Herald (see
+// herald.go): progress after each subject set or verse performed, success
+// at the end.
 package invocation
 
 import (
@@ -55,17 +56,17 @@ type Options struct {
 	// Herald hears the vox-casts and the failure of the performance; nil
 	// hears nothing.
 	Herald Herald
-	// Readings are what every subject of a state rite of pattern Mark II
+	// Readings are what every subject of a rite of aspects
 	// was read to show before the invocation, in written order; a subject
 	// beyond them, or a machine-spirit without an auspex, was not read.
 	Readings []Reading
-	// Reader reads one subject of the state rite anew (its index in the
+	// Reader reads one subject of the rite of aspects anew (its index in the
 	// rite's subjects) once it is set, to prove it; nil proves no
 	// machine-spirit, and each then falls.
 	Reader Reader
 }
 
-// Reading is what one subject of a state rite was read to show.
+// Reading is what one subject of a rite of aspects was read to show.
 type Reading struct {
 	// Omen is the one omen a machine-spirit was read to show: what its scan
 	// printed, even when that is no omen declared, or the one omen whose
@@ -84,7 +85,7 @@ type Reading struct {
 	Stale bool
 }
 
-// Reader reads the subject at index i of a state rite's subjects anew,
+// Reader reads the subject at index i of a rite of aspects's subjects anew,
 // while it is invoked.
 type Reader func(ctx context.Context, i int) Reading
 
@@ -97,11 +98,11 @@ type Verse struct {
 	// Exalted tells that the step is exalted: performed by the exalted
 	// servitor alone, from the sanction of its master.
 	Exalted bool
-	// Subject names the subject of a state rite of pattern Mark II the
+	// Subject names the subject of a rite of aspects the
 	// verse sets; Number is then zero. A built-in subject keeps its Kind
 	// and Target, a machine-spirit bears neither.
 	Subject string
-	// Observance names the observance of a state rite of pattern Mark II
+	// Observance names the observance of a rite of aspects
 	// the verse speaks; Number is then zero, and Kind and Target are those
 	// of its speech.
 	Observance string
@@ -142,10 +143,10 @@ func Prepare(r *librarium.Rite, opts Options) (*Invocation, error) {
 	}
 	p := &preflight{rite: r, opts: opts, world: newShadow(), values: values(r, opts, opts.Inscriptions)}
 	p.heresies = unmet(r, opts.Aspect, opts.Inscriptions)
-	if r.MarkII && !r.Edict {
+	if !r.Edict {
 		inv.subjects(p)
 	}
-	for i, s := range r.Liturgy {
+	for i, s := range r.Liturgy { // an edict's alone
 		p.index, p.exalted = i, librarium.IsExalted(s)
 		if step := p.prepare(s); step != nil {
 			if p.exalted {

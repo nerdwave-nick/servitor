@@ -46,3 +46,30 @@ func TestRite_ExaltedVersesAreItemsToo(t *testing.T) {
 		t.Fatalf("exalted items %q, want %q", got, want)
 	}
 }
+
+// TestRite_ExaltedNounNamesWhatIsExalted: laments name what of a rite is
+// exalted as it holds it: its exalted subjects, its exalted observances, or
+// both; an edict's exalted verses.
+func TestRite_ExaltedNounNamesWhatIsExalted(t *testing.T) {
+	spirit := func(exalted string) string {
+		return `{"name": "s", "designation": "machine-spirit", "enact": {"*": "true"}, "introit": ["o"]` + exalted + `}`
+	}
+	observance := func(exalted string) string {
+		return `{"name": "o", "designation": "incantation", "words": "true"` + exalted + `}`
+	}
+	for _, c := range []struct{ scripture, want string }{
+		{markII(``, spirit(`, "exalted": true`), observance(``)), "exalted subjects"},
+		{markII(``, spirit(``), observance(`, "exalted": true`)), "exalted observances"},
+		{markII(``, spirit(`, "exalted": true`), observance(`, "exalted": true`)), "exalted subjects and observances"},
+		{`{"pattern": "Mark II", "edict": true, "liturgy": [{"designation": "incantation", "words": "true",
+		  "exalted": true}]}`, "exalted verses"},
+	} {
+		r, fs := Parse("r", "/lib/rites/r.json", []byte(c.scripture))
+		if r == nil || fs.Heretical() {
+			t.Fatalf("heretical: %v", fs)
+		}
+		if got := r.ExaltedNoun(); got != c.want {
+			t.Errorf("%s: %q, want %q", c.scripture, got, c.want)
+		}
+	}
+}

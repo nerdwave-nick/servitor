@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-const theme = `{"tether": "$DATA/current-theme", "anchor": {"off": null, "*": "$DATA/themes/{{aspect}}"}`
+const theme = `{"name": "t", "designation": "tether", "tether": "$DATA/current-theme", "omens": {"off": null, "*": "$DATA/themes/{{aspect}}"}`
 
 func TestTether_BindsRebindsAndUnbinds(t *testing.T) {
 	fx := newFixture(t)
@@ -52,7 +52,7 @@ func TestTether_BindsRebindsAndUnbinds(t *testing.T) {
 func TestTether_ResolvesRelativeAnchorsAgainstTheRite(t *testing.T) {
 	fx := newFixture(t)
 	name := filepath.Join(fx.data, "current-theme")
-	invoke(t, fx.rite(t, `{"tether": "$DATA/current-theme", "anchor": "themes/{{aspect}}"}`), "on")
+	invoke(t, fx.rite(t, `{"name": "t", "designation": "tether", "tether": "$DATA/current-theme", "omens": {"*": "themes/{{aspect}}"}}`), "on")
 	if want := filepath.Join(fx.lib, "rites", "themes", "on"); anchorOf(t, name) != want {
 		t.Fatalf("bound to %q, want %q", anchorOf(t, name), want)
 	}
@@ -91,7 +91,7 @@ func TestTether_Refusals(t *testing.T) {
 		want    string
 	}{
 		"hall at the name":         {"current-theme/inner", theme + `, "zeal": true}`, "hall stands"},
-		"absent hall for the name": {"", `{"tether": "$DATA/absent/current-theme", "anchor": "x"}`, "is absent"},
+		"absent hall for the name": {"", `{"name": "t", "designation": "tether", "tether": "$DATA/absent/current-theme", "omens": {"*": "x"}}`, "is absent"},
 	}
 	for name, tc := range cases {
 		t.Run(name, func(t *testing.T) {

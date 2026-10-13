@@ -12,7 +12,7 @@ import (
 
 // incantation examines an incantation: its command and its utterance.
 func (p *preflight) incantation(s *librarium.Incantation) performer {
-	words, okWords := p.words(p.wordsKey(s.Kind()), s.Command)
+	words, okWords := p.words(wordsKey(s.Kind()), s.Command)
 	sp, okUtterance := p.utterance(s.Utterance)
 	if !okWords || !okUtterance {
 		return nil
@@ -28,7 +28,7 @@ func (p *preflight) incantation(s *librarium.Incantation) performer {
 // before it are performed, its offerings, rendered and with a leading "~"
 // borne to the home of the faithful, and its utterance.
 func (p *preflight) litany(s *librarium.Litany) performer {
-	key := p.wordsKey(s.Kind())
+	key := wordsKey(s.Kind())
 	field := mapField(p, key, s.Scroll)
 	text, okWords := p.words(key, s.Scroll)
 	sp, ok := p.utterance(s.Utterance)
@@ -58,13 +58,10 @@ func (p *preflight) litany(s *librarium.Litany) performer {
 	return p.spoken(s.Kind(), sp)
 }
 
-// wordsKey is the key the words of a step of kind k are written under: the
-// step's own key, or in pattern Mark II "words" and "scroll".
-func (p *preflight) wordsKey(k librarium.Kind) string {
-	switch {
-	case !p.rite.MarkII:
-		return k.Key()
-	case k == librarium.KindLitany:
+// wordsKey is the key the words of an observance or verse of kind k are
+// written under: "scroll" for a litany, "words" for an incantation.
+func wordsKey(k librarium.Kind) string {
+	if k == librarium.KindLitany {
 		return "scroll"
 	}
 	return "words"

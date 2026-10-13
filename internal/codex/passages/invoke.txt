@@ -113,7 +113,7 @@ Exalted subjects await the master's proof before the header, the proof
 asked in the intercessor's own words:
 
   ❯ servitor invoke split-lock on
-  ⋯ The exalted verses of split-lock await the master's proof: sudo asks it, under the sigil 4f0c2a9e1b7d.
+  ⋯ The exalted deeds of split-lock await the master's proof: sudo asks it, under the sigil 4f0c2a9e1b7d.
   servitor: authenticate to perform split-lock (sigil 4f0c2a9e1b7d):
   +++ split-lock · off → on +++
     ✔ subject penance · machine-spirit

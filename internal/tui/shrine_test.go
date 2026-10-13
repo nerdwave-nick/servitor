@@ -492,7 +492,7 @@ func TestSanction_RefusalsAndForsakenSanctions(t *testing.T) {
 	s.sanctify("hallow")
 	h.writeRite("hallow", strings.Replace(hallowRite, `, "exalted": true`, "", 1))
 	h.keys("r", "g", "s")
-	h.mustShow("holds no exalted verse", "forsaken", "abjure")
+	h.mustShow("holds nothing exalted", "forsaken", "abjure")
 	h.keys("enter")
 	if len(s.called()) != 0 {
 		t.Fatal("a rite without exalted verses asked a proof")
@@ -506,7 +506,7 @@ func TestSanction_RefusalsAndForsakenSanctions(t *testing.T) {
 
 	// a rite of no exalted verse and no sanction: nothing to sanction, nothing to abjure
 	h.keys("j", "s")
-	h.mustShow("holds no exalted verse")
+	h.mustShow("holds nothing exalted")
 	h.keys("a", "esc")
 
 	// a dismissed proof

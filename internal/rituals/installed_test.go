@@ -69,7 +69,7 @@ func intercede(t *testing.T, mar func(root string)) {
 // of the machine; --spare-vessels spares it, and a Librarium without
 // exalted subjects never needs it.
 func TestInquire_TheInstalledServitorOfExaltedRites(t *testing.T) {
-	words := []string{"/usr/bin/servitor", "install the servitor anew", "exalted subjects and observances"}
+	words := []string{"/usr/bin/servitor", "install the servitor anew", "exalted subjects, yet the exalted servitor"}
 	for what, c := range map[string]struct {
 		mar   func(root string)
 		names []string

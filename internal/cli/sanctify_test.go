@@ -321,7 +321,7 @@ func TestSanction_TheInquisitionComesFirst(t *testing.T) {
 	}
 	for rite, words := range map[string][]string{
 		"heretic":               {"heresy", "servitor inquisition heretic"},
-		"mouse-autohide-toggle": {"holds no exalted verse", "forsaken", "servitor abjure mouse-autohide-toggle"},
+		"mouse-autohide-toggle": {"holds nothing exalted", "forsaken", "servitor abjure mouse-autohide-toggle"},
 		"gone":                  {`no rite named "gone"`, "forsaken", "servitor abjure gone"},
 		"never":                 {`no rite named "never"`},
 	} {

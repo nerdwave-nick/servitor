@@ -95,10 +95,13 @@ func TestInvoke_HelpAndForesee(t *testing.T) {
 	}
 	sub := e.mustRun("invoke", "mouse-autohide-toggle", "--help")
 	for _, want := range []string{"Aspects: on, off", "--reason word", "why the rite was invoked",
-		"--example-key word", "mandatory", "-f, --foresee", "-s, --silence"} {
+		"--example-key word", "mandatory", "-f, --foresee", "-s, --silence", "Subjects:\n  cursor · sanctum " + e.target} {
 		if !strings.Contains(sub, want) {
 			t.Errorf("invoke help missing %q:\n%s", want, sub)
 		}
+	}
+	if strings.Contains(sub, "Liturgy:") || strings.Contains(sub, "verse") {
+		t.Errorf("the help of a rite of aspects speaks of a liturgy:\n%s", sub)
 	}
 	for _, flag := range []string{"--foresee", "-f"} {
 		out := e.mustRun("invoke", "mouse-autohide-toggle", "on", flag)

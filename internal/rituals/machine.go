@@ -16,31 +16,19 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/sanctum"
 )
 
-// machine examines what the rite's steps act upon: vessels, anchors and
-// tongues.
+// machine examines what the rite acts upon: the vessels, anchors and
+// tongues of its subjects and observances, or the scrolls and tongues of
+// an edict's verses.
 func (e *examiner) machine() {
-	for i, step := range e.rite.Liturgy {
+	for i, step := range e.rite.Liturgy { // an edict's alone
 		switch st := step.(type) {
-		case *librarium.Sanctum:
-			e.vessel(field(i, "sanctum"), "the sanctum", st)
-		case *librarium.Tether:
-			e.anchors(field(i, "anchor"), "", st)
 		case *librarium.Incantation:
 			e.tongue(i, st.Tongue)
 		case *librarium.Litany:
-			if e.rite.Edict {
-				e.scroll(i, st)
-			}
+			e.scroll(i, st)
 			if e.litanyNeedsTongue(st) {
 				e.tongue(i, st.Tongue)
 			}
-		}
-	}
-	if a := e.rite.Auspex; a != nil {
-		if t := e.tongueOf(""); !speakable(t) {
-			e.note(librarium.Impurity, "/auspex", "the tongue %q of the auspex is spoken nowhere on this "+
-				"machine: no program of that name lies along its PATH, so the auspex could never be heard and "+
-				"the rite loses its omen — name another \"tongue\" for the rite or the settings", t)
 		}
 	}
 	e.subjectsMachine()
@@ -190,10 +178,7 @@ func (e *examiner) scroll(i int, l *librarium.Litany) {
 	if !ok {
 		return
 	}
-	ptr := field(i, "litany")
-	if e.rite.MarkII {
-		ptr = field(i, "scroll") // an entry of the designation form names its scroll so
-	}
+	ptr := field(i, "scroll")
 	p, ok := e.path("", text)
 	if !ok || !e.once(ptr+" "+p) {
 		return
