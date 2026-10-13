@@ -342,3 +342,28 @@ func TestSanctionII_APrivilegedAuspexMustBeSpeakable(t *testing.T) {
 		})
 	}
 }
+
+// TestPerformII_TrialsProveWhatTheScanReads: a privileged auspex holding a
+// scan and trials is read by its scan, yet what was set or restored is
+// proven by its trials alone.
+func TestPerformII_TrialsProveWhatTheScanReads(t *testing.T) {
+	sh, hall := privilegedShrine(t)
+	for i := range sh.unit.Aspects {
+		sh.unit.Aspects[i].Subjects[0].Auspex.Trials = map[string]string{"gaming": "false"}
+	}
+	sh.lay(sh.cfg.Store, sh.unit)
+	must(t, os.WriteFile(filepath.Join(hall, "nft"), []byte("gaming\n"), 0o644))
+	inv := sh.accepted("on")
+	if r := inv.say(reading("nft")); !slices.Equal(sightsOf(r), []string{"nft gaming"}) {
+		t.Fatalf("read %+v", r)
+	}
+	r := inv.say(Request{Perform: spirit("nft", "none")})
+	if r.Verdict != Fell || !strings.Contains(r.Lament, `shows the omen "none"; "gaming" was commanded`) {
+		t.Fatalf("perform nft: %+v", r)
+	}
+	if r := inv.say(Request{Revert: spirit("nft", "")}); r.Verdict != Reverted || !slices.Equal(r.Omens, []string{"none"}) {
+		t.Fatalf("revert nft: %+v", r)
+	}
+	inv.say(Request{Abort: new(true)})
+	inv.ended()
+}

@@ -84,21 +84,23 @@ func (s *session) readable(names []string) ([]sanction.Verse, error) {
 // fits, or whether a built-in subject stands as the plan demands.
 func (s *session) sight(ctx context.Context, v sanction.Verse) Sight {
 	if v.Spirit() {
-		return Sight{Subject: v.Subject, Omens: s.behold(ctx, v)}
+		return Sight{Subject: v.Subject, Omens: s.behold(ctx, v, false)}
 	}
 	return Sight{Subject: v.Subject, Unchanged: s.settled(v)}
 }
 
 // behold speaks the privileged auspex of the machine-spirit v and returns
-// the declared omens it fits, sorted; none when it is mute. A scan prints
-// one omen, or, of a spirit that declares no omens, the names of aspects;
-// with trials alone, every trial is spoken at once, and the omens whose
-// trial ends with the death-mark 0 fit — the omens bearing no trial when
-// none does. Words that fall or are silent, print nothing or an omen never
-// declared, or one silent trial make it mute.
-func (s *session) behold(ctx context.Context, v sanction.Verse) []string {
+// the declared omens it fits, sorted; none when it is mute. Its scan reads,
+// when it has one: it prints one omen, or, of a spirit that declares no
+// omens, the names of aspects. Its trials prove what was set, when it has
+// them (proving), and read when it has no scan: every trial is spoken at
+// once, and the omens whose trial ends with the death-mark 0 fit — the
+// omens bearing no trial when none does. Words that fall or are silent,
+// print nothing or an omen never declared, or one silent trial make it
+// mute.
+func (s *session) behold(ctx context.Context, v sanction.Verse, proving bool) []string {
 	a, declared := v.Auspex, slices.Sorted(maps.Keys(v.Enact))
-	if a.Scan != "" {
+	if a.Scan != "" && (!proving || len(a.Trials) == 0) {
 		printed, spoke, err := s.speaker.Hear(ctx, v, a.Scan, "")
 		read := strings.TrimSpace(printed)
 		if err != nil || !spoke || read == "" {
@@ -156,7 +158,7 @@ func (s *session) prove(ctx context.Context, v sanction.Verse, omen string) ([]s
 	if v.Auspex == nil {
 		return nil, nil
 	}
-	shown := s.behold(ctx, v)
+	shown := s.behold(ctx, v, true)
 	if !slices.Contains(shown, omen) {
 		return nil, fmt.Errorf("%s shows %s; %q was commanded", v.Named(), omensNamed(shown), omen)
 	}
