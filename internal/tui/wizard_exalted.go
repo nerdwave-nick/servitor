@@ -9,12 +9,18 @@ import (
 )
 
 // addExaltation offers the step sd its exaltation, save a vox-cast, and
-// an exalted incantation or litany its relics.
-func addExaltation(f *form, sd stepDraft) {
+// an exalted incantation or litany its relics; a subject is offered its
+// own.
+func addExaltation(f *form, sd stepDraft, subject bool) {
 	if sd.kind == librarium.KindVoxCast {
 		return
 	}
 	exalted := sd.fixed["exalted"] == "true"
+	if subject {
+		f.addToggle("exalted", "Exalted subject", exalted, "Set with the machine's own authority, by an exalted "+
+			"servitor from the sanction of its master; space turns it.")
+		return
+	}
 	f.addToggle("exalted", "Exalted verse", exalted, "Performed with the machine's own authority, by an exalted "+
 		"servitor from the sanction of its master; space turns it.")
 	if exalted && bearsRelics(sd.kind) {
