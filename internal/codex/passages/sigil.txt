@@ -1,4 +1,4 @@
-The mark that seals a sanction, drawn from every word of a rite's exalted verses
+The mark that seals a sanction, drawn from every word a rite holds exalted
 
 A sigil is drawn from the sanction itself: everything the rite's exalted
 verses do, written in one canonical form (RFC 8785) and reduced by SHA-256
