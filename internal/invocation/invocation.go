@@ -1,5 +1,8 @@
-// Package invocation performs a rite of pattern Mark I into one aspect, or
-// proclaims an edict, which bears none, of pattern Mark I or Mark II.
+// Package invocation performs a rite of pattern Mark I, or a state rite of
+// pattern Mark II, into one aspect, or proclaims an edict, which bears none,
+// of pattern Mark I or Mark II. A state rite is performed by its subjects
+// rather than a liturgy (see subjects.go): only those that do not already
+// show the omen of the aspect are set, each proven by a reading afresh.
 //
 // Prepare runs the pre-flight: it renders every placeholder, reads every
 // tome afresh, and examines every vessel and tether, without changing
@@ -50,7 +53,30 @@ type Options struct {
 	// Herald hears the vox-casts and the failure of the performance; nil
 	// hears nothing.
 	Herald Herald
+	// Readings are what every subject of a state rite of pattern Mark II
+	// was read to show before the invocation, in written order; a subject
+	// beyond them, or a machine-spirit without an auspex, was not read.
+	Readings []Reading
+	// Reader reads one subject of the state rite anew (its index in the
+	// rite's subjects) once it is set, to prove it; nil proves no
+	// machine-spirit, and each then falls.
+	Reader Reader
 }
+
+// Reading is what one subject of a state rite was read to show.
+type Reading struct {
+	// Omen is the one omen a machine-spirit was read to show: what its scan
+	// printed, even when that is no omen declared, or the one omen whose
+	// trial succeeded; "" when none, or several.
+	Omen string
+	// Aspects are the aspects whose omen it shows, in the order of the
+	// rite's; none when it is mute, or was not read.
+	Aspects []string
+}
+
+// Reader reads the subject at index i of a state rite's subjects anew,
+// while it is invoked.
+type Reader func(ctx context.Context, i int) Reading
 
 // Verse names one step of the liturgy: its place, its kind and what its own
 // key holds, rendered and resolved.
@@ -61,6 +87,10 @@ type Verse struct {
 	// Exalted tells that the step is exalted: performed by the exalted
 	// servitor alone, from the sanction of its master.
 	Exalted bool
+	// Subject names the subject of a state rite of pattern Mark II the
+	// verse sets; Number is then zero. A built-in subject keeps its Kind
+	// and Target, a machine-spirit bears neither.
+	Subject string
 }
 
 // performer is a step made ready by the pre-flight.
@@ -97,6 +127,9 @@ func Prepare(r *librarium.Rite, opts Options) (*Invocation, error) {
 	}
 	p := &preflight{rite: r, opts: opts, world: newShadow(), values: values(r, opts, opts.Inscriptions)}
 	p.heresies = unmet(r, opts.Aspect, opts.Inscriptions)
+	if r.MarkII && !r.Edict {
+		inv.subjects(p)
+	}
 	for i, s := range r.Liturgy {
 		p.index, p.exalted = i, librarium.IsExalted(s)
 		if step := p.prepare(s); step != nil {

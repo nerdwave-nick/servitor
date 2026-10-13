@@ -8,12 +8,12 @@ import (
 	"testing"
 )
 
-// TestInvoke_RefusesEveryStateRiteOfMarkII: the servitor reads scripture
-// of pattern Mark II, yet performs no rite of aspects of it, nor foresees
-// it: no subject or observance is touched, and nothing is kept on the
-// data-slate or in the chronicle. Edicts of Mark II are proclaimed (see
-// edict_markii_test.go).
-func TestInvoke_RefusesEveryStateRiteOfMarkII(t *testing.T) {
+// TestInvoke_RefusesAStateRiteNamingAnObservance: the servitor performs no
+// state rite of pattern Mark II whose subject names an observance, nor
+// foresees it: no subject or observance is touched, and nothing is kept on
+// the data-slate or in the chronicle. Other state rites are invoked (see
+// invoke_markii_test.go), and edicts proclaimed (see edict_markii_test.go).
+func TestInvoke_RefusesAStateRiteNamingAnObservance(t *testing.T) {
 	fx := newFixture(t)
 	marker := fx.vessel("marker", "")
 	fx.rite("gaming", `{"pattern": "Mark II", "aspects": ["on", "off"], "subjects": [

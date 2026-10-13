@@ -99,7 +99,11 @@ func (inv *Invocation) PerformExalted(ctx context.Context, x Exalter) (Outcome, 
 		}
 	}
 	c := newCrier(inv.opts.Herald, inv.rite, values(inv.rite, inv.opts, inv.opts.Inscriptions), inv.steps)
-	return performAll(ctx, inv.steps, c, finish), nil
+	out := performAll(ctx, inv.steps, c, finish)
+	if inv.rite.MarkII && !inv.rite.Edict {
+		out.Changed = changed(out.Deeds)
+	}
+	return out, nil
 }
 
 // unexalted denounces every exalted verse of an invocation that has no

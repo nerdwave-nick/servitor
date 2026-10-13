@@ -15,7 +15,9 @@ const envOmen = "SERVITOR_OMEN"
 
 // readSpirit is what the auspex of a machine-spirit read.
 type readSpirit struct {
-	omen    string   // the one declared omen read; "" when none, or several
+	// omen is the one declared omen read; "" when none, or several. A mute
+	// scan keeps what it printed, which no aspect fits.
+	omen    string
 	aspects []string // the aspects it fits, in the order of the rite's; none when mute
 }
 
@@ -116,11 +118,14 @@ func (h hearing) scanned(ctx context.Context, places Places) readSpirit {
 		shown = strings.Fields(read)
 		for _, word := range shown {
 			if !slices.Contains(h.aspects, word) {
-				return readSpirit{}
+				return readSpirit{omen: read}
 			}
 		}
 	}
-	return h.fits(shown)
+	if r := h.fits(shown); len(r.aspects) > 0 {
+		return r
+	}
+	return readSpirit{omen: read} // mute, yet what it printed is kept for the tidings
 }
 
 // tried speaks every trial at once: the omens whose trial ends with the

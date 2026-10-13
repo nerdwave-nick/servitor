@@ -180,3 +180,48 @@ func TestEntry_NamesTheIntercessorAndTheSigilOfExaltedVerses(t *testing.T) {
 		t.Fatalf("read back %#v, %v", back, err)
 	}
 }
+
+// TestEntry_OfAStateRiteNamesItsSubjects: the line of a state rite of
+// pattern Mark II keeps the shape of Mark I, adds the subjects it changed
+// ("changed", present even when none changed), and names the fallen subject
+// and every subject reverted by "subject" in place of a verse; it reads back
+// whole.
+func TestEntry_OfAStateRiteNamesItsSubjects(t *testing.T) {
+	subject := func(name string, k librarium.Kind, target string) invocation.Verse {
+		return invocation.Verse{Subject: name, Kind: k, Target: target}
+	}
+	opts := invocation.Options{Aspect: "on", Former: "off"}
+	for _, tc := range []struct {
+		name string
+		out  invocation.Outcome
+		want string
+	}{
+		{"nothing changed", invocation.Outcome{Verdict: invocation.Triumph, Changed: []string{}},
+			`{"at":"2026-10-10T13:30:00Z","rite":"gaming","aspect":"on","former":"off","inscriptions":{},` +
+				`"verdict":"triumph","changed":[]}`},
+		{"reverted", invocation.Outcome{Verdict: invocation.Reverted, Changed: []string{"smt", "theme"},
+			Fell: &invocation.Fall{Verse: subject("scheduler", 0, ""), Heresy: errors.New("the subject shows another omen")},
+			Reversions: []invocation.Reversion{{Verse: subject("scheduler", 0, "")},
+				{Verse: subject("theme", librarium.KindTether, "/x/current"), Heresy: errors.New("fell")},
+				{Verse: subject("smt", 0, "")}}},
+			`{"at":"2026-10-10T13:30:00Z","rite":"gaming","aspect":"on","former":"off","inscriptions":{},` +
+				`"verdict":"reverted","fell_at":{"subject":"scheduler"},"heresy":"the subject shows another omen",` +
+				`"reversions":[{"subject":"scheduler","verdict":"triumph"},{"subject":"theme","verdict":"faltered"},` +
+				`{"subject":"smt","verdict":"triumph"}],"changed":["smt","theme"]}`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			e := New(moment, "gaming", opts, tc.out)
+			line, err := json.Marshal(e)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if string(line) != tc.want {
+				t.Fatalf("line\n got %s\nwant %s", line, tc.want)
+			}
+			var back Entry
+			if err := json.Unmarshal(line, &back); err != nil || !reflect.DeepEqual(back, e) {
+				t.Fatalf("read back %#v, %v\nwant %#v", back, err, e)
+			}
+		})
+	}
+}

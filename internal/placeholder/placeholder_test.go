@@ -16,7 +16,8 @@ var (
 	vals  = Values{
 		Aspect: "porpl", Former: "default", Rite: "theme",
 		Inscriptions: map[string]string{"reason": "gaming remnant"},
-		Tidings:      Tidings{Heresy: "the vessel is sealed", Step: 2, Steps: 5, StepKind: "tether", StepTarget: "~/current-theme"},
+		Tidings: Tidings{Heresy: "the vessel is sealed", Step: 2, Steps: 5, StepKind: "tether", StepTarget: "~/current-theme",
+			Subject: "smt"},
 	}
 )
 
@@ -69,6 +70,7 @@ func TestRender_VoxCastMode(t *testing.T) {
 		{"{{rite.name}} took the aspect {{aspect}}", "theme took the aspect porpl"},
 		{"{{inscription.reason}}", "gaming remnant"},
 		{"{{{{heresy}}", "{{heresy}}"},
+		{"the subject {{subject}}", "the subject smt"},
 	}
 	for _, c := range cases {
 		t.Run(c.text, func(t *testing.T) {
@@ -100,6 +102,8 @@ func TestCheck_Heresies(t *testing.T) {
 			{Kind: Unknown, Pos: Position{0, 1, 1}, Mark: "{{heresy}}", Name: "heresy", Mode: RiteMode}}},
 		{"step kind outside vox-cast", rite, "{{step.kind}}", Heresies{
 			{Kind: Unknown, Pos: Position{0, 1, 1}, Mark: "{{step.kind}}", Name: "step.kind", Mode: RiteMode}}},
+		{"subject outside vox-cast", rite, "{{subject}}", Heresies{
+			{Kind: Unknown, Pos: Position{0, 1, 1}, Mark: "{{subject}}", Name: "subject", Mode: RiteMode}}},
 		{"unknown in vox-cast", vox, "{{step.goal}}", Heresies{
 			{Kind: Unknown, Pos: Position{0, 1, 1}, Mark: "{{step.goal}}", Name: "step.goal", Mode: VoxCastMode}}},
 		{"spaces are not forgiven", rite, "{{ aspect }}", Heresies{
@@ -169,7 +173,7 @@ func TestHeresy_Denunciations(t *testing.T) {
 		must  []string
 	}{
 		{"unknown", rite, "{{stat}}", []string{"{{stat}}", "{{aspect}}", "{{former}}", "{{rite.name}}", "{{inscription.<key>}}"}},
-		{"unknown in vox-cast names its marks", vox, "{{stat}}", []string{"{{stat}}", "{{heresy}}", "{{step}}", "{{steps}}", "{{step.kind}}", "{{step.target}}"}},
+		{"unknown in vox-cast names its marks", vox, "{{stat}}", []string{"{{stat}}", "{{heresy}}", "{{step}}", "{{steps}}", "{{step.kind}}", "{{step.target}}", "{{subject}}"}},
 		{"reserved for vox-casts", rite, "{{steps}}", []string{"{{steps}}", "vox-cast"}},
 		{"undeclared", rite, "{{inscription.reasn}}", []string{"{{inscription.reasn}}", `"reasn"`, "inscriptions"}},
 		{"unclosed", rite, "{{aspect", []string{"{{", "}}", "{{{{"}},

@@ -21,6 +21,10 @@ type Outcome struct {
 	Deeds      []Deed
 	Fell       *Fall       // nil when every step was performed
 	Reversions []Reversion // in the order performed: from the fallen step back to the first
+	// Changed names, for a state rite of pattern Mark II alone, every
+	// subject set and proven, in written order: never nil for one, even
+	// when nothing changed; nil for every other rite.
+	Changed []string
 }
 
 // Deed is one step as it was performed.

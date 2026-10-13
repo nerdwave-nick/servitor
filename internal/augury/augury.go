@@ -19,7 +19,9 @@
 // A state rite of pattern Mark II reads its subjects instead (readSubjects):
 // each yields every aspect it fits, a machine-spirit through the scan or
 // the trials of its auspex, and the omens agree by intersection
-// (intersect). An exalted auspex is never spoken here.
+// (intersect). An exalted auspex is never spoken here. What each subject
+// showed is kept for the invocation that plans by it (Augury.Readings), and
+// ReadSubject reads one subject anew to prove it once set.
 //
 // An edict bears no aspect and yields no omen: it lies dormant until first
 // proclaimed, stands proclaimed after a last invocation that ended in
@@ -95,6 +97,10 @@ type Augury struct {
 	// of the rite's aspects; empty when they fit none, or when no subject
 	// yielded an omen.
 	Fitting []string
+	// Readings are what every subject of a state rite was read to show, in
+	// written order, mute ones too: what an invocation plans by. They are
+	// never told.
+	Readings []invocation.Reading
 	// Canon are the inscriptions the rite declares, in written order; a
 	// heretical rite declares none.
 	Canon []Declaration
@@ -144,6 +150,10 @@ type Options struct {
 	// Places bound how many processes of auspexes labour at once, shared
 	// by every augury read with them; nil bounds none.
 	Places Places
+	// Inscriptions are those of the invocation into Target: a state rite
+	// renders the omens of Target with them before any other, as they will
+	// be set. Outside an invocation they are nil.
+	Inscriptions map[string]string
 }
 
 func (o Options) env() librarium.Environment {
@@ -173,6 +183,7 @@ func AugurContext(ctx context.Context, r *librarium.Rite, opts Options) (Augury,
 	}
 	s := newSeer(r, slate)
 	if r.MarkII {
+		s.invoked(opts)
 		a.MarkII = true
 		a.readSubjects(ctx, s, opts)
 		a.intersect(slate)

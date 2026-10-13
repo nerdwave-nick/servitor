@@ -16,11 +16,15 @@ import (
 // seer reads the omens of one rite, reading every place of the machine at
 // most once.
 type seer struct {
-	rite     *librarium.Rite
-	slate    *Slate
-	variants map[string][]placeholder.Values
-	scrolls  map[string]scroll
-	bonds    map[string]bond
+	rite  *librarium.Rite
+	slate *Slate
+	// target and inscriptions are those of the invocation reading a state
+	// rite: they render the omens of target first.
+	target       string
+	inscriptions map[string]string
+	variants     map[string][]placeholder.Values
+	scrolls      map[string]scroll
+	bonds        map[string]bond
 }
 
 // scroll is what stands at a vessel's place, its symbolic links followed.
@@ -209,13 +213,17 @@ func (s *seer) bound(st *librarium.Tether) []sighting {
 }
 
 // valuesOf returns every set of placeholder values an invocation into
-// aspect may have rendered with: the data-slate's inscriptions when it
-// recorded aspect, else the decrees of aspect, with any former aspect.
+// aspect may have rendered with: those of the invocation reading a state
+// rite into aspect, the data-slate's inscriptions when it recorded aspect,
+// and the decrees of aspect, with any former aspect.
 func (s *seer) valuesOf(aspect string) []placeholder.Values {
 	if vs, ok := s.variants[aspect]; ok {
 		return vs
 	}
 	var sets []map[string]string
+	if s.inscriptions != nil && aspect == s.target {
+		sets = append(sets, s.inscriptions)
+	}
 	if s.slate != nil && s.slate.Aspect == aspect {
 		sets = append(sets, s.slate.Inscriptions)
 	}

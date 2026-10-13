@@ -12,7 +12,24 @@ type Foresight struct {
 	Verse
 	Vessel *VesselChange // sanctums and transcriptions
 	Tether *TetherChange // tethers
-	Speech *Speech       // incantations and litanies
+	Speech *Speech       // incantations and litanies; a machine-spirit's enact words
+	// Plan tells, for a subject of a state rite of pattern Mark II, the omen
+	// it was read to show and the omen commanded; nil for a step.
+	Plan *SubjectPlan
+}
+
+// SubjectPlan is what an invocation of a state rite would do with one
+// subject. Only a changing subject bears the change or the words that set
+// it.
+type SubjectPlan struct {
+	// Read is the omen a machine-spirit was read to show, "" when none
+	// was; Mute tells that its auspex was heard and named no aspect, and
+	// Unread that it has none to be heard. Built-in subjects tell their
+	// omen by their change alone.
+	Read         string
+	Mute, Unread bool
+	Target       string // the omen commanded of a machine-spirit
+	Changing     bool
 }
 
 // Speech is what an incantation or litany will speak, every placeholder

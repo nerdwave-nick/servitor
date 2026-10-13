@@ -111,9 +111,14 @@ func TestConvert_InMemoryAlone(t *testing.T) {
 		t.Errorf("completion: exit %d\nstdout: %s\nstderr: %s", code, out, errOut)
 	}
 	e.unconverted(rite, settings, "completion")
-	_, errOut, _ = e.run("invoke", "mouse-autohide-toggle", "on", "--foresee")
-	if !strings.Contains(errOut, `pattern "Mark II"`) || strings.Contains(errOut, "is converted") {
-		t.Errorf("foresight does not read the rite converted in memory alone:\n%s", errOut)
+	// only the rite converted in memory is foreseen subject by subject: its
+	// sanctum became the subject sanctum-1
+	vessel := e.targetContent()
+	out, errOut, code = e.run("invoke", "mouse-autohide-toggle", "on", "--foresee")
+	if code != 0 || !strings.Contains(out, "\nsubject sanctum-1 · sanctum ") || strings.Contains(out, "verse ") ||
+		strings.Contains(errOut, "is converted") || e.targetContent() != vessel {
+		t.Errorf("foresight does not read the rite converted in memory alone: exit %d\nstdout: %s\nstderr: %s",
+			code, out, errOut)
 	}
 	e.unconverted(rite, settings, "foresight")
 	if out, errOut, code := e.run("__exalt", "mouse-autohide-toggle", "0123456789ab", "on"); code == 0 {

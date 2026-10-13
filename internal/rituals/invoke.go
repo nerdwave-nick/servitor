@@ -19,7 +19,8 @@ type Petition struct {
 	// written "" clears the decree.
 	Runes map[string]string
 	// Foresee reveals what the invocation would do and performs nothing,
-	// not even the auspex.
+	// not even the auspex — save the auspexes of a state rite of pattern
+	// Mark II, whose plan rests upon what its subjects show.
 	Foresee bool
 	// Herald hears the vox-casts and the fall; nil hears nothing. The
 	// caller raises it and lets it rest afterwards.
@@ -68,8 +69,9 @@ type Result struct {
 }
 
 // Invoke performs the petition, or foresees it. The error tells why
-// nothing was performed: *Unrecorded, *Heretical, *Unperformable for a rite
-// of aspects of pattern Mark II, invocation.Heresies of
+// nothing was performed: *Unrecorded, *Heretical, *Unperformable for a
+// state rite of pattern Mark II holding what cannot yet be performed,
+// invocation.Heresies of
 // the inscriptions or the pre-flight (the result's Foresight is filled for
 // the steps that passed) or of exalted verses that may not be performed
 // (see exaltation), *Forsaken, or a refusal before any exalted verse: no
@@ -98,11 +100,11 @@ func (s *Servitor) Invoke(ctx context.Context, p Petition) (Result, error) {
 	if err != nil {
 		return Result{}, err
 	}
-	if r.MarkII && !r.Edict {
-		// No rite of aspects of pattern Mark II is performed until its
-		// rite of performance is forged: not even its subjects are read.
-		// Its edicts are proclaimed as those of Mark I are.
-		return Result{}, &Unperformable{Name: r.Name}
+	if why := unperformable(r); r.MarkII && !r.Edict && why != "" {
+		// What is exalted is never performed with the invoker's own
+		// authority, and observances wait for their own rite: not even
+		// the subjects of such a rite are read.
+		return Result{}, &Unperformable{Name: r.Name, Why: why}
 	}
 	res := Result{Rite: r}
 	exalting, err := s.exaltation(r, p, &res)
@@ -207,10 +209,22 @@ func (s *Servitor) prepare(r *librarium.Rite, p Petition, inscriptions map[strin
 			res.Options.Recorded = slate.Inscriptions
 		}
 	} else {
-		former, lament := augury.Augur(r, augury.Options{Target: p.Aspect, ForgoAuspex: p.Foresee, Orders: orders, Env: env})
+		// A state rite of pattern Mark II is read even when foreseen: what
+		// it would do rests upon what its subjects show.
+		opts := augury.Options{Target: p.Aspect, ForgoAuspex: p.Foresee && !r.MarkII, Orders: orders, Env: env}
+		if r.MarkII {
+			opts.Inscriptions = inscriptions
+		}
+		former, lament := augury.Augur(r, opts)
 		res.lament(lament)
 		res.Former = former.Standing
 		res.Options.Former, res.Options.Recorded = former.Aspect, former.Inscriptions
+		res.Options.Readings = former.Readings
+		if r.MarkII {
+			res.Options.Reader = func(ctx context.Context, i int) invocation.Reading {
+				return augury.ReadSubject(ctx, r, i, opts)
+			}
+		}
 	}
 	inv, err := invocation.Prepare(r, res.Options)
 	res.Foresight = inv.Foresee()

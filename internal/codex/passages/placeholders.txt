@@ -21,8 +21,10 @@ The tidings a vox-cast sends are drawn from the servitor's own embedded
 lists of tidings, and those alone speak the further marks of the invocation:
 {{heresy}} (why it fell), {{step}} (the verse just performed), {{steps}}
 (how many true steps the liturgy holds), {{step.kind}} (that step's own key,
-such as "tether") and {{step.target}} (what that key holds). No word a scribe
-writes into a rite may speak them; there they are heresy.
+such as "tether") and {{step.target}} (what that key holds); those of a rite
+of pattern Mark II speak {{subject}} (the subject set last, or the one that
+fell) in place of the step's key and target. No word a scribe writes into a
+rite may speak them; there they are heresy.
 
 Placeholders are illuminated in the vessels of sanctums and transcriptions,
 the names and anchors of tethers, the words of incantations, the scrolls and

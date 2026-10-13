@@ -52,6 +52,15 @@ marked proclaims progress once each verse of its liturgy is performed, and
 success once the whole of it is and nothing fell; its words are drawn from
 the same litanies of the edict. Without the key, only a fall is proclaimed.
 
+A rite of aspects of pattern Mark II proclaims progress once each subject it
+sets is proven, counting "subject x / n" among the subjects that change, and
+success once every one is — even when none changed. Its progress and its
+fall are drawn from litanies of their own, which name the subject; a fall
+tells the subject, the omen commanded and the omen found:
+
+    ✔ subject smt · machine-spirit
+    ⋯ Incense burns; smt is set and proven.  (1/2)
+
 Kindred passages: vox, liturgy, verdicts, invoke, edict
 
 Exempla:

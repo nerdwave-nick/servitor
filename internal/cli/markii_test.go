@@ -24,8 +24,10 @@ const captureIIJSON = `{"pattern": "Mark II", "edict": true, "vox-cast": ["succe
 // TestMarkII_IsReadByEveryRitualYetNeverInvoked: rites of pattern Mark II
 // stand in the Librarium beside those of Mark I; every reading ritual
 // heeds them, yet invoking or foreseeing a rite of aspects of that pattern
-// is refused before anything is touched, naming the rite of performance
-// not yet forged. Its edicts are proclaimed (see edict_markii_test.go).
+// whose subject names an observance is refused before anything is touched,
+// naming the rite of performance not yet forged. Its edicts are proclaimed
+// (see edict_markii_test.go), and other rites of aspects invoked (see
+// invoke_markii_test.go).
 func TestMarkII_IsReadByEveryRitualYetNeverInvoked(t *testing.T) {
 	e := newEnv(t)
 	e.addRite("rites/gaming.json", gamingIIJSON)
