@@ -1,21 +1,27 @@
-// The rite of the specification's third chapter: every key of a rite's
-// scripture, its liturgy filled with one step of each kind.
+// The rite of the specification's third chapter in pattern Mark II: every
+// key of a rite's scripture, one subject of each designation and one
+// observance of each.
 {
-  "pattern": "Mark I",                       // required; "Mark" + Roman numeral
+  "pattern": "Mark II",                      // required; "Mark" + Roman numeral
   "purpose": "The visage of the machine",
   "aspects": ["default", "finii", "porpl"],  // hand-written, non-empty, unique
   "inscriptions": {
     "reason": {"purpose": "why the rite was invoked"},
     "mode":   {"mandatory": true, "decrees": {"default": "plain", "*": "ornate"}}
   },
-  "auspex": "cat ~/.local/state/visage",
-  "liturgy": [
-    {"sanctum": "~/.config/niri/visage.kdl", "consecrate": true,
-     "scripture": {"default": "", "*": {"tome": "snippets/{{aspect}}.kdl"}}},
-    {"transcription": "~/.local/state/visage", "scripture": "{{aspect}}"},
-    {"tether": "~/.config/foot/colors.ini", "anchor": "~/.config/foot/{{aspect}}.ini"},
-    {"incantation": "pkill -USR1 foot || true"},
-    {"litany": "scripts/change-theme", "offerings": ["{{aspect}}", "{{inscription.mode}}"]},
-    {"vox-cast": "success"}
+  "vox-cast": ["success"],
+  "subjects": [
+    {"name": "niri", "designation": "sanctum", "vessel": "~/.config/niri/visage.kdl", "consecrate": true,
+     "omens": {"default": "", "*": {"tome": "snippets/{{aspect}}.kdl"}}},
+    {"name": "state", "designation": "transcription", "vessel": "~/.local/state/visage", "omens": {"*": "{{aspect}}"}},
+    {"name": "foot", "designation": "tether", "tether": "~/.config/foot/colors.ini",
+     "omens": {"*": "~/.config/foot/{{aspect}}.ini"}, "recessional": ["reload"]},
+    {"name": "wallpaper", "designation": "machine-spirit", "auspex": {"scan": "cat ~/.cache/wallpaper"},
+     "enact": {"*": "echo {{omen}} > ~/.cache/wallpaper"}, "recessional": ["theme"]}
+  ],
+  "observances": [
+    {"name": "reload", "designation": "incantation", "words": "pkill -USR1 foot || true"},
+    {"name": "theme", "designation": "litany", "scroll": "scripts/change-theme",
+     "offerings": ["{{aspect}}", "{{inscription.mode}}"]}
   ]
 }

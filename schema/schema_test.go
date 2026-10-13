@@ -107,71 +107,28 @@ func TestSchemas_AreDraft2020AndNamedByTheirAddress(t *testing.T) {
 }
 
 // TestRiteSchema_KnowsEveryKeyOfTheLibrarium: every key the librarium reads
-// stands in the schema, and the schema knows no key the librarium does not.
+// stands in the schema, which describes pattern Mark II alone, and the
+// schema knows no key the librarium does not: each union of a subject, an
+// observance and an edict's entry is told apart by its "designation" alone.
 func TestRiteSchema_KnowsEveryKeyOfTheLibrarium(t *testing.T) {
 	root := tree(t, Rite)
 	defs := obj(t, root, "$defs")
-	m := obj(t, defs, "mark-i")
-	sameKeys(t, "a rite", obj(t, m, "properties"), librarium.RiteKeys)
+	sameKeys(t, "a rite", obj(t, root, "properties"), librarium.MarkIIRiteKeys)
 	sameKeys(t, "an inscription", obj(t, defs, "inscription", "properties"), librarium.InscriptionKeys)
-	sameKeys(t, "the auspex", obj(t, defs, "auspex", "properties"), librarium.AuspexKeys)
 	sameKeys(t, "a tome", obj(t, defs, "tome", "properties"), librarium.TomeKeys)
-	objects := append([]string{"mark-i", "inscription", "auspex", "tome"}, markIIObjects(t, defs)...)
-	var refs []string
-	for _, k := range librarium.Kinds {
-		sameKeys(t, "the step "+k.Key(), obj(t, defs, k.Key(), "properties"), librarium.StepKeys(k))
-		objects = append(objects, k.Key())
-		refs = append(refs, "#/$defs/"+k.Key())
+	sameKeys(t, "the auspex of a machine-spirit", obj(t, defs, "spiritAuspex", "properties"), librarium.SpiritAuspexKeys)
+	if got := obj(t, root, "properties", "pattern")["const"]; got != librarium.PatternMarkII {
+		t.Errorf("pattern %v, want %q", got, librarium.PatternMarkII)
 	}
-	var oneOf []string
-	for _, b := range obj(t, defs, "step")["oneOf"].([]any) {
-		oneOf = append(oneOf, b.(map[string]any)["$ref"].(string))
+	if got := strs(obj(t, root, "properties", "vox-cast", "items")["enum"].([]any)); !slices.Equal(got,
+		[]string{librarium.VoxProgress, librarium.VoxSuccess}) {
+		t.Errorf("vox-cast tidings %v", got)
 	}
-	if !slices.Equal(oneOf, refs) {
-		t.Errorf("a step is one of %v, want %v", oneOf, refs)
-	}
-	for name, def := range defs {
-		if _, ok := def.(map[string]any)["properties"]; ok && !slices.Contains(objects, name) {
-			t.Errorf("the schema's %q holds keys the librarium does not know", name)
-		}
-	}
-	reserved := obj(t, m, "properties", "inscriptions", "propertyNames", "not")["enum"].([]any)
-	if !slices.Equal(strs(reserved), librarium.ReservedRunes) {
+	if reserved := obj(t, root, "properties", "inscriptions", "propertyNames", "not")["enum"].([]any); !slices.Equal(strs(reserved),
+		librarium.ReservedRunes) {
 		t.Errorf("reserved runes %v, want %v", reserved, librarium.ReservedRunes)
 	}
-	if got := strs(obj(t, defs, "vox-cast", "properties", "vox-cast")["enum"].([]any)); !slices.Equal(got,
-		[]string{librarium.VoxProgress, librarium.VoxSuccess}) {
-		t.Errorf("vox-cast tidings %v", got)
-	}
-	if got := obj(t, m, "properties", "pattern")["const"]; got != librarium.Pattern {
-		t.Errorf("pattern %v", got)
-	}
-	if got := strs(obj(t, root, "properties", "pattern")["enum"].([]any)); !slices.Equal(got, librarium.Patterns) {
-		t.Errorf("the patterns of a rite %v, want %v", got, librarium.Patterns)
-	}
-}
-
-// markIIObjects holds the definitions of pattern Mark II to the keys the
-// librarium reads, and returns the names of those that hold keys: each
-// union of a subject, an observance and an edict's entry is told apart by
-// its "designation" alone.
-func markIIObjects(t *testing.T, defs map[string]any) []string {
-	t.Helper()
-	m := obj(t, defs, "mark-ii")
-	sameKeys(t, "a rite of Mark II", obj(t, m, "properties"), librarium.MarkIIRiteKeys)
-	if got := obj(t, m, "properties", "pattern")["const"]; got != librarium.PatternMarkII {
-		t.Errorf("pattern %v", got)
-	}
-	if got := strs(obj(t, m, "properties", "vox-cast", "items")["enum"].([]any)); !slices.Equal(got,
-		[]string{librarium.VoxProgress, librarium.VoxSuccess}) {
-		t.Errorf("vox-cast tidings %v", got)
-	}
-	if reserved := obj(t, m, "properties", "inscriptions", "propertyNames", "not")["enum"].([]any); !slices.Equal(strs(reserved),
-		librarium.ReservedRunes) {
-		t.Errorf("reserved runes of Mark II %v, want %v", reserved, librarium.ReservedRunes)
-	}
-	sameKeys(t, "the auspex of a machine-spirit", obj(t, defs, "spiritAuspex", "properties"), librarium.SpiritAuspexKeys)
-	objects := []string{"mark-ii", "subject", "observance", "entry", "spiritAuspex", "exaltedRelics"}
+	objects := []string{"inscription", "tome", "subject", "observance", "entry", "spiritAuspex", "exaltedRelics"}
 	unions := []struct {
 		union, prefix string
 		designations  []string
@@ -201,7 +158,11 @@ func markIIObjects(t *testing.T, defs map[string]any) []string {
 			t.Errorf("the designations of %s %v, want %v", u.union, got, u.designations)
 		}
 	}
-	return objects
+	for name, def := range defs {
+		if _, ok := def.(map[string]any)["properties"]; ok && !slices.Contains(objects, name) {
+			t.Errorf("the schema's %q holds keys the librarium does not know", name)
+		}
+	}
 }
 
 func TestSettingsSchema_KnowsEveryKeyOfTheLibrarium(t *testing.T) {
@@ -213,8 +174,8 @@ func TestSettingsSchema_KnowsEveryKeyOfTheLibrarium(t *testing.T) {
 	if got := strs(obj(t, m, "properties", "intercessor")["enum"].([]any)); !slices.Equal(got, librarium.Intercessors) {
 		t.Errorf("intercessor %v, want %v", got, librarium.Intercessors)
 	}
-	if got := strs(obj(t, m, "properties", "pattern")["enum"].([]any)); !slices.Equal(got, librarium.Patterns) {
-		t.Errorf("pattern %v, want %v", got, librarium.Patterns)
+	if got := obj(t, m, "properties", "pattern")["const"]; got != librarium.PatternMarkII {
+		t.Errorf("pattern %v, want %q", got, librarium.PatternMarkII)
 	}
 }
 
