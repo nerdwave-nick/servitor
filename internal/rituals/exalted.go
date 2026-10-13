@@ -39,25 +39,27 @@ func (e *examiner) exaltation() {
 			}
 		}
 		for j, relic := range u.Relics {
-			e.relic(i, j, relic)
+			e.relic(fmt.Sprintf("/liturgy/%d/relics/%d", i, j), fmt.Sprintf("relic %d of the %s of verse %d, %s,",
+				j+1, e.rite.Liturgy[i].Kind().Key(), i+1, relic), relic)
 		}
 		if u.Exalted {
-			e.exaltedTongue(i, u.Tongue)
+			e.exaltedTongue(fmt.Sprintf("/liturgy/%d", i), u.Tongue, fmt.Sprintf("verse %d", i+1), "step")
 		}
 	}
+	e.subjectsExaltation()
 }
 
-// exaltedTongue denounces the tongue of the exalted speech at index i, named
-// by the step, the rite or the settings, when the program it truly is is
-// none of the tongues exalted speech knows. A tongue spoken nowhere is
-// noted by the machine.
-func (e *examiner) exaltedTongue(i int, tongue string) {
-	ptr := field(i, "tongue")
+// exaltedTongue denounces the tongue of the exalted speech of place, a
+// holder written at base, named by it, the rite or the settings, when the
+// program it truly is is none of the tongues exalted speech knows. A tongue
+// spoken nowhere is noted by the machine.
+func (e *examiner) exaltedTongue(base, tongue, place, holder string) {
+	ptr := base + "/tongue"
 	switch {
 	case tongue == "" && e.rite.Tongue != "":
 		ptr = "/tongue"
 	case tongue == "" && e.orders.Tongue != "":
-		ptr = field(i, "exalted") // the settings speak for the step
+		ptr = base + "/exalted" // the settings speak for the speaker
 	}
 	t := e.tongueOf(tongue)
 	program, err := exec.LookPath(t)
@@ -68,19 +70,17 @@ func (e *examiner) exaltedTongue(i int, tongue string) {
 		return
 	}
 	if _, known := librarium.ExaltedTongue(program); !known {
-		e.note(librarium.Heresy, ptr, "the tongue %s of verse %d is %s, which exalted speech is never spoken in: "+
+		e.note(librarium.Heresy, ptr, "the tongue %s of %s is %s, which exalted speech is never spoken in: "+
 			"it knows only %s, each bidden to read no scripture of its own as it awakens — name one of them as "+
-			"the \"tongue\" of the step", t, i+1, filepath.Base(program), librarium.ExaltedTongueNames)
+			"the \"tongue\" of the %s", t, place, filepath.Base(program), librarium.ExaltedTongueNames, holder)
 	}
 }
 
-// relic denounces relic j of the step at index i when it is no scripture
-// standing within the rite's hall.
-func (e *examiner) relic(i, j int, relic string) {
+// relic denounces the relic written at ptr, whose words name what, when it
+// is no scripture standing within the rite's hall.
+func (e *examiner) relic(ptr, what, relic string) {
 	hall := e.rite.Dir()
 	p := filepath.Join(hall, relic)
-	ptr := fmt.Sprintf("/liturgy/%d/relics/%d", i, j)
-	what := fmt.Sprintf("relic %d of the %s of verse %d, %s,", j+1, e.rite.Liturgy[i].Kind().Key(), i+1, relic)
 	info, err := os.Stat(p)
 	switch {
 	case errors.Is(err, fs.ErrNotExist):
