@@ -14,6 +14,33 @@ liturgy, never by hand — and it holds three things:
   inscriptions   the inscriptions of that aspect, from runes and decrees
   last_rite      the verdict of the invocation and its hour, "at"
 
+The data-slate of a rite of aspects of pattern Mark II holds two things
+more, whatever the verdict of its invocation:
+
+  boot           the boot of the machine the invocation was performed in,
+                 as /proc/sys/kernel/random/boot_id names it
+  omens          the omen every machine-spirit was known to show at the end
+                 of the invocation, by subject: "omen", the declared omen
+                 read, "at", the hour it was read, and "exalted": true when
+                 the exalted servitor read it in the invoker's stead
+
+A subject is known when the last thing done to it was a reading: the
+reading before the invocation for a subject unchanged or never reached,
+the proof of a subject set, or the proof of its restoration. A subject set
+or restored without a proof — its proof fell, or it has no auspex — and a
+mute one bear no entry, and whatever an earlier invocation recorded for
+them is struck. Sanctums, transcriptions and tethers are read afresh in an
+instant and are not recorded.
+
+These recorded omens serve as stale omens where a live omen is not heard:
+an exalted auspex, never spoken outside an invocation; an auspex spared by
+--spare-auspex or by completion; and the first telling of a vigil, before
+the auspexes answer. A recorded omen of another boot is never used, for
+most of what a machine-spirit reads is lost when the machine is raised
+anew, and neither is one the scripture no longer declares. An invocation
+never trusts a recorded omen: it reads every subject live. The passage on
+the omens tells all.
+
 An edict stands in no aspect, so its data-slate holds only the inscriptions
 and last_rite: the inscriptions it was proclaimed with after a triumph,
 those recorded before after a fall.
@@ -33,7 +60,8 @@ strike it, and the next invocation inscribes it anew. Inscriptions are kept
 on the data-slate alone: the scripture of a rite is never rewritten by an
 invocation.
 
-Kindred passages: verdicts, inscriptions, standing, augury, chronicle
+Kindred passages: verdicts, inscriptions, standing, augury, chronicle,
+omens, subjects, census, vigil
 
 Exempla:
   servitor invoke mouse-autohide-toggle on --reason "gaming remnant"
@@ -43,6 +71,15 @@ Exempla:
    "last_rite": {"verdict": "triumph", "at": "2026-10-10T13:30:00Z"}}
 
   servitor augury mouse-autohide-toggle reason
+
+  cat ~/.local/state/servitor/data-slates/gaming.json
+
+  {"aspect": "on", "inscriptions": {},
+   "last_rite": {"verdict": "triumph", "at": "2026-10-13T20:00:00Z"},
+   "boot": "a74aeb41-cd68-4760-b796-138592d15e93",
+   "omens": {"smt": {"omen": "off", "at": "2026-10-13T20:00:00Z"},
+             "nft": {"omen": "gaming", "at": "2026-10-13T20:00:00Z",
+                     "exalted": true}}}
 
   {"inscriptions": {"region": "full"},
    "last_rite": {"verdict": "triumph", "at": "2026-10-10T13:31:00Z"}}

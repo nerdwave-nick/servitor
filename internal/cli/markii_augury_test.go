@@ -139,7 +139,7 @@ func TestCensus_ReadsStateRites(t *testing.T) {
 	want := compactJSON(t, `{"aspect": "powersave", "aspects": ["performance", "balanced", "powersave"], "auspex": "heeded",
 	  "canon": [], "desecrated": false, "edict": false, "last_rite": null, "purpose": "the power of the machine",
 	  "recorded_in": "`+filepath.Join(e.cfgDir, "rites", "power.json")+`", "rite": "power", "sanction": "",
-	  "standing": "performed"}`)
+	  "stale": false, "standing": "performed"}`)
 	if string(got) != want {
 		t.Errorf("got  %s\nwant %s", got, want)
 	}

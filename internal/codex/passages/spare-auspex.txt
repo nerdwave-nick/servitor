@@ -8,7 +8,10 @@ With the rune, no auspex is ever awakened. The answer is read from the omens
 of the steps and from the data-slate alone, and so it comes at once — fit for
 bars and other lesser machines that ask often and cannot wait. The aspect
 and the standing are still judged by the agreement of whatever omens remain;
-where none speaks, the data-slate names the aspect, as ever.
+where none speaks, the data-slate names the aspect, as ever. A spared
+machine-spirit of pattern Mark II is read from the omen the data-slate
+recorded at the last invocation, marked stale, when that omen was read in
+this boot of the machine and is still declared.
 
 Such an answer is no full reading, and it says so: every rite that keeps an
 auspex is marked "auspex": "forgone" in the binharic of the census and of

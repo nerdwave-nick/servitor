@@ -3,6 +3,7 @@ package augury
 import (
 	"bytes"
 	"encoding/json"
+	"time"
 
 	"github.com/nerdwave-nick/servitor/internal/invocation"
 	"github.com/nerdwave-nick/servitor/internal/librarium"
@@ -77,16 +78,24 @@ func (a Augury) MarshalJSON() ([]byte, error) {
 // {"auspex": true, "aspect": "porpl"}, and a subject's as its name, its
 // designation, the omen read when one was, every aspect it fits and the
 // aspect when it fits one ({"subject": "smt", "designation":
-// "machine-spirit", "omen": "off", "aspects": ["on"], "aspect": "on"}).
+// "machine-spirit", "omen": "off", "aspects": ["on"], "aspect": "on"}),
+// followed by "stale": true and "read_at" for an omen taken from the
+// data-slate's record.
 func (o Omen) MarshalJSON() ([]byte, error) {
 	if o.Subject != "" {
+		var readAt *time.Time
+		if o.Stale {
+			readAt = &o.ReadAt
+		}
 		return json.Marshal(struct {
-			Subject     string   `json:"subject"`
-			Designation string   `json:"designation"`
-			Omen        string   `json:"omen,omitempty"`
-			Aspects     []string `json:"aspects"`
-			Aspect      string   `json:"aspect,omitempty"`
-		}{o.Subject, o.Designation, o.Read, o.Aspects, o.Aspect})
+			Subject     string     `json:"subject"`
+			Designation string     `json:"designation"`
+			Omen        string     `json:"omen,omitempty"`
+			Aspects     []string   `json:"aspects"`
+			Aspect      string     `json:"aspect,omitempty"`
+			Stale       bool       `json:"stale,omitempty"`
+			ReadAt      *time.Time `json:"read_at,omitempty"`
+		}{o.Subject, o.Designation, o.Read, o.Aspects, o.Aspect, o.Stale, readAt})
 	}
 	if o.Auspex {
 		return json.Marshal(struct {

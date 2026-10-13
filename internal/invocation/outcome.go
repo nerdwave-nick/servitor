@@ -25,6 +25,10 @@ type Outcome struct {
 	// subject set and proven, in written order: never nil for one, even
 	// when nothing changed; nil for every other rite.
 	Changed []string
+	// Known are, for a state rite of pattern Mark II alone, the omens its
+	// subjects were known to show at the end of the performance, by
+	// subject (see known): never nil for one; nil for every other rite.
+	Known map[string]Reading
 }
 
 // Deed is one step as it was performed.

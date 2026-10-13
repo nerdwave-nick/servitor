@@ -101,7 +101,7 @@ func (inv *Invocation) PerformExalted(ctx context.Context, x Exalter) (Outcome, 
 	c := newCrier(inv.opts.Herald, inv.rite, values(inv.rite, inv.opts, inv.opts.Inscriptions), inv.steps)
 	out := performAll(ctx, inv.steps, c, finish)
 	if inv.rite.MarkII && !inv.rite.Edict {
-		out.Changed = changed(out.Deeds)
+		out.Changed, out.Known = changed(out.Deeds), inv.known()
 	}
 	return out, nil
 }

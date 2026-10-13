@@ -34,7 +34,11 @@ func (a *Augury) readSubjects(ctx context.Context, s *seer, opts Options) {
 				a.Taint = append(a.Taint, *taint)
 			}
 		case *librarium.MachineSpirit:
-			if m.Auspex != nil && !m.Auspex.Exalted {
+			switch {
+			case m.Auspex == nil:
+			case m.Auspex.Exalted:
+				omens[i] = s.remembered(sub, opts)
+			default:
 				spirits = append(spirits, i)
 			}
 		default:
@@ -105,6 +109,9 @@ func (a *Augury) hearSpirits(ctx context.Context, s *seer, opts Options, spirits
 		return
 	case opts.ForgoAuspex:
 		a.Auspex = Forgone
+		for _, i := range spirits {
+			omens[i] = s.remembered(s.rite.Subjects[i], opts)
+		}
 		return
 	}
 	readings := make([]readSpirit, len(spirits))
@@ -141,28 +148,79 @@ func aspectsOf(seen []sighting) []string {
 	return aspects
 }
 
+// remembered is the omen the data-slate recorded for the machine-spirit
+// sub, marked stale, where its live omen is not heard; nil when none may
+// serve: during an invocation, which trusts no record, when it was recorded
+// in another boot, or when it is no longer a declared omen of sub. A stale
+// omen fits aspects as a live one does.
+func (s *seer) remembered(sub librarium.Subject, opts Options) *Omen {
+	if s.target != "" || s.slate == nil {
+		return nil
+	}
+	rec, ok := s.slate.Omens[sub.Name]
+	if !ok || s.slate.Boot == "" || s.slate.Boot != s.boot() {
+		return nil
+	}
+	read := s.spirit(sub, opts).fits([]string{rec.Omen})
+	if len(read.aspects) == 0 {
+		return nil
+	}
+	o := subjectOmen(sub, read, read.aspects)
+	o.Stale, o.ReadAt = true, rec.At
+	return o
+}
+
+// boot is the boot of the machine, read once.
+func (s *seer) boot() string {
+	if s.booted == nil {
+		b := Boot()
+		s.booted = &b
+	}
+	return *s.booted
+}
+
 // intersect names the aspect and standing of a state rite: its fitting
 // aspects are those every omen fits. None corrupts it; one names its
 // aspect, desecrated when the data-slate recorded another; several name
 // the data-slate's aspect when it is among them, else none, the rite
 // desecrated when the data-slate recorded another and dormant when it
 // recorded none. Without omen the data-slate names the aspect, as for
-// Mark I; taint and a faltered last invocation weigh as for Mark I.
+// Mark I; taint and a faltered last invocation weigh as for Mark I. Stale
+// omens alone never desecrate the rite: when its live omens would not, the
+// rite is judged by them alone.
 func (a *Augury) intersect(slate *Slate) {
-	a.Fitting = []string{}
-	if len(a.Omens) == 0 {
-		a.judge(slate)
-		return
-	}
-	fitting := a.Omens[0].Aspects
-	for _, o := range a.Omens[1:] {
-		fitting = slices.DeleteFunc(slices.Clone(fitting), func(aspect string) bool {
-			return !slices.Contains(o.Aspects, aspect)
-		})
-	}
 	recorded := ""
 	if slate != nil {
 		recorded = slate.Aspect
+	}
+	a.agree(a.Omens, recorded)
+	if a.Desecrated && a.Stale() {
+		var live Augury
+		live.agree(slices.DeleteFunc(slices.Clone(a.Omens), func(o Omen) bool { return o.Stale }), recorded)
+		if !live.Desecrated {
+			a.Fitting, a.Aspect, a.Standing, a.Desecrated, a.Former =
+				live.Fitting, live.Aspect, live.Standing, false, ""
+		}
+	}
+	a.weigh(slate)
+}
+
+// agree names the fitting aspects, the aspect and the standing omens agree
+// on by intersection, recorded being the data-slate's aspect.
+func (a *Augury) agree(omens []Omen, recorded string) {
+	a.Fitting = []string{}
+	if len(omens) == 0 {
+		a.Aspect, a.Standing = recorded, Performed
+		if recorded == "" {
+			a.Standing = Dormant
+		}
+		return
+	}
+	fitting := omens[0].Aspects
+	for _, o := range omens[1:] {
+		fitting = slices.DeleteFunc(slices.Clone(fitting), func(aspect string) bool {
+			return !slices.Contains(o.Aspects, aspect)
+		})
 	}
 	switch {
 	case len(fitting) == 0:
@@ -178,5 +236,4 @@ func (a *Augury) intersect(slate *Slate) {
 	default:
 		a.Fitting, a.Aspect, a.Standing = fitting, recorded, Performed
 	}
-	a.weigh(slate)
 }

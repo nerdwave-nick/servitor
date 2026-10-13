@@ -28,6 +28,7 @@ import (
 	"errors"
 	"fmt"
 	"maps"
+	"time"
 
 	"github.com/nerdwave-nick/servitor/internal/librarium"
 	"github.com/nerdwave-nick/servitor/internal/placeholder"
@@ -73,6 +74,11 @@ type Reading struct {
 	// Aspects are the aspects whose omen it shows, in the order of the
 	// rite's; none when it is mute, or was not read.
 	Aspects []string
+	// At is when it was read; zero when the reader did not tell.
+	At time.Time
+	// Exalted marks a reading the exalted servitor made, the invoker
+	// being unable to read the subject itself.
+	Exalted bool
 }
 
 // Reader reads the subject at index i of a state rite's subjects anew,

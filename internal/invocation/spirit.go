@@ -100,8 +100,9 @@ type spiritStep struct {
 	omen   string // the omen commanded
 	read   Reading
 	begun  bool
-	said   string // what perform uttered
-	unsaid string // what revert uttered
+	last   Reading // what the subject was last read to show since begun: zero when unproven
+	said   string  // what perform uttered
+	unsaid string  // what revert uttered
 }
 
 func (s *spiritStep) verse() Verse { return s.v }
@@ -123,7 +124,7 @@ func (s *spiritStep) voice(argv []string, omen string) voice {
 // perform speaks the enact words, then proves the subject shows the omen
 // commanded; a machine-spirit without an auspex is never proven.
 func (s *spiritStep) perform(ctx context.Context) error {
-	s.begun = true
+	s.begun, s.last = true, Reading{}
 	var err error
 	if s.said, err = s.voice(s.speech.Argv, s.omen).speak(ctx); err != nil {
 		return err
@@ -132,7 +133,9 @@ func (s *spiritStep) perform(ctx context.Context) error {
 }
 
 // prove reads the subject anew: it must fit aspect, whose omen is omen.
+// The reading is kept as the last only when it does.
 func (s *spiritStep) prove(ctx context.Context, aspect, omen string) error {
+	s.last = Reading{}
 	if s.ms.Auspex == nil {
 		return nil
 	}
@@ -141,6 +144,7 @@ func (s *spiritStep) prove(ctx context.Context, aspect, omen string) error {
 	}
 	got := s.opts.Reader(ctx, s.index)
 	if slices.Contains(got.Aspects, aspect) {
+		s.last = got
 		return nil
 	}
 	found := "no omen"
@@ -157,6 +161,7 @@ func (s *spiritStep) revert() (bool, error) {
 	if !s.begun {
 		return false, nil
 	}
+	s.last = Reading{}
 	aspect, omen, err := s.restoration()
 	if err != nil {
 		return true, err
@@ -193,3 +198,5 @@ func (s *spiritStep) restoration() (aspect, omen string, err error) {
 	}
 	return former, strings.TrimSpace(omen), nil
 }
+
+func (s *spiritStep) witnessed() (int, Reading, bool) { return s.index, s.last, s.begun }

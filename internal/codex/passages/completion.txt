@@ -17,7 +17,8 @@ line. The rune --librarium completes halls, and --chronicle the names of
 scripture-files.
 
 Completion must answer at once, so it never awakens an auspex: the current
-aspect it marks is read from the omens of the steps and the data-slate alone.
+aspect it marks is read from the omens of the steps and the data-slate
+alone, the omens the data-slate recorded for machine-spirits among them.
 
 Bash requires the bash-completion package to be installed; zsh requires
 compinit to have been called. Each tongue keeps its litanies in its own

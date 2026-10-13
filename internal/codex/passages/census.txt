@@ -36,7 +36,11 @@ keeps none (and for an edict or a heretical rite), "heeded", "mute", or
 "forgone" under --spare-auspex; the table never shows it. "edict" is true for an edict, whose aspects are an empty list, and
 false for every other rite. "sanction" tells how the rite stands towards the sanction of its exalted
 verses — "sanctioned", "lapsed", "unsanctioned", or "" when it holds none.
-A rite whose data-slate cannot be read is still counted; the lament is
+"stale" is true when the rite's aspect or standing rests on any omen taken
+from the data-slate's record of its last invocation, where the live omen
+was not heard, and false otherwise; every rite bears it. The table marks
+such an aspect with "~", as "~on". A rite whose data-slate cannot be read
+is still counted; the lament is
 spoken apart from the census, and so is the lament of every forsaken
 sanction, whose rite is gone or holds no exalted verse.
 

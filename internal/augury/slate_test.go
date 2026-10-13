@@ -179,3 +179,52 @@ func TestRecord_ARitesSlateKeepsItsAspectEvenUnknown(t *testing.T) {
 		t.Errorf("got  %s\nwant %s", data, want)
 	}
 }
+
+// TestRecord_AStateRiteRecordsTheOmensKnownAndTheBoot: the data-slate of a
+// state rite records every omen known at the end of its invocation, when
+// it was read in UTC to the second (the verdict's moment when untold), and
+// whether the exalted servitor read it; and the boot it was read in.
+func TestRecord_AStateRiteRecordsTheOmensKnownAndTheBoot(t *testing.T) {
+	env, _ := stateEnv(t)
+	read := time.Date(2026, 10, 10, 15, 29, 0, 987654321, time.FixedZone("CEST", 2*60*60))
+	out := invocation.Outcome{Verdict: invocation.Reverted, Changed: []string{}, Known: map[string]invocation.Reading{
+		"smt": {Omen: "off", Aspects: []string{"on"}, At: read},
+		"nft": {Omen: "gaming", Aspects: []string{"on"}, Exalted: true},
+	}}
+	if err := Record(env, "gaming", out, invocation.Options{Aspect: "on", Former: "off"}, noon); err != nil {
+		t.Fatal(err)
+	}
+
+	data, _ := os.ReadFile(SlatePath(env, "gaming"))
+	want := `{"aspect":"off","inscriptions":{},"last_rite":{"verdict":"reverted","at":"2026-10-10T13:30:00Z"},` +
+		`"boot":"` + Boot() + `","omens":{"nft":{"omen":"gaming","at":"2026-10-10T13:30:00Z","exalted":true},` +
+		`"smt":{"omen":"off","at":"2026-10-10T13:29:00Z"}}}` + "\n"
+	if string(data) != want {
+		t.Errorf("got  %s\nwant %s", data, want)
+	}
+	s, err := ReadSlate(env, "gaming")
+	if err != nil || s.Boot != Boot() || len(s.Omens) != 2 || !s.Omens["nft"].Exalted || s.Omens["smt"].Omen != "off" {
+		t.Errorf("read back %+v, %v", s, err)
+	}
+
+	out.Known = map[string]invocation.Reading{} // nothing known: every entry is struck
+	if err := Record(env, "gaming", out, invocation.Options{Aspect: "on", Former: "off"}, noon); err != nil {
+		t.Fatal(err)
+	}
+	data, _ = os.ReadFile(SlatePath(env, "gaming"))
+	if want := `{"aspect":"off","inscriptions":{},"last_rite":{"verdict":"reverted","at":"2026-10-10T13:30:00Z"},` +
+		`"boot":"` + Boot() + `","omens":{}}` + "\n"; string(data) != want {
+		t.Errorf("got  %s\nwant %s", data, want)
+	}
+}
+
+// TestReadSlate_AMarkISlateBearsNoOmens: a data-slate written before omens
+// were recorded is read as ever, with neither boot nor omens.
+func TestReadSlate_AMarkISlateBearsNoOmens(t *testing.T) {
+	env, _ := stateEnv(t)
+	write(t, SlatePath(env, "mouse"), `{"aspect":"on","inscriptions":{},"last_rite":{"verdict":"triumph","at":"2026-10-10T13:30:00Z"}}`)
+	s, err := ReadSlate(env, "mouse")
+	if err != nil || s.Aspect != "on" || s.Boot != "" || s.Omens != nil {
+		t.Fatalf("got %+v, %v", s, err)
+	}
+}

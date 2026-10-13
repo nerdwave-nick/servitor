@@ -44,6 +44,18 @@ aspect, this is the agreement told above. Each omen is named by its
 subject and designation, with the omen read when a machine-spirit showed
 one, every aspect it fits, and its aspect when it fits but one.
 
+Every invocation of such a rite records on the data-slate the omen each
+machine-spirit was known to show at its end. Where the live omen of a
+subject is not heard — its auspex is exalted, spared by --spare-auspex or
+by completion, or still labouring in the first telling of a vigil — that
+recorded omen serves in its stead, marked "stale": true with "read_at",
+the hour it was read, and fits aspects as a live one does. It is ignored
+when it was recorded in another boot of the machine, or when it is no
+longer a declared omen of the subject. A stale omen never desecrates a
+rite on its own: it was recorded together with the data-slate's aspect, so
+only a live omen bears witness against that aspect. An invocation never
+trusts a recorded omen.
+
 Kindred passages: standing, auspex, augury, data-slate, verse, subjects,
 scan, trials
 
@@ -62,3 +74,10 @@ Exempla:
      "aspects": ["balanced", "powersave"]},
     {"subject": "governor", "designation": "machine-spirit",
      "omen": "balanced", "aspects": ["balanced"], "aspect": "balanced"}]
+
+  servitor augury firewall
+
+  "omens": [
+    {"subject": "nft", "designation": "machine-spirit", "omen": "gaming",
+     "aspects": ["on"], "aspect": "on", "stale": true,
+     "read_at": "2026-10-13T20:00:00Z"}]

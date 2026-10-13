@@ -27,7 +27,8 @@ type Servitor struct {
 	// Env is the environment that sways the settings and places the
 	// data-slates; nil is the servitor's own.
 	Env librarium.Environment
-	// Now tells the moment an invocation ends; nil is time.Now.
+	// Now tells the moment an invocation ends, and the moments the
+	// subjects of a state rite are read during it; nil is time.Now.
 	Now func() time.Time
 	// Sanctions is the store of the master's sanctions, which the servitor
 	// only reads; nil is the store at SanctionRoot of the uid it serves.
