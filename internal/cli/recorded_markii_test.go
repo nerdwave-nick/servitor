@@ -3,12 +3,14 @@ package cli
 import (
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/nerdwave-nick/servitor/internal/augury"
 	"github.com/nerdwave-nick/servitor/internal/invocation"
+	"github.com/nerdwave-nick/servitor/internal/sanction"
 )
 
 // rememberedJSON is a state rite whose smt is read by its scan from $DATA.
@@ -110,6 +112,10 @@ func TestCensus_MarksWhatRestsOnStaleOmens(t *testing.T) {
 	rows := map[string][]string{}
 	for _, line := range lines(e.mustRun("census", "--spare-auspex")) {
 		fields := strings.Fields(line)
+		if fields[0] == "firewall" && fields[1] == sanctionGlyph(sanction.Unsanctioned) {
+			// the exalted subject of firewall stands unsanctioned
+			fields = slices.Delete(fields, 1, 2)
+		}
 		rows[fields[0]] = fields
 	}
 	if rows["gaming"][1] != "~on" || rows["firewall"][1] != "~on" || rows["mouse-autohide-toggle"][1] != "·" {

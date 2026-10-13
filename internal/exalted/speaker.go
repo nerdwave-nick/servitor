@@ -30,7 +30,7 @@ type speaker struct {
 	env      []string
 	programs map[string]string   // tongue → program as it is awakened
 	biddings map[string][]string // program of a tongue → how it reads no scripture of its own
-	scrolls  map[int]string      // verse → the name of its scroll in the hall
+	scrolls  map[string]string   // verse or item, named → the name of its scroll in the hall
 
 	mu       sync.Mutex
 	sessions []int
@@ -38,7 +38,9 @@ type speaker struct {
 
 // Speak speaks the incantation or litany v in the working hall, under its
 // patience, in a session of its own; its reversion, when it has one, is
-// spoken in the same tongue, hall and environment.
+// spoken in the same tongue, hall and environment. The words of a
+// machine-spirit (its Target) are spoken so too, hearing its Omen as
+// SERVITOR_OMEN; they revert nothing of their own.
 func (sp *speaker) Speak(ctx context.Context, v sanction.Verse) (string, Undo, error) {
 	tongue, err := sp.spoken(v)
 	if err != nil {
@@ -47,6 +49,10 @@ func (sp *speaker) Speak(ctx context.Context, v sanction.Verse) (string, Undo, e
 	argv := append(slices.Clone(tongue), "-c", v.Target)
 	if v.Kind == librarium.KindLitany {
 		argv = sp.recital(v, tongue)
+	}
+	if v.Spirit() {
+		heard, err := sp.utterIn(ctx, argv, v, append(slices.Clone(sp.env), sanction.OmenVariable+"="+v.Omen))
+		return heard, nil, err
 	}
 	var undo Undo
 	if v.Reversion != "" {
@@ -66,7 +72,7 @@ func (sp *speaker) Speak(ctx context.Context, v sanction.Verse) (string, Undo, e
 // its shebang names, else through its tongue; it is offered exactly its
 // offerings.
 func (sp *speaker) recital(v sanction.Verse, tongue []string) []string {
-	scroll := filepath.Join(sp.hall, sp.scrolls[v.Verse])
+	scroll := filepath.Join(sp.hall, sp.scrolls[v.Named()])
 	argv := append(slices.Clone(tongue), scroll)
 	if interpreter, word, ok := shebang(v.Scroll); ok {
 		argv = []string{sp.programs[interpreter]}
@@ -80,7 +86,12 @@ func (sp *speaker) recital(v sanction.Verse, tongue []string) []string {
 
 // utter speaks argv for the verse v and tells its last words.
 func (sp *speaker) utter(ctx context.Context, argv []string, v sanction.Verse) (string, error) {
-	heard, err := invocation.Utter(ctx, invocation.Utterance{Argv: argv, Dir: sp.hall, Env: sp.env,
+	return sp.utterIn(ctx, argv, v, sp.env)
+}
+
+// utterIn speaks argv for the verse v in the environment env.
+func (sp *speaker) utterIn(ctx context.Context, argv []string, v sanction.Verse, env []string) (string, error) {
+	heard, err := invocation.Utter(ctx, invocation.Utterance{Argv: argv, Dir: sp.hall, Env: env,
 		Patience: v.Patience, Session: true, Summoned: sp.summoned})
 	return lastWords(heard), err
 }

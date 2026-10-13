@@ -12,8 +12,9 @@ import (
 // Protocol is the version of the words spoken over the channel. The
 // invoker's servitor and the exalted servitor must speak the same: a
 // servitor built anew drives only the servitor installed from the same
-// forging.
-const Protocol = 1
+// forging. Protocol 2 names the subjects and observances of state rites of
+// pattern Mark II.
+const Protocol = 2
 
 // LineCap is the most a line of the channel may hold, its newline aside.
 const LineCap = 1 << 20

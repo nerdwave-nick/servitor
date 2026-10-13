@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"io"
+	"reflect"
 	"strings"
 	"testing"
 )
@@ -13,14 +14,14 @@ import (
 // the end of the channel are refused.
 func TestChannel_HearsStrictLinesOfBoundedLength(t *testing.T) {
 	var spoken bytes.Buffer
-	if err := NewChannel(nil, &spoken).Send(Request{Perform: new(3)}); err != nil {
+	if err := NewChannel(nil, &spoken).Send(Request{Perform: numbered(3)}); err != nil {
 		t.Fatal(err)
 	}
 	if spoken.String() != `{"perform":3}`+"\n" {
 		t.Fatalf("spoke %q", spoken.String())
 	}
 	var r Request
-	if err := NewChannel(&spoken, nil).Receive(&r); err != nil || r.Perform == nil || *r.Perform != 3 {
+	if err := NewChannel(&spoken, nil).Receive(&r); err != nil || r.Perform == nil || r.Perform.Verse != 3 {
 		t.Fatalf("heard %+v, %v", r, err)
 	}
 
@@ -49,5 +50,36 @@ func TestChannel_HearsStrictLinesOfBoundedLength(t *testing.T) {
 	}
 	if err := NewChannel(nil, io.Discard).Send(Handshake{Former: strings.Repeat("x", LineCap)}); err == nil {
 		t.Error("an overlong line was spoken")
+	}
+}
+
+// TestChannel_NamesTheItemsOfAStateRite: a verse is named by its number, a
+// subject or observance of a state rite by an object of its name and the
+// omen of restoration, read strictly.
+func TestChannel_NamesTheItemsOfAStateRite(t *testing.T) {
+	var spoken bytes.Buffer
+	ch := NewChannel(&spoken, &spoken)
+	for _, c := range []struct {
+		r    Request
+		line string
+	}{
+		{Request{Perform: &Item{Subject: "smt", Omen: "on"}}, `{"perform":{"subject":"smt","omen":"on"}}`},
+		{Request{Revert: &Item{Observance: "herald"}}, `{"revert":{"observance":"herald"}}`},
+		{Request{Revert: &Item{Verse: 2}}, `{"revert":2}`},
+	} {
+		if err := ch.Send(c.r); err != nil || strings.TrimSpace(spoken.String()) != c.line {
+			t.Fatalf("spoke %q, %v; want %q", spoken.String(), err, c.line)
+		}
+		var r Request
+		if err := ch.Receive(&r); err != nil || !reflect.DeepEqual(r, c.r) {
+			t.Fatalf("heard %+v, %v; want %+v", r, err, c.r)
+		}
+	}
+	for _, line := range []string{`{"perform":{"subject":"smt","blessing":true}}`, `{"perform":{}}`,
+		`{"perform":{"omen":"on"}}`, `{"perform":"smt"}`} {
+		var r Request
+		if err := NewChannel(strings.NewReader(line+"\n"), nil).Receive(&r); err == nil {
+			t.Errorf("%s was heard as %+v", line, r)
+		}
 	}
 }

@@ -14,7 +14,7 @@ import (
 // TestMarkII_TheCogitatorStandsFirmAndPerformsNothing: rites of pattern
 // Mark II are listed and shown beside those of Mark I, and every key upon
 // them answers without the cogitator falling; a state rite whose subject
-// names an exalted observance is not performed (its edicts are proclaimed, see
+// bears a privileged auspex is not performed (its edicts are proclaimed, see
 // edict_markii_test.go, and other state rites invoked, see
 // TestMarkII_TheCogitatorInvokesAStateRite). The wizard opens upon an
 // edict, and refuses to amend or replicate a rite of machine-spirits, whose
@@ -23,7 +23,9 @@ func TestMarkII_TheCogitatorStandsFirmAndPerformsNothing(t *testing.T) {
 	h := newHarness(t)
 	gaming := h.writeRite("gaming", `{"pattern": "Mark II", "aspects": ["on", "off"], "subjects": [
 	  {"name": "m", "designation": "machine-spirit", "auspex": {"scan": "cat $DATA/m"}, "enact": {"*": "echo {{omen}} > $DATA/m"},
-	   "introit": ["herald"]}],
+	   "introit": ["herald"]},
+	  {"name": "nft", "designation": "machine-spirit", "exalted": true,
+	   "auspex": {"scan": "touch $DATA/nft; echo on", "exalted": true}, "enact": {"*": "true"}}],
 	  "observances": [{"name": "herald", "designation": "incantation", "exalted": true, "words": "touch $DATA/herald"}]}`)
 	h.writeRite("capture", `{"pattern": "Mark II", "edict": true, "liturgy": [
 	  {"designation": "incantation", "words": "touch $DATA/captured"}]}`)
@@ -59,6 +61,9 @@ func TestMarkII_TheCogitatorStandsFirmAndPerformsNothing(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(h.dataDir, "herald")); err == nil {
 		t.Fatal("an observance was spoken")
+	}
+	if _, err := os.Stat(filepath.Join(h.dataDir, "nft")); err == nil {
+		t.Fatal("a privileged auspex was spoken")
 	}
 	if after, _ := os.ReadFile(gaming); string(after) != string(scripture) {
 		t.Fatalf("the scripture of Mark II was written anew:\n%s", after)

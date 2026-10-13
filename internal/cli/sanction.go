@@ -67,8 +67,8 @@ func (a *app) sanctify(cmd *cobra.Command, name string) error {
 		fmt.Fprintln(cmd.ErrOrStderr(), "servitor ✠ "+o.Lament.Error())
 	}
 	if o.Unchanged() {
-		fmt.Fprintf(out, "✠ The exalted verses of %q stand sanctioned already under the sigil %s; nothing is "+
-			"sanctioned anew.\n", name, sanction.Short(o.Sigil()))
+		fmt.Fprintf(out, "✠ The %s of %q stand sanctioned already under the sigil %s; nothing is "+
+			"sanctioned anew.\n", o.Rite.ExaltedNoun(), name, sanction.Short(o.Sigil()))
 		return nil
 	}
 	x := rituals.Exaltation{Attended: rituals.Intercession.Attended()}
@@ -76,10 +76,11 @@ func (a *app) sanctify(cmd *cobra.Command, name string) error {
 		return refused(&rituals.Unattended{Rite: name})
 	}
 	if o.Kept == nil {
-		fmt.Fprintf(out, "✠ The exalted verses of %q, offered for sanction under the sigil %s:\n\n", name, o.Sigil())
+		fmt.Fprintf(out, "✠ The %s of %q, offered for sanction under the sigil %s:\n\n", o.Rite.ExaltedNoun(), name,
+			o.Sigil())
 	} else {
-		fmt.Fprintf(out, "✠ The exalted verses of %q changed since they were sanctioned under the sigil %s; offered "+
-			"anew under the sigil %s:\n\n", name, sanction.Short(o.Kept.Sigil), o.Sigil())
+		fmt.Fprintf(out, "✠ The %s of %q changed since they were sanctioned under the sigil %s; offered "+
+			"anew under the sigil %s:\n\n", o.Rite.ExaltedNoun(), name, sanction.Short(o.Kept.Sigil), o.Sigil())
 	}
 	for _, line := range o.Shown() {
 		fmt.Fprintln(out, line)
@@ -88,7 +89,7 @@ func (a *app) sanctify(cmd *cobra.Command, name string) error {
 	if err := sv.Sanction(o, x); err != nil {
 		return proven(err)
 	}
-	fmt.Fprintf(out, "✠ The exalted verses of %q stand sanctioned under the sigil %s.\n", name,
+	fmt.Fprintf(out, "✠ The %s of %q stand sanctioned under the sigil %s.\n", o.Rite.ExaltedNoun(), name,
 		sanction.Short(o.Sigil()))
 	return nil
 }

@@ -21,12 +21,14 @@ type Handshake struct {
 // Request is every later line the invoker's servitor speaks: exactly one of
 // its members.
 type Request struct {
-	// Perform performs the exalted verse of that number, which must be the
-	// next of the plan.
-	Perform *int `json:"perform,omitzero"`
-	// Revert reverts the exalted verse of that number, which must be the
-	// last performed and not yet reverted.
-	Revert *int `json:"revert,omitzero"`
+	// Perform performs the exalted item named: of a liturgy, the verse of
+	// that number, which must be the next of the plan; of a state rite of
+	// pattern Mark II, the subject or observance, which must lie after
+	// every item performed (see order.go).
+	Perform *Item `json:"perform,omitzero"`
+	// Revert reverts the exalted item named, which must be the last
+	// performed and not yet reverted.
+	Revert *Item `json:"revert,omitzero"`
 	// Finish ends the session, keeping what was performed.
 	Finish *bool `json:"finish,omitzero"`
 	// Abort reverts every verse performed, in reverse, and ends the
@@ -64,13 +66,19 @@ const (
 type Reply struct {
 	// To names the line answered: handshake, perform, revert, finish or
 	// abort; "" for a line that was no true word of the protocol.
-	To       string  `json:"to"`
-	Verdict  Verdict `json:"verdict"`
-	Verse    int     `json:"verse,omitzero"`
-	Protocol int     `json:"protocol,omitzero"` // in every answer to the first line
+	To      string  `json:"to"`
+	Verdict Verdict `json:"verdict"`
+	Verse   int     `json:"verse,omitzero"`
+	// Subject and Observance name the item of a state rite answered.
+	Subject    string `json:"subject,omitzero"`
+	Observance string `json:"observance,omitzero"`
+	Protocol   int    `json:"protocol,omitzero"` // in every answer to the first line
 	// Verses are the exalted verses of the plan, in written order, upon
-	// acceptance.
-	Verses []int `json:"verses,omitzero"`
+	// acceptance; Subjects and Observances those of the plan of a state
+	// rite.
+	Verses      []int    `json:"verses,omitzero"`
+	Subjects    []string `json:"subjects,omitzero"`
+	Observances []string `json:"observances,omitzero"`
 	// Changed tells that the verse changed the machine; a fallen verse that
 	// changed it stands performed and is reverted like any other.
 	Changed bool  `json:"changed,omitzero"`

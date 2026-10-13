@@ -33,6 +33,32 @@ type altar struct {
 	faltered bool         // reversions falter
 	unended  error        // the finish is not heard
 	calls    []string
+	// omens are the omens the machine-spirits of a state rite are set to,
+	// by name, written to <data>/<name> as the exalted servitor would.
+	omens map[string]string
+	data  string
+}
+
+// named names the verse, or the subject or observance, of v.
+func named(v Verse) string {
+	if v.Subject+v.Observance != "" {
+		return v.Subject + v.Observance
+	}
+	return fmt.Sprint(v.Number)
+}
+
+func (a *altar) Enact(v Verse, restore string) (string, bool, error) {
+	a.note("enact %s restoring %s", v.Subject, restore)
+	if omen, ok := a.omens[v.Subject]; ok {
+		_ = os.WriteFile(filepath.Join(a.data, v.Subject), []byte(omen+"\n"), 0o644)
+	}
+	return "enacted", true, nil
+}
+
+func (a *altar) Restore(v Verse, omen string) (string, bool, error) {
+	a.note("restore %s to %s", v.Subject, omen)
+	_ = os.WriteFile(filepath.Join(a.data, v.Subject), []byte(omen+"\n"), 0o644)
+	return "restored", true, nil
 }
 
 func (a *altar) note(format string, args ...any) {
@@ -49,16 +75,16 @@ func (a *altar) Perform(v Verse) (string, bool, error) {
 		a.note("exalted %d fell", v.Number)
 		return "fallen words", a.changed, errors.New("the exalted verse fell")
 	}
-	a.note("exalted %d", v.Number)
-	return fmt.Sprintf("heard %d", v.Number), true, nil
+	a.note("exalted %s", named(v))
+	return fmt.Sprintf("heard %s", named(v)), true, nil
 }
 
 func (a *altar) Revert(v Verse) (string, bool, error) {
-	a.note("undo exalted %d", v.Number)
+	a.note("undo exalted %s", named(v))
 	if a.faltered {
 		return "", true, errors.New("the exalted reversion fell")
 	}
-	return fmt.Sprintf("unheard %d", v.Number), true, nil
+	return fmt.Sprintf("unheard %s", named(v)), true, nil
 }
 
 func (a *altar) Finish() error {

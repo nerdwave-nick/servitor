@@ -22,7 +22,7 @@ func (p *preflight) spirit(i int, ms *librarium.MachineSpirit) (*Foresight, perf
 	omen, okOmen := p.omen(ms)
 	sp, okUtterance := p.utterance(librarium.Utterance{Tongue: ms.Tongue, Patience: ms.Patience})
 	words, okWords := p.enact(ms, omen, okOmen)
-	if !okOmen || !okUtterance || !okWords || !p.speakable(sp.Tongue) {
+	if !okOmen || !okUtterance || !okWords || !p.speakable(sp.Tongue) || (p.exalted && !p.exaltedTongue(sp.Tongue)) {
 		return nil, nil
 	}
 	sp.Words, sp.Argv = words, []string{sp.Tongue, "-c", words}
@@ -38,8 +38,12 @@ func (p *preflight) spirit(i int, ms *librarium.MachineSpirit) (*Foresight, perf
 		return f, nil
 	}
 	f.Speech = &sp
-	return f, &spiritStep{v: f.Verse, index: i, ms: ms, rite: p.rite, opts: p.opts, values: p.values, speech: sp,
+	step := &spiritStep{v: f.Verse, index: i, ms: ms, rite: p.rite, opts: p.opts, values: p.values, speech: sp,
 		omen: omen, read: read}
+	if p.exalted {
+		step.at = p.pointer("exalted")
+	}
+	return f, step
 }
 
 // omen renders the omen the invoked aspect demands of the machine-spirit:
@@ -88,8 +92,12 @@ func withOmen(v placeholder.Values, omen string) placeholder.Values {
 	return v
 }
 
-// spiritStep is a changing machine-spirit made ready by the pre-flight.
+// spiritStep is a changing machine-spirit made ready by the pre-flight. An
+// exalted one is set and restored by the exalted servitor, which speaks
+// the words of the sanction, and proven by the invoker's own reading.
 type spiritStep struct {
+	at     string  // the JSON pointer of its "exalted"; "" when it is common
+	x      Exalter // lent when it is exalted
 	v      Verse
 	index  int // of the subject among the rite's
 	ms     *librarium.MachineSpirit
@@ -113,6 +121,8 @@ func (s *spiritStep) foresee() Foresight {
 }
 
 func (s *spiritStep) uttered() (said, unsaid string) { return s.said, s.unsaid }
+func (s *spiritStep) lend(x Exalter)                 { s.x = x }
+func (s *spiritStep) exaltedAt() string              { return s.at }
 
 // voice speaks argv as the enact words of omen are spoken: in the rite's
 // hall, with the environment of the rite's commands and the omen.
@@ -121,12 +131,27 @@ func (s *spiritStep) voice(argv []string, omen string) voice {
 	return voice{argv: argv, dir: s.rite.Dir(), env: append(env, envOmen+"="+omen), patience: s.speech.Patience}
 }
 
-// perform speaks the enact words, then proves the subject shows the omen
-// commanded; a machine-spirit without an auspex is never proven.
+// perform speaks the enact words, or bids the exalted servitor speak them,
+// then proves the subject shows the omen commanded; a machine-spirit
+// without an auspex is never proven.
 func (s *spiritStep) perform(ctx context.Context) error {
 	s.begun, s.last = true, Reading{}
 	var err error
-	if s.said, err = s.voice(s.speech.Argv, s.omen).speak(ctx); err != nil {
+	if s.at != "" {
+		if s.x == nil {
+			return errNoExalter
+		}
+		_, restore, unknown := s.restoration()
+		if unknown != nil {
+			restore = ""
+		}
+		var performed bool
+		s.said, performed, err = s.x.Enact(s.v, restore)
+		s.begun = performed || err == nil
+	} else {
+		s.said, err = s.voice(s.speech.Argv, s.omen).speak(ctx)
+	}
+	if err != nil {
 		return err
 	}
 	return s.prove(ctx, s.opts.Aspect, s.omen)
@@ -163,6 +188,9 @@ func (s *spiritStep) revert() (bool, error) {
 	}
 	s.last = Reading{}
 	aspect, omen, err := s.restoration()
+	if s.at != "" {
+		return true, s.restore(aspect, omen, err)
+	}
 	if err != nil {
 		return true, err
 	}
@@ -175,6 +203,24 @@ func (s *spiritStep) revert() (bool, error) {
 		return true, fmt.Errorf("the restoration of the omen %q fell: %w", omen, err)
 	}
 	return true, s.prove(context.Background(), aspect, omen)
+}
+
+// restore bids the exalted servitor restore the exalted machine-spirit to
+// omen, whose aspect is aspect, and proves it; it hears the bidding even
+// when no omen is known (unknown), so that it reverts in its turn.
+func (s *spiritStep) restore(aspect, omen string, unknown error) error {
+	if unknown != nil {
+		omen = ""
+	}
+	heard, _, err := s.x.Restore(s.v, omen)
+	s.unsaid = heard
+	switch {
+	case unknown != nil:
+		return unknown
+	case err != nil:
+		return fmt.Errorf("the restoration of the omen %q fell: %w", omen, err)
+	}
+	return s.prove(context.Background(), aspect, omen)
 }
 
 // restoration is the aspect whose omen restores the subject, and that omen.

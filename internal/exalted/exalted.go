@@ -12,9 +12,12 @@
 // seized, and the session is accepted. Every answer to the handshake names
 // the protocol, which the invoker's servitor hears first (Channel.Answer).
 // Thereafter only Requests are heard: perform the next exalted verse,
-// revert the last performed, finish, abort. The end of the channel before
-// finish, ten minutes without a word, or SIGTERM revert every verse
-// performed, in reverse. Vessels and tethers are acted upon through package
+// revert the last performed, finish, abort. A state rite of pattern Mark II
+// is performed by its exalted subjects and observances instead, each named
+// (Item), skipping forward but never back (order.go); a machine-spirit is
+// set by its enact words and restored to a declared omen named. The end of
+// the channel before finish, ten minutes without a word, or SIGTERM revert
+// every verse or item performed, in reverse. Vessels and tethers are acted upon through package
 // hallowed; exalted speech is lent by a Voice. Every act is journaled as
 // the root's.
 //

@@ -257,7 +257,7 @@ func TestSpeech_PatienceSlaysTheProcessGroup(t *testing.T) {
 	v.Patience = 300 * time.Millisecond
 	sh := speakingShrine(t, speakingUnit(v))
 	inv := sh.accepted("on")
-	r := inv.say(Request{Perform: new(1)})
+	r := inv.say(Request{Perform: numbered(1)})
 	if r.Verdict != Fell || !strings.Contains(r.Lament, "patience") {
 		t.Fatalf("verse 1: %+v", r)
 	}
@@ -297,7 +297,7 @@ func TestSpeech_RevertsInTheExaltedServitor(t *testing.T) {
 	if r := inv.perform(1); !r.Changed {
 		t.Errorf("speech with a reversion stands unchanged: %+v", r)
 	}
-	r := inv.say(Request{Revert: new(1)})
+	r := inv.say(Request{Revert: numbered(1)})
 	if r.Verdict != Reverted || r.Heard != "reverted on to off\nsplit-lock\n" {
 		t.Errorf("the reversion: %+v", r)
 	}
@@ -305,7 +305,7 @@ func TestSpeech_RevertsInTheExaltedServitor(t *testing.T) {
 	sh = speakingShrine(t, speakingUnit(v, falls))
 	inv = sh.accepted("on")
 	inv.perform(1)
-	r = inv.say(Request{Perform: new(2)})
+	r = inv.say(Request{Perform: numbered(2)})
 	if r.Verdict != Fell || !r.Changed || r.Heard != "falling\n" || !strings.Contains(r.Lament, "death-mark 3") {
 		t.Fatalf("verse 2: %+v", r)
 	}
@@ -442,7 +442,7 @@ func TestSpeech_BidsEachTongueReadNoScriptureOfItsOwn(t *testing.T) {
 				t.Errorf("the tongue heard %q, want %q", r.Heard, want)
 			}
 			unspoken := strings.Replace(want, "spoken", "unspoken", 1)
-			if r := inv.say(Request{Revert: new(1)}); r.Verdict != Reverted || r.Heard != unspoken {
+			if r := inv.say(Request{Revert: numbered(1)}); r.Verdict != Reverted || r.Heard != unspoken {
 				t.Errorf("the reversion: %+v, want heard %q", r, unspoken)
 			}
 			inv.say(Request{Finish: new(true)})

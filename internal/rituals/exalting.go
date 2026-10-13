@@ -46,8 +46,8 @@ func (s *Servitor) exaltation(r *librarium.Rite, p Petition, res *Result) (*exal
 		if p.Foresee {
 			return nil, nil // the pre-flight tells what cannot be read
 		}
-		return nil, fmt.Errorf("%s is refused, and nothing was touched: its exalted verses cannot be drawn into "+
-			"the unit their sanction is judged by: %w", invocationOf(r, p.Aspect), err)
+		return nil, fmt.Errorf("%s is refused, and nothing was touched: its %s cannot be drawn into "+
+			"the unit their sanction is judged by: %w", invocationOf(r, p.Aspect), r.ExaltedNoun(), err)
 	}
 	if hs := splicedRunes(r, u, p.Runes); len(hs) > 0 {
 		return nil, hs
@@ -109,27 +109,30 @@ func unsanctioned(r *librarium.Rite, aspect string, st sanction.Standing) error 
 	if r.Edict {
 		of = "of the edict"
 	}
-	why := fmt.Sprintf("the rite %q stands unsanctioned, for its master never sanctioned its exalted verses — "+
-		"sanction them: servitor sanction %s", r.Name, r.Name)
+	why := fmt.Sprintf("the rite %q stands unsanctioned, for its master never sanctioned its %s — "+
+		"sanction them: servitor sanction %s", r.Name, r.ExaltedNoun(), r.Name)
 	if st == sanction.Lapsed {
-		why = fmt.Sprintf("the sanction of the rite %q has lapsed, for its exalted verses %s are no longer those its "+
-			"master sanctioned — sanction them anew: servitor sanction %s", r.Name, of, r.Name)
+		why = fmt.Sprintf("the sanction of the rite %q has lapsed, for its %s %s are no longer those its "+
+			"master sanctioned — sanction them anew: servitor sanction %s", r.Name, r.ExaltedNoun(), of, r.Name)
 	}
 	return unexalted(r, why)
 }
 
 // unexalted refuses the invocation of r, with a heresy for each exalted
-// verse that tells why: no exalted verse is ever performed with its
-// invoker's authority.
+// verse — or exalted subject and observance of a state rite — that tells
+// why: nothing exalted is ever performed with its invoker's authority.
 func unexalted(r *librarium.Rite, why string) error {
+	noun := "verse"
+	if r.MarkII && !r.Edict {
+		noun = "subject or observance"
+	}
 	var hs invocation.Heresies
-	for _, verse := range r.ExaltedVerses() {
-		hs = append(hs, invocation.Heresy{Verse: verse, Finding: librarium.Finding{
-			Severity: librarium.Heresy, Scripture: r.Path, Rite: r.Name,
-			Position: r.Locate(fmt.Sprintf("/liturgy/%d/exalted", verse-1)),
-			Message: fmt.Sprintf("verse %d is exalted: it is performed with the machine's own authority alone, by "+
-				"the exalted servitor from the sanction of its master; %s — not one verse of %q was performed",
-				verse, why, r.Name),
+	for _, item := range r.ExaltedItems() {
+		hs = append(hs, invocation.Heresy{Verse: item.Verse, Finding: librarium.Finding{
+			Severity: librarium.Heresy, Scripture: r.Path, Rite: r.Name, Position: r.Locate(item.Pointer),
+			Message: fmt.Sprintf("%s is exalted: it is performed with the machine's own authority alone, by "+
+				"the exalted servitor from the sanction of its master; %s — not one %s of %q was performed",
+				item, why, noun, r.Name),
 		}})
 	}
 	return hs
@@ -152,10 +155,10 @@ func splicedRunes(r *librarium.Rite, u *sanction.Unit, runes map[string]string) 
 		}
 		hs = append(hs, invocation.Heresy{Finding: librarium.Finding{
 			Severity: librarium.Heresy, Scripture: r.Path, Rite: r.Name, Position: r.Locate("/inscriptions/" + key),
-			Message: fmt.Sprintf("the inscription %q is spliced into the exalted verses of %q, whose words are fixed "+
+			Message: fmt.Sprintf("the inscription %q is spliced into the %s of %q, whose words are fixed "+
 				"when their master sanctions them: it takes its decree alone, and no rune --%s may be given to "+
 				"their invocation — strike the rune, or let exalted speech hear the word as \"$%s\" instead of "+
-				"splicing it", key, r.Name, key, placeholder.InscriptionVariable(key)),
+				"splicing it", key, r.ExaltedNoun(), r.Name, key, placeholder.InscriptionVariable(key)),
 		}})
 	}
 	return hs

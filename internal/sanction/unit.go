@@ -15,13 +15,14 @@ import (
 
 // EnvironmentPattern is the pattern of the environment the exalted servitor
 // grants exalted speech: the variables it admits besides those a unit
-// declares. A new pattern lapses every sanction.
+// declares. A new pattern lapses every sanction. A unit of pattern Mark II
+// bears the environment of PatternMarkII, which grants SERVITOR_OMEN too.
 const EnvironmentPattern = "Mark I"
 
 // Unit is the canonical exalted unit of a rite: everything its exalted
 // verses do, for every aspect. Its JSON is the shape of the sanction.
 type Unit struct {
-	Pattern string `json:"pattern"` // Pattern
+	Pattern string `json:"pattern"` // Pattern or PatternMarkII
 	UID     int    `json:"uid"`     // the master's
 	Rite    string `json:"rite"`
 	Edict   bool   `json:"edict"` // an edict has one plan, of aspect ""
@@ -35,7 +36,7 @@ type Unit struct {
 // those the unit declares, and the pattern of those the exalted servitor
 // grants besides.
 type Environment struct {
-	Pattern string   `json:"pattern"` // EnvironmentPattern
+	Pattern string   `json:"pattern"` // EnvironmentPattern or PatternMarkII
 	Keys    []string `json:"keys"`    // sorted
 }
 
@@ -45,13 +46,23 @@ type Plan struct {
 	// Inscriptions are the words of every inscription spliced into the
 	// exalted verses, from their decrees for the aspect ("" when none).
 	Inscriptions map[string]string `json:"inscriptions"`
-	Liturgy      []Verse           `json:"liturgy"` // the exalted verses alone, in written order
+	Liturgy      []Verse           `json:"liturgy,omitzero"` // the exalted verses alone, in written order
+	// Subjects and Observances are those of a state rite of pattern Mark
+	// II: its exalted subjects, and the exalted observances the aspect
+	// admits by "to", each in written order. Such a plan holds no Liturgy.
+	Subjects    []Verse `json:"subjects,omitzero"`
+	Observances []Verse `json:"observances,omitzero"`
 }
 
 // Verse is one exalted verse, resolved for the aspect of its plan. Only the
-// fields of its kind are written.
+// fields of its kind are written. It is also one exalted subject or
+// observance of a state rite of pattern Mark II (see unit_markii.go),
+// named by Subject or Observance in place of its verse: a sanctum,
+// transcription or tether subject bears the fields of its kind, an
+// observance those of its incantation or litany, and a machine-spirit,
+// whose Kind is none, its Omen and Enact words beside its speech.
 type Verse struct {
-	Verse int // counted from one, as written
+	Verse int // counted from one, as written; 0 for a subject or an observance
 	Kind  librarium.Kind
 	// Target is what the step's own key holds, rendered: the vessel of a
 	// sanctum or transcription (from the root), the bound name of a tether,
@@ -80,6 +91,22 @@ type Verse struct {
 	Patience  time.Duration // resolved
 	Reversion string        // rendered; "" reverts nothing
 	Relics    []Relic       // in written order
+
+	// Subject and Observance name the subject or observance of a state rite
+	// the item is; Place is a subject's index among the rite's subjects.
+	Subject, Observance string
+	Place               int
+	// Omen is the omen a machine-spirit is set to for the plan's aspect,
+	// and Enact the words that set it into each omen it declares,
+	// rendered for that aspect: a rollback enacts the omen read before,
+	// which may be any of them.
+	Omen  string
+	Enact map[string]string
+	// From are the former aspects an observance admits, nil when it admits
+	// every one; Introit and Recessional the places of the subjects that
+	// name it so.
+	From                 []string
+	Introit, Recessional []int
 }
 
 // Relic is one scripture exalted speech reads beside its scroll.
@@ -127,20 +154,30 @@ func (u *Unit) Canonical() []byte {
 	return v
 }
 
-// written is the unit as it is written, with no list or map null.
+// written is the unit as it is written, with no list or map null: the plan
+// of a state rite of pattern Mark II holds its subjects and observances,
+// every other its liturgy.
 func (u *Unit) written() *Unit {
 	w := *u
 	w.Environment.Keys = orEmpty(w.Environment.Keys)
-	w.Aspects = orEmpty(w.Aspects)
+	w.Aspects = slices.Clone(orEmpty(w.Aspects))
 	for i, p := range w.Aspects {
 		if p.Inscriptions == nil {
 			p.Inscriptions = map[string]string{}
 		}
-		p.Liturgy = orEmpty(p.Liturgy)
+		if w.State() {
+			p.Liturgy, p.Subjects, p.Observances = nil, orEmpty(p.Subjects), orEmpty(p.Observances)
+		} else {
+			p.Liturgy, p.Subjects, p.Observances = orEmpty(p.Liturgy), nil, nil
+		}
 		w.Aspects[i] = p
 	}
 	return &w
 }
+
+// State tells that the unit is that of a state rite of pattern Mark II,
+// whose plans hold subjects and observances.
+func (u *Unit) State() bool { return u.Pattern == PatternMarkII && !u.Edict }
 
 func orEmpty[T any](s []T) []T {
 	if s == nil {
@@ -194,8 +231,11 @@ type (
 )
 
 // MarshalJSON writes the verse with its number, its own key and the fields
-// of its kind.
+// of its kind; a subject or observance as unit_markii.go tells.
 func (v Verse) MarshalJSON() ([]byte, error) {
+	if v.Subject != "" || v.Observance != "" {
+		return v.marshalItem()
+	}
 	var w any
 	switch v.Kind {
 	case librarium.KindSanctum:
@@ -234,6 +274,9 @@ func (v *Verse) UnmarshalJSON(data []byte) error {
 	var keys map[string]jsontext.Value
 	if err := json.Unmarshal(data, &keys); err != nil {
 		return err
+	}
+	if _, item := keys["designation"]; item {
+		return v.unmarshalItem(data, keys)
 	}
 	var kinds []librarium.Kind
 	for _, k := range librarium.Kinds {

@@ -32,7 +32,7 @@ type examined struct {
 func (p *preflight) observances() map[string]performer {
 	ready := map[string]performer{}
 	for j, o := range p.rite.Observances {
-		p.index, p.observance, p.exalted = j, o.Name, false
+		p.index, p.observance, p.exalted = j, o.Name, o.Exalted()
 		var step performer
 		switch s := o.Speech.(type) {
 		case *librarium.Incantation:
@@ -42,10 +42,14 @@ func (p *preflight) observances() map[string]performer {
 		}
 		if sp, ok := step.(*speaker); ok {
 			sp.env = unomened(sp.env)
-			ready[o.Name] = &observanceStep{performer: sp, name: o.Name}
+			step = sp
+			if p.exalted {
+				step = &exaltedStep{planned: sp, at: p.pointer("exalted")}
+			}
+			ready[o.Name] = &observanceStep{performer: step, name: o.Name}
 		}
 	}
-	p.observance = ""
+	p.observance, p.exalted = "", false
 	return ready
 }
 
@@ -120,3 +124,4 @@ func (o *observanceStep) perform(ctx context.Context) error {
 }
 
 func (o *observanceStep) uttered() (said, unsaid string) { return uttered(o.performer) }
+func (o *observanceStep) wrapped() performer             { return o.performer }

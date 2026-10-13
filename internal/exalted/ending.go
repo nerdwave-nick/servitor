@@ -11,15 +11,21 @@ import (
 func (s *session) undo() Reply {
 	d := s.performed[len(s.performed)-1]
 	s.performed = s.performed[:len(s.performed)-1]
-	r := Reply{To: "revert", Verse: d.verse.Verse, Verdict: Reverted}
-	if d.undo != nil {
-		heard, err := d.undo(context.Background())
+	r := Reply{To: "revert", Verse: d.verse.Verse, Subject: d.verse.Subject, Observance: d.verse.Observance,
+		Verdict: Reverted}
+	undo := d.undo
+	if d.restore != nil {
+		undo = func(ctx context.Context) (string, error) { return d.restore(ctx, d.omen) }
+	}
+	if undo != nil {
+		heard, err := undo(context.Background())
 		r.Changed, r.Heard = true, heard
 		if err != nil {
 			r.Verdict, r.Lament = Faltered, err.Error()
 		}
 	}
-	s.record(Entry{Verse: r.Verse, Deed: "revert", Verdict: r.Verdict, Lament: r.Lament})
+	s.record(Entry{Verse: r.Verse, Subject: r.Subject, Observance: r.Observance, Deed: "revert", Verdict: r.Verdict,
+		Lament: r.Lament})
 	return r
 }
 

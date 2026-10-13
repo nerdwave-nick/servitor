@@ -85,6 +85,10 @@ type Result struct {
 // the intercessor (one proof of the master), the herald hearing the
 // tidings invocation.Exaltation before, and performs and reverts them in
 // their turn among the common verses, from the sanction of their master.
+// So too the exalted subjects and observances of a state rite of pattern
+// Mark II; it is raised only when one of them changes, once the subjects
+// are read and the plan is made, yet the sanction is judged before
+// anything is read, whatever changes.
 //
 // An invocation that is not foreseen is held Steadfast throughout: the
 // departure of the one who invoked it neither halts it nor leaves it half
@@ -101,8 +105,8 @@ func (s *Servitor) Invoke(ctx context.Context, p Petition) (Result, error) {
 		return Result{}, err
 	}
 	if why := unperformable(r); r.MarkII && !r.Edict && why != "" {
-		// What is exalted is never performed with the invoker's own
-		// authority: not even the subjects of such a rite are read.
+		// What only the exalted servitor may read is never read with the
+		// invoker's own authority: not even the other subjects are read.
 		return Result{}, &Unperformable{Name: r.Name, Why: why}
 	}
 	res := Result{Rite: r}
@@ -149,6 +153,10 @@ func (s *Servitor) Invoke(ctx context.Context, p Petition) (Result, error) {
 		x invocation.Exalter
 		e *exalter
 	)
+	if exalting != nil && !inv.Exalts() {
+		// Nothing exalted changes: no proof is asked of the master.
+		exalting, res.Intercessor = nil, ""
+	}
 	if exalting != nil {
 		if e, err = s.exalt(r, p, &res, exalting); err != nil {
 			return res, err

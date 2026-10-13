@@ -48,9 +48,9 @@ func (p *preflight) prepare(s librarium.Step) performer {
 func (p *preflight) verse(k librarium.Kind, target string) Verse {
 	switch {
 	case p.subject != "":
-		return Verse{Kind: k, Target: target, Subject: p.subject}
+		return Verse{Kind: k, Target: target, Subject: p.subject, Exalted: p.exalted}
 	case p.observance != "":
-		return Verse{Kind: k, Target: target, Observance: p.observance}
+		return Verse{Kind: k, Target: target, Observance: p.observance, Exalted: p.exalted}
 	}
 	return Verse{Number: p.index + 1, Kind: k, Target: target, Exalted: p.exalted}
 }
