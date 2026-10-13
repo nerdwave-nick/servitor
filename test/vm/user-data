@@ -1,0 +1,36 @@
+#cloud-config
+# The guest of test/vm/run.sh. "tester" (uid 1500, in wheel) proves itself with
+# a password, so that every proof can be counted; it is logged in on tty1, where
+# its .bash_profile starts the driver once guest.sh has installed servitor.
+users:
+  - name: tester
+    uid: 1500
+    groups: [wheel]
+    shell: /bin/bash
+    lock_passwd: false
+chpasswd:
+  expire: false
+  users:
+    - {name: tester, password: servitor-trial, type: text}
+bootcmd:
+  - [sh, -c, "modprobe 9pnet_virtio; mkdir -p /mnt/share; mount -t 9p -o trans=virtio,version=9p2000.L host0 /mnt/share || true"]
+write_files:
+  - path: /etc/sudoers.d/10-wheel
+    permissions: '0440'
+    content: |
+      %wheel ALL=(ALL:ALL) ALL
+  - path: /etc/systemd/system/getty@tty1.service.d/autologin.conf
+    content: |
+      [Service]
+      ExecStart=
+      ExecStart=-/sbin/agetty -o '-p -f -- \\u' --noclear --autologin tester %I $TERM
+  - path: /home/tester/.bash_profile
+    owner: tester:tester
+    defer: true
+    content: |
+      if [ "$(tty)" = /dev/tty1 ] && [ -e /run/servitor-trial-ready ] && [ ! -e /mnt/share/driver.done ]; then
+        python3 /mnt/share/driver.py > /mnt/share/driver.out 2>&1
+        touch /mnt/share/driver.done
+      fi
+runcmd:
+  - [sh, -c, "/mnt/share/guest.sh"]
