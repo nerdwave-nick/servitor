@@ -1,0 +1,43 @@
+{
+  "$schema": "https://raw.githubusercontent.com/nerdwave-nick/servitor/main/schema/rite.schema.json",
+  "pattern": "Mark II",
+  "purpose": "Lift the kernel's split-lock penance while the faithful play",
+  "aspects": ["on", "off"],
+  "vox-cast": ["success"],
+  // pattern "Mark I" read the aspect of the whole rite by the auspex "[ \"$(sysctl -n kernel.split_lock_mitigate)\" = 0 ] && echo on || echo off";
+  // it is struck, for each subject is read by itself, and no machine-spirit is left to bear it
+  "subjects": [
+    {
+      "name": "transcription-2",
+      "designation": "transcription",
+      "exalted": true,
+      "vessel": "/etc/sysctl.d/90-split-lock.conf",
+      "omens": {
+        "on": [
+          "kernel.split_lock_mitigate = 0",
+          ""
+        ],
+        "off": null
+      },
+      "introit": ["incantation-1-on", "incantation-1-off"]
+    }
+  ],
+  "observances": [
+    {
+      "name": "incantation-1-on",
+      "designation": "incantation",
+      "to": ["on"],
+      "words": "sysctl -wq kernel.split_lock_mitigate=0",
+      "reversion": "if [ \"$SERVITOR_FORMER_ASPECT\" = on ]; then sysctl -wq kernel.split_lock_mitigate=0; else sysctl -wq kernel.split_lock_mitigate=1; fi",
+      "exalted": true
+    },
+    {
+      "name": "incantation-1-off",
+      "designation": "incantation",
+      "to": ["off"],
+      "words": "sysctl -wq kernel.split_lock_mitigate=1",
+      "reversion": "if [ \"$SERVITOR_FORMER_ASPECT\" = on ]; then sysctl -wq kernel.split_lock_mitigate=0; else sysctl -wq kernel.split_lock_mitigate=1; fi",
+      "exalted": true
+    }
+  ]
+}

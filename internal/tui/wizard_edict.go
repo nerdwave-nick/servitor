@@ -16,29 +16,6 @@ const (
 	natureEdict   = "edict"
 )
 
-// turnNature turns the Rite page to an edict or back to a rite of
-// aspects, keeping all that was written upon it.
-func (w *wizard) turnNature(m *model, edict bool) tea.Cmd {
-	old := w.form
-	if !w.d.edict {
-		w.d.aspects, w.d.auspex, w.d.patience = old.get("aspects"), old.get("auspex"), old.get("patience")
-	}
-	w.d.edict = edict
-	w.ritePage(m)
-	at := 0
-	for i, fl := range w.form.fields {
-		if fl.key == "edict" {
-			at = i
-		}
-		for _, o := range old.fields {
-			if o.key == fl.key && o.kind == fieldText && fl.kind == fieldText {
-				fl.input.SetValue(o.input.Value())
-			}
-		}
-	}
-	return w.form.setFocus(at)
-}
-
 // oncePage writes the words of an incantation or litany of an edict, each
 // spoken once.
 func (w *wizard) oncePage(m *model) tea.Cmd {
@@ -75,9 +52,17 @@ func (w *wizard) keepOnce() {
 }
 
 // kinds are the kinds of step the rite may bear: an edict only speaks,
-// recites and sends word, for it holds no aspect to keep.
+// recites and sends word, for it holds no aspect to keep, and an edict of
+// pattern Mark II sends word by the vox-casts of the rite. A rite of
+// aspects of Mark II bears subjects, of the designations the wizard writes.
 func (w *wizard) kinds() []librarium.Kind {
-	if !w.d.edict {
+	switch {
+	case w.d.bearsSubjects():
+		return subjectDesignations
+	case w.d.edict && w.d.markII:
+		// the vox-casts of an edict of Mark II are a list of the rite
+		return []librarium.Kind{librarium.KindIncantation, librarium.KindLitany}
+	case !w.d.edict:
 		return librarium.Kinds
 	}
 	return slices.DeleteFunc(slices.Clone(librarium.Kinds), func(k librarium.Kind) bool { return !edictBears(k) })

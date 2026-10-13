@@ -1,0 +1,35 @@
+// +++ Rite of the Machine's Visage +++
+//
+// Veils the screen in a passing transition, re-tethers the nfluff theme and
+// recites the hooks of the theme invoked. One invocation, the whole visage.
+//
+//   servitor invoke theme porpl --reason "the night watch begins"
+//   servitor invoke theme "$(printf '%s\n' default finii porpl | fuzzel --dmenu)"
+//   servitor augury theme aspect
+{
+  "$schema": "https://raw.githubusercontent.com/nerdwave-nick/servitor/main/schema/rite.schema.json",
+  "pattern": "Mark I",
+  "purpose": "The visage of the machine",
+  "aspects": ["default", "finii", "porpl"],
+  "inscriptions": {
+    "reason": {"purpose": "why the visage was changed"},
+  },
+  "liturgy": [
+    // the screen fades while the visage is exchanged; should it fail, the
+    // machine merely forgoes the spectacle
+    {"incantation": "niri msg action do-screen-transition --delay-ms 200 || true"},
+    {"tether": "~/.local/share/nfluff/current-theme", "anchor": "~/.config/nfluff/themes/{{aspect}}"},
+    {"vox-cast": "progress"},
+    {
+      // scripts/recite-hooks lies beside this rite; "~/" in an offering is
+      // borne to the home of the invoker
+      "litany": "scripts/recite-hooks",
+      "offerings": ["~/.config/nfluff/themes/{{aspect}}"],
+      "patience": "1m",
+      // should a later step fall, the hooks of the former visage are recited
+      // anew; the environment carries the former aspect safely to the tongue
+      "reversion": "test -z \"$SERVITOR_FORMER_ASPECT\" || scripts/recite-hooks ~/.config/nfluff/themes/\"$SERVITOR_FORMER_ASPECT\"",
+    },
+    {"vox-cast": "success"},
+  ],
+}

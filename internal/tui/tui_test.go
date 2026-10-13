@@ -60,7 +60,7 @@ func newHarness(t *testing.T) *harness {
 	t.Setenv("PATH", stubs+string(os.PathListSeparator)+os.Getenv("PATH"))
 	h.writeRite("mouse", markRite)
 	h.writeData("x.kdl", "input {}\n")
-	h.m = newModel(h.dir, librarium.Runes{})
+	h.m = newModel(h.dir, librarium.Runes{}, false)
 	h.m.send = func(msg tea.Msg) { h.inbox <- msg }
 	h.send(tea.WindowSizeMsg{Width: 120, Height: 36})
 	return h

@@ -1,0 +1,12 @@
+// speech alone, of two litanies: each becomes a machine-spirit whose enact
+// words call its scroll; the auspex of the rite serves two and is struck
+{
+  "pattern": "Mark I",
+  "aspects": ["day", "night"],
+  "auspex": "cat ~/.cache/visage",
+  "liturgy": [
+    {"litany": "scripts/visage", "offerings": ["{{aspect}}", "~/.config/visage of {{aspect}}"]},
+    {"litany": {"day": "/usr/bin/dawn", "night": "/usr/bin/dusk"}, "reversion": "true"},
+    {"vox-cast": "success"},
+  ],
+}
