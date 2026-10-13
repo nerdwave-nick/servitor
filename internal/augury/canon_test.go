@@ -44,15 +44,15 @@ func canon(t *testing.T, a Augury) string {
 func TestAugur_TheCanonDeclaresEveryInscriptionAsWritten(t *testing.T) {
 	fx := newFixture(t)
 	r := fx.scripture(t, "focus", `{
-  "pattern": "Mark I",
+  "pattern": "Mark II",
   "aspects": ["on", "off", "idle"],
   "inscriptions": {
     "reason": {"purpose": "why the rite was invoked", "mandatory": true, "decrees": {"on": "focus", "*": "rest"}},
     "mode": {"decrees": {"on": "auto"}},
-    "place": {"purpose": "where", "decrees": "home"},
+    "place": {"purpose": "where", "decrees": {"*": "home"}},
     "note": {},
   },
-  "liturgy": []
+  "subjects": [`+chant+`]
 }`)
 	want := compact(t, `[
   {"key": "reason", "purpose": "why the rite was invoked", "mandatory": true,
@@ -72,7 +72,7 @@ func TestAugur_TheCanonDeclaresEveryInscriptionAsWritten(t *testing.T) {
 // declares no inscription bears "canon": [], never null.
 func TestAugur_TheCanonOfARiteWithoutInscriptionsIsEmpty(t *testing.T) {
 	fx := newFixture(t)
-	r := fx.scripture(t, "bare", `{"pattern": "Mark I", "aspects": ["on", "off"], "liturgy": []}`)
+	r := fx.scripture(t, "bare", `{"pattern": "Mark II", "aspects": ["on", "off"], "subjects": [`+chant+`]}`)
 	if got := canon(t, fx.augur(t, r, Options{})); got != "[]" {
 		t.Errorf("canon %q, want []", got)
 	}
@@ -84,13 +84,13 @@ func TestAugur_TheCanonOfARiteWithoutInscriptionsIsEmpty(t *testing.T) {
 func TestAugur_AnEdictsCanonBearsItsPlainDecree(t *testing.T) {
 	fx := newFixture(t)
 	r := fx.scripture(t, "capture", `{
-  "pattern": "Mark I",
+  "pattern": "Mark II",
   "edict": true,
   "inscriptions": {
     "region": {"purpose": "the slurp geometry", "decrees": "full"},
     "name": {"mandatory": true},
   },
-  "liturgy": [{"incantation": "true"}]
+  "liturgy": [{"designation": "incantation", "words": "true"}]
 }`)
 	want := compact(t, `[
   {"key": "region", "purpose": "the slurp geometry", "mandatory": false, "decrees": {}, "decree": "full"},
@@ -104,7 +104,7 @@ func TestAugur_AnEdictsCanonBearsItsPlainDecree(t *testing.T) {
 // scripture is not kept, so its augury bears "canon": [].
 func TestHeretic_TheCanonOfAHereticalRiteIsEmpty(t *testing.T) {
 	fx := newFixture(t)
-	r := fx.edict(t, `{"incantation": "true"}`)
+	r := fx.edict(t, `{"designation": "incantation", "words": "true"}`)
 	fx.proclaim(t, r, map[string]string{"region": "window"})
 	a, err := Heretic(r.Name, Options{Env: fx.env})
 	if err != nil {

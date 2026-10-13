@@ -126,47 +126,6 @@ func TestAugurMarkII_BuiltInSubjectsYieldSets(t *testing.T) {
 	}
 }
 
-// TestAugurMarkII_SingleAspectOmensReadAsMarkI: when every omen names one
-// aspect, a state rite reads exactly as the same liturgy of Mark I.
-func TestAugurMarkII_SingleAspectOmensReadAsMarkI(t *testing.T) {
-	type machine struct{ marked, held, anchored string }
-	for _, tc := range []struct {
-		name    string
-		machine machine
-		slate   string
-	}{
-		{"agreeing", machine{"on", "hide", "on"}, "-"},
-		{"agreeing on the data-slate's", machine{"off", "show", "off"}, "off"},
-		{"desecrated", machine{"off", "show", "off"}, "on"},
-		{"disagreeing", machine{"on", "hide", "off"}, "on"},
-		{"tainted", machine{"on", "show", "on"}, "on"},
-		{"nothing to read", machine{}, "off"},
-	} {
-		t.Run(tc.name, func(t *testing.T) {
-			fx := newFixture(t)
-			markII := fx.stateRite(t, `"on", "off"`, "", `
-	  {"name": "niri", "designation": "sanctum", "vessel": "$DATA/niri.kdl", "ward": "gaming", "glyph": "#",
-	   "omens": {"on": "hide", "off": "show"}},
-	  {"name": "theme", "designation": "tether", "tether": "$DATA/current", "omens": {"*": "$DATA/themes/{{aspect}}"}}`)
-			markI := fx.load(t, "gaming", `{"pattern": "Mark I", "aspects": ["on", "off"], "liturgy": [
-	  {"sanctum": "$DATA/niri.kdl", "ward": "gaming", "glyph": "#", "scripture": {"on": "hide", "off": "show"}},
-	  {"tether": "$DATA/current", "anchor": "$DATA/themes/{{aspect}}"}]}`)
-			if tc.machine.marked != "" {
-				fx.warded(t, tc.machine.marked, tc.machine.held)
-				link(t, filepath.Join(fx.data, "themes", tc.machine.anchored), filepath.Join(fx.data, "current"))
-			}
-			if tc.slate != "-" {
-				fx.slate(t, markI, tc.slate, invocation.Triumph, nil)
-			}
-			want, got := fx.augur(t, markI, Options{}), fx.augur(t, markII, Options{})
-			if got.Aspect != want.Aspect || got.Standing != want.Standing || got.Desecrated != want.Desecrated ||
-				got.Former != want.Former || len(got.Taint) != len(want.Taint) || len(got.Omens) != len(want.Omens) {
-				t.Errorf("Mark II read %+v\nMark I read %+v", got, want)
-			}
-		})
-	}
-}
-
 // TestAugurMarkII_AnEdictReadsAsAnEdict: an edict of pattern Mark II is
 // judged from its data-slate alone, as any edict.
 func TestAugurMarkII_AnEdictReadsAsAnEdict(t *testing.T) {

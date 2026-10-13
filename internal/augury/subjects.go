@@ -9,8 +9,8 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/librarium"
 )
 
-// readSubjects reads the omen of every subject of a state rite of pattern
-// Mark II, in written order. A sanctum's marker names one aspect; a
+// readSubjects reads the omen of every subject of a rite of aspects, in
+// written order. A sanctum's marker names one aspect; a
 // transcription and a tether fit every aspect whose omen they match; a
 // machine-spirit fits what its auspex reads. The auspexes of every subject
 // labour at once, unless forgone; an exalted auspex is never spoken, and
@@ -24,14 +24,12 @@ func (a *Augury) readSubjects(ctx context.Context, s *seer, opts Options) {
 		var seen []sighting
 		switch m := sub.Matter.(type) {
 		case *librarium.Sanctum:
-			omen, taint := s.sanctum(i, m)
-			if omen != nil {
-				seen = []sighting{{aspect: omen.Aspect}}
+			aspect, taint, ok := s.sanctum(m)
+			if ok {
+				seen = []sighting{{aspect: aspect}}
 			}
 			if taint != nil {
-				// a state rite has no verses: the taint keeps only its vessel
-				taint.Number, taint.Subject = 0, sub.Name
-				a.Taint = append(a.Taint, *taint)
+				a.Taint = append(a.Taint, Taint{Subject: sub.Name, Vessel: *taint})
 			}
 		case *librarium.MachineSpirit:
 			switch {
@@ -77,7 +75,7 @@ func (s *seer) invoked(opts Options) {
 	s.target, s.inscriptions = opts.Target, opts.Inscriptions
 }
 
-// ReadSubject reads the subject at index i of the state rite r anew, as an
+// ReadSubject reads the subject at index i of the rite r anew, as an
 // augury reads it, while it is invoked into opts.Target: what an invocation
 // proves a subject it set or restored by. A machine-spirit whose auspex
 // holds trials is proven by them, even beside a scan, which only reads.
@@ -90,8 +88,8 @@ func ReadSubject(ctx context.Context, r *librarium.Rite, i int, opts Options) in
 	sub := r.Subjects[i]
 	switch m := sub.Matter.(type) {
 	case *librarium.Sanctum:
-		if omen, _ := s.sanctum(i, m); omen != nil {
-			return invocation.Reading{Aspects: []string{omen.Aspect}}
+		if aspect, _, ok := s.sanctum(m); ok {
+			return invocation.Reading{Aspects: []string{aspect}}
 		}
 	case *librarium.MachineSpirit:
 		if m.Auspex != nil && !m.Auspex.Exalted && !opts.ForgoAuspex {
@@ -104,8 +102,8 @@ func ReadSubject(ctx context.Context, r *librarium.Rite, i int, opts Options) in
 	return invocation.Reading{}
 }
 
-// Fitting is the reading of the machine-spirit at index i of the state
-// rite r showing the omens shown, as the auspex of an invocation into
+// Fitting is the reading of the machine-spirit at index i of the rite r
+// showing the omens shown, as the auspex of an invocation into
 // opts.Target would read them: every aspect whose omen, rendered as such
 // an auspex renders it, is among them, and the omen read when it is one.
 // It reads what the exalted servitor told of a privileged auspex, which
@@ -203,13 +201,13 @@ func (s *seer) boot() string {
 	return *s.booted
 }
 
-// intersect names the aspect and standing of a state rite: its fitting
+// intersect names the aspect and standing of a rite of aspects: its fitting
 // aspects are those every omen fits. None corrupts it; one names its
 // aspect, desecrated when the data-slate recorded another; several name
 // the data-slate's aspect when it is among them, else none, the rite
 // desecrated when the data-slate recorded another and dormant when it
-// recorded none. Without omen the data-slate names the aspect, as for
-// Mark I; taint and a faltered last invocation weigh as for Mark I. Stale
+// recorded none. Without omen the data-slate names the aspect; taint and a
+// faltered last invocation weigh upon the standing (weigh). Stale
 // omens alone never desecrate the rite: when its live omens would not, the
 // rite is judged by them alone.
 func (a *Augury) intersect(slate *Slate) {

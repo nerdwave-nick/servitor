@@ -210,7 +210,7 @@ func speakable(tongue string) bool {
 	return err == nil
 }
 
-// omens reads the rite's augury, auspex and all, and denounces its taint
+// omens reads the rite's augury, auspexes and all, and denounces its taint
 // and its desecration.
 func (e *examiner) omens(s *Servitor) {
 	a, lament := augury.Augur(e.rite, augury.Options{Orders: e.orders, Env: s.env()})
@@ -220,15 +220,9 @@ func (e *examiner) omens(s *Servitor) {
 			Position: librarium.Position{Line: 1, Column: 1}, Message: lament.Error()})
 	}
 	for _, t := range a.Taint {
-		if t.Subject != "" {
-			e.note(librarium.Impurity, subjectField(e.rite, t.Subject), "the sanctum subject %q in the vessel %s is "+
-				"tainted: other hands altered its scripture, which no longer matches the aspect its marker records "+
-				"— the next invocation will overwrite their work", t.Subject, e.rite.ResolvePath(t.Target))
-			continue
-		}
-		e.note(librarium.Impurity, field(t.Number-1, "sanctum"), "the sanctum of verse %d in the vessel %s is "+
+		e.note(librarium.Impurity, subjectField(e.rite, t.Subject), "the sanctum subject %q in the vessel %s is "+
 			"tainted: other hands altered its scripture, which no longer matches the aspect its marker records "+
-			"— the next invocation will overwrite their work", t.Number, e.rite.ResolvePath(t.Target))
+			"— the next invocation will overwrite their work", t.Subject, e.rite.ResolvePath(t.Vessel))
 	}
 	if a.Desecrated {
 		e.note(librarium.Impurity, "/aspects", "the rite is desecrated: its omens agree that it stands in the "+

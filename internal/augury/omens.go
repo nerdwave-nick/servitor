@@ -18,7 +18,7 @@ import (
 type seer struct {
 	rite  *librarium.Rite
 	slate *Slate
-	// target and inscriptions are those of the invocation reading a state
+	// target and inscriptions are those of the invocation reading the
 	// rite: they render the omens of target first.
 	target       string
 	inscriptions map[string]string
@@ -48,22 +48,9 @@ func newSeer(r *librarium.Rite, slate *Slate) *seer {
 		scrolls: map[string]scroll{}, bonds: map[string]bond{}}
 }
 
-// observe reads the omen of the step at index i of the liturgy, and its
-// taint when it is a sanctum altered by other hands.
-func (s *seer) observe(i int, step librarium.Step) (*Omen, *Taint) {
-	switch st := step.(type) {
-	case *librarium.Sanctum:
-		return s.sanctum(i, st)
-	case *librarium.Transcription:
-		return s.transcription(i, st), nil
-	case *librarium.Tether:
-		return s.tether(i, st), nil
-	}
-	return nil, nil
-}
-
-// fitting tells whether the observation of a step fits aspect when its
-// fields are rendered with v, and what its own key holds rendered so.
+// fitting tells whether the observation of a subject fits aspect when its
+// fields are rendered with v, and what its vessel or bound name holds
+// rendered so.
 type fitting func(aspect string, v placeholder.Values) (target string, fits bool)
 
 // sighting is the one aspect an observation fits, and how it was rendered.
@@ -100,13 +87,11 @@ func one(found []sighting) (sighting, bool) {
 	return found[0], true
 }
 
-func (s *seer) omen(i int, k librarium.Kind, seen sighting) *Omen {
-	return &Omen{Verse: invocation.Verse{Number: i + 1, Kind: k, Target: seen.target}, Aspect: seen.aspect}
-}
-
-// sanctum reads the aspect a sanctum's marker records and whether its
-// scripture is still that of the aspect.
-func (s *seer) sanctum(i int, st *librarium.Sanctum) (*Omen, *Taint) {
+// sanctum reads the aspect the marker of a sanctum subject records, and
+// whether its scripture is still that of the aspect; ok is false when no
+// marker of its ward names one aspect. A tainted sanctum names its vessel,
+// rendered for that aspect.
+func (s *seer) sanctum(st *librarium.Sanctum) (aspect string, taint *string, ok bool) {
 	glyph, closing := st.Glyphs()
 	m := sanctum.Marker{Glyph: glyph, ClosingGlyph: closing, Ward: st.WardFor(s.rite.Name)}
 	held := func(v placeholder.Values) (string, sanctum.Sanctum, bool) {
@@ -126,9 +111,8 @@ func (s *seer) sanctum(i int, st *librarium.Sanctum) (*Omen, *Taint) {
 		return target, ok && found.Aspect == aspect
 	})
 	if !ok {
-		return nil, nil
+		return "", nil, false
 	}
-	omen := s.omen(i, st.Kind(), seen)
 	_, found, _ := held(seen.v)
 	sc, _ := st.Scripture.For(seen.aspect)
 	judged := false
@@ -138,24 +122,14 @@ func (s *seer) sanctum(i int, st *librarium.Sanctum) (*Omen, *Taint) {
 			continue
 		}
 		if strings.TrimSuffix(text, "\n") == found.Content {
-			return omen, nil
+			return seen.aspect, nil, true
 		}
 		judged = true
 	}
 	if !judged {
-		return omen, nil
+		return seen.aspect, nil, true
 	}
-	return omen, &Taint{Verse: omen.Verse}
-}
-
-// transcription reads which aspect's scripture a transcribed vessel holds;
-// an absent vessel is that of a null scripture.
-func (s *seer) transcription(i int, st *librarium.Transcription) *Omen {
-	seen, ok := one(s.transcribed(st))
-	if !ok {
-		return nil
-	}
-	return s.omen(i, st.Kind(), seen)
+	return seen.aspect, &seen.target, true
 }
 
 // transcribed returns every aspect whose scripture a transcribed vessel
@@ -181,16 +155,6 @@ func (s *seer) transcribed(st *librarium.Transcription) []sighting {
 	})
 }
 
-// tether reads which aspect's anchor a tether's name leads to; an unbound
-// name is that of a null anchor.
-func (s *seer) tether(i int, st *librarium.Tether) *Omen {
-	seen, ok := one(s.bound(st))
-	if !ok {
-		return nil
-	}
-	return s.omen(i, st.Kind(), seen)
-}
-
 // bound returns every aspect whose anchor a tether's name leads to.
 func (s *seer) bound(st *librarium.Tether) []sighting {
 	return s.sightings(func(aspect string, v placeholder.Values) (string, bool) {
@@ -214,8 +178,8 @@ func (s *seer) bound(st *librarium.Tether) []sighting {
 }
 
 // valuesOf returns every set of placeholder values an invocation into
-// aspect may have rendered with: those of the invocation reading a state
-// rite into aspect, the data-slate's inscriptions when it recorded aspect,
+// aspect may have rendered with: those of the invocation reading the rite
+// into aspect, the data-slate's inscriptions when it recorded aspect,
 // and the decrees of aspect, with any former aspect.
 func (s *seer) valuesOf(aspect string) []placeholder.Values {
 	if vs, ok := s.variants[aspect]; ok {
