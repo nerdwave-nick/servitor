@@ -219,16 +219,27 @@ func (s *Servitor) prepare(r *librarium.Rite, p Petition, inscriptions map[strin
 		res.lament(lament)
 		res.Former = former.Standing
 		res.Options.Former, res.Options.Recorded = former.Aspect, former.Inscriptions
-		res.Options.Readings = former.Readings
+		res.Options.Readings = s.stamped(former.Readings)
 		if r.MarkII {
 			res.Options.Reader = func(ctx context.Context, i int) invocation.Reading {
-				return augury.ReadSubject(ctx, r, i, opts)
+				read := augury.ReadSubject(ctx, r, i, opts)
+				read.At = s.now()
+				return read
 			}
 		}
 	}
 	inv, err := invocation.Prepare(r, res.Options)
 	res.Foresight = inv.Foresee()
 	return inv, err
+}
+
+// stamped are readings, each marked as read now.
+func (s *Servitor) stamped(readings []invocation.Reading) []invocation.Reading {
+	now := s.now()
+	for i := range readings {
+		readings[i].At = now
+	}
+	return readings
 }
 
 func (r *Result) lament(err error) {

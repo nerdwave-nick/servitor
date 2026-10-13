@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"strings"
 	"testing"
+
+	"github.com/nerdwave-nick/servitor/internal/augury"
 )
 
 // smtIIJSON is a state rite of pattern Mark II: a machine-spirit read by its
@@ -51,7 +53,8 @@ func TestInvokeII_TellsKeepsAndChroniclesEachSubject(t *testing.T) {
 		t.Fatalf("the desktop heard:\n%s", e.notified())
 	}
 	slate, _ := os.ReadFile(filepath.Join(e.state, "servitor", "data-slates", "gaming.json"))
-	if !regexp.MustCompile(`^\{"aspect":"on","inscriptions":\{\},"last_rite":\{"verdict":"triumph","at":"[^"]+"\}\}\n$`).Match(slate) {
+	if !regexp.MustCompile(`^\{"aspect":"on","inscriptions":\{\},"last_rite":\{"verdict":"triumph","at":"([^"]+)"\},` +
+		`"boot":"` + augury.Boot() + `","omens":\{"smt":\{"omen":"off","at":"([^"]+)"\}\}\}\n$`).Match(slate) {
 		t.Fatalf("data-slate %s", slate)
 	}
 
