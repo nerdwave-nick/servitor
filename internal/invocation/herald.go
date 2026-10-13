@@ -3,14 +3,17 @@ package invocation
 import (
 	"context"
 	"maps"
+	"slices"
 
 	"github.com/nerdwave-nick/servitor/internal/librarium"
 	"github.com/nerdwave-nick/servitor/internal/placeholder"
 )
 
 // Herald hears the vox-casts of an invocation while it is performed: one
-// proclamation for every vox-cast step reached, and one, unbidden, when a
-// step falls and the reversions are done. Proclaim is called on the
+// proclamation for every vox-cast step reached (or, for the vox-casts a
+// rite of pattern Mark II bears as its own key, for every real step
+// performed and for the whole liturgy), and one, unbidden, when a step
+// falls and the reversions are done. Proclaim is called on the
 // performing goroutine, in written order; it must not fail the invocation,
 // so it returns nothing. A nil herald hears nothing.
 type Herald interface {
@@ -92,18 +95,23 @@ type Proclamation struct {
 type crier struct {
 	herald Herald
 	edict  bool // an edict is proclaimed
+	// casts are the vox-casts the rite bears as a key of its own (pattern
+	// Mark II), not as steps: progress once every real step is performed,
+	// success once the whole liturgy is.
+	casts  []string
 	values placeholder.Values
 	steps  int   // real steps in the liturgy
 	done   int   // real steps performed
 	last   Verse // the real step performed last
 }
 
-// newCrier counts the real steps among steps; it is nil without a herald.
-func newCrier(h Herald, edict bool, v placeholder.Values, steps []performer) *crier {
+// newCrier counts the real steps among steps of the rite r; it is nil
+// without a herald.
+func newCrier(h Herald, r *librarium.Rite, v placeholder.Values, steps []performer) *crier {
 	if h == nil {
 		return nil
 	}
-	c := &crier{herald: h, edict: edict, values: v}
+	c := &crier{herald: h, edict: r.Edict, casts: r.VoxCasts, values: v}
 	for _, s := range steps {
 		if _, vox := s.(voxCast); !vox {
 			c.steps++
@@ -125,9 +133,21 @@ func (c *crier) performed(step performer) {
 		if w, witnessing := c.herald.(Witness); witnessing {
 			w.Performed(c.last, c.done, c.steps)
 		}
+		if slices.Contains(c.casts, librarium.VoxProgress) {
+			c.proclaim(Progress, c.done, c.last, "", nil)
+		}
 		return
 	}
 	c.proclaim(vox.tidings, c.done, c.last, "", nil)
+}
+
+// triumphed proclaims the success the rite bears as a key of its own, once
+// the whole liturgy is performed and nothing fell.
+func (c *crier) triumphed(out Outcome) {
+	if c == nil || out.Fell != nil || !slices.Contains(c.casts, librarium.VoxSuccess) {
+		return
+	}
+	c.proclaim(Success, c.done, c.last, "", nil)
 }
 
 // begin tells a watching herald that step is begun; vox-casts are not

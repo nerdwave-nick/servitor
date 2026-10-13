@@ -1,5 +1,5 @@
 // Package invocation performs a rite of pattern Mark I into one aspect, or
-// proclaims an edict, which bears none.
+// proclaims an edict, which bears none, of pattern Mark I or Mark II.
 //
 // Prepare runs the pre-flight: it renders every placeholder, reads every
 // tome afresh, and examines every vessel and tether, without changing
@@ -15,7 +15,8 @@
 // Steps of every kind join the same ordered loop through the performer
 // interface. Incantations and litanies are spoken by real processes (see
 // speak.go); vox-casts and failures are proclaimed to the Options' Herald
-// (see herald.go).
+// (see herald.go). An edict of pattern Mark II bears its vox-casts as a key
+// of the rite, not as steps: progress after each verse, success at the end.
 package invocation
 
 import (
@@ -178,7 +179,8 @@ func uttered(step performer) (said, unsaid string) {
 // performAll performs steps in order, telling c (which may be nil) of
 // every step performed and of the fall, and then finishes the work of the
 // exalted servitor (finish, nil without one). A finish unheard after a
-// triumph is a fall at the last exalted step: every step is reverted.
+// triumph is a fall at the last exalted step: every step is reverted. Only
+// then is the triumph told.
 func performAll(ctx context.Context, steps []performer, c *crier, finish func() error) Outcome {
 	out := Outcome{Verdict: Triumph}
 	for k, step := range steps {
@@ -203,16 +205,16 @@ func performAll(ctx context.Context, steps []performer, c *crier, finish func() 
 		c.fell(step, out)
 		break
 	}
-	if finish == nil {
-		return out
+	if finish != nil {
+		err := finish()
+		if last := lastExalted(steps); err != nil && out.Fell == nil && last >= 0 {
+			out.Fell = &Fall{Verse: steps[last].verse(), Heresy: fmt.Errorf("the exalted servitor never heard "+
+				"the finish, and reverts by itself what it performed: %w", err)}
+			revertFrom(&out, steps, len(steps)-1)
+			c.fell(steps[last], out)
+		}
 	}
-	err := finish()
-	if last := lastExalted(steps); err != nil && out.Fell == nil && last >= 0 {
-		out.Fell = &Fall{Verse: steps[last].verse(), Heresy: fmt.Errorf("the exalted servitor never heard the "+
-			"finish, and reverts by itself what it performed: %w", err)}
-		revertFrom(&out, steps, len(steps)-1)
-		c.fell(steps[last], out)
-	}
+	c.triumphed(out)
 	return out
 }
 
