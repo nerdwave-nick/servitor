@@ -12,7 +12,8 @@ reads and the trials only prove what was set. An auspex holding neither
 "scan" nor "trials" is heresy.
 
 The scan is spoken with the invoker's own authority unless the auspex is
-itself exalted. It hears SERVITOR_RITE, the inscriptions and SERVITOR_ASPECT,
+itself exalted; then the exalted servitor alone speaks it, at invocation,
+and tells only the declared omens it printed. It hears SERVITOR_RITE, the inscriptions and SERVITOR_ASPECT,
 but never {{omen}}, for it reads the omen rather than setting one.
 
 Kindred passages: auspex, trials, machine-spirit, omens, patience

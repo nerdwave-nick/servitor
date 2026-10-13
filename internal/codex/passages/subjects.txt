@@ -19,10 +19,11 @@ bears no subjects. A subject may be exalted, set with the machine's own
 authority from a sanction; its words are then fixed at that sanction.
 
 An exalted subject is set by the exalted servitor alone, and only when it
-is to change (see exalted). A rite holding a subject whose auspex is itself
-marked "exalted" is not yet performed by this servitor: its rite of
-performance for that auspex is not yet forged, so it refuses to invoke or
-foresee such a rite, and reads and touches nothing of it.
+is to change (see exalted). Its auspex may itself be marked "exalted", for
+what only the root can read: such an auspex is spoken by the exalted
+servitor at invocation alone, which tells only the declared omens it
+fits, and never by an augury, a census, a completion or a foresight, which
+tell the omen last recorded, stale.
 
 Kindred passages: designation, omens, machine-spirit, observances, introit,
 recessional, pattern, exalted, sanction

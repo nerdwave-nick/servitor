@@ -41,8 +41,9 @@ exalted vessel and bound name, waiting as every invocation waits. A dominion
 it cannot hold refuses the invocation before anything is touched.
 
 Thereafter it hears four words alone: perform the next exalted verse, revert
-the last one performed, finish, abort. A word out of its order, or a second
-plan, is refused, and ends the session. For a rite of aspects of pattern
+the last one performed, finish, abort; and, for a rite of aspects of pattern
+Mark II, read, once, before anything is performed. A word out of its order,
+or a second plan, is refused, and ends the session. For a rite of aspects of pattern
 Mark II, perform names an exalted subject or observance of the plan, which
 must lie after every one performed before it — a subject at its place, an
 observance at the place of a subject that names it, and an observance once —
@@ -53,7 +54,23 @@ SERVITOR_OMEN, and perform names the declared omen to restore it to should
 the session fall (none, when the invoker knows none, and then it cannot be
 restored). Revert names the subject or observance last performed, and for a
 machine-spirit the declared omen it restores; it speaks only the enact words
-its sanction holds, and an omen the sanction does not declare is refused. Of a vessel it tells only whether it
+its sanction holds, and an omen the sanction does not declare is refused.
+
+Read names the subjects of the plan its invoker cannot read itself: every
+machine-spirit whose auspex is itself exalted, and every sanctum,
+transcription or tether hidden from the invoker; a machine-spirit whose
+auspex is common is refused. It speaks those auspexes at once, from its
+working hall, in the subject's tongue and under the auspex's patience,
+hearing only what they print on their standard output, and matches it
+against the omens the sanction declares; it answers each with the declared
+omens it fits, or none when it is mute, never the words printed. Of a
+built-in subject it answers only whether it already stands as the aspect
+demands. It proves a machine-spirit of such an auspex once it set or
+restored it, by the trials when the auspex bears them, else by the scan: a
+perform that does not show the omen commanded falls, naming the omen found
+among the declared ones, and a revert that does not show the omen restored
+falters; both tell the declared omens the subject was found to show. Of a
+vessel it tells only whether it
 changed, its size and its SHA-256, never its scripture. Its vessels and
 tethers are walked from the root through halls the root alone may write, and
 transcribed atomically, keeping their owner, and their seal unless the verse

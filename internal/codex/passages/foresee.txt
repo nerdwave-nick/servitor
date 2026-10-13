@@ -36,7 +36,10 @@ the one who spoke sudo, and writes nothing.
 
 A rite of pattern Mark II cannot tell what it would do without reading its
 subjects, so its foresight awakens their auspexes, as an augury does, yet
-speaks no enact word. It tells each subject on a line of its own: a
+speaks no enact word, and never an auspex itself marked "exalted", which
+only the exalted servitor speaks at invocation: such a subject tells the
+omen the data-slate last recorded, "(stale, read <hour>)", or "(read at
+invocation)" when none serves. It tells each subject on a line of its own: a
 machine-spirit with the omen read and the omen commanded, "(mute)" when its
 auspex named no aspect and "(no auspex)" when it has none, and whether it is
 unchanged or changing; beneath a changing one, the words or the comparison of
