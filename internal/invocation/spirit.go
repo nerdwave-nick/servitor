@@ -26,12 +26,18 @@ func (p *preflight) spirit(i int, ms *librarium.MachineSpirit) (*Foresight, perf
 		return nil, nil
 	}
 	sp.Words, sp.Argv = words, []string{sp.Tongue, "-c", words}
-	var read Reading
-	if i < len(p.opts.Readings) {
-		read = p.opts.Readings[i]
+	read := p.reading()
+	if ms.Auspex != nil && ms.Auspex.Exalted {
+		p.unread = append(p.unread, p.subject)
 	}
 	plan := &SubjectPlan{Read: read.Omen, Target: omen, Unread: ms.Auspex == nil}
-	plan.Mute = !plan.Unread && len(read.Aspects) == 0
+	if plan.Privileged = !plan.Unread && ms.Auspex.Exalted && !read.Exalted; plan.Privileged {
+		plan.Stale = read.Stale && read.Omen != ""
+		if plan.Stale {
+			plan.ReadAt = read.At
+		}
+	}
+	plan.Mute = !plan.Unread && !plan.Privileged && len(read.Aspects) == 0
 	plan.Changing = plan.Unread || !slices.Contains(read.Aspects, p.opts.Aspect)
 	f := &Foresight{Verse: p.verse(0, ""), Plan: plan}
 	if !plan.Changing {

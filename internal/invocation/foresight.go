@@ -30,6 +30,12 @@ type SubjectPlan struct {
 	Mute, Unread bool
 	Target       string // the omen commanded of a machine-spirit
 	Changing     bool
+	// Privileged tells that the auspex of a machine-spirit is privileged
+	// and was not heard: the exalted servitor alone speaks it, at
+	// invocation. Stale then tells that Read is the omen the data-slate
+	// recorded at ReadAt; without it nothing was read.
+	Privileged, Stale bool
+	ReadAt            time.Time
 }
 
 // Speech is what an incantation or litany will speak, every placeholder

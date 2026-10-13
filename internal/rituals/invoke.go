@@ -69,9 +69,7 @@ type Result struct {
 }
 
 // Invoke performs the petition, or foresees it. The error tells why
-// nothing was performed: *Unrecorded, *Heretical, *Unperformable for a
-// state rite of pattern Mark II holding what cannot yet be performed,
-// invocation.Heresies of
+// nothing was performed: *Unrecorded, *Heretical, invocation.Heresies of
 // the inscriptions or the pre-flight (the result's Foresight is filled for
 // the steps that passed) or of exalted verses that may not be performed
 // (see exaltation), *Forsaken, or a refusal before any exalted verse: no
@@ -88,7 +86,10 @@ type Result struct {
 // So too the exalted subjects and observances of a state rite of pattern
 // Mark II; it is raised only when one of them changes, once the subjects
 // are read and the plan is made, yet the sanction is judged before
-// anything is read, whatever changes.
+// anything is read, whatever changes. A state rite holding subjects the
+// invoker cannot read — a privileged auspex, or an exalted vessel hidden
+// from it — always raises it: it reads them first, and the plan is made
+// anew with what it told (see behold).
 //
 // An invocation that is not foreseen is held Steadfast throughout: the
 // departure of the one who invoked it neither halts it nor leaves it half
@@ -103,11 +104,6 @@ func (s *Servitor) Invoke(ctx context.Context, p Petition) (Result, error) {
 	r, err := s.Rite(p.Rite)
 	if err != nil {
 		return Result{}, err
-	}
-	if why := unperformable(r); r.MarkII && !r.Edict && why != "" {
-		// What only the exalted servitor may read is never read with the
-		// invoker's own authority: not even the other subjects are read.
-		return Result{}, &Unperformable{Name: r.Name, Why: why}
 	}
 	res := Result{Rite: r}
 	exalting, err := s.exaltation(r, p, &res)
@@ -153,13 +149,20 @@ func (s *Servitor) Invoke(ctx context.Context, p Petition) (Result, error) {
 		x invocation.Exalter
 		e *exalter
 	)
-	if exalting != nil && !inv.Exalts() {
+	unread := inv.Unread()
+	if exalting != nil && !inv.Exalts() && len(unread) == 0 {
 		// Nothing exalted changes: no proof is asked of the master.
 		exalting, res.Intercessor = nil, ""
 	}
 	if exalting != nil {
 		if e, err = s.exalt(r, p, &res, exalting); err != nil {
 			return res, err
+		}
+		if len(unread) > 0 {
+			if inv, err = s.behold(r, p, inscriptions, &res, e, unread); err != nil {
+				e.abandon()
+				return res, err
+			}
 		}
 		x = e
 	}
@@ -207,6 +210,7 @@ func (s *Servitor) prepare(r *librarium.Rite, p Petition, inscriptions map[strin
 	env, orders := s.env(), s.Orders()
 	res.Options = invocation.Options{Aspect: p.Aspect, Edict: r.Edict, Inscriptions: inscriptions, Orders: orders,
 		Herald: p.Herald}
+	opts := s.auguryOf(r, p, inscriptions)
 	if r.Edict {
 		// An edict stands in no aspect to be read: only the inscriptions
 		// on its data-slate are wanted.
@@ -216,12 +220,6 @@ func (s *Servitor) prepare(r *librarium.Rite, p Petition, inscriptions map[strin
 			res.Options.Recorded = slate.Inscriptions
 		}
 	} else {
-		// A state rite of pattern Mark II is read even when foreseen: what
-		// it would do rests upon what its subjects show.
-		opts := augury.Options{Target: p.Aspect, ForgoAuspex: p.Foresee && !r.MarkII, Orders: orders, Env: env}
-		if r.MarkII {
-			opts.Inscriptions = inscriptions
-		}
 		former, lament := augury.Augur(r, opts)
 		res.lament(lament)
 		res.Former = former.Standing
@@ -240,11 +238,27 @@ func (s *Servitor) prepare(r *librarium.Rite, p Petition, inscriptions map[strin
 	return inv, err
 }
 
-// stamped are readings, each marked as read now.
+// auguryOf are the options the subjects of r are read with by the
+// invocation of the petition: a state rite of pattern Mark II is read even
+// when foreseen, since what it would do rests upon what its subjects
+// show, and its foresight tells the omens a privileged auspex was last
+// read to show.
+func (s *Servitor) auguryOf(r *librarium.Rite, p Petition, inscriptions map[string]string) augury.Options {
+	opts := augury.Options{Target: p.Aspect, ForgoAuspex: p.Foresee && !r.MarkII, Orders: s.Orders(), Env: s.env()}
+	if r.MarkII {
+		opts.Inscriptions, opts.Foreseen = inscriptions, p.Foresee
+	}
+	return opts
+}
+
+// stamped are readings, each marked as read now; a stale one keeps the
+// moment it was recorded.
 func (s *Servitor) stamped(readings []invocation.Reading) []invocation.Reading {
 	now := s.now()
 	for i := range readings {
-		readings[i].At = now
+		if !readings[i].Stale {
+			readings[i].At = now
+		}
 	}
 	return readings
 }

@@ -23,6 +23,7 @@ type preflight struct {
 	// examined, observance its observance; both "" for a step of a liturgy.
 	subject, observance string
 	heresies            Heresies
+	unread              []string // the subjects the exalted servitor reads in the invoker's stead
 }
 
 // prepare examines one step; it returns nil when the step is heretical.
