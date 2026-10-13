@@ -29,7 +29,23 @@ heeded. The augury lists every omen in written order, the auspex last, each
 named by its verse and its own key. The litanies of completion never awaken
 the auspex, and neither does foreseeing.
 
-Kindred passages: standing, auspex, augury, data-slate, verse
+A rite of pattern Mark II reads its subjects instead: a sanctum yields the
+aspect its marker records, a transcription and a tether every aspect whose
+omen they match, a machine-spirit every aspect whose omen its auspex reads
+(the passages on scan and trials tell all). An omen shared by several
+aspects fits them all. A subject that fits none, a mute auspex, a
+machine-spirit without an auspex and one whose auspex is exalted — never
+spoken by the augury — yield no omen. The omens agree by intersection: the
+aspects every omen fits are the rite's "fitting". None corrupts the rite;
+one names its aspect; several name the aspect of the data-slate when it is
+among them, else none, and the rite is desecrated when the data-slate
+recorded another, dormant when it recorded none. Where every omen fits one
+aspect, this is the agreement told above. Each omen is named by its
+subject and designation, with the omen read when a machine-spirit showed
+one, every aspect it fits, and its aspect when it fits but one.
+
+Kindred passages: standing, auspex, augury, data-slate, verse, subjects,
+scan, trials
 
 Exempla:
   servitor augury theme
@@ -39,3 +55,10 @@ Exempla:
     {"verse": 2, "tether": "~/.local/share/nfluff/current-theme",
      "aspect": "porpl"},
     {"auspex": true, "aspect": "porpl"}]
+
+  "fitting": ["balanced"],
+  "omens": [
+    {"subject": "smt", "designation": "machine-spirit", "omen": "on",
+     "aspects": ["balanced", "powersave"]},
+    {"subject": "governor", "designation": "machine-spirit",
+     "omen": "balanced", "aspects": ["balanced"], "aspect": "balanced"}]

@@ -26,6 +26,12 @@ to read:
               "aspect": "porpl"}, {"auspex": true, "aspect": "porpl"}],
    "taint": []}
 
+The augury of a rite of pattern Mark II also bears "fitting", the aspects
+every omen fits ([] when they fit none, or when no subject yielded an
+omen); its omens are named by subject, and so are the sanctums of its
+taint ({"subject": "niri", "designation": "sanctum"}). The passage on the
+omens tells all.
+
 The key "former", naming the aspect the data-slate recorded, appears only
 when the rite is desecrated. The key "auspex" tells what the rite's auspex
 gave: "" when it keeps none, "heeded", "mute", or "forgone" when the rune

@@ -20,6 +20,13 @@ omens against its data-slate. Seven standings are known to the codex:
 A rite holds the gravest standing that applies, from heretical down through
 corrupted, tainted and desecrated to performed or dormant.
 
+The omens of a rite of pattern Mark II agree by intersection: a subject
+whose omen fits none of the aspects the others fit corrupts it, though its
+omen be shared by two aspects. Where the omens fit several aspects at
+once, the rite stands in the aspect of its data-slate when that is among
+them; else it is desecrated, or dormant when never invoked. The passage on
+the omens tells all.
+
 An edict stands in no aspect and yields no omen, so it is judged by the
 verdict of its last invocation alone: dormant until it is first proclaimed,
 proclaimed after a last invocation that ended in triumph or was reverted,
