@@ -15,11 +15,15 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/sanction"
 )
 
-// verseName names a verse of r as "verse 2 · tether <target>", or a
-// subject of a state rite as "subject smt · machine-spirit", a built-in one
-// with its target: the home of the faithful is spoken as "~", and a
-// litany's scroll beside the rite as it is written.
+// verseName names a verse of r as "verse 2 · tether <target>", a subject
+// of a state rite as "subject smt · machine-spirit", a built-in one with
+// its target, and an observance as "observance veil · incantation": the
+// home of the faithful is spoken as "~", and a litany's scroll beside the
+// rite as it is written.
 func verseName(r *librarium.Rite, v invocation.Verse) string {
+	if v.Observance != "" {
+		return fmt.Sprintf("observance %s · %s", v.Observance, v.Kind.Key())
+	}
 	if v.Subject != "" {
 		sub, _ := r.Subject(v.Subject)
 		return strings.TrimSpace(fmt.Sprintf("subject %s · %s %s", v.Subject, sub.Designation(), homeward(v.Target)))

@@ -33,8 +33,9 @@ type Watcher interface {
 
 // Witness is a herald that also sees every real step once it is performed,
 // before any vox-cast that follows it is proclaimed: a vessel of the
-// servitor that tells the faithful, verse by verse, what was done. A step
-// that falls is not seen; the fall is proclaimed.
+// servitor that tells the faithful, verse by verse, what was done. It sees
+// every observance of a state rite spoken too, which counts as no step. A
+// step that falls is not seen; the fall is proclaimed.
 type Witness interface {
 	Herald
 	// Performed is told once the step of verse v is performed: it is the
@@ -113,17 +114,32 @@ func newCrier(h Herald, r *librarium.Rite, v placeholder.Values, steps []perform
 	}
 	c := &crier{herald: h, edict: r.Edict, casts: r.VoxCasts, values: v}
 	for _, s := range steps {
-		if _, vox := s.(voxCast); !vox {
+		if counted(s) {
 			c.steps++
 		}
 	}
 	return c
 }
 
+// counted reports whether step is counted among the real steps: neither a
+// vox-cast nor an observance, which a state rite speaks around its
+// subjects.
+func counted(step performer) bool {
+	_, vox := step.(voxCast)
+	return !vox && step.verse().Observance == ""
+}
+
 // performed notes that step was performed and tells a witnessing herald;
-// a vox-cast is proclaimed.
+// a vox-cast is proclaimed. An observance is told to a witnessing herald
+// alone, counted as nothing.
 func (c *crier) performed(step performer) {
 	if c == nil {
+		return
+	}
+	if v := step.verse(); v.Observance != "" {
+		if w, witnessing := c.herald.(Witness); witnessing {
+			w.Performed(v, c.done, c.steps)
+		}
 		return
 	}
 	vox, ok := step.(voxCast)
@@ -150,14 +166,14 @@ func (c *crier) triumphed(out Outcome) {
 	c.proclaim(Success, c.done, c.last, "", nil)
 }
 
-// begin tells a watching herald that step is begun; vox-casts are not
-// steps it watches.
+// begin tells a watching herald that step is begun; vox-casts and
+// observances are not steps it watches.
 func (c *crier) begin(step performer) {
 	if c == nil {
 		return
 	}
 	w, watching := c.herald.(Watcher)
-	if _, vox := step.(voxCast); vox || !watching {
+	if !counted(step) || !watching {
 		return
 	}
 	w.Begin(step.verse(), c.done+1, c.steps)

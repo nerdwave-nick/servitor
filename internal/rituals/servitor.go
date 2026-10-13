@@ -12,7 +12,6 @@ package rituals
 import (
 	"fmt"
 	"os"
-	"slices"
 	"strings"
 	"time"
 
@@ -86,8 +85,8 @@ func (e *Heretical) Error() string {
 
 // Unperformable is the lament for a state rite of pattern Mark II that
 // holds what the servitor cannot yet perform: an exalted subject or
-// observance (a privileged auspex rides only upon an exalted subject), or a
-// subject naming an observance. Why tells what, in its own words.
+// observance (a privileged auspex rides only upon an exalted subject). Why
+// tells what, in its own words.
 type Unperformable struct {
 	Name string
 	Why  string
@@ -110,11 +109,6 @@ func unperformable(r *librarium.Rite) string {
 	for _, o := range r.Observances {
 		if o.Exalted() {
 			return fmt.Sprintf("the observance %q is exalted", o.Name)
-		}
-	}
-	for _, sub := range r.Subjects {
-		if named := slices.Concat(sub.Introit, sub.Recessional); len(named) > 0 {
-			return fmt.Sprintf("the subject %q names the observance %q", sub.Name, named[0])
 		}
 	}
 	return ""

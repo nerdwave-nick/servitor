@@ -102,8 +102,7 @@ func (s *Servitor) Invoke(ctx context.Context, p Petition) (Result, error) {
 	}
 	if why := unperformable(r); r.MarkII && !r.Edict && why != "" {
 		// What is exalted is never performed with the invoker's own
-		// authority, and observances wait for their own rite: not even
-		// the subjects of such a rite are read.
+		// authority: not even the subjects of such a rite are read.
 		return Result{}, &Unperformable{Name: r.Name, Why: why}
 	}
 	res := Result{Rite: r}

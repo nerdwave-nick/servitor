@@ -180,6 +180,8 @@ func reversion(out *invocation.Outcome, edict bool) string {
 		case r.Heresy == nil:
 		case r.Subject != "":
 			fallen = append(fallen, "subject "+r.Subject)
+		case r.Observance != "":
+			fallen = append(fallen, "observance "+r.Observance)
 		default:
 			fallen = append(fallen, fmt.Sprintf("verse %d", r.Number))
 		}

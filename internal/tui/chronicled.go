@@ -27,8 +27,11 @@ func (m *model) chronicled(e chronicle.Entry) string {
 	}
 	if f := e.FellAt; f != nil {
 		at := strings.TrimSpace(fmt.Sprintf("verse %d · %s %s", f.Number, f.Key, shortPath(f.Target)))
-		if f.Subject != "" {
+		switch {
+		case f.Subject != "":
 			at = "subject " + f.Subject
+		case f.Observance != "":
+			at = "observance " + f.Observance
 		}
 		b = append(b, "", t.bold.Render("It fell at "+at))
 		if e.Heresy != "" {
@@ -40,8 +43,11 @@ func (m *model) chronicled(e chronicle.Entry) string {
 	}
 	for _, r := range e.Reversions {
 		what := fmt.Sprintf("verse %d", r.Verse)
-		if r.Subject != "" {
+		switch {
+		case r.Subject != "":
 			what = "subject " + r.Subject
+		case r.Observance != "":
+			what = "observance " + r.Observance
 		}
 		if r.Verdict == invocation.Triumph {
 			b = append(b, t.ok.Render("✔ ")+t.text.Render(what+" is undone"))

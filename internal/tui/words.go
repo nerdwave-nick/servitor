@@ -12,11 +12,14 @@ import (
 )
 
 // verseName names a verse as "verse 2 · tether <target>", an exalted verse
-// as "verse 2 · tether ✠ <target>", and a subject of a state rite as
-// "subject smt".
+// as "verse 2 · tether ✠ <target>", and a subject or an observance of a
+// state rite as "subject smt" or "observance veil".
 func verseName(v invocation.Verse) string {
-	if v.Subject != "" {
+	switch {
+	case v.Subject != "":
 		return "subject " + v.Subject
+	case v.Observance != "":
+		return "observance " + v.Observance
 	}
 	kind := v.Kind.Key()
 	if v.Exalted {
