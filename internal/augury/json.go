@@ -5,13 +5,14 @@ import (
 	"encoding/json"
 
 	"github.com/nerdwave-nick/servitor/internal/invocation"
+	"github.com/nerdwave-nick/servitor/internal/librarium"
 	"github.com/nerdwave-nick/servitor/internal/sanction"
 )
 
 // MarshalJSON writes the augury in the shape of the codex: rite, edict
 // (false), aspect, standing, sanction, auspex, desecrated, former (only when
 // desecrated), inscriptions, canon, last_rite (null when never invoked),
-// omens and taint (lists, never null). An edict's is rite, edict (true),
+// fitting (a state rite's alone), omens and taint (lists, never null). An edict's is rite, edict (true),
 // standing, sanction, auspex (always ""), inscriptions, canon and last_rite alone.
 func (a Augury) MarshalJSON() ([]byte, error) {
 	inscriptions := a.Inscriptions
@@ -46,6 +47,7 @@ func (a Augury) MarshalJSON() ([]byte, error) {
 		Inscriptions map[string]string `json:"inscriptions"`
 		Canon        []Declaration     `json:"canon"`
 		LastRite     *LastRite         `json:"last_rite"`
+		Fitting      *[]string         `json:"fitting,omitempty"`
 		Omens        []Omen            `json:"omens"`
 		Taint        []Taint           `json:"taint"`
 	}
@@ -53,6 +55,13 @@ func (a Augury) MarshalJSON() ([]byte, error) {
 		Inscriptions: inscriptions, Canon: canon, LastRite: a.LastRite, Omens: a.Omens, Taint: a.Taint}
 	if a.Desecrated {
 		b.Former = a.Former
+	}
+	if a.MarkII {
+		fitting := a.Fitting
+		if fitting == nil {
+			fitting = []string{}
+		}
+		b.Fitting = &fitting
 	}
 	if b.Omens == nil {
 		b.Omens = []Omen{}
@@ -64,9 +73,21 @@ func (a Augury) MarshalJSON() ([]byte, error) {
 }
 
 // MarshalJSON writes a step's omen as its verse, its own key and the aspect
-// ({"verse": 2, "tether": "…", "aspect": "porpl"}), and the auspex's as
-// {"auspex": true, "aspect": "porpl"}.
+// ({"verse": 2, "tether": "…", "aspect": "porpl"}), the auspex's as
+// {"auspex": true, "aspect": "porpl"}, and a subject's as its name, its
+// designation, the omen read when one was, every aspect it fits and the
+// aspect when it fits one ({"subject": "smt", "designation":
+// "machine-spirit", "omen": "off", "aspects": ["on"], "aspect": "on"}).
 func (o Omen) MarshalJSON() ([]byte, error) {
+	if o.Subject != "" {
+		return json.Marshal(struct {
+			Subject     string   `json:"subject"`
+			Designation string   `json:"designation"`
+			Omen        string   `json:"omen,omitempty"`
+			Aspects     []string `json:"aspects"`
+			Aspect      string   `json:"aspect,omitempty"`
+		}{o.Subject, o.Designation, o.Read, o.Aspects, o.Aspect})
+	}
 	if o.Auspex {
 		return json.Marshal(struct {
 			Auspex bool   `json:"auspex"`
@@ -77,8 +98,17 @@ func (o Omen) MarshalJSON() ([]byte, error) {
 }
 
 // MarshalJSON writes a taint as the sanctum's verse and its own key
-// ({"verse": 1, "sanctum": "…"}).
-func (t Taint) MarshalJSON() ([]byte, error) { return versed(t.Verse) }
+// ({"verse": 1, "sanctum": "…"}), or as the sanctum subject's name and
+// designation ({"subject": "niri", "designation": "sanctum"}).
+func (t Taint) MarshalJSON() ([]byte, error) {
+	if t.Subject != "" {
+		return json.Marshal(struct {
+			Subject     string `json:"subject"`
+			Designation string `json:"designation"`
+		}{t.Subject, librarium.DesignationSanctum})
+	}
+	return versed(t.Verse)
+}
 
 // versed writes {"verse": n, "<key>": target} followed by the further
 // fields, given as name, value pairs.

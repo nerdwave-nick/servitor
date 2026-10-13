@@ -21,13 +21,14 @@ type Reading struct {
 // its data-slate alone, standing heretical. forgoAuspex leaves the auspex
 // unawakened. The error is *Unrecorded.
 func (s *Servitor) Augur(name string, forgoAuspex bool) (Reading, error) {
-	return s.augur(context.Background(), name, forgoAuspex)
+	return s.augur(context.Background(), name, augury.Options{ForgoAuspex: forgoAuspex})
 }
 
-// augur is Augur whose auspex labours only while ctx lasts.
-func (s *Servitor) augur(ctx context.Context, name string, forgoAuspex bool) (Reading, error) {
+// augur is Augur whose auspexes labour only while ctx lasts, read with
+// opts, the settings' orders and the servitor's environment.
+func (s *Servitor) augur(ctx context.Context, name string, opts augury.Options) (Reading, error) {
 	r, err := s.Rite(name)
-	opts := augury.Options{ForgoAuspex: forgoAuspex, Orders: s.Orders(), Env: s.env()}
+	opts.Orders, opts.Env = s.Orders(), s.env()
 	var heretical *Heretical
 	var a augury.Augury
 	var lament error

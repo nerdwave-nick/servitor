@@ -2,6 +2,7 @@ package rituals
 
 import (
 	"errors"
+	"fmt"
 	"io/fs"
 	"os"
 	"os/exec"
@@ -197,6 +198,12 @@ func (e *examiner) omens(s *Servitor) {
 			Position: librarium.Position{Line: 1, Column: 1}, Message: lament.Error()})
 	}
 	for _, t := range a.Taint {
+		if t.Subject != "" {
+			e.note(librarium.Impurity, subjectField(e.rite, t.Subject), "the sanctum subject %q in the vessel %s is "+
+				"tainted: other hands altered its scripture, which no longer matches the aspect its marker records "+
+				"— the next invocation will overwrite their work", t.Subject, e.rite.ResolvePath(t.Target))
+			continue
+		}
 		e.note(librarium.Impurity, field(t.Number-1, "sanctum"), "the sanctum of verse %d in the vessel %s is "+
 			"tainted: other hands altered its scripture, which no longer matches the aspect its marker records "+
 			"— the next invocation will overwrite their work", t.Number, e.rite.ResolvePath(t.Target))
@@ -206,4 +213,14 @@ func (e *examiner) omens(s *Servitor) {
 			"aspect %q, yet its data-slate records %q — other hands than the servitor's changed the machine; "+
 			"invoke the rite anew to make them one", a.Aspect, a.Former)
 	}
+}
+
+// subjectField is the JSON pointer of the subject name of the rite r.
+func subjectField(r *librarium.Rite, name string) string {
+	for i, s := range r.Subjects {
+		if s.Name == name {
+			return fmt.Sprintf("/subjects/%d", i)
+		}
+	}
+	return "/subjects"
 }
