@@ -1,7 +1,7 @@
 #!/bin/bash
-# The trial of exalted verses upon the real intercessors, in a disposable Arch
-# Linux VM (KVM/QEMU and cloud-init), grown from the harness of 2026-10-12 in
-# docs/research/elevation-verification.md (spec §17.9).
+# The trial of exalted subjects upon the real intercessors, in a disposable
+# Arch Linux VM (KVM/QEMU and cloud-init), grown from the harness of 2026-10-12
+# in docs/research/elevation-verification.md (spec §17.9, §19.13).
 #
 #   test/vm/run.sh [<rev>]        # <rev> defaults to HEAD
 #
@@ -12,14 +12,19 @@
 # the proofs. Its log, one "ok"/"not ok" line per assertion and a verdict last,
 # lands in $SERVITOR_VM_DIR/share/trial.log and is printed at the end.
 #
-# The scenarios: refusals of the unsanctioned and the lapsed before any proof;
-# sanction; invoke on and off with exactly one proof each through sudo, run0
-# and pkexec (through an agent of the session, agent.py, for polkit 127 refuses
-# pkexec's own agent); an exalted verse that falls, reverted with no second
-# proof; the invoker slain mid-liturgy, the exalted servitor reverting alone;
-# sudo servitor census; the cogitator lending sudo its terminal, and asking
-# through the session's agent for run0 (with run0 -k) and pkexec; abjure; and,
-# as root, the journal and the store of sanctions.
+# The scenarios, upon rites of pattern Mark II: refusals of the unsanctioned
+# and the lapsed before any proof; sanction; invoke on and off with exactly one
+# proof each through sudo, run0 and pkexec (through an agent of the session,
+# agent.py, for polkit 127 refuses pkexec's own agent), and invoked again into
+# the aspect it bears with no proof at all, for nothing exalted changes; a rite
+# laid in pattern Mark I with exalted verses, converted (test/vm/convert) and
+# given an exalted auspex only the root may read, invoked on, on again and off
+# through each intercessor with one proof each and its subjects set only when
+# they change; an exalted subject whose proof fails, everything restored with
+# no second proof; the invoker slain mid-invocation, the exalted servitor
+# reverting alone; sudo servitor census; the cogitator lending sudo its
+# terminal, and asking through the session's agent for run0 (with run0 -k) and
+# pkexec; abjure; and, as root, the journal and the store of sanctions.
 #
 # SERVITOR_VM_DIR keeps the cloud image, the overlay and the guest's share
 # (default ${XDG_CACHE_HOME:-~/.cache}/servitor-vm); nothing is written

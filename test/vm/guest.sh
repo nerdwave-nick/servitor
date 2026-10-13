@@ -32,7 +32,7 @@ trap give_verdict EXIT
 : > "$S/transcripts.log"
 chmod 0666 "$LOG" "$S/transcripts.log"
 
-say "# the trial of exalted verses, $(date -u +%FT%TZ)"
+say "# the trial of exalted subjects, $(date -u +%FT%TZ)"
 pacman-key --init && pacman-key --populate archlinux
 # The kernel is held back, so that the running kernel keeps its modules.
 pacman -Syu --noconfirm --needed --ignore linux base-devel go git python python-gobject sudo polkit > "$S/pacman.log" 2>&1
@@ -68,11 +68,21 @@ check "the driver ended" test -e "$S/driver.done"
 journalctl -t servitor -o short-iso --no-pager > "$S/journal.log"
 j() { grep -E "$1" "$S/journal.log"; }
 check "the journal tells split-lock sanctioned" j 'rite="split-lock".* former=none deed=sanction verdict=sanctioned'
-check "the journal tells split-lock's exalted verses performed" j 'rite="split-lock" aspect="on" verse=1 .*deed=perform verdict=triumph'
-check "the journal tells the fallen verse of trial-fall" j 'rite="trial-fall" aspect="on" verse=3 .*deed=perform verdict=fell'
-check "the journal tells trial-fall's first verse reverted" j 'rite="trial-fall" aspect="on" verse=1 .*deed=revert verdict=reverted'
-check "the journal tells trial-slain's verse reverted by the exalted servitor alone" j 'rite="trial-slain" aspect="on" verse=1 .*deed=revert verdict=reverted'
+n() { grep -cE "$1" "$S/journal.log"; }
+check "the journal tells split-lock's exalted subjects set" j 'rite="split-lock" aspect="on" subject="penance" .*deed=perform verdict=triumph'
+check "the journal tells the subject of trial-fall whose proof failed, set and restored" \
+	j 'rite="trial-fall" aspect="on" subject="wrong" .*deed=revert verdict=reverted'
+check "the journal tells trial-fall's exalted vessel restored" j 'rite="trial-fall" aspect="on" subject="vessel" .*deed=revert verdict=reverted'
+check "the journal tells trial-slain's vessel restored by the exalted servitor alone" \
+	j 'rite="trial-slain" aspect="on" subject="vessel" .*deed=revert verdict=reverted'
 check "the journal tells trial-slain's fall, its channel lost" j 'rite="trial-slain" aspect="on" .*deed=fall verdict=reverted'
+# trial-gaming is invoked on, on again and off through each of sudo, run0 and
+# pkexec: its exalted auspex is read at every invocation, while its subjects
+# are set only when they change (twice into on, twice into off).
+check "the journal tells trial-gaming's exalted auspex read at each of its nine invocations" \
+	test "$(n 'rite="trial-gaming" aspect="(on|off)" subject="incantation-3" .*deed=read verdict=beheld')" = 9
+check "the journal tells trial-gaming's subjects set twelve times, never when unchanged" \
+	test "$(n 'rite="trial-gaming" aspect="(on|off)" subject="incantation-[13]" .*deed=perform verdict=triumph')" = 12
 check "the journal tells split-lock abjured" j 'rite="split-lock" .*deed=abjure verdict=abjured'
 check "the store's halls stand root:root 0755" \
 	test "$(stat -c '%U:%G %a' /var/lib/servitor /var/lib/servitor/sanctions)" = "$(printf 'root:root 755\nroot:root 755')"
@@ -80,4 +90,7 @@ check "the master's hall of sanctions stands root:tester 0750" \
 	test "$(stat -c '%U:%G %a' /var/lib/servitor/sanctions/1500)" = "root:tester 750"
 check "no working hall of exalted speech outlives its invocation" \
 	test -z "$(find /run/servitor -mindepth 1 -maxdepth 1 ! -name dominions 2>/dev/null)"
-check "no trial vessel remains in /etc" test ! -e /etc/servitor-trial-fall.conf -a ! -e /etc/servitor-trial-slain.conf
+check "no trial vessel remains in /etc" test ! -e /etc/servitor-trial-fall.conf -a ! -e /etc/servitor-trial-slain.conf \
+	-a ! -e /etc/servitor-trial-wrong
+check "the hidden omen of trial-gaming stands off, the root's alone (0600)" \
+	test "$(stat -c '%U %a' /etc/servitor-trial-hidden) $(cat /etc/servitor-trial-hidden)" = "root 600 off"
