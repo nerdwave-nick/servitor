@@ -82,6 +82,6 @@ func (d *decoder) unDecreed(key *hujson.Value, in Inscription) {
 		return
 	}
 	d.impurity(key, "the inscription %q is mandatory, yet no decree serves %s; an invocation into %s "+
-		"will fail unless the rune --%s is given each time", in.Key, aspectList(missing),
+		"will be refused unless the rune --%s is given each time", in.Key, aspectList(missing),
 		pronoun(missing), in.Key)
 }
