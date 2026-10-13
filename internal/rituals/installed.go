@@ -2,6 +2,7 @@ package rituals
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/nerdwave-nick/servitor/internal/intercessor"
@@ -17,10 +18,13 @@ var Intercession = intercessor.Machine()
 // not stand where the root alone may write, while any of the rites named
 // holds exalted verses: none of them could be invoked.
 func (s *Servitor) unenshrined(wanted func(string) bool) librarium.Findings {
-	var exalted []string
+	var exalted, nouns []string
 	for _, name := range s.Librarium.Names() {
 		if r := s.Librarium.Rites[name]; r != nil && wanted(name) && r.Exalted() {
 			exalted = append(exalted, fmt.Sprintf("%q", name))
+			if !slices.Contains(nouns, r.ExaltedNoun()) {
+				nouns = append(nouns, r.ExaltedNoun())
+			}
 		}
 	}
 	if len(exalted) == 0 {
@@ -36,6 +40,6 @@ func (s *Servitor) unenshrined(wanted func(string) bool) librarium.Findings {
 	}
 	return librarium.Findings{{Severity: librarium.Impurity, Scripture: Intercession.Servitor,
 		Position: librarium.Position{Line: 1, Column: 1},
-		Message: fmt.Sprintf("%s exalted verses, yet %v; every invocation of %s is refused before any proof is "+
-			"asked", held, err, them)}}
+		Message: fmt.Sprintf("%s %s, yet %v; every invocation of %s is refused before any proof is asked", held,
+			strings.Join(nouns, " or "), err, them)}}
 }

@@ -25,7 +25,7 @@ import (
 func (inv *Invocation) subjects(p *preflight) {
 	subjects := make([]examined, len(p.rite.Subjects))
 	for i, sub := range p.rite.Subjects {
-		p.index, p.subject, p.exalted = i, sub.Name, false
+		p.index, p.subject, p.exalted = i, sub.Name, sub.Exalted()
 		e := &subjects[i]
 		switch m := sub.Matter.(type) {
 		case *librarium.Sanctum:
@@ -38,13 +38,14 @@ func (inv *Invocation) subjects(p *preflight) {
 			e.foresight, e.step = p.spirit(i, m)
 		}
 	}
-	p.subject = ""
+	p.subject, p.exalted = "", false
 	inv.ordain(subjects, p.observances())
 }
 
 // builtIn plans a sanctum, transcription or tether subject by the change
 // the pre-flight planned for it: it is changing when anything would change.
-// It returns no foresight for a subject found heretical.
+// An exalted one is set by the exalted servitor, whose own write proves
+// it. It returns no foresight for a subject found heretical.
 func (p *preflight) builtIn(step performer) (*Foresight, performer) {
 	if step == nil {
 		return nil, nil
@@ -54,6 +55,9 @@ func (p *preflight) builtIn(step performer) (*Foresight, performer) {
 	f.Plan = &SubjectPlan{Changing: changing}
 	if !changing {
 		return &f, nil
+	}
+	if p.exalted {
+		step = &exaltedStep{planned: step, at: p.pointer("exalted")}
 	}
 	return &f, &builtInSubject{performer: step, aspect: p.opts.Aspect}
 }
@@ -71,6 +75,8 @@ type builtInSubject struct {
 	performer
 	aspect string
 }
+
+func (s *builtInSubject) wrapped() performer { return s.performer }
 
 func (s *builtInSubject) perform(ctx context.Context) error {
 	if err := s.performer.perform(ctx); err != nil {

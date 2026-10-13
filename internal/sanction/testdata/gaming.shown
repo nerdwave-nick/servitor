@@ -1,0 +1,107 @@
+rite "gaming" · uid 1000 · pattern Mark II
+sigil fd0c44679a6b05b250d070331bb2d6e29766cd11e556e4e25beb2d75c15f600d
+environment Mark II: SERVITOR_ASPECT, SERVITOR_FORMER_ASPECT, SERVITOR_INSCRIPTION_LEVEL, SERVITOR_INSCRIPTION_REASON, SERVITOR_OMEN, SERVITOR_RITE
+  ✠ aspect "on" · sigil 012cb0d671b4599d0ec4cf51d6102b51b4bd527fbc0ce73d836cf5831b6d51d9
+    inscription level: 0
+    subject smt · machine-spirit · place 1
+      omen: off
+      enact off: echo off > /sys/devices/system/cpu/smt/control
+      enact on: echo on > /sys/devices/system/cpu/smt/control
+      tongue: /usr/bin/bash
+      patience: 30s
+    subject split-lock · machine-spirit · place 2
+      omen: 0
+      enact 0: sysctl -wq kernel.split_lock_mitigate=0 # on
+      enact 1: sysctl -wq kernel.split_lock_mitigate=1
+      tongue: /usr/bin/sh
+      patience: 5s
+      relic scrolls/tune.conf:
+        │ level=3
+    subject conf · transcription · place 4
+      vessel: /etc/sysctl.d/90-gaming.conf
+      scripture:
+        │ kernel.split_lock_mitigate = 0
+        ⌁ no newline ends it
+      seal: 0640
+      zeal: false
+    subject lock · sanctum · place 5
+      vessel: /etc/split-lock.conf
+      ward: gaming
+      glyph: #
+      closing-glyph: ""
+      consecrate: true
+      scripture:
+        │ split-lock on 0
+    subject current · tether · place 6
+      tether: /etc/split-lock.d/current
+      anchor: /usr/share/split-lock/war
+      zeal: false
+    observance herald · incantation
+      words: logger war
+      tongue: /usr/bin/bash
+      patience: 30s
+      reversion: logger peace
+      from: (every aspect)
+      introit of the subjects at: (none)
+      recessional of the subjects at: 1, 2
+    observance tune · litany
+      scroll: scrolls/tune
+      scripture:
+        │ #!/bin/sh
+        │ . ./scrolls/tune.conf
+      offerings: "on"
+      tongue: /usr/bin/bash
+      patience: 30s
+      reversion: (none)
+      relic scrolls/tune.conf:
+        │ level=3
+      from: "off"
+      introit of the subjects at: (none)
+      recessional of the subjects at: 2
+  ✠ aspect "off" · sigil aeb232826223b3a19bf2e0e913043bc74106a61c0642676c96dccdd4a07f5449
+    inscription level: 1
+    subject smt · machine-spirit · place 1
+      omen: on
+      enact off: echo off > /sys/devices/system/cpu/smt/control
+      enact on: echo on > /sys/devices/system/cpu/smt/control
+      tongue: /usr/bin/bash
+      patience: 30s
+    subject split-lock · machine-spirit · place 2
+      omen: 1
+      enact 0: sysctl -wq kernel.split_lock_mitigate=0 # off
+      enact 1: sysctl -wq kernel.split_lock_mitigate=1
+      tongue: /usr/bin/sh
+      patience: 5s
+      relic scrolls/tune.conf:
+        │ level=3
+    subject conf · transcription · place 4
+      vessel: /etc/sysctl.d/90-gaming.conf
+      scripture: null — the vessel is struck
+      seal: 0640
+      zeal: false
+    subject lock · sanctum · place 5
+      vessel: /etc/split-lock.conf
+      ward: gaming
+      glyph: #
+      closing-glyph: ""
+      consecrate: true
+      scripture:
+        │ split-lock off 1
+    subject current · tether · place 6
+      tether: /etc/split-lock.d/current
+      anchor: null — the bond is unbound
+      zeal: false
+    observance tune · litany
+      scroll: scrolls/tune
+      scripture:
+        │ #!/bin/sh
+        │ . ./scrolls/tune.conf
+      offerings: "off"
+      tongue: /usr/bin/bash
+      patience: 30s
+      reversion: (none)
+      relic scrolls/tune.conf:
+        │ level=3
+      from: "off"
+      introit of the subjects at: (none)
+      recessional of the subjects at: 2

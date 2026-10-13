@@ -323,21 +323,15 @@ func TestInvokeII_ForeseesEverySubjectWithoutPerforming(t *testing.T) {
 	}
 }
 
-// TestInvokeII_RefusesWhatIsNotYetForged: a state rite holding an exalted
-// subject or observance, or a privileged auspex, is refused before anything
-// is read or touched. Observances that are not exalted are spoken (see
-// observances_markii_test.go).
+// TestInvokeII_RefusesWhatIsNotYetForged: a state rite holding a
+// privileged auspex is refused before anything is read or touched.
+// Observances, common or exalted, and exalted subjects are performed (see
+// observances_markii_test.go and exalting_markii_test.go).
 func TestInvokeII_RefusesWhatIsNotYetForged(t *testing.T) {
-	spirit := `{"name": "m", "designation": "machine-spirit", "auspex": {"scan": "echo read >> $DATA/marker; echo on"},
-	   "enact": {"*": "echo {{omen}} >> $DATA/marker"}`
 	for name, tc := range map[string]struct{ subjects, observances, why string }{
-		"exalted subject": {spirit + `, "exalted": true}`, ``, `the subject "m" is exalted`},
 		"privileged auspex": {`{"name": "m", "designation": "machine-spirit", "exalted": true,
-		   "auspex": {"scan": "echo on", "exalted": true}, "enact": {"*": "true"}}`, ``, `the subject "m" is exalted`},
-		"exalted observance": {spirit + `}`, `, "observances": [{"name": "o", "designation": "incantation", "exalted": true,
-		   "words": "true"}]`, `the observance "o" is exalted`},
-		"exalted introit": {spirit + `, "introit": ["o"]}`, `, "observances": [{"name": "o", "designation": "incantation",
-		   "exalted": true, "words": "true"}]`, `the observance "o" is exalted`},
+		   "auspex": {"scan": "echo read >> $DATA/marker; echo on", "exalted": true}, "enact": {"*": "true"}}`, ``,
+			`the auspex of the subject "m" is exalted`},
 	} {
 		t.Run(name, func(t *testing.T) {
 			fx := newFixture(t)

@@ -156,31 +156,50 @@ var forbiddenHalls = []string{"/proc", "/sys", "/dev"}
 // performable checks every verse of the plan.
 func (s *session) performable() error { return performable(s.plan, s.cfg.Voice != nil) }
 
-// performable checks every verse of plan: a vessel or bound name begins at
-// the root, beneath none of the forbidden halls, and speech has a voice
-// (voiced).
+// performable checks every verse or item of plan: a vessel or bound name
+// begins at the root, beneath none of the forbidden halls; speech has a
+// voice (voiced); a machine-spirit has the enact words of its omen.
 func performable(plan sanction.Plan, voiced bool) error {
-	for _, v := range plan.Liturgy {
-		switch v.Kind {
-		case librarium.KindIncantation, librarium.KindLitany:
+	for _, v := range items(plan) {
+		if v.Spirit() {
+			if _, ok := v.Enact[v.Omen]; !ok || v.Omen == "" {
+				return fmt.Errorf("%s bears no enact words of its omen %q", v.Named(), v.Omen)
+			}
+		}
+		if v.Speaks() {
 			if !voiced {
-				return fmt.Errorf("verse %d is exalted %s, which this exalted servitor was lent no voice to speak; "+
-					"nothing was touched", v.Verse, v.Kind.Key())
+				return fmt.Errorf("%s is exalted %s, which this exalted servitor was lent no voice to speak; "+
+					"nothing was touched", v.Named(), speechOf(v))
 			}
 			continue
 		}
 		if !filepath.IsAbs(v.Target) {
-			return fmt.Errorf("the vessel %q of verse %d does not begin at the root", v.Target, v.Verse)
+			return fmt.Errorf("the vessel %q of %s does not begin at the root", v.Target, v.Named())
 		}
 		clean := filepath.Clean(v.Target)
 		for _, hall := range forbiddenHalls {
 			if clean == hall || strings.HasPrefix(clean, hall+"/") {
-				return fmt.Errorf("the vessel %s of verse %d lies beneath %s, where no vessel is kept", v.Target,
-					v.Verse, hall)
+				return fmt.Errorf("the vessel %s of %s lies beneath %s, where no vessel is kept", v.Target,
+					v.Named(), hall)
 			}
 		}
 	}
 	return nil
+}
+
+// items are the exalted verses of plan, or its exalted subjects and
+// observances, in written order.
+func items(plan sanction.Plan) []sanction.Verse {
+	return slices.Concat(plan.Liturgy, plan.Subjects, plan.Observances)
+}
+
+// speechOf names the speech of v: its kind, or the enact words of a
+// machine-spirit.
+func speechOf(v sanction.Verse) string {
+	if v.Spirit() {
+		return "enact words"
+	}
+	return v.Kind.Key()
 }
 
 // seize seizes the root-side dominions, waiting as every invocation waits:
@@ -189,8 +208,8 @@ func performable(plan sanction.Plan, voiced bool) error {
 // order. A word, the end of the channel or a halt end the waiting.
 func (s *session) seize() error {
 	var vessels []string
-	for _, v := range s.plan.Liturgy {
-		if v.Kind == librarium.KindIncantation || v.Kind == librarium.KindLitany {
+	for _, v := range items(s.plan) {
+		if v.Speaks() {
 			continue
 		}
 		sum := sha256.Sum256([]byte(s.cfg.Ground.Resolve(v.Target)))
@@ -247,9 +266,6 @@ func (s *session) lendVoice() error {
 	return nil
 }
 
-// speaks tells whether plan holds an exalted incantation or litany.
-func speaks(plan sanction.Plan) bool {
-	return slices.ContainsFunc(plan.Liturgy, func(v sanction.Verse) bool {
-		return v.Kind == librarium.KindIncantation || v.Kind == librarium.KindLitany
-	})
-}
+// speaks tells whether plan holds exalted speech: an incantation, a
+// litany, or a machine-spirit's enact words.
+func speaks(plan sanction.Plan) bool { return slices.ContainsFunc(items(plan), sanction.Verse.Speaks) }

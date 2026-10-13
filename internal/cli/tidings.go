@@ -100,20 +100,21 @@ func foreseenPlan(p invocation.SubjectPlan, spirit bool) string {
 	return fmt.Sprintf("%s → %q, %s", read, p.Target, told)
 }
 
-// foreseenSanction tells how the exalted verses of the foreseen plan stand
-// towards their sanction; "" for a rite without exalted verses.
+// foreseenSanction tells how the exalted verses (or exalted subjects and
+// observances) of the foreseen plan stand towards their sanction; "" for a
+// rite without any.
 func foreseenSanction(res rituals.Result) string {
-	name := res.Rite.Name
+	name, exalted := res.Rite.Name, res.Rite.ExaltedNoun()
 	switch res.Sanction {
 	case sanction.Sanctioned:
-		return fmt.Sprintf("✠ The exalted verses stand sanctioned under the sigil %s; the exalted servitor performs "+
-			"them, after one proof of the master.", sanction.Short(res.Sigil))
+		return fmt.Sprintf("✠ The %s stand sanctioned under the sigil %s; the exalted servitor performs "+
+			"them, after one proof of the master.", exalted, sanction.Short(res.Sigil))
 	case sanction.Lapsed:
-		return fmt.Sprintf("✠ The sanction of the exalted verses has lapsed: they are no longer those their master "+
-			"sanctioned, and the invocation would be refused — sanction them anew: servitor sanction %s", name)
+		return fmt.Sprintf("✠ The sanction of the %s has lapsed: they are no longer those their master "+
+			"sanctioned, and the invocation would be refused — sanction them anew: servitor sanction %s", exalted, name)
 	case sanction.Unsanctioned:
-		return fmt.Sprintf("✠ The exalted verses stand unsanctioned, and the invocation would be refused — sanction "+
-			"them: servitor sanction %s", name)
+		return fmt.Sprintf("✠ The %s stand unsanctioned, and the invocation would be refused — sanction "+
+			"them: servitor sanction %s", exalted, name)
 	}
 	return ""
 }

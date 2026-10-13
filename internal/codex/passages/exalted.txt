@@ -11,6 +11,26 @@ Any step but a vox-cast may be exalted, in rites and edicts alike (an edict
 exalts its incantations and litanies). "exalted" is true for every aspect or
 for none, never an aspect map; false is as if unwritten.
 
+In a rite of aspects of pattern Mark II, "exalted": true may stand upon a
+subject of any designation and upon an observance. It exalts what sets the
+subject — the writing of a sanctum, transcription or tether, or the enact
+words of a machine-spirit — and the words of an observance; never the
+auspex that reads a subject, which speaks with its invoker's authority
+unless it is itself marked "exalted". Exalted enact words may splice
+{{omen}}, for every omen a machine-spirit declares is fixed when its master
+sanctions it, and they hear it as "$SERVITOR_OMEN" besides; the omens of an
+exalted subject may splice only an inscription taken from its decrees. Such
+a rite reads every subject first and plans what changes: the exalted
+servitor is raised only when an exalted subject or observance is to change,
+so an invocation that changes nothing exalted asks no proof of the master —
+yet its sanction is judged all the same, before anything is read, and a rite
+unsanctioned or lapsed is refused even then. The exalted servitor sets each
+exalted subject in its place among the common ones, and speaks each exalted
+observance in its place, its "to" and "from" heeded; the invoker proves each
+machine-spirit by its own auspex, and should the invocation fall, the
+exalted servitor restores each machine-spirit to the omen it was read to
+show, and the invoker proves that too.
+
 The words of an exalted verse are fixed when its master sanctions them:
 commands, reversions, vessels, anchors, offerings, and scripture inline or
 illuminated from a tome. {{aspect}}, {{rite.name}} and an inscription taken
@@ -57,3 +77,8 @@ Exempla:
 
   {"transcription": "/etc/sysctl.d/90-{{rite.name}}.conf", "exalted": true,
    "scripture": "kernel.split_lock_mitigate = 0"}
+
+  {"name": "smt", "designation": "machine-spirit", "exalted": true,
+   "omens": {"on": "off", "*": "on"},
+   "auspex": {"scan": "cat /sys/devices/system/cpu/smt/control"},
+   "enact": {"*": "echo {{omen}} > /sys/devices/system/cpu/smt/control"}}

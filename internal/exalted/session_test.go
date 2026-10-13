@@ -88,7 +88,7 @@ func TestSession_AVerseThatFindsItsWorkDoneChangesNothing(t *testing.T) {
 		}
 	}
 	for _, n := range []int{4, 3, 1} {
-		if r := inv.say(Request{Revert: new(n)}); r.Verdict != Reverted || r.Verse != n || r.Changed {
+		if r := inv.say(Request{Revert: numbered(n)}); r.Verdict != Reverted || r.Verse != n || r.Changed {
 			t.Errorf("revert %d: %+v", n, r)
 		}
 	}
@@ -115,7 +115,7 @@ func TestSession_AStandingVesselTakesTheSealDecreed(t *testing.T) {
 	if got := sh.look(vessel); !strings.HasPrefix(got, "600 ") {
 		t.Errorf("the vessel stands %q", got)
 	}
-	if r := inv.say(Request{Revert: new(1)}); r.Verdict != Reverted || !r.Changed {
+	if r := inv.say(Request{Revert: numbered(1)}); r.Verdict != Reverted || !r.Changed {
 		t.Errorf("revert: %+v", r)
 	}
 	if got := sh.look(vessel); !strings.HasPrefix(got, "644 ") {
@@ -155,7 +155,7 @@ func TestSession_AbortRevertsInReverse(t *testing.T) {
 	for _, n := range []int{1, 3, 4} {
 		inv.perform(n)
 	}
-	if r := inv.say(Request{Revert: new(4)}); r.To != "revert" || r.Verse != 4 || r.Verdict != Reverted || !r.Changed {
+	if r := inv.say(Request{Revert: numbered(4)}); r.To != "revert" || r.Verse != 4 || r.Verdict != Reverted || !r.Changed {
 		t.Fatalf("revert 4: %+v", r)
 	}
 	if got := sh.look("/etc/hallow-theme"); got != "absent" {
@@ -182,18 +182,18 @@ func TestSession_RefusesWhatComesOutOfOrder(t *testing.T) {
 		wrong  Request
 		to     string
 	}{
-		"a verse before its turn":   {wrong: Request{Perform: new(3)}, to: "perform"},
-		"a verse skipped":           {before: []Request{{Perform: new(1)}}, wrong: Request{Perform: new(4)}, to: "perform"},
-		"a verse performed twice":   {before: []Request{{Perform: new(1)}}, wrong: Request{Perform: new(1)}, to: "perform"},
-		"a common verse":            {wrong: Request{Perform: new(2)}, to: "perform"},
-		"a verse beyond the plan":   {before: []Request{{Perform: new(1)}, {Perform: new(3)}, {Perform: new(4)}}, wrong: Request{Perform: new(5)}, to: "perform"},
-		"a revert of no verse":      {wrong: Request{Revert: new(1)}, to: "revert"},
-		"a revert out of reverse":   {before: []Request{{Perform: new(1)}, {Perform: new(3)}}, wrong: Request{Revert: new(1)}, to: "revert"},
-		"a perform after reverting": {before: []Request{{Perform: new(1)}, {Revert: new(1)}}, wrong: Request{Perform: new(3)}, to: "perform"},
-		"two words at once":         {wrong: Request{Perform: new(1), Abort: new(true)}},
+		"a verse before its turn":   {wrong: Request{Perform: numbered(3)}, to: "perform"},
+		"a verse skipped":           {before: []Request{{Perform: numbered(1)}}, wrong: Request{Perform: numbered(4)}, to: "perform"},
+		"a verse performed twice":   {before: []Request{{Perform: numbered(1)}}, wrong: Request{Perform: numbered(1)}, to: "perform"},
+		"a common verse":            {wrong: Request{Perform: numbered(2)}, to: "perform"},
+		"a verse beyond the plan":   {before: []Request{{Perform: numbered(1)}, {Perform: numbered(3)}, {Perform: numbered(4)}}, wrong: Request{Perform: numbered(5)}, to: "perform"},
+		"a revert of no verse":      {wrong: Request{Revert: numbered(1)}, to: "revert"},
+		"a revert out of reverse":   {before: []Request{{Perform: numbered(1)}, {Perform: numbered(3)}}, wrong: Request{Revert: numbered(1)}, to: "revert"},
+		"a perform after reverting": {before: []Request{{Perform: numbered(1)}, {Revert: numbered(1)}}, wrong: Request{Perform: numbered(3)}, to: "perform"},
+		"two words at once":         {wrong: Request{Perform: numbered(1), Abort: new(true)}},
 		"a finish that is false":    {wrong: Request{Finish: new(false)}},
 		"no word at all":            {wrong: Request{}},
-		"a second plan":             {before: []Request{{Perform: new(1)}}},
+		"a second plan":             {before: []Request{{Perform: numbered(1)}}},
 	} {
 		t.Run(what, func(t *testing.T) {
 			sh := newShrine(t, nil)
@@ -322,7 +322,7 @@ func TestSession_NoWordCarriesTheScriptureOfAVessel(t *testing.T) {
 	for _, n := range []int{1, 3, 4} {
 		inv.perform(n)
 	}
-	inv.say(Request{Revert: new(4)})
+	inv.say(Request{Revert: numbered(4)})
 	inv.say(Request{Abort: new(true)})
 	inv.ended()
 	var journal strings.Builder
@@ -350,11 +350,11 @@ func TestSession_AVerseFallsThroughTheTrustedPath(t *testing.T) {
 	sh := newShrine(t, nil)
 	must(t, os.Chmod(sh.at("/etc/sysctl.d"), 0o777))
 	inv := sh.accepted("on")
-	r := inv.say(Request{Perform: new(1)})
+	r := inv.say(Request{Perform: numbered(1)})
 	if r.Verdict != Fell || r.Changed || !strings.Contains(r.Lament, "others than its owner may write") {
 		t.Fatalf("verse 1: %+v", r)
 	}
-	if r := inv.say(Request{Perform: new(3)}); r.Verdict != Refused {
+	if r := inv.say(Request{Perform: numbered(3)}); r.Verdict != Refused {
 		t.Fatalf("a verse was performed after one fell: %+v", r)
 	}
 	if m := inv.ended(); m != 1 {
@@ -371,7 +371,7 @@ func TestSession_AVesselOfNoAspectGivesWayOnlyWithZeal(t *testing.T) {
 	sh := newShrine(t, nil)
 	sh.scroll("/etc/sysctl.d/90-hallow.conf", "kernel.hallow = mine\n", 0o640)
 	inv := sh.accepted("on")
-	if r := inv.say(Request{Perform: new(1)}); r.Verdict != Fell || !strings.Contains(r.Lament, "zeal") {
+	if r := inv.say(Request{Perform: numbered(1)}); r.Verdict != Fell || !strings.Contains(r.Lament, "zeal") {
 		t.Fatalf("verse 1: %+v", r)
 	}
 	inv.say(Request{Abort: new(true)})

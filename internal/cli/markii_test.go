@@ -8,14 +8,17 @@ import (
 )
 
 // gamingIIJSON is a rite of pattern Mark II whose machine-spirit would leave
-// its omen beside the target, whose sanctum would keep the target, and
-// whose exalted observance would leave its mark beside it.
+// its omen beside the target, whose sanctum would keep the target, whose
+// exalted subject bears a privileged auspex that would leave its mark
+// beside it, and whose exalted observance would leave its mark beside it.
 const gamingIIJSON = `{"pattern": "Mark II", "purpose": "enable or disable gaming optimization",
   "aspects": ["on", "off"], "vox-cast": ["success"],
   "subjects": [
     {"name": "smt", "designation": "machine-spirit", "omens": {"on": "off", "*": "on"},
      "auspex": {"scan": "cat $TARGET.smt"}, "enact": {"*": "echo {{omen}} > $TARGET.smt"}, "introit": ["herald"]},
-    {"name": "util", "designation": "sanctum", "vessel": "$TARGET", "omens": {"on": "a", "*": ""}}],
+    {"name": "util", "designation": "sanctum", "vessel": "$TARGET", "omens": {"on": "a", "*": ""}},
+    {"name": "nft", "designation": "machine-spirit", "exalted": true,
+     "auspex": {"scan": "echo on > $TARGET.nft; echo on", "exalted": true}, "enact": {"*": "echo {{omen}} > $TARGET.nft"}}],
   "observances": [{"name": "herald", "designation": "incantation", "exalted": true,
     "words": "echo heard >> $TARGET.herald"}]}`
 
@@ -26,7 +29,7 @@ const captureIIJSON = `{"pattern": "Mark II", "edict": true, "vox-cast": ["succe
 // TestMarkII_IsReadByEveryRitualYetNeverInvoked: rites of pattern Mark II
 // stand in the Librarium beside those of Mark I; every reading ritual
 // heeds them, yet invoking or foreseeing a rite of aspects of that pattern
-// whose subject names an exalted observance is refused before anything is
+// whose subject bears a privileged auspex is refused before anything is
 // touched, naming the rite of performance not yet forged. Its edicts are
 // proclaimed (see edict_markii_test.go), and other rites of aspects invoked (see
 // invoke_markii_test.go).
@@ -59,7 +62,7 @@ func TestMarkII_IsReadByEveryRitualYetNeverInvoked(t *testing.T) {
 		}
 		grimdark(t, errOut)
 	}
-	for _, mark := range []string{".smt", ".herald"} {
+	for _, mark := range []string{".smt", ".herald", ".nft"} {
 		if _, err := os.Stat(e.target + mark); err == nil {
 			t.Errorf("a refused invocation left %s", mark)
 		}

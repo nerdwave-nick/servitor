@@ -192,7 +192,7 @@ func TestSanction_RefusesWhatItWasNotBidden(t *testing.T) {
 			lament: "edict"},
 		"two plans of one aspect": {mar: func(_ *shrine, u *sanction.Unit) { u.Aspects[1].Aspect = "on" },
 			lament: `"on"`},
-		"another pattern": {mar: func(_ *shrine, u *sanction.Unit) { u.Pattern = "Mark II" }, lament: "Mark II"},
+		"another pattern": {mar: func(_ *shrine, u *sanction.Unit) { u.Pattern = "Mark III" }, lament: "Mark III"},
 		"speech it cannot speak": {mar: func(sh *shrine, u *sanction.Unit) {
 			for i := range u.Aspects {
 				u.Aspects[i].Liturgy = append(u.Aspects[i].Liturgy, sanction.Verse{Verse: 9,

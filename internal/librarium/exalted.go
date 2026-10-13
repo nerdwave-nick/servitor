@@ -41,8 +41,62 @@ func (r *Rite) ExaltedVerses() []int {
 	return verses
 }
 
-// Exalted reports whether the rite holds an exalted verse.
-func (r *Rite) Exalted() bool { return len(r.ExaltedVerses()) > 0 }
+// Exalted reports whether the rite holds an exalted verse, or, a state rite
+// of pattern Mark II, an exalted subject or observance.
+func (r *Rite) Exalted() bool { return len(r.ExaltedItems()) > 0 }
+
+// ExaltedNoun names what of the rite is exalted, as laments name it: its
+// "exalted verses", or the "exalted subjects and observances" of a state
+// rite of pattern Mark II.
+func (r *Rite) ExaltedNoun() string {
+	if r.MarkII && !r.Edict {
+		return "exalted subjects and observances"
+	}
+	return "exalted verses"
+}
+
+// ExaltedItem is one exalted verse of a liturgy, or one exalted subject or
+// observance of a state rite of pattern Mark II.
+type ExaltedItem struct {
+	Verse               int    // counted from one; 0 for a subject or an observance
+	Subject, Observance string // its name; "" for a verse
+	Pointer             string // the JSON pointer of its "exalted"
+}
+
+// ExaltedItems returns the exalted verses of the rite's liturgy, then its
+// exalted subjects and observances, each in written order; nil when it
+// holds none.
+func (r *Rite) ExaltedItems() []ExaltedItem {
+	var items []ExaltedItem
+	for i, s := range r.Liturgy {
+		if IsExalted(s) {
+			items = append(items, ExaltedItem{Verse: r.verse(i), Pointer: r.stepPointer(i) + "/exalted"})
+		}
+	}
+	for i, s := range r.Subjects {
+		if s.Exalted() {
+			items = append(items, ExaltedItem{Subject: s.Name, Pointer: r.subjectPointer(i) + "/exalted"})
+		}
+	}
+	for j, o := range r.Observances {
+		if o.Exalted() {
+			items = append(items, ExaltedItem{Observance: o.Name, Pointer: fmt.Sprintf("/observances/%d/exalted", j)})
+		}
+	}
+	return items
+}
+
+// String names the item as laments name it: "verse 2", or the subject or
+// observance by its name.
+func (i ExaltedItem) String() string {
+	switch {
+	case i.Subject != "":
+		return fmt.Sprintf("the subject %q", i.Subject)
+	case i.Observance != "":
+		return fmt.Sprintf("the observance %q", i.Observance)
+	}
+	return fmt.Sprintf("verse %d", i.Verse)
+}
 
 // ExaltedScope is the placeholder scope of the words of the rite's exalted
 // verses, fixed when its master sanctions them: {{former}} is heresy there,

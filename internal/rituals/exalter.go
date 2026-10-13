@@ -58,12 +58,39 @@ func (s *Servitor) raise(r *librarium.Rite, res *Result, x *exaltedPlan, ex Exal
 		_ = c.end()
 		return nil, &Spurned{Deed: e.deed, Lament: reply.Lament}
 	}
-	if want := r.ExaltedVerses(); !slices.Equal(reply.Verses, want) {
+	if why := unlike(r, x, aspect, reply); why != "" {
 		e.abandon()
-		return nil, &Spurned{Deed: e.deed, Lament: fmt.Sprintf("it would perform the verses %v of the sanction, yet "+
-			"the rite holds the exalted verses %v", reply.Verses, want)}
+		return nil, &Spurned{Deed: e.deed, Lament: why}
 	}
 	return e, nil
+}
+
+// unlike tells how the plan the exalted servitor accepted, as its reply
+// names it, differs from the plan of the aspect the rite holds: its
+// exalted verses, or the exalted subjects and observances of a state rite;
+// "" when they are one.
+func unlike(r *librarium.Rite, x *exaltedPlan, aspect string, reply exalted.Reply) string {
+	if !r.MarkII || r.Edict {
+		if want := r.ExaltedVerses(); !slices.Equal(reply.Verses, want) {
+			return fmt.Sprintf("it would perform the verses %v of the sanction, yet the rite holds the exalted verses %v",
+				reply.Verses, want)
+		}
+		return ""
+	}
+	var subjects, observances []string
+	if plan, ok := x.unit.Narrow(aspect); ok {
+		for _, v := range plan.Aspects[0].Subjects {
+			subjects = append(subjects, v.Subject)
+		}
+		for _, v := range plan.Aspects[0].Observances {
+			observances = append(observances, v.Observance)
+		}
+	}
+	if !slices.Equal(reply.Subjects, subjects) || !slices.Equal(reply.Observances, observances) {
+		return fmt.Sprintf("it would perform the subjects %q and observances %q of the sanction, yet the rite holds "+
+			"the exalted subjects %q and observances %q", reply.Subjects, reply.Observances, subjects, observances)
+	}
+	return ""
 }
 
 // abandon ends an exalted servitor that performed nothing: it hears the
@@ -73,10 +100,16 @@ func (e *exalter) abandon() {
 	_ = e.c.end()
 }
 
+// itemOf names the verse, or the subject or observance of a state rite, v
+// is.
+func itemOf(v invocation.Verse) exalted.Item {
+	return exalted.Item{Verse: v.Number, Subject: v.Subject, Observance: v.Observance}
+}
+
 // ask speaks the request to the exalted servitor and hears its reply, which
-// must answer it; a channel that fails, or a reply that answers another
-// word, loses the exalted servitor.
-func (e *exalter) ask(req exalted.Request, to string, verse int) (exalted.Reply, error) {
+// must answer it, of the item it names; a channel that fails, or a reply
+// that answers another word, loses the exalted servitor.
+func (e *exalter) ask(req exalted.Request, to string, it exalted.Item) (exalted.Reply, error) {
 	if e.lost != nil {
 		return exalted.Reply{}, e.lost
 	}
@@ -90,7 +123,7 @@ func (e *exalter) ask(req exalted.Request, to string, verse int) (exalted.Reply,
 		e.lose(fmt.Errorf("%w: %v", errLost, err))
 	case r.Verdict == exalted.Refused:
 		e.lose(fmt.Errorf("%w: the exalted servitor refused the word to %s: %s", errLost, to, r.Lament))
-	case r.To != to || r.Verse != verse:
+	case r.To != to || r.Verse != it.Verse || r.Subject != it.Subject || r.Observance != it.Observance:
 		e.lose(fmt.Errorf("%w: the exalted servitor answered another word", errLost))
 	}
 	return r, e.lost
@@ -103,10 +136,20 @@ func (e *exalter) lose(why error) {
 	}
 }
 
-// Perform bids the exalted servitor perform the exalted verse v.
-func (e *exalter) Perform(v invocation.Verse) (string, bool, error) {
-	n := v.Number
-	r, err := e.ask(exalted.Request{Perform: &n}, "perform", n)
+// Perform bids the exalted servitor perform the exalted verse, subject or
+// observance v.
+func (e *exalter) Perform(v invocation.Verse) (string, bool, error) { return e.perform(itemOf(v)) }
+
+// Enact bids the exalted servitor set the exalted machine-spirit v, naming
+// the omen it is restored to.
+func (e *exalter) Enact(v invocation.Verse, restore string) (string, bool, error) {
+	it := itemOf(v)
+	it.Omen = restore
+	return e.perform(it)
+}
+
+func (e *exalter) perform(it exalted.Item) (string, bool, error) {
+	r, err := e.ask(exalted.Request{Perform: &it}, "perform", it)
 	switch {
 	case err != nil:
 		return "", false, err
@@ -115,16 +158,26 @@ func (e *exalter) Perform(v invocation.Verse) (string, bool, error) {
 	case r.Verdict == exalted.Fell:
 		return r.Heard, r.Changed, fmt.Errorf("the exalted servitor: %s", r.Lament)
 	}
-	e.lose(fmt.Errorf("%w: the exalted servitor answered the verse %d with %q", errLost, n, r.Verdict))
+	e.lose(fmt.Errorf("%w: the exalted servitor answered %s with %q", errLost, it.Named(), r.Verdict))
 	return "", false, e.lost
 }
 
-// Revert bids the exalted servitor revert the exalted verse v. When it is
-// lost, it reverts every verse it performed by itself, and how it ended
-// tells whether every reversion triumphed.
-func (e *exalter) Revert(v invocation.Verse) (string, bool, error) {
-	n := v.Number
-	r, err := e.ask(exalted.Request{Revert: &n}, "revert", n)
+// Revert bids the exalted servitor revert the exalted verse, subject or
+// observance v. When it is lost, it reverts every item it performed by
+// itself, and how it ended tells whether every reversion triumphed.
+func (e *exalter) Revert(v invocation.Verse) (string, bool, error) { return e.revert(itemOf(v)) }
+
+// Restore bids the exalted servitor restore the exalted machine-spirit v to
+// omen.
+func (e *exalter) Restore(v invocation.Verse, omen string) (string, bool, error) {
+	it := itemOf(v)
+	it.Omen = omen
+	return e.revert(it)
+}
+
+func (e *exalter) revert(it exalted.Item) (string, bool, error) {
+	r, err := e.ask(exalted.Request{Revert: &it}, "revert", exalted.Item{Verse: it.Verse, Subject: it.Subject,
+		Observance: it.Observance})
 	switch {
 	case err != nil:
 		return "", true, e.revertedAlone()
@@ -133,7 +186,7 @@ func (e *exalter) Revert(v invocation.Verse) (string, bool, error) {
 	case r.Verdict == exalted.Faltered:
 		return r.Heard, true, errors.New(r.Lament) // the exalted servitor tells that the reversion fell
 	}
-	e.lose(fmt.Errorf("%w: the exalted servitor answered the reversion of verse %d with %q", errLost, n, r.Verdict))
+	e.lose(fmt.Errorf("%w: the exalted servitor answered the reversion of %s with %q", errLost, it.Named(), r.Verdict))
 	return "", true, e.revertedAlone()
 }
 
@@ -163,7 +216,7 @@ func (e *exalter) Finish() error {
 		return e.lost
 	}
 	finish := true
-	r, err := e.ask(exalted.Request{Finish: &finish}, "finish", 0)
+	r, err := e.ask(exalted.Request{Finish: &finish}, "finish", exalted.Item{})
 	if err == nil && r.Verdict != exalted.Finished {
 		e.lose(fmt.Errorf("%w: the exalted servitor answered the finish with %q", errLost, r.Verdict))
 		err = e.lost

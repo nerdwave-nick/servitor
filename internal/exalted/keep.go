@@ -184,15 +184,20 @@ func mismatched(spoken int) error {
 
 // sanctionable judges u as the unit of the master and rite the exalted
 // servitor was roused for, whose every plan it could perform by the rules
-// of every invocation: of the pattern it reads, one plan for an edict and
-// one for each aspect otherwise, each holding exalted verses in written
-// order, every vessel and bound name beginning at the root beneath none of
-// the forbidden halls, and its speech one the exalted servitor could speak.
+// of every invocation: of a pattern it reads, its plans holding what that
+// pattern holds, one plan for an edict and one for each aspect otherwise,
+// each holding exalted verses in written order — or, for a state rite,
+// subjects in written order and observances each named once, some plan
+// holding any — every vessel and bound name beginning at the root beneath
+// none of the forbidden halls, and its speech one the exalted servitor
+// could speak.
 func (s *session) sanctionable(u *sanction.Unit) error {
 	switch {
-	case u.Pattern != sanction.Pattern:
-		return fmt.Errorf("the unit is of the pattern %q, yet this exalted servitor reads only %q", u.Pattern,
-			sanction.Pattern)
+	case !slices.Contains(sanction.Patterns, u.Pattern):
+		return fmt.Errorf("the unit is of the pattern %q, yet this exalted servitor reads only %q and %q", u.Pattern,
+			sanction.Pattern, sanction.PatternMarkII)
+	case u.Misshapen() != "":
+		return errors.New(u.Misshapen())
 	case u.UID != s.uid:
 		return fmt.Errorf("the unit is of uid %d, yet the channel's master is uid %d", u.UID, s.uid)
 	case u.Rite != s.argv.rite:
@@ -201,6 +206,8 @@ func (s *session) sanctionable(u *sanction.Unit) error {
 		return errors.New("the unit holds no plan")
 	case u.Edict && (len(u.Aspects) != 1 || u.Aspects[0].Aspect != ""):
 		return errors.New("the unit of an edict holds one plan, of no aspect")
+	case u.State() && !slices.ContainsFunc(u.Aspects, func(p sanction.Plan) bool { return len(items(p)) > 0 }):
+		return errors.New("the unit of the state rite holds no exalted subject or observance in any plan")
 	}
 	sn := sanction.New(u, time.Time{})
 	var seen []string
@@ -213,13 +220,8 @@ func (s *session) sanctionable(u *sanction.Unit) error {
 			return fmt.Errorf("the unit holds a plan of %q, which names no aspect, or one named before", p.Aspect)
 		}
 		seen = append(seen, p.Aspect)
-		if len(p.Liturgy) == 0 {
-			return fmt.Errorf("the plan of %s holds no exalted verse", of)
-		}
-		for i, v := range p.Liturgy {
-			if v.Verse < 1 || (i > 0 && v.Verse <= p.Liturgy[i-1].Verse) {
-				return fmt.Errorf("the verses of the plan of %s are not numbered in written order", of)
-			}
+		if err := ordered(p, u.State()); err != nil {
+			return fmt.Errorf("the plan of %s %w", of, err)
 		}
 		if err := performable(p, s.cfg.Voice != nil); err != nil {
 			return fmt.Errorf("the plan of %s: %w", of, err)
@@ -230,6 +232,38 @@ func (s *session) sanctionable(u *sanction.Unit) error {
 				return fmt.Errorf("the plan of %s: %w", of, err)
 			}
 		}
+	}
+	return nil
+}
+
+// ordered judges the order of what plan holds: exalted verses, at least
+// one, numbered in written order; or, for a state rite, subjects by their
+// places in written order, each named once, and observances each named
+// once.
+func ordered(p sanction.Plan, state bool) error {
+	if !state {
+		if len(p.Liturgy) == 0 {
+			return errors.New("holds no exalted verse")
+		}
+		for i, v := range p.Liturgy {
+			if v.Verse < 1 || (i > 0 && v.Verse <= p.Liturgy[i-1].Verse) {
+				return errors.New("holds verses not numbered in written order")
+			}
+		}
+		return nil
+	}
+	names := map[string]bool{}
+	for i, v := range p.Subjects {
+		if v.Place < 0 || (i > 0 && v.Place <= p.Subjects[i-1].Place) || names["s:"+v.Subject] {
+			return errors.New("holds subjects not in written order, or one named twice")
+		}
+		names["s:"+v.Subject] = true
+	}
+	for _, v := range p.Observances {
+		if names["o:"+v.Observance] {
+			return fmt.Errorf("names %s twice", v.Named())
+		}
+		names["o:"+v.Observance] = true
 	}
 	return nil
 }

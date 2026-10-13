@@ -85,9 +85,8 @@ func (e *Heretical) Error() string {
 }
 
 // Unperformable is the lament for a state rite of pattern Mark II that
-// holds what the servitor cannot yet perform: an exalted subject or
-// observance (a privileged auspex rides only upon an exalted subject). Why
-// tells what, in its own words.
+// holds what the servitor cannot yet perform: a privileged auspex, which
+// only the exalted servitor may speak. Why tells what, in its own words.
 type Unperformable struct {
 	Name string
 	Why  string
@@ -103,13 +102,8 @@ func (e *Unperformable) Error() string {
 // it can.
 func unperformable(r *librarium.Rite) string {
 	for _, sub := range r.Subjects {
-		if sub.Exalted() {
-			return fmt.Sprintf("the subject %q is exalted", sub.Name)
-		}
-	}
-	for _, o := range r.Observances {
-		if o.Exalted() {
-			return fmt.Sprintf("the observance %q is exalted", o.Name)
+		if ms, ok := sub.Matter.(*librarium.MachineSpirit); ok && ms.Auspex != nil && ms.Auspex.Exalted {
+			return fmt.Sprintf("the auspex of the subject %q is exalted", sub.Name)
 		}
 	}
 	return ""

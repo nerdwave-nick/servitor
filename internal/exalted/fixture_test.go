@@ -59,6 +59,9 @@ func (l *ledger) deeds() []string {
 		if e.Verse > 0 {
 			d += " " + strconv.Itoa(e.Verse)
 		}
+		if e.Subject+e.Observance != "" {
+			d += " " + e.Subject + e.Observance
+		}
 		out = append(out, d+" "+string(e.Verdict))
 	}
 	return out
@@ -272,7 +275,7 @@ func (inv *invoker) hear() Reply {
 // perform performs verse n, which must triumph.
 func (inv *invoker) perform(n int) Reply {
 	inv.t.Helper()
-	r := inv.say(Request{Perform: new(n)})
+	r := inv.say(Request{Perform: numbered(n)})
 	if r.Verdict != Triumph || r.To != "perform" || r.Verse != n {
 		inv.t.Fatalf("verse %d: %+v", n, r)
 	}

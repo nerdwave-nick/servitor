@@ -42,7 +42,18 @@ it cannot hold refuses the invocation before anything is touched.
 
 Thereafter it hears four words alone: perform the next exalted verse, revert
 the last one performed, finish, abort. A word out of its order, or a second
-plan, is refused, and ends the session. Of a vessel it tells only whether it
+plan, is refused, and ends the session. For a rite of aspects of pattern
+Mark II, perform names an exalted subject or observance of the plan, which
+must lie after every one performed before it — a subject at its place, an
+observance at the place of a subject that names it, and an observance once —
+so that it may skip what does not change, but never go back; an observance
+whose "from" does not admit the former aspect is refused. A machine-spirit
+is set by the enact words of the omen of its aspect, which alone hear
+SERVITOR_OMEN, and perform names the declared omen to restore it to should
+the session fall (none, when the invoker knows none, and then it cannot be
+restored). Revert names the subject or observance last performed, and for a
+machine-spirit the declared omen it restores; it speaks only the enact words
+its sanction holds, and an omen the sanction does not declare is refused. Of a vessel it tells only whether it
 changed, its size and its SHA-256, never its scripture. Its vessels and
 tethers are walked from the root through halls the root alone may write, and
 transcribed atomically, keeping their owner, and their seal unless the verse
@@ -61,7 +72,8 @@ touched. A scroll whose first line names an interpreter is recited by that
 interpreter, judged by the trusted-path rule alike. Speech hears no environment but what the exalted servitor grants:
 PATH=/usr/local/sbin:/usr/local/bin:/usr/bin, HOME=/root, LANG and LC_* when
 they truly name a locale, SERVITOR_RITE, SERVITOR_ASPECT,
-SERVITOR_FORMER_ASPECT (never for an edict) and SERVITOR_INSCRIPTION_<KEY>.
+SERVITOR_FORMER_ASPECT (never for an edict), SERVITOR_INSCRIPTION_<KEY>, and
+SERVITOR_OMEN for the enact words of a machine-spirit.
 Each verse is spoken in a session and process group of its own, its input
 empty, under its patience; when it runs out, the servitor slays the verse
 with every process it summoned. Reversions are spoken by the exalted
@@ -73,7 +85,8 @@ to last belongs in a unit of the machine (systemd-run --unit=…).
 
 Should its invoker fall before finish (the channel ends, ten minutes pass
 without a word, or SIGTERM reaches it), it reverts every verse it performed,
-from the last back to the first, and ends. It dwells at the root of the
+from the last back to the first — each machine-spirit by the omen named when
+it was set — and ends. It dwells at the root of the
 machine with umask 022, dumps no core, lets no descriptor pass to what it
 summons, and heeds no interrupt, hang-up or halt of the terminal — though
 what it summons heeds them as ever. Each of

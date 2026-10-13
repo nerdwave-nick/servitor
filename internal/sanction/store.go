@@ -91,8 +91,11 @@ func (s Store) parse(data []byte, rite string) (*Sanction, error) {
 // is one.
 func (sn *Sanction) untrue(rite string, uid int) string {
 	switch {
-	case sn.Pattern != Pattern:
-		return fmt.Sprintf("its pattern is %q, yet this servitor reads only %q", sn.Pattern, Pattern)
+	case !slices.Contains(Patterns, sn.Pattern):
+		return fmt.Sprintf("its pattern is %q, yet this servitor reads only %q and %q", sn.Pattern, Pattern,
+			PatternMarkII)
+	case sn.Misshapen() != "":
+		return sn.Misshapen()
 	case sn.Rite != rite:
 		return fmt.Sprintf("it names the rite %q", sn.Rite)
 	case sn.UID != uid:

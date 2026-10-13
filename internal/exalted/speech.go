@@ -93,17 +93,17 @@ func (w Speech) prepare(s Sitting) (*speaker, map[string]relic, error) {
 		return nil, nil, err
 	}
 	sp := &speaker{env: env, programs: map[string]string{}, biddings: map[string][]string{},
-		scrolls: map[int]string{}}
+		scrolls: map[string]string{}}
 	laid := map[string]relic{}
-	for _, v := range s.Plan.Liturgy {
-		if v.Kind != librarium.KindIncantation && v.Kind != librarium.KindLitany {
+	for _, v := range items(s.Plan) {
+		if !v.Speaks() {
 			continue
 		}
-		if err := sp.tongue(w.Tongues, v.Verse, v.Tongue); err != nil {
+		if err := sp.tongue(w.Tongues, v.Named(), v.Tongue); err != nil {
 			return nil, nil, err
 		}
 		for _, r := range v.Relics {
-			if err := lay(laid, v.Verse, r.Relic, r.Scripture, 0o600); err != nil {
+			if err := lay(laid, v.Named(), r.Relic, r.Scripture, 0o600); err != nil {
 				return nil, nil, err
 			}
 		}
@@ -118,10 +118,16 @@ func (w Speech) prepare(s Sitting) (*speaker, map[string]relic, error) {
 
 // environ is the whole environment of the session's speech: PATH and HOME
 // of the root, the locale of its invoker, and the variables the sanction
-// declares, valued from the session.
+// declares, valued from the session. The omen a machine-spirit's enact
+// words hear is not among them: it is valued as each is spoken.
 func (w Speech) environ(s Sitting) ([]string, error) {
 	e := s.Sanction.Environment
-	if e.Pattern != sanction.EnvironmentPattern {
+	allowed := granted
+	switch e.Pattern {
+	case sanction.EnvironmentPattern:
+	case sanction.PatternMarkII:
+		allowed = append(slices.Clone(granted), sanction.OmenVariable)
+	default:
 		return nil, fmt.Errorf("the sanction of %q grants its speech the environment of the pattern %q, which "+
 			"this exalted servitor knows not", s.Sanction.Rite, e.Pattern)
 	}
@@ -137,39 +143,41 @@ func (w Speech) environ(s Sitting) ([]string, error) {
 		}
 	}
 	for _, key := range e.Keys {
-		if !slices.Contains(granted, key) && !inscription.MatchString(key) {
+		if !slices.Contains(allowed, key) && !inscription.MatchString(key) {
 			return nil, fmt.Errorf("the sanction of %q names %s for its speech to hear, which the exalted servitor "+
 				"never grants", s.Sanction.Rite, key)
 		}
-		env = append(env, key+"="+words[key])
+		if key != sanction.OmenVariable {
+			env = append(env, key+"="+words[key])
+		}
 	}
 	return env, nil
 }
 
 // relic is a scripture laid in the working hall: its words, its seal, and
-// the verse that named it first.
+// the verse or item that named it first.
 type relic struct {
 	scripture []byte
 	seal      fs.FileMode
-	verse     int
+	by        string
 }
 
 // lay names the scripture to be laid in the working hall under name, which
-// must lie within it. A name laid twice must bear the same words.
-func lay(laid map[string]relic, verse int, name string, scripture []byte, seal fs.FileMode) error {
+// must lie within it, for the verse or item by. A name laid twice must bear
+// the same words.
+func lay(laid map[string]relic, by, name string, scripture []byte, seal fs.FileMode) error {
 	clean := filepath.Clean(name)
 	if !filepath.IsLocal(clean) {
-		return fmt.Errorf("verse %d names the relic %q, which lies beyond the hall of its rite", verse, name)
+		return fmt.Errorf("%s names the relic %q, which lies beyond the hall of its rite", by, name)
 	}
 	if was, ok := laid[clean]; ok {
 		if !bytes.Equal(was.scripture, scripture) {
-			return fmt.Errorf("verse %d lays %q in the working hall, yet verse %d laid other words there", verse,
-				clean, was.verse)
+			return fmt.Errorf("%s lays %q in the working hall, yet %s laid other words there", by, clean, was.by)
 		}
 		seal = max(seal, was.seal)
-		verse = was.verse
+		by = was.by
 	}
-	laid[clean] = relic{scripture: scripture, seal: seal, verse: verse}
+	laid[clean] = relic{scripture: scripture, seal: seal, by: by}
 	return nil
 }
 
@@ -253,18 +261,19 @@ func fill(hall string, laid map[string]relic) error {
 // errNoTongue is the program of a tongue that does not begin at the root.
 var errNoTongue = errors.New("does not begin at the root")
 
-// judge judges the program of tongue (or of an interpreter) by the
-// trusted-path rule, once, and keeps where it is awakened from.
-func (sp *speaker) judge(g hallowed.Ground, verse int, tongue string) error {
+// judge judges the program of tongue (or of an interpreter) of the verse
+// or item by by the trusted-path rule, once, and keeps where it is awakened
+// from.
+func (sp *speaker) judge(g hallowed.Ground, by, tongue string) error {
 	if _, ok := sp.programs[tongue]; ok {
 		return nil
 	}
 	if !filepath.IsAbs(tongue) {
-		return fmt.Errorf("the tongue %q of verse %d %v", tongue, verse, errNoTongue)
+		return fmt.Errorf("the tongue %q of %s %v", tongue, by, errNoTongue)
 	}
 	program, err := g.Program(tongue)
 	if err != nil {
-		return fmt.Errorf("the tongue of verse %d is not spoken under exaltation: %w", verse, err)
+		return fmt.Errorf("the tongue of %s is not spoken under exaltation: %w", by, err)
 	}
 	sp.programs[tongue] = filepath.Join(g.Root, program)
 	return nil
@@ -274,15 +283,15 @@ func (sp *speaker) judge(g hallowed.Ground, verse int, tongue string) error {
 // one of the tongues exalted speech knows, by the name of the program it
 // truly is; it keeps how that program is bidden to read no scripture of its
 // own.
-func (sp *speaker) tongue(g hallowed.Ground, verse int, tongue string) error {
-	if err := sp.judge(g, verse, tongue); err != nil {
+func (sp *speaker) tongue(g hallowed.Ground, by, tongue string) error {
+	if err := sp.judge(g, by, tongue); err != nil {
 		return err
 	}
 	program := sp.programs[tongue]
 	bidding, known := librarium.ExaltedTongue(program)
 	if !known {
-		return fmt.Errorf("the tongue %s of verse %d is %s, which exalted speech is never spoken in: it knows "+
-			"only %s, each bidden to read no scripture of its own as it awakens", tongue, verse,
+		return fmt.Errorf("the tongue %s of %s is %s, which exalted speech is never spoken in: it knows "+
+			"only %s, each bidden to read no scripture of its own as it awakens", tongue, by,
 			filepath.Base(program), librarium.ExaltedTongueNames)
 	}
 	sp.biddings[program] = bidding
@@ -295,7 +304,7 @@ func (sp *speaker) spoken(v sanction.Verse) ([]string, error) {
 	program := sp.programs[v.Tongue]
 	bidding, ok := sp.biddings[program]
 	if program == "" || !ok {
-		return nil, fmt.Errorf("the tongue of verse %d was never judged", v.Verse)
+		return nil, fmt.Errorf("the tongue of %s was never judged", v.Named())
 	}
 	return append([]string{program}, bidding...), nil
 }
@@ -309,12 +318,12 @@ func (sp *speaker) scroll(g hallowed.Ground, laid map[string]relic, v sanction.V
 	if !filepath.IsLocal(name) {
 		name = filepath.Base(name)
 	}
-	if err := lay(laid, v.Verse, name, v.Scroll, 0o600); err != nil {
+	if err := lay(laid, v.Named(), name, v.Scroll, 0o600); err != nil {
 		return err
 	}
-	sp.scrolls[v.Verse] = name
+	sp.scrolls[v.Named()] = name
 	if interpreter, _, ok := shebang(v.Scroll); ok {
-		return sp.judge(g, v.Verse, interpreter)
+		return sp.judge(g, v.Named(), interpreter)
 	}
 	return nil
 }

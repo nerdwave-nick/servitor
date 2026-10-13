@@ -14,8 +14,8 @@ import (
 // Show is the unit as its master beholds it before sanctioning it, one line
 // after another: the rite, the master and the whole sigil; the environment
 // its speech hears; then every plan under its own sigil, with the words of
-// its spliced inscriptions and every exalted verse with every field of its
-// kind. Scripture is shown as words, one line after another, when it is
+// its spliced inscriptions and every exalted verse — or exalted subject and
+// observance — with every field of its kind. Scripture is shown as words, one line after another, when it is
 // words; scripture that is not — or bears any sign a terminal would heed
 // rather than show — is told by its size and SHA-256 alone, and so is a
 // word of a single line quoted when it bears such a sign.
@@ -40,6 +40,12 @@ func Show(u *Unit) []string {
 		}
 		for _, v := range p.Liturgy {
 			s.verse(v)
+		}
+		for _, v := range p.Subjects {
+			s.subject(v)
+		}
+		for _, v := range p.Observances {
+			s.observance(v)
 		}
 	}
 	return s.lines
@@ -85,7 +91,11 @@ func (s *shower) scripture(name string, b []byte) {
 // verse adds the exalted verse v.
 func (s *shower) verse(v Verse) {
 	s.add(2, "verse %d · %s", v.Verse, v.Kind.Key())
-	key := v.Kind.Key()
+	s.body(v, v.Kind.Key())
+}
+
+// body adds every field of the kind of v, what its own key holds under key.
+func (s *shower) body(v Verse, key string) {
 	switch v.Kind {
 	case librarium.KindSanctum:
 		s.field(key, v.Target)
@@ -118,23 +128,40 @@ func (s *shower) verse(v Verse) {
 	case librarium.KindIncantation, librarium.KindLitany:
 		s.field(key, v.Target)
 		if v.Kind == librarium.KindLitany {
-			s.scripture("scroll", v.Scroll)
-			offerings := make([]string, len(v.Offerings))
-			for i, o := range v.Offerings {
-				offerings[i] = strconv.Quote(o)
+			label := "scroll"
+			if key == label { // an observance's scroll is written by its path
+				label = "scripture"
 			}
-			s.field("offerings", strings.Join(offerings, ", "))
+			s.scripture(label, v.Scroll)
+			s.offerings(v.Offerings)
 		}
-		s.field("tongue", v.Tongue)
-		s.field("patience", v.Patience.String())
-		if v.Reversion == "" {
-			s.add(3, "reversion: (none)")
-		} else {
-			s.field("reversion", v.Reversion)
-		}
-		for _, r := range v.Relics {
-			s.scripture("relic "+word(r.Relic), r.Scripture)
-		}
+		s.speech(v)
+	}
+}
+
+// offerings adds the offerings of a litany.
+func (s *shower) offerings(of []string) {
+	offerings := make([]string, len(of))
+	for i, o := range of {
+		offerings[i] = strconv.Quote(o)
+	}
+	s.field("offerings", strings.Join(offerings, ", "))
+}
+
+// speech adds the tongue, patience, reversion and relics of exalted speech;
+// a machine-spirit's enact words revert nothing of their own.
+func (s *shower) speech(v Verse) {
+	s.field("tongue", v.Tongue)
+	s.field("patience", v.Patience.String())
+	switch {
+	case v.Spirit():
+	case v.Reversion == "":
+		s.add(3, "reversion: (none)")
+	default:
+		s.field("reversion", v.Reversion)
+	}
+	for _, r := range v.Relics {
+		s.scripture("relic "+word(r.Relic), r.Scripture)
 	}
 }
 

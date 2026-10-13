@@ -145,7 +145,7 @@ func Prepare(r *librarium.Rite, opts Options) (*Invocation, error) {
 		p.index, p.exalted = i, librarium.IsExalted(s)
 		if step := p.prepare(s); step != nil {
 			if p.exalted {
-				step = &exaltedStep{planned: step}
+				step = &exaltedStep{planned: step, at: p.pointer("exalted")}
 			}
 			inv.steps = append(inv.steps, step)
 			inv.foresight = append(inv.foresight, step.foresee())

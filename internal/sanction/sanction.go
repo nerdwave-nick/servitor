@@ -1,7 +1,8 @@
 // Package sanction draws the canonical exalted unit of a rite and its
 // sigils, and reads the sanctions its master laid in the store.
 //
-// The unit (Build) holds everything a rite's exalted verses do: the
+// The unit (Build) holds everything a rite's exalted verses do — or the
+// exalted subjects and observances of a state rite of pattern Mark II: the
 // pattern of its form, the master's uid and the rite's name; for every
 // aspect (once for an edict) a Plan of the exalted verses resolved for it —
 // their verse numbers, rendered words and reversions, the absolute tongue,
@@ -27,9 +28,18 @@ import (
 	"encoding/hex"
 )
 
-// Pattern is the pattern of the form of every unit and sanction this
-// package draws and reads.
-const Pattern = "Mark I"
+// Pattern is the pattern of the form of the unit of a rite of pattern Mark
+// I, and PatternMarkII that of a rite of pattern Mark II: a state rite's
+// plans hold its exalted subjects and observances (see Verse), an edict's
+// its exalted verses as Mark I's do. Both are drawn and read until Mark I
+// is retired.
+const (
+	Pattern       = "Mark I"
+	PatternMarkII = "Mark II"
+)
+
+// Patterns are the patterns of the units this package draws and reads.
+var Patterns = []string{Pattern, PatternMarkII}
 
 // Standing is how a rite stands towards its sanction; it marshals as the
 // augury's and the census's "sanction".

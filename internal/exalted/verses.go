@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"slices"
 	"strings"
 
 	"github.com/nerdwave-nick/servitor/internal/hallowed"
@@ -15,15 +16,19 @@ import (
 	sanctums "github.com/nerdwave-nick/servitor/internal/sanctum"
 )
 
-// act performs the exalted verse v from the sanction, telling its verdict
-// and, when it changed the machine, the deed by which it is reverted. A
-// fallen verse that changed the machine all the same comes with its deed.
-func (s *session) act(ctx context.Context, v sanction.Verse) (Reply, *deed) {
+// act performs the exalted verse or item v from the sanction, telling its
+// verdict and, when it changed the machine, the deed by which it is
+// reverted; a machine-spirit is restored to the omen restore. A fallen
+// verse that changed the machine all the same comes with its deed.
+func (s *session) act(ctx context.Context, v sanction.Verse, restore string) (Reply, *deed) {
 	var (
 		r   Reply
 		mem *hallowed.Memory
 		err error
 	)
+	if v.Spirit() {
+		return s.enact(ctx, v, restore)
+	}
 	switch v.Kind {
 	case librarium.KindSanctum:
 		r, mem, err = s.sanctum(v)
@@ -67,6 +72,42 @@ func (s *session) speak(ctx context.Context, v sanction.Verse) (Reply, *deed) {
 	return r, d
 }
 
+// enact sets the machine-spirit v by the enact words of the omen of the
+// plan's aspect; however they end, it is reverted by the enact words of
+// the omen restore, which none may be.
+func (s *session) enact(ctx context.Context, v sanction.Verse, restore string) (Reply, *deed) {
+	r := Reply{To: "perform", Verdict: Triumph, Changed: true}
+	heard, err := s.speakOmen(ctx, v, v.Omen)
+	r.Heard = heard
+	if err != nil {
+		r.Verdict, r.Lament = Fell, err.Error()
+	}
+	return r, &deed{verse: v, omen: restore, restore: func(ctx context.Context, omen string) (string, error) {
+		if omen == "" {
+			return "", fmt.Errorf("%s cannot be restored: no omen it showed before was named, and the exalted "+
+				"servitor knows none to enact", v.Named())
+		}
+		heard, err := s.speakOmen(ctx, v, omen)
+		if err != nil {
+			return heard, fmt.Errorf("the restoration of the omen %q fell: %w", omen, err)
+		}
+		return heard, nil
+	}}
+}
+
+// speakOmen speaks the enact words of the machine-spirit v that set omen,
+// which they hear as SERVITOR_OMEN.
+func (s *session) speakOmen(ctx context.Context, v sanction.Verse, omen string) (string, error) {
+	words, ok := v.Enact[omen]
+	if !ok {
+		return "", fmt.Errorf("%s declares no omen %q", v.Named(), omen)
+	}
+	spoken := v
+	spoken.Target, spoken.Omen = words, omen
+	heard, _, err := s.speaker.Speak(ctx, spoken)
+	return heard, err
+}
+
 // seen is what the servitor tells of scripture.
 func seen(scripture []byte) *Seen {
 	sum := sha256.Sum256(scripture)
@@ -90,8 +131,8 @@ func (s *session) sanctum(v sanction.Verse) (Reply, *hallowed.Memory, error) {
 	m := sanctums.Marker{Glyph: v.Glyph, ClosingGlyph: v.ClosingGlyph, Ward: v.Ward}
 	for _, line := range strings.Split(string(v.Scripture), "\n") {
 		if m.IsMarkerLine(line) {
-			return Reply{}, nil, fmt.Errorf("the scripture of verse %d would carry a marker of its own sanctum %q "+
-				"into %s", v.Verse, m.Ward, v.Target)
+			return Reply{}, nil, fmt.Errorf("the scripture of %s would carry a marker of its own sanctum %q "+
+				"into %s", v.Named(), m.Ward, v.Target)
 		}
 	}
 	before, absent, err := s.read(v.Target)
@@ -129,7 +170,7 @@ func (s *session) transcription(v sanction.Verse) (Reply, *hallowed.Memory, erro
 	var r Reply
 	if !absent {
 		r.Before = seen(before)
-		if !v.Zeal && !s.known(v.Verse, before) {
+		if !v.Zeal && !s.known(v, before) {
 			verb := map[bool]string{true: "strike", false: "replace"}[v.Null]
 			return r, nil, fmt.Errorf("the vessel %s holds scripture of no aspect of this sanction; the servitor "+
 				"will %s it only with \"zeal\": true", v.Target, verb)
@@ -147,13 +188,14 @@ func (s *session) transcription(v sanction.Verse) (Reply, *hallowed.Memory, erro
 	return r, mem, err
 }
 
-// known reports whether scripture is that of verse n for some aspect of the
-// sanction; one final newline is forgiven.
-func (s *session) known(n int, scripture []byte) bool {
+// known reports whether scripture is that of the verse or subject of the
+// transcription for some aspect of the sanction; one final newline is
+// forgiven.
+func (s *session) known(of sanction.Verse, scripture []byte) bool {
 	got := strings.TrimSuffix(string(scripture), "\n")
 	for _, p := range s.sn.Aspects {
-		for _, v := range p.Liturgy {
-			if v.Verse == n && !v.Null && strings.TrimSuffix(string(v.Scripture), "\n") == got {
+		for _, v := range slices.Concat(p.Liturgy, p.Subjects) {
+			if v.Named() == of.Named() && !v.Null && strings.TrimSuffix(string(v.Scripture), "\n") == got {
 				return true
 			}
 		}
