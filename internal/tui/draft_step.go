@@ -49,6 +49,7 @@ var furtherKeys = map[librarium.Kind][]string{
 	librarium.KindTether:        {"zeal"},
 	librarium.KindIncantation:   {"tongue", "patience"},
 	librarium.KindLitany:        {"tongue", "patience"},
+	kindMachineSpirit:           {"tongue", "patience"},
 }
 
 // hasFurther reports whether a step of kind k bears further rites.

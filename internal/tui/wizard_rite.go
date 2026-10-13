@@ -68,8 +68,8 @@ func (w *wizard) ritePage(m *model) tea.Cmd {
 		"The program that speaks the rite's commands; unspoken, the tongue of the settings, or bash.", validWord)
 	if !d.patternKept {
 		f.addChoice("pattern", "Pattern", librarium.Patterns, d.pattern(),
-			"Mark I writes a liturgy of steps; Mark II, subjects each read and set by itself. Know that the "+
-				"servitor performs no rite of Mark II yet.")
+			"Mark I writes a liturgy of steps; Mark II, subjects each read and set by itself, and the "+
+				"observances they name.")
 	}
 	return w.setForm(m, pageRite, 0, f)
 }

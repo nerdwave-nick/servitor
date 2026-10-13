@@ -17,9 +17,10 @@ import (
 // bears a privileged auspex is not performed while it stands unsanctioned,
 // and its privileged auspex is never spoken (its edicts are proclaimed, see
 // edict_markii_test.go, and other state rites invoked, see
-// TestMarkII_TheCogitatorInvokesAStateRite). The wizard opens upon an
-// edict, and refuses to amend or replicate a rite of machine-spirits, whose
-// form it knows not yet, rather than lose it.
+// TestMarkII_TheCogitatorInvokesAStateRite); its detail names what it
+// holds exalted as subjects and observances. The wizard opens upon an
+// edict and upon a rite of machine-spirits and observances alike, and
+// writes nothing when it is withdrawn from.
 func TestMarkII_TheCogitatorStandsFirmAndPerformsNothing(t *testing.T) {
 	h := newHarness(t)
 	gaming := h.writeRite("gaming", `{"pattern": "Mark II", "aspects": ["on", "off"], "subjects": [
@@ -38,12 +39,13 @@ func TestMarkII_TheCogitatorStandsFirmAndPerformsNothing(t *testing.T) {
 	h.keys("esc", "c")
 	h.mustShow("Consecration of a new edict", "capture-copy")
 	h.keys("esc", "j")
-	for _, key := range []string{"e", "c"} {
-		h.keys(key)
-		h.mustShow(`machine-spirits and observances of pattern "Mark II"`, "rite gaming")
-		h.mustNotShow("Amendment of", "Consecration of")
-		h.keys("esc")
-	}
+	h.mustShow("○ unsanctioned", "s to sanction its exalted subjects and observan")
+	h.mustNotShow("its exalted verses")
+	h.keys("e")
+	h.mustShow("Amendment of the rite gaming", "pattern Mark II")
+	h.keys("esc", "c")
+	h.mustShow("Consecration of a new rite", "gaming-copy")
+	h.keys("esc")
 	refused := func(keys ...string) {
 		t.Helper()
 		h.keys("r")

@@ -15,6 +15,9 @@ var designationWords = map[librarium.Kind]string{
 	librarium.KindSanctum:       "keep a warded region within a vessel",
 	librarium.KindTranscription: "keep a whole vessel, or its absence",
 	librarium.KindTether:        "keep a name bound to an anchor, or unbound",
+	kindMachineSpirit:           "read by an auspex and set by enact words",
+	librarium.KindIncantation:   "speak one line of words in a tongue",
+	librarium.KindLitany:        "recite a scroll, given its offerings",
 }
 
 // updateSubjects handles the keys of the subjects of a rite of aspects of
@@ -45,15 +48,16 @@ func (w *wizard) updateSubjects(m *model, msg tea.Msg) (screen, tea.Cmd) {
 		if len(w.d.subjects) == 0 {
 			return w, m.notify(toastErr, "A rite without subjects has nothing to read or set. Add a subject with a.")
 		}
-		w.station, w.seal = stationSeal, newSealing(m, w.d)
+		w.station, w.cursor = stationObservances, 0
 	}
 	return w, nil
 }
 
 // editSubject writes the subject sd at place i of the subjects (-1 for a
-// new one): its essence, its further rites, then its omens.
+// new one): its essence, its further rites, its omens, the auspex and
+// enact words of a machine-spirit, then the observances it names.
 func (w *wizard) editSubject(m *model, i int, sd subjectDraft) tea.Cmd {
-	w.subject = sd
+	w.subject = sd.clone()
 	return w.editStep(m, i, sd.step)
 }
 
@@ -151,7 +155,7 @@ func (w *wizard) subjectsView(m *model, width, height int) string {
 	for i := start; i < min(len(w.d.subjects), start+avail); i++ {
 		sd := w.d.subjects[i]
 		line := t.dim.Render(fmt.Sprint(i+1)) + " " + t.accent.Render(kindGlyph(sd.step.kind)) + " " +
-			t.text.Render(sd.name) + t.dim.Render("  "+stepWords(sd.step.toStep(aspects), ""))
+			t.text.Render(sd.name) + t.dim.Render("  "+subjectWords(sd, aspects))
 		lines = append(lines, w.marked(m, i == w.cursor, line, width))
 	}
 	return strings.Join(lines, "\n")

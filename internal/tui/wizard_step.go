@@ -18,6 +18,7 @@ var furtherHints = map[librarium.Kind]string{
 	librarium.KindTether:        "Unveil the zeal of the tether; rarely needed.",
 	librarium.KindIncantation:   "Unveil tongue, patience and reversion; rarely needed.",
 	librarium.KindLitany:        "Unveil offerings, tongue, patience and reversion.",
+	kindMachineSpirit:           "Unveil the tongue and patience of its enact words; rarely needed.",
 }
 
 // essencePage writes the essential fields of the step: those holding one
@@ -26,7 +27,10 @@ func (w *wizard) essencePage(m *model) tea.Cmd {
 	sd := w.work
 	f := newForm(m.t)
 	k := sd.kind
-	if w.d.bearsSubjects() {
+	switch {
+	case w.station == stationObservances:
+		w.observanceFields(f)
+	case w.d.bearsSubjects():
 		w.subjectFields(f)
 	}
 	switch k {
@@ -55,7 +59,7 @@ func (w *wizard) essencePage(m *model) tea.Cmd {
 		f.addChoice("vox-cast", "Tidings", []string{librarium.VoxProgress, librarium.VoxSuccess}, sd.fixed["vox-cast"],
 			"progress tells of the step before it; success proclaims triumph and belongs last.")
 	}
-	addExaltation(f, sd, w.d.bearsSubjects())
+	addExaltation(f, sd, w.exaltedNoun())
 	if hasFurther(k) {
 		f.addToggle("further", "Further rites", sd.further, furtherHints[k])
 	}
@@ -69,7 +73,11 @@ func (w *wizard) keepEssence() {
 		case "further":
 			w.work.further = fl.on
 		case "name":
-			w.subject.name = strings.TrimSpace(fl.value())
+			if w.station == stationObservances {
+				w.observance.name = strings.TrimSpace(fl.value())
+			} else {
+				w.subject.name = strings.TrimSpace(fl.value())
+			}
 		case "purpose":
 			w.subject.purpose = strings.TrimSpace(fl.value())
 		case "relics":
@@ -112,10 +120,14 @@ func (w *wizard) varying() [][2]string {
 	case librarium.KindTether:
 		return [][2]string{{"anchor", "anchor"}}
 	case librarium.KindIncantation:
-		if w.work.further {
-			return [][2]string{{"command", "command"}, {"reversion", "reversion"}}
+		command := "command"
+		if w.station == stationObservances {
+			command = "words" // as the observance writes it
 		}
-		return [][2]string{{"command", "command"}}
+		if w.work.further {
+			return [][2]string{{"command", command}, {"reversion", "reversion"}}
+		}
+		return [][2]string{{"command", command}}
 	}
 	if w.work.further {
 		return [][2]string{{"command", "scroll"}, {"offerings", "offerings"}, {"reversion", "reversion"}}

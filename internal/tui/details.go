@@ -105,9 +105,24 @@ func (m *model) sanctionLine(r *row) string {
 		}
 		return head + t.dim.Render(since+" · s to sanction anew")
 	case sanction.Unsanctioned:
-		return head + t.dim.Render(" · s to sanction its exalted verses")
+		return head + t.dim.Render(" · s to sanction its "+exaltedOf(r.rite(), true))
 	}
-	return head + t.dim.Render(" · no exalted verse — s, then a, to abjure")
+	return head + t.dim.Render(" · no "+exaltedOf(r.rite(), false)+" — s, then a, to abjure")
+}
+
+// exaltedOf names what the rite holds exalted, as many or as one: the
+// subjects and observances of a state rite of pattern Mark II, else verses.
+func exaltedOf(rite *librarium.Rite, many bool) string {
+	switch {
+	case rite == nil || !rite.MarkII || rite.Edict:
+		if many {
+			return "exalted verses"
+		}
+		return "exalted verse"
+	case many:
+		return "exalted subjects and observances"
+	}
+	return "exalted subject or observance"
 }
 
 func (m *model) lastRite(lr *augury.LastRite) string {
@@ -215,6 +230,8 @@ func kindGlyph(k librarium.Kind) string {
 		return "»"
 	case librarium.KindLitany:
 		return "≡"
+	case kindMachineSpirit:
+		return designationGlyph(librarium.DesignationMachineSpirit)
 	}
 	return "✉"
 }
