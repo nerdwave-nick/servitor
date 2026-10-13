@@ -1,0 +1,99 @@
+How scripture of pattern Mark I becomes Mark II, once, on its first reading
+
+The servitor performs rites of pattern "Mark II" alone. Scripture of the
+elder pattern "Mark I" is converted: read as Mark I, it is turned into the
+rite of Mark II that does what it did, and every ritual then knows the rite
+converted. The faithful write nothing by hand.
+
+Who writes the conversion. The first ritual that reads pure scripture of
+Mark I and may write converts it on the disk: invoke, augury, census,
+inquisition, sanction, abjure and every other ritual of the servitor, before
+it is performed. Completion, foresight (--foresee) and a servitor roused as
+root never write: they read the rite converted in their memory alone, and
+the scripture stays of pattern Mark I until a ritual that may write reads
+it. The exalted servitor reads no Librarium, and converts nothing. The
+cogitator converts as it reads, and tells it in a toast.
+
+How it is written. The scripture of Mark I is first kept, unchanged, in the
+hall .mark-i beside it — rites/.mark-i/<name>.json, or .jsonc — opened so
+that a copy already standing there is never written over (see mark-i). Then
+the converted scripture takes its place whole and at once, under the
+dominion of its rite and with the seal it bore. Should another invocation
+hold that dominion, the servitor does not wait: the rite stays converted in
+memory, and is written at a later reading. A scripture changed since it was
+read, or a copy that stands and differs from it, is not written over; the
+servitor laments it, and the scripture stays as it was. A scripture tethered
+into rites/ is converted where it lies, so that the tether endures.
+
+The settings are converted alike, yet only their "pattern" is rewritten in
+place, so that every remark in them survives; their scripture of Mark I is
+kept at <Librarium>/.mark-i/servitor.json. Settings of Mark II keep the
+keys of Mark I.
+
+What it tells. Each conversion is told in one line of tidings, upon stderr,
+prefixed "⋯": the rite, where its scripture of Mark I is kept, and what
+changed in meaning. It is told even under --binharic, which keeps stdout to
+its binharic alone, and is withheld by --silence. A rite that held exalted
+verses is told that the sanction of its master lapses, for the unit of its
+exalted words changes with its pattern, and the tidings name servitor
+sanction <rite>.
+
+What becomes what, for a rite of aspects:
+
+  "pattern": "Mark I"        "pattern": "Mark II"
+  a sanctum, transcription   a subject of that designation, named
+  or tether                  "<kind>-<verse>"; its scripture or anchor
+                             becomes its "omens" (one value for every
+                             aspect becomes {"*": …}); its other keys are
+                             kept, and so are the markers of its vessel,
+                             so no vessel is written anew
+  an incantation or litany   an observance named "<kind>-<verse>", spoken
+  beside them                as the introit of the next subject after it,
+                             else as the recessional of the last before
+                             it; words that differ by aspect become one
+                             observance per word, guarded by "to" and
+                             named "<kind>-<verse>-<first aspect>"
+  an incantation or litany   a machine-spirit named "<kind>-<verse>",
+  in a rite of none of them  without omens, its "enact" keyed by aspect;
+                             its reversion is struck, for a machine-spirit
+                             is restored by enacting the omen it showed
+                             before; a litany is enacted by words that call
+                             its scroll with its offerings
+  the rite's "auspex"        the "scan" of its only machine-spirit, when it
+                             has exactly one; struck otherwise
+  vox-cast steps             the rite's "vox-cast" list: "progress" when it
+                             held a progress, "success" when a success
+  decrees                    kept, always keyed by aspect
+
+An edict keeps its liturgy, each verse taking the designation form, and its
+vox-casts become the list. Whatever is struck or changes meaning — the
+auspex of the rite, a reversion, a litany spoken as enact words — is kept as
+a remark at its new place, quoting the words of Mark I, and named in the
+tidings. The remarks of the scripture of Mark I are not carried over: they
+endure in its copy. Data-slates and the chronicle need no conversion.
+
+Scripture of Mark I that holds heresy is not converted: one more heresy at
+its "pattern" tells that it is converted once its heresies are purged.
+Scripture whose conversion would be heretical — a rite of vox-casts alone,
+which would read and set nothing — is not converted either, and each heresy
+of what it would become is told upon its "pattern". Nothing ever converts
+Mark II back to Mark I.
+
+Kindred passages: pattern, mark-i, subjects, observances, machine-spirit,
+vox-cast, sanction, librarium, silence
+
+Exempla:
+  servitor census
+  # upon stderr, once, before the census, a line beginning with ⋯:
+  #   the rite "dnd" is converted to pattern "Mark II"; its scripture of
+  #   pattern "Mark I" is kept at ~/.config/servitor/rites/.mark-i/dnd.json;
+  #   changed in meaning, as the comments of its scripture tell: the auspex
+  #   of the rite is struck
+
+  // a step of Mark I …
+  {"tether": "~/.local/share/nfluff/current-theme",
+   "anchor": "~/.config/nfluff/themes/{{aspect}}"}
+  // … becomes a subject of Mark II
+  {"name": "tether-2", "designation": "tether",
+   "tether": "~/.local/share/nfluff/current-theme",
+   "omens": {"*": "~/.config/nfluff/themes/{{aspect}}"}}

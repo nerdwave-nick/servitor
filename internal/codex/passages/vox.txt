@@ -24,4 +24,4 @@ Kindred passages: vox-cast, invoke, librarium, intercessor
 
 Exempla:
   // servitor.json
-  {"pattern": "Mark I", "vox": "notify-send"}
+  {"pattern": "Mark II", "vox": "notify-send"}

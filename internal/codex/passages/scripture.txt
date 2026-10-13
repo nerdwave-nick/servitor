@@ -1,18 +1,19 @@
 What a sanctum or transcription places into its vessel
 
-Scripture is the holy text a step sets down: the region a sanctum keeps
-between its markers, or the whole of a vessel a transcription writes. Under
-the key "scripture" it may be written in three forms:
+Scripture is the holy text a subject sets down: the region a sanctum keeps
+between its markers, or the whole of a vessel a transcription writes. It is
+the omen of such a subject, written under its "omens", one for each aspect
+with "*" serving every aspect not named; the key "scripture" itself is the
+elder pattern Mark I's, which conversion makes those omens. Each scripture
+may be written in three forms:
 
   - a string, the scripture itself, newlines as \n;
   - a list of lines, joined one to the next with a newline;
   - a tome, {"tome": "<path>", "illuminate": true}, drawn from another
     scripture-file, for scripture too long or too precious to inline.
 
-Scripture varies by aspect: write one value for every aspect, or an aspect
-map naming the scripture of each aspect, with "*" serving every aspect not
-named. An object that holds "tome" or "illuminate" is a tome; any other
-object is an aspect map.
+An object that holds "tome" or "illuminate" is a tome, never mistaken for a
+map of aspects.
 
 Inline scripture is always illuminated: its placeholders — {{aspect}},
 {{former}}, {{rite.name}}, {{inscription.<key>}} — are filled at every
@@ -28,12 +29,15 @@ The servitor also reads scripture to know the aspect: a transcribed vessel's
 scripture is compared with the scripture of each aspect, and a sanctum whose
 scripture is no longer that of its recorded aspect is tainted.
 
-Kindred passages: sanctum, transcription, tome, illuminate, aspect-maps,
-placeholders
+Kindred passages: sanctum, transcription, omens, tome, illuminate,
+aspect-maps, placeholders, conversion
 
 Exempla:
-  "scripture": "cursor { hide-after-inactive-ms 400; }"
+  "omens": {"on": "cursor { hide-after-inactive-ms 400; }", "off": ""}
 
-  "scripture": {"on": ["cursor {", "    hide-when-typing", "}"], "*": ""}
+  "omens": {"on": ["cursor {", "    hide-when-typing", "}"], "*": ""}
 
+  "omens": {"*": {"tome": "visages/{{aspect}}.kdl", "illuminate": true}}
+
+  // pattern Mark I, before conversion
   "scripture": {"tome": "visages/{{aspect}}.kdl", "illuminate": true}

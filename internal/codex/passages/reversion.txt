@@ -1,69 +1,69 @@
-The undoing of a fallen invocation, and the words that undo a command
+The undoing of a fallen invocation: restoring what was read, and undoing words
 
-Should a step fall — its death-mark not 0, its patience run out, or the
-invocation halted at its master's command — the servitor does not leave the
-machine half-changed. It reverts: every step already performed is undone in
-reverse order, from the fallen step back to the first, so that the machine
-returns to its former aspect — or, for an edict, to how it stood before the
-edict was proclaimed.
+Should an invocation fall — a subject that cannot be set, a proof that finds
+another omen than the one commanded, an observance or a verse whose
+death-mark is not 0, a patience run out, or the invocation halted at its
+master's command — the servitor does not leave the machine half-changed. It
+reverts: everything already performed is undone in reverse order, the
+fallen one included, for it may have done half its work.
 
-Sanctums, transcriptions and tethers revert themselves, for the servitor
-captured what stood before it changed them: a sanctum and a transcribed
-vessel are written back as they were (a vessel the step consecrated is
-removed again), and a tether is rebound to its former anchor, or unbound.
+A rite of aspects needs no words to undo its subjects: it restores what it
+read. A sanctum, a transcribed vessel and a tether are written back exactly
+as the servitor found them before it changed them — a sanctum's vessel and a
+transcribed vessel to their former scripture and seal (a vessel the
+invocation brought into being is struck again), a tether rebound to its
+former anchor, or unbound. A machine-spirit is enacted into the omen it was
+read to show before it was set, and proven by a reading afresh; one that
+showed no omen — its auspex mute, or none — is enacted into the omen of the
+former aspect. When the former aspect too is unknown, it cannot be restored:
+that reversion falls, and the verdict is faltered. A restoration whose proof
+finds another omen falls alike.
 
-Incantations and litanies cannot be undone by the servitor alone; it does not
-know what their words did. Under "reversion" such a step carries the words
-that undo it — one line, spoken in the step's tongue, under the step's
-patience, in the rite's hall, with the same environment as the step. They may
-differ per aspect as an aspect map, and {{former}} (and
-SERVITOR_FORMER_ASPECT) name the aspect the machine is to return to. An edict
-knows no former aspect: its reversion is written once, plainly, and undoes by
-its words alone. The reversion of the fallen step itself is spoken too, for it
-may have done half its work. A step without reversion reverts nothing.
+Observances, and the verses of an edict, cannot be undone by the servitor
+alone; it does not know what their words did. Under "reversion" each may
+carry the words that undo it — one line, written once and plainly, spoken in
+its tongue, under its patience, in the rite's hall, with the same
+environment as its own words; SERVITOR_FORMER_ASPECT (and {{former}}) name
+the aspect the machine returns to, and are empty for an edict, which knows
+no former aspect. Each spoken observance speaks its reversion in its place
+among the restorations. One that bears none reverts nothing.
 
-Exalted verses are reverted by the exalted servitor alone, in their place
-among the common reversions, from the fallen verse back to the first: the
-servitor bids it revert each in its turn, and no second proof of the master
-is asked. The reversion of an exalted incantation or litany is spoken by the
-exalted servitor, with the machine's authority, in its working hall and with
-the environment of exalted speech; an exalted vessel or tether it restores
-itself. Should the servitor that invoked fall silent before the end — slain,
-or its channel lost — the exalted servitor reverts every verse it performed
-by itself, from the last back to the first, and journals it.
-
-A rite of pattern Mark II needs no reversion words: it restores what it read.
-Every subject set is restored in reverse order, the fallen one too. A
-sanctum, transcription or tether is written back as above. A machine-spirit
-is enacted into the omen it was read to show before it was set, and proven
-by a reading afresh; one that showed no omen — its auspex mute, or none —
-is enacted into the omen of the former aspect. When the former aspect too
-is unknown, it cannot be restored: that reversion falls, and the verdict is
-faltered. A spoken observance speaks its own reversion words, if it bears
-any, in its place in that reverse order, the fallen one too. The chronicle
-and the laments name each subject and observance by its name.
+Exalted subjects, observances and verses are reverted by the exalted servitor
+alone, in their place among the common reversions: the servitor bids it
+revert each in its turn, naming the omen a machine-spirit is to be restored
+to, and no second proof of the master is asked. The exalted servitor speaks
+only restoring words its master sanctioned, restores an exalted vessel or
+tether from what it kept itself, and proves a subject read by an exalted
+auspex by itself. Should the servitor that invoked fall silent before the
+end — slain, or its channel lost — the exalted servitor reverts everything it
+performed by itself, from the last back to the first, and journals it.
 
 A reversion that falls does not stop the others; every one is attempted and
 its outcome told. When all succeed the verdict is reverted; when any falls,
 the verdict is faltered, and the rite — or the edict — will likely show
-corrupted. A halt from the terminal never halts the reversions. When
-foreseeing, the reversion each step would speak is shown.
+corrupted. A halt from the terminal never halts the reversions. The
+chronicle and the laments name each subject and observance reverted by its
+name, and each verse of an edict by its place. When foreseeing, the
+reversion each observance and verse would speak is shown.
 
-Kindred passages: verdicts, incantation, litany, placeholders, chronicle,
-invoke
+In the elder pattern "Mark I" every incantation and litany carried its own
+reversion words, which might differ per aspect. Conversion keeps them upon
+the observances it makes, and strikes them from a machine-spirit, which is
+restored by enacting the omen it showed (see conversion).
+
+Kindred passages: verdicts, observances, machine-spirit, liturgy,
+placeholders, chronicle, invoke, exalted-servitor
 
 Exempla:
-  {"incantation": "systemctl --user stop wlsunset",
+  // an observance that must be undone should a later subject fall
+  {"name": "wlsunset", "designation": "incantation",
+   "words": "systemctl --user stop wlsunset",
    "reversion": "systemctl --user start wlsunset"}
 
-  // aspects "sharp" and "soft": only leaving "sharp" needs undoing
-  {"incantation": {"sharp": "hyprctl keyword decoration:rounding 0",
-                   "soft": "hyprctl keyword decoration:rounding 12"},
-   "reversion": {"sharp": "hyprctl reload", "*": ""}}
-
-  {"litany": "hooks/apply-theme", "offerings": ["{{aspect}}"],
+  {"name": "awaken", "designation": "litany", "scroll": "hooks/apply-theme",
+   "offerings": ["{{aspect}}"],
    "reversion": "hooks/apply-theme \"$SERVITOR_FORMER_ASPECT\""}
 
   // in an edict: the words that undo it stand on their own
-  {"incantation": "systemctl --user stop syncthing",
+  {"designation": "incantation", "words": "systemctl --user stop syncthing",
    "reversion": "systemctl --user start syncthing"}

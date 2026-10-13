@@ -6,16 +6,17 @@ scripture-file of binharic at
   $XDG_STATE_HOME/servitor/data-slates/<rite>.json
 
 (beneath ~/.local/state when $XDG_STATE_HOME is unset). It is written by the
-servitor alone, after each invocation it performs — never by a step of the
-liturgy, never by hand — and it holds three things:
+servitor alone, after each invocation it performs — never by a subject or a
+verse, never by hand, never by the exalted servitor — and it holds three
+things:
 
   aspect         the aspect the invocation left the rite in: the aspect
                  invoked after a triumph, the former aspect after a fall
   inscriptions   the inscriptions of that aspect, from runes and decrees
   last_rite      the verdict of the invocation and its hour, "at"
 
-The data-slate of a rite of aspects of pattern Mark II holds two things
-more, whatever the verdict of its invocation:
+The data-slate of a rite of aspects holds two things more, whatever the
+verdict of its invocation:
 
   boot           the boot of the machine the invocation was performed in,
                  as /proc/sys/kernel/random/boot_id names it
@@ -30,7 +31,11 @@ the proof of a subject set, or the proof of its restoration. A subject set
 or restored without a proof — its proof fell, or it has no auspex — and a
 mute one bear no entry, and whatever an earlier invocation recorded for
 them is struck. Sanctums, transcriptions and tethers are read afresh in an
-instant and are not recorded.
+instant and are never recorded — not even an exalted one the exalted servitor
+decided because its invoker could not read it, for its only omen is its
+scripture, which may be a secret kept where only the root may read, and the
+data-slate is the invoker's to read. Only declared omens cross from the
+exalted servitor, so nothing else it read reaches the data-slate.
 
 These recorded omens serve as stale omens where a live omen is not heard:
 an exalted auspex, never spoken outside an invocation; an auspex spared by
@@ -46,8 +51,8 @@ and last_rite: the inscriptions it was proclaimed with after a triumph,
 those recorded before after a fall.
 
 The data-slate is the servitor's memory, not its eyes. It names the aspect
-only when no omen can be read — a rite whose liturgy holds only incantations
-and litanies, and no auspex. Where omens speak and agree on an aspect the
+only when no omen can be read — a rite whose machine-spirits keep no auspex,
+or whose every auspex is mute. Where omens speak and agree on an aspect the
 data-slate did not record, the rite is desecrated, and the augury names the
 remembered aspect as "former". The inscriptions an augury speaks are those
 of the data-slate; a rite never invoked through the servitor has none. For

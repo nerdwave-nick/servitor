@@ -5,16 +5,17 @@ ritual invoke tells by its death-mark alone how the invocation ended, so
 that lesser machines may branch upon it without reading a word, and it is
 the same whether or not the rune --binharic was spoken:
 
-  0  triumph: every step was performed, the edict obeyed
-  1  reverted: a step fell, and every deed was undone; the machine stands
-     as it stood before
+  0  triumph: every changing subject was set and proven — or none needed
+     to change — the edict obeyed
+  1  reverted: a subject, an observance or a verse fell, and every deed
+     was undone; the machine stands as it stood before
   2  refused before anything was touched: the pre-flight found heresy, the
      rite or the aspect is unknown, words strayed after an edict's name, a
      rune was malformed, or --foresee was spoken with --binharic; for a
-     rite with exalted verses also a sanction lapsed or never laid, no
+     rite that exalts anything also a sanction lapsed or never laid, no
      intercessor or no servitor installed as it must be, or the master's
      proof dismissed
-  3  faltered: a step fell, and a reversion fell too; the rite lies
+  3  faltered: something fell, and a reversion fell too; the rite lies
      corrupted until it is invoked anew
 
 A servitor roused as root refuses every invocation with 2, for it performs

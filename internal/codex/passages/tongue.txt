@@ -1,9 +1,10 @@
-The program in which incantations and litanies are spoken
+The program in which enact words, observances, verses and auspexes are spoken
 
 The tongue is the language the servitor speaks its commands in: the program
-to which an incantation's words, a reversion and the auspex are handed as
-"<tongue> -c <words>", and through which a litany's scroll is recited when
-the scroll cannot be executed by its own shebang. Unless commanded otherwise
+to which a machine-spirit's enact words and auspex, an incantation's words
+and a reversion are handed as "<tongue> -c <words>", and through which a
+litany's scroll is recited when the scroll cannot be executed by its own
+shebang. Unless commanded otherwise
 the servitor speaks bash.
 
 A tongue is named by one word alone: the name or path of a single program,
@@ -11,9 +12,10 @@ sought along the machine's PATH. No words may follow it — "bash -e" names a
 program that does not exist. Should you need such words, speak them inside
 the incantation itself ("set -e; …").
 
-The tongue may be named in three places, and the nearest prevails: on the
-step (incantations and litanies), on the rite (for every step of its liturgy
-and for its auspex), and in the settings (for every rite of the Librarium).
+The tongue may be named in three places, and the nearest prevails: on a
+machine-spirit (for its enact words and its auspex), an observance or a
+verse; on the rite (for everything it speaks); and in the settings (for
+every rite of the Librarium).
 Where none is named, bash is spoken.
 
 Before anything is performed, the pre-flight seeks every tongue the
@@ -29,7 +31,7 @@ the tongues exalted speech knows how to bid read no scripture of its own as
 it awakens, judged by the last name of the program it truly is: bash, spoken
 as "bash --noprofile --norc"; zsh, as "zsh -f"; fish, as "fish --no-config";
 sh and dash as they are, for neither reads any when it is not interactive,
-and ENV never reaches them. Any other tongue of an exalted verse is heresy,
+and ENV never reaches them. Any other tongue of exalted words is heresy,
 and the exalted servitor refuses it; the pre-flight refuses it before any
 proof is asked. Where /bin/sh is bash, sh is spoken as bash.
 
@@ -37,13 +39,16 @@ Kindred passages: incantation, litany, reversion, auspex, patience,
 exalted-servitor
 
 Exempla:
-  // on a step
-  {"incantation": "print -P '%F{red}{{aspect}}%f'", "tongue": "zsh"}
+  // on an observance
+  {"name": "herald", "designation": "incantation", "tongue": "zsh",
+   "words": "print -P '%F{red}{{aspect}}%f'"}
 
-  // on a rite, for its whole liturgy and its auspex
-  {"pattern": "Mark I", "aspects": ["on", "off"], "tongue": "dash",
-   "auspex": "test -e /run/user/1000/veiled && echo on || echo off",
-   "liturgy": [{"incantation": "touch /run/user/1000/veiled"}]}
+  // on a rite, for everything it speaks
+  {"pattern": "Mark II", "aspects": ["on", "off"], "tongue": "dash",
+   "subjects": [{"name": "veil", "designation": "machine-spirit",
+                 "auspex": {"scan": "test -e /run/user/1000/veiled && echo on || echo off"},
+                 "enact": {"on": "touch /run/user/1000/veiled",
+                           "off": "rm -f /run/user/1000/veiled"}}]}
 
   // in servitor.json, for the whole Librarium
-  {"pattern": "Mark I", "tongue": "/usr/bin/fish"}
+  {"pattern": "Mark II", "tongue": "/usr/bin/fish"}

@@ -9,14 +9,14 @@ On its left the cogitator lists every rite of the Librarium with the glyph
 of its standing and the aspect it stands in — an edict, which stands in none,
 with its standing alone, beside the mark ❢ of an edict; on its right it
 reveals the chosen rite: its purpose, its aspects with the current one marked,
-its standing, its last rite, its inscriptions, its liturgy with the omen of
-every verse, its auspex and where its scripture is recorded. An edict shows
-its nature in place of aspects, and its liturgy without omens, for it reveals
-none and knows no auspex. Heretical rites are shown too, with the heresy that
-taints them.
+its standing, its last rite, its inscriptions, its subjects and observances,
+its vox-casts and where its scripture is recorded. An edict shows its nature
+in place of aspects, and its liturgy, verse by verse, for it reveals no omen.
+Heretical rites are shown too, with the heresy that taints them. Scripture of
+the elder pattern Mark I is shown converted, and a toast tells each
+conversion the cogitator writes (see conversion).
 
-A rite of aspects of pattern Mark II shows its subjects in place of a
-liturgy, one line each: the mark of its omen, the glyph of its designation —
+A rite of aspects shows its subjects, one line each: the mark of its omen, the glyph of its designation —
 § sanctum, ¶ transcription, ↣ tether, ⚙ machine-spirit — marked ✠ when
 exalted, its name, and what it was read to show: the omen a machine-spirit
 printed, or the vessel or bound name of the others. The mark is ✔ when its
@@ -31,14 +31,13 @@ When the omens of its subjects agree on no aspect, the rite lies
 corrupted, and each subject that fits no aspect the most of them fit is
 marked ✖ as breaking the agreement. Its observances follow, each with its
 glyph, the aspects it is spoken to and from, and its words; then the
-vox-casts the rite bears as its own, which an edict of Mark II shows too.
-Such a rite bears no auspex of its own: each subject bears its own.
+vox-casts the rite bears as its own, which an edict shows too. A rite bears
+no auspex of its own: each machine-spirit bears its own.
 
 The cogitator never waits upon an auspex to draw the shrine. It draws
 every rite at once, as the first heralding of census --vigil tells it: each
 subject whose auspex is yet to answer shows the omen the data-slate recorded
-in this boot, stale, or none, awaited; a rite of Mark I tells its auspex
-awaited. The list marks an aspect that rests on a stale omen with "~", as
+in this boot, stale, or none, awaited. The list marks an aspect that rests on a stale omen with "~", as
 "~on", as the census marks it. Then the auspexes of every rite labour
 together as the vigil awakens them, and each rite is drawn anew with its
 live omens once its own have settled. A subject read by an exalted auspex
@@ -57,13 +56,14 @@ lament of its fall names the subject or observance that fell, the omen
 commanded, the omen read before and the omen found, its last words, and the
 verdict upon every reversion.
 
-A rite holding exalted verses bears the mark of its sanction beside its
-aspect, as the census marks it: ✠ sanctioned, ☓ lapsed, ○ unsanctioned; a
-rite whose sanction is forsaken bears †, and a rite without exalted verses or
-sanction bears none. The chosen rite tells its sanction beneath its standing —
-the sigil and the hour it was sanctioned, the sigil it lapsed from, or what s
-does about it — and its liturgy marks every exalted verse ✠, as foresight,
-the running panel and the lament of a fall do.
+A rite holding exalted subjects, observances or verses bears the mark of its
+sanction beside its aspect, as the census marks it: ✠ sanctioned, ☓ lapsed,
+○ unsanctioned; a rite whose sanction is forsaken bears †, and a rite that
+exalts nothing and holds no sanction bears none. The chosen rite tells its
+sanction beneath its standing — the sigil and the hour it was sanctioned, the
+sigil it lapsed from, or what s does about it — and marks every exalted
+subject, observance and verse ✠, as foresight, the running panel and the
+lament of a fall do.
 
 Roused as root, the servitor awakens no cogitator, for the cogitator performs,
 and the servitor performs nothing with the machine's own authority: it refuses
@@ -164,10 +164,12 @@ asks for the one that abjures the sanction kept under the rite's name, a
 forsaken one too; esc retreats with nothing asked. A rite that holds heresy
 or no exalted verse offers nothing to sanction, and the screen tells why.
 
-The cogitator performs exalted verses as every invocation does, and never
-with its invoker's authority: after the pre-flight, one exalted servitor is
-raised through the intercessor with one proof of the master, and it alone
-performs each exalted verse in its turn among the common ones. When the
+The cogitator performs what is exalted as every invocation does, and never
+with its invoker's authority: once the pre-flight is passed and something
+exalted is to change, or a subject only the root may read is to be read, one
+exalted servitor is raised through the intercessor with one proof of the
+master, and it alone performs each exalted subject, observance and verse in
+its turn among the common ones. When the
 intercessor is sudo, the cogitator lends it the terminal while it asks for
 the master's proof, and takes it back once the exalted servitor first
 answers; the words between them never leave their channel. run0 and pkexec

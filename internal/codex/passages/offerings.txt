@@ -13,20 +13,21 @@ once its placeholders are filled, begins with "~/" — or is "~" and nothing
 more — is offered from the home of the invoker. Any other "~" stays as
 written, and an offering is never reckoned from the rite's hall.
 
-Each offering may differ for every aspect as an aspect map; an aspect for
-which an offering holds nothing, and no "*" serves, is heresy. An edict writes
-every offering plainly, once. Without offerings the scroll is recited bare,
+Every offering is written plainly, once, never as an aspect map; offerings
+that differ by aspect are laid before several observances guarded by "to". Without offerings the scroll is recited bare,
 and must learn what it needs from the environment (SERVITOR_ASPECT and its
 kin; for an edict, SERVITOR_RITE and its inscriptions).
 
-Offerings belong to litanies alone. An incantation's words are handed whole
+Offerings belong to litanies alone — observances and verses of an edict.
+(In the elder pattern "Mark I" an offering might differ by aspect; conversion
+splits such a litany into one observance per aspect group.) An incantation's words are handed whole
 to its tongue instead, and need no offerings.
 
 Kindred passages: litany, placeholders, aspect-maps, inscriptions
 
 Exempla:
-  {"litany": "scripts/change-theme",
+  {"name": "awaken", "designation": "litany", "scroll": "scripts/change-theme",
    "offerings": ["~/.config/nfluff/themes/{{aspect}}", "{{inscription.reason}}"]}
 
-  {"litany": "scripts/screen-transition",
-   "offerings": [{"night": "fade", "*": "wipe"}, "250"]}
+  {"name": "fade", "designation": "litany", "to": ["night"],
+   "scroll": "scripts/screen-transition", "offerings": ["fade", "250"]}

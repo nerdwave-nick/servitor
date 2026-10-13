@@ -1,36 +1,51 @@
-The ordered steps a rite performs, one after another as written
+The ordered verses of an edict, proclaimed one after another as written
 
-The "liturgy" of a rite is a list of steps, and every step is one object
-named by its own key: "sanctum", "transcription", "tether", "incantation",
-"litany" or "vox-cast". An object bearing none of these keys, or more than
-one, is heresy, and so is any key the step's kind does not know. The
-liturgy of an edict holds only incantations, litanies and vox-casts; a
-sanctum, transcription or tether there is heresy.
+The "liturgy" is the edict's alone: a list of verses, each an incantation or
+a litany, proclaimed whole and in the order written every time the edict is
+invoked. A rite of aspects of pattern Mark II keeps no liturgy — it reads
+and sets its subjects, and speaks its observances when they change — and a
+liturgy upon it is heresy whose words name its subjects and observances.
 
-At invocation the pre-flight first examines every step without touching
-anything; only then are the steps performed, in the order written, never in
-parallel and never reordered. Should one fall, the steps already performed
-are reverted in reverse order, the fallen one included, and the machine
-returns to its former aspect, or, for an edict, to how it stood before.
+Every verse is one object in the designation form: "designation":
+"incantation" with its "words", or "designation": "litany" with its
+"scroll" and "offerings", each with its "tongue", "patience", "reversion",
+"exalted" and "relics" — an observance's keys, without "name", "to" and
+"from". A missing or unknown designation, or a key of another designation,
+is heresy. Every value is written once and plainly, for an edict bears no
+aspect.
 
-Each step is named by its verse, its place in the liturgy counted from one;
-the foresight, the omens of an augury, the chronicle and the laments of the
-servitor speak of "verse 2 · tether …". Vox-casts count among the verses but
-not among the real steps of the "step x / n" that progress vox-casts tell.
+At invocation the pre-flight first examines every verse without touching
+anything; only then are the verses performed, in the order written, never
+in parallel and never reordered. Should one fall, the verses already
+performed are reverted in reverse order, the fallen one included, each by
+its own reversion words, and the machine returns to how it stood before
+the edict was proclaimed. A verse is named by its place, counted from one:
+"verse 2 · incantation …". The edict's "vox-cast" list tells of each verse
+performed and of the whole obeyed; it is no verse.
 
-Sanctums, transcriptions and tethers yield omens of the aspect the machine
-stands in; incantations, litanies and vox-casts yield none.
+In the elder pattern "Mark I" every rite kept a liturgy of steps — sanctums,
+transcriptions, tethers, incantations, litanies and vox-casts, each named by
+its own key — performed whole at every invocation. Conversion makes the
+sanctums, transcriptions and tethers subjects, the speech among them
+observances or machine-spirits, and the vox-casts the rite's list; an
+edict's liturgy takes the designation form (see conversion).
 
-Kindred passages: sanctum, transcription, tether, incantation, litany,
-vox-cast, verse, pre-flight, reversion
+Kindred passages: edict, incantation, litany, verse, vox-cast, pre-flight,
+reversion, subjects, conversion
 
-Exemplum:
+Exempla:
   "liturgy": [
-    {"vox-cast": "progress"},
+    {"designation": "incantation", "patience": "2m",
+     "words": "grim -g \"$(slurp)\" ~/pictures/visage.png",
+     "reversion": "rm -f ~/pictures/visage.png"},
+    {"designation": "incantation",
+     "words": "wl-copy --type image/png < ~/pictures/visage.png"}
+  ]
+
+  // pattern Mark I, before conversion
+  "liturgy": [
     {"tether": "~/.local/share/nfluff/current-theme",
      "anchor": "~/.config/nfluff/themes/{{aspect}}"},
-    {"litany": "scripts/change-theme",
-     "offerings": ["~/.config/nfluff/themes/{{aspect}}"]},
-    {"incantation": "makoctl reload", "reversion": "makoctl reload"},
+    {"incantation": "makoctl reload"},
     {"vox-cast": "success"}
   ]

@@ -21,6 +21,7 @@ it would end the marker in the ward's midst. It is never illuminated.
 Kindred passages: glyph, sanctum, ward, vessel
 
 Exempla:
-  {"sanctum": "~/.local/share/startpage/index.htm",
+  {"name": "startpage", "designation": "sanctum",
+   "vessel": "~/.local/share/startpage/index.htm",
    "glyph": "<!--", "closing-glyph": "-->",
-   "scripture": {"dark": "<body class=\"night\">", "light": "<body>"}}
+   "omens": {"dark": "<body class=\"night\">", "light": "<body>"}}
