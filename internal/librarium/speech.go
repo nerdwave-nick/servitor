@@ -12,7 +12,10 @@ import (
 // Speech is one verse that speaks, as the inquisition weighs its words:
 // a command, a reversion, or the scroll of a litany.
 type Speech struct {
-	Verse       int      // counted from one
+	Verse int // counted from one
+	// Place names the subject or observance of pattern Mark II that speaks,
+	// such as `the subject "smt"`; "" names the verse.
+	Place       string
 	Exalted     bool     // the verse is exalted
 	Relics      []string // the relics of an exalted verse, as written
 	AmidExalted bool     // the rite holds exalted verses
@@ -47,35 +50,51 @@ func (s Speech) Impurities(words string) []string {
 	var out []string
 	if !s.Exalted {
 		if n := calls(words, vouchers, false); n != "" {
-			out = append(out, fmt.Sprintf("verse %d calls upon the intercessor %q within words that are not "+
+			out = append(out, fmt.Sprintf("%s calls upon the intercessor %q within words that are not "+
 				"exalted: such words ask for the master's proof by themselves, fall where no terminal attends, and "+
 				"leave that proof lingering for whatever follows — strike %q and write \"exalted\": true upon the "+
-				"verse, that the servitor itself vouches for it once", s.Verse, n, n))
+				"%s, that the servitor itself vouches for it once", s.place(), n, n, s.kind()))
 		}
 		if n := calls(words, guarded, true); n != "" && s.AmidExalted {
-			out = append(out, fmt.Sprintf("verse %d calls %q, which the machine guards by an intercessor of its "+
+			out = append(out, fmt.Sprintf("%s calls %q, which the machine guards by an intercessor of its "+
 				"own: it asks for the master's proof by itself, beside the one proof the exalted verses of this "+
-				"rite already demand — write \"exalted\": true upon the verse, that one proof serves both", s.Verse, n))
+				"rite already demand — write \"exalted\": true upon the %s, that one proof serves both", s.place(), n, s.kind()))
 		}
 		return out
 	}
 	if homeward.MatchString(words) {
-		out = append(out, fmt.Sprintf("the exalted speech of verse %d reaches into the home of its invoker "+
+		out = append(out, fmt.Sprintf("the exalted speech of %s reaches into the home of its invoker "+
 			"($HOME or ~): exalted speech is spoken with the machine's own home, and what lies in the invoker's "+
 			"may be altered by the invoker's hand after its sanction — lay what it reads beside the rite's "+
-			"scripture and name it under \"relics\"", s.Verse))
+			"scripture and name it under \"relics\"", s.place()))
 	}
 	if strays := s.strays(words); len(strays) > 0 {
 		is, it := "is", "it"
 		if len(strays) > 1 {
 			is, it = "are", "them"
 		}
-		out = append(out, fmt.Sprintf("the exalted speech of verse %d reaches for %s, which %s not among its "+
+		out = append(out, fmt.Sprintf("the exalted speech of %s reaches for %s, which %s not among its "+
 			"relics: exalted speech is spoken in a hall of the exalted servitor's own that holds its relics "+
-			"alone — lay %s beside the rite's scripture and name %s under \"relics\"", s.Verse,
+			"alone — lay %s beside the rite's scripture and name %s under \"relics\"", s.place(),
 			strings.Join(strays, ", "), is, it, it))
 	}
 	return out
+}
+
+// place names the verse, subject or observance that speaks.
+func (s Speech) place() string {
+	if s.Place != "" {
+		return s.Place
+	}
+	return fmt.Sprintf("verse %d", s.Verse)
+}
+
+// kind is what speaks: a verse, a subject or an observance.
+func (s Speech) kind() string {
+	if kind, _, ok := strings.Cut(strings.TrimPrefix(s.Place, "the "), " "); ok {
+		return kind
+	}
+	return "verse"
 }
 
 // calls returns the first of names the words call upon as a program, ""

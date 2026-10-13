@@ -63,8 +63,20 @@ type Rite struct {
 	Tongue       string        // "" when the rite names none
 	Liturgy      []Step
 
+	// MarkII marks scripture of pattern Mark II. A rite of aspects then
+	// holds Subjects and Observances and no Liturgy; an edict holds a
+	// Liturgy of incantations and litanies alone, every value of it written
+	// once. Both bear their vox-casts as VoxCasts, never as steps, and
+	// neither bears an Auspex.
+	MarkII      bool
+	Subjects    []Subject    // in written order
+	Observances []Observance // in written order
+	VoxCasts    []string     // VoxProgress and VoxSuccess; nil when unwritten
+
 	src    *source // the scripture as read, for locating its keys
 	verses []int   // verse of each step of Liturgy in the scripture, when read
+	// subjectAt is the index of each of Subjects in the scripture, when read.
+	subjectAt []int
 }
 
 // Inscription is one inscription declared by a rite.
@@ -188,6 +200,15 @@ func (r *Rite) verse(i int) int {
 	return i + 1
 }
 
+// subjectPointer is the JSON pointer of the subject at index i of
+// Subjects.
+func (r *Rite) subjectPointer(i int) string {
+	if i < len(r.subjectAt) {
+		return fmt.Sprintf("/subjects/%d", r.subjectAt[i])
+	}
+	return fmt.Sprintf("/subjects/%d", i)
+}
+
 // stepPointer is the JSON pointer of the step at index i of the liturgy.
 func (r *Rite) stepPointer(i int) string { return fmt.Sprintf("/liturgy/%d", r.verse(i)-1) }
 
@@ -198,7 +219,7 @@ func (r *Rite) Equal(o *Rite) bool {
 		return r == o
 	}
 	a, b := *r, *o
-	a.Path, a.src, a.verses = "", nil, nil
-	b.Path, b.src, b.verses = "", nil, nil
+	a.Path, a.src, a.verses, a.subjectAt = "", nil, nil, nil
+	b.Path, b.src, b.verses, b.subjectAt = "", nil, nil, nil
 	return reflect.DeepEqual(a, b)
 }

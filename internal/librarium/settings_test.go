@@ -46,7 +46,7 @@ var settingsHeresies = []struct {
 	{"pattern missing", `{"tongue": "zsh"}`, `bears no "pattern"`, `{`},
 	{"pattern malformed", `{"pattern": "Mark 1"}`, "numerals of the old tongue", `"Mark 1"`},
 	{"pattern no string", `{"pattern": 1}`, "numerals of the old tongue", `1}`},
-	{"pattern unknown mark", `{"pattern": "Mark II"}`, `forged to read only "Mark I"`, `"Mark II"`},
+	{"pattern unknown mark", `{"pattern": "Mark III"}`, `forged to read only "Mark I"`, `"Mark III"`},
 	{"unknown key", `{"pattern": "Mark I", "shell": "zsh"}`,
 		`the key "shell" is not written in the codex for the settings; strike it, or write one of the keys the codex knows there: "pattern", "tongue", "chronicle", "vox", "patience", "intercessor", "$schema"`, `"shell"`},
 	{"key twice", `{"pattern": "Mark I", "vox": "off", "vox": "off"}`, `the key "vox" is written twice`, `"vox": "off"}`},
@@ -103,7 +103,7 @@ func TestParseSettings_HereticalOrdersFallBackToDefaults(t *testing.T) {
 	if *s != (Settings{Path: settingsPath, Tongue: "fish"}) {
 		t.Fatalf("settings %+v: heretical orders must stay unwritten, sound ones kept", *s)
 	}
-	if s, _ := ParseSettings(settingsPath, []byte(`{"pattern": "Mark II", "tongue": "fish"}`)); *s != (Settings{Path: settingsPath}) {
+	if s, _ := ParseSettings(settingsPath, []byte(`{"pattern": "Mark III", "tongue": "fish"}`)); *s != (Settings{Path: settingsPath}) {
 		t.Fatalf("settings %+v: scripture of an unknown pattern must not be heeded at all", *s)
 	}
 }

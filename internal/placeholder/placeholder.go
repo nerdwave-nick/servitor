@@ -9,6 +9,8 @@
 // The words of an exalted verse (Scope.Exalted) are fixed when its master
 // sanctions them: {{former}}, and an inscription only its rune may fill,
 // are heresy there.
+// {{omen}} names the omen a machine-spirit of pattern Mark II is enacted
+// into or tried for; it is heresy in every other word (Scope.Omen).
 // {{{{ is a literal {{; a lone }} is literal. Every other mark, an inscription
 // the rite never declared, and a mark that is never closed are heresies; they
 // are never rendered empty.
@@ -48,6 +50,9 @@ type Scope struct {
 	// Fleeting are the inscriptions whose word may come from their rune
 	// alone, at invocation: mandatory, yet not decreed for every aspect.
 	Fleeting []string
+	// Omen marks the words that enact or try an omen of a machine-spirit
+	// (pattern Mark II), the only words that may speak {{omen}}.
+	Omen bool
 }
 
 // Values are what the marks are illuminated with during one invocation.
@@ -56,6 +61,7 @@ type Values struct {
 	Former       string            // {{former}}: the aspect before; empty if unknown
 	Rite         string            // {{rite.name}}
 	Inscriptions map[string]string // {{inscription.<key>}}; an unset key is empty
+	Omen         string            // {{omen}}: the omen being enacted or tried
 	Tidings      Tidings           // only in VoxCastMode
 }
 
@@ -155,6 +161,11 @@ func (s Scope) resolve(name string, v Values) (string, Kind, bool) {
 		return v.Former, 0, true
 	case "rite.name":
 		return v.Rite, 0, true
+	case "omen":
+		if !s.Omen {
+			return "", Omenless, false
+		}
+		return v.Omen, 0, true
 	}
 	if key, ok := strings.CutPrefix(name, inscriptionPrefix); ok && key != "" {
 		if !slices.Contains(s.Inscriptions, key) {

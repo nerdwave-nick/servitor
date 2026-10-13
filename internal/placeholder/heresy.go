@@ -21,6 +21,8 @@ const (
 	// Fleeting is {{former}}, or an inscription that only its rune may
 	// fill, in the words of an exalted verse.
 	Fleeting
+	// Omenless is {{omen}} in words that neither enact nor try an omen.
+	Omenless
 )
 
 // Position locates a heresy within the words it was found in.
@@ -54,6 +56,10 @@ func (h Heresy) Message() string {
 			"through which corruption seeps into the rite. To inscribe a literal {{, write {{{{"
 	case Fleeting:
 		return h.fleeting()
+	case Omenless:
+		return fmt.Sprintf("%s names the omen a machine-spirit is enacted into or tried for, and is spoken only "+
+			"in the words of its \"enact\" and of its \"trials\"; nowhere else is an omen being set or tried, "+
+			"and the servitor will not illuminate it as nothing", h.Mark)
 	case Aspectless:
 		which := "the aspect being invoked"
 		if h.Name == "former" {

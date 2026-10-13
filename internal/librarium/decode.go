@@ -19,6 +19,7 @@ type decoder struct {
 	findings Findings
 	aspects  []string // valid aspects declared once, in written order
 	scope    placeholder.Scope
+	markII   markIIDecoding // what pattern Mark II judges once every key is read
 }
 
 // member is one key of an object and its value.
@@ -69,8 +70,7 @@ func (d *decoder) object(v *hujson.Value, what string, known []string) (fields, 
 		m.name = m.key.Value.(hujson.Literal).String()
 		switch {
 		case known != nil && !slices.Contains(known, m.name):
-			d.heresy(m.key, "the key %q is not written in the codex for %s; strike it, or write one of "+
-				"the keys the codex knows there: %s", m.name, what, quoteAll(withoutAliases(known)))
+			d.unknownKey(m, what, known)
 		case slices.ContainsFunc(fs, func(o member) bool { return o.name == m.name }):
 			d.heresy(m.key, "the key %q is written twice in %s; the servitor will not choose between two "+
 				"commandments of one name — keep only one", m.name, what)
@@ -79,6 +79,21 @@ func (d *decoder) object(v *hujson.Value, what string, known []string) (fields, 
 		}
 	}
 	return fs, true
+}
+
+// unknownKey denounces the key of m, which the codex does not know for
+// what; known are the keys it does know there.
+func (d *decoder) unknownKey(m member, what string, known []string) {
+	d.heresy(m.key, "the key %q is not written in the codex for %s; strike it, or write one of "+
+		"the keys the codex knows there: %s", m.name, what, quoteAll(withoutAliases(known)))
+}
+
+// within examines the words decoded until the returned function is called
+// in the placeholder scope sc.
+func (d *decoder) within(sc placeholder.Scope) func() {
+	prev := d.scope
+	d.scope = sc
+	return func() { d.scope = prev }
 }
 
 // wrongForm denounces a value written in a form its place does not permit.

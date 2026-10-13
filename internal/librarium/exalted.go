@@ -3,6 +3,7 @@ package librarium
 import (
 	"fmt"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/tailscale/hujson"
@@ -83,11 +84,23 @@ func (s stepDecoder) exaltation() bool {
 		return false
 	}
 	if _, isMap := m.val.Value.(*hujson.Object); isMap {
-		s.d.heresy(m.val, "%s is written as an aspect map, yet a verse is exalted for every aspect or for none "+
-			"— write true or false", s.field("exalted"))
+		s.d.heresy(m.val, "%s is written as an aspect map, yet a %s is exalted for every aspect or for none "+
+			"— write true or false", s.field("exalted"), s.nounKind())
 		return false
 	}
 	return s.d.boolean(m.val, s.field("exalted"))
+}
+
+// nounKind is what may be exalted in the decoder's place: a verse, a
+// subject or an observance.
+func (s stepDecoder) nounKind() string {
+	switch {
+	case s.designation == "" || s.name == "":
+		return "verse"
+	case slices.Contains(SubjectDesignations, s.designation):
+		return "subject"
+	}
+	return "observance"
 }
 
 // relics decodes the relics of an incantation or litany: paths within the
@@ -149,20 +162,22 @@ func (s stepDecoder) rooted(step Step, own *hujson.Value) {
 	default:
 		return
 	}
-	r := s.d.rite
+	s.rootedPath(path, noun, own)
+}
+
+// rootedPath denounces the exalted vessel or bound name path (noun), written
+// at own, when, rendered for some aspect, it does not begin at the root or
+// lies within one of the realms.
+func (s stepDecoder) rootedPath(path, noun string, own *hujson.Value) {
 	for _, aspect := range s.d.aspects {
-		inscriptions := map[string]string{}
-		for _, in := range r.Inscriptions {
-			inscriptions[in.Key], _ = in.Decrees.For(aspect)
-		}
-		out, err := s.d.scope.Render(path, placeholder.Values{Aspect: aspect, Rite: r.Name, Inscriptions: inscriptions})
+		out, err := s.d.scope.Render(path, s.d.values(aspect))
 		if err != nil {
 			return // denounced already
 		}
 		if !filepath.IsAbs(out) {
-			s.d.heresy(own, "the %s %s of the exalted %s of verse %d does not begin at the root: the exalted "+
+			s.d.heresy(own, "the %s %s of %s does not begin at the root: the exalted "+
 				"servitor reckons no path from the invoker's home or hall, and finds its vessels from \"/\" alone "+
-				"— write the whole path", noun, out, s.kind.Key(), s.verse)
+				"— write the whole path", noun, out, s.exaltedTitle())
 			return
 		}
 		for _, realm := range realms {
@@ -180,6 +195,10 @@ func (s stepDecoder) rooted(step Step, own *hujson.Value) {
 // litany of the rite speaks: its commands and reversions.
 func (d *decoder) judgeSpeech() {
 	r := d.rite
+	if r.MarkII && !r.Edict {
+		d.judgeSpeechII()
+		return
+	}
 	amid := r.Exalted()
 	for i, step := range r.Liturgy {
 		var u Utterance
@@ -188,6 +207,9 @@ func (d *decoder) judgeSpeech() {
 		switch st := step.(type) {
 		case *Incantation:
 			u, words, keys = st.Utterance, []AspectMap[string]{st.Command}, []string{"incantation"}
+			if r.MarkII {
+				keys = []string{"words"}
+			}
 		case *Litany:
 			u = st.Utterance
 		default:

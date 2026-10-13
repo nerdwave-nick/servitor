@@ -156,8 +156,8 @@ func TestSettingsSchema_KnowsEveryKeyOfTheLibrarium(t *testing.T) {
 	if got := strs(obj(t, m, "properties", "intercessor")["enum"].([]any)); !slices.Equal(got, librarium.Intercessors) {
 		t.Errorf("intercessor %v, want %v", got, librarium.Intercessors)
 	}
-	if got := obj(t, m, "properties", "pattern")["const"]; got != librarium.Pattern {
-		t.Errorf("pattern %v", got)
+	if got := strs(obj(t, m, "properties", "pattern")["enum"].([]any)); !slices.Equal(got, librarium.Patterns) {
+		t.Errorf("pattern %v, want %v", got, librarium.Patterns)
 	}
 }
 
