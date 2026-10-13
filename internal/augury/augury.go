@@ -74,7 +74,7 @@ const (
 	Mute     Heed = "mute"    // the auspex fell, outlasted its patience, or named no aspect
 	// Awaited is for a census kept as a vigil alone: the rite is told
 	// before its auspex settled, and will be told again once it has. No
-	// augury bears it.
+	// augury reads it; the vigil marks the readings it tells so.
 	Awaited Heed = "awaited"
 )
 

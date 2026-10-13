@@ -212,6 +212,8 @@ func (m *model) listView(w, h int) string {
 		switch {
 		case r.rite() != nil && r.rite().Edict:
 			state = t.accent.Render(glyphEdict+" ") + state // an edict stands in no aspect
+		case r.reading.Aspect != "" && r.reading.Stale(): // as the census marks it
+			state = t.dim.Render("~") + t.accent.Render(r.reading.Aspect)
 		case r.reading.Aspect != "":
 			state = t.accent.Render(r.reading.Aspect)
 		}

@@ -23,13 +23,30 @@ printed, or the vessel or bound name of the others. The mark is ✔ when its
 omen fits the aspect the rite stands in, ✖ when it fits another, and the
 aspects it fits are named beside it; · marks a subject that yields no omen,
 with the reason: mute, read yet fitting no aspect; unread, bearing no auspex
-that may be heard outside an invocation; forgone, its auspex left
-unawakened. When the omens of its subjects agree on no aspect, the rite lies
+that may be heard outside an invocation; awaited, its auspex still
+labouring; forgone, its auspex left unawakened. A subject whose omen is
+taken from the record of the data-slate, where no live omen is heard, is
+told stale, dimmed, with the age of its reading, as "stale · read 2h ago".
+When the omens of its subjects agree on no aspect, the rite lies
 corrupted, and each subject that fits no aspect the most of them fit is
 marked ✖ as breaking the agreement. Its observances follow, each with its
 glyph, the aspects it is spoken to and from, and its words; then the
 vox-casts the rite bears as its own, which an edict of Mark II shows too.
 Such a rite bears no auspex of its own: each subject bears its own.
+
+The cogitator never waits upon an auspex to draw the shrine. It draws
+every rite at once, as the first heralding of census --vigil tells it: each
+subject whose auspex is yet to answer shows the omen the data-slate recorded
+in this boot, stale, or none, awaited; a rite of Mark I tells its auspex
+awaited. The list marks an aspect that rests on a stale omen with "~", as
+"~on", as the census marks it. Then the auspexes of every rite labour
+together as the vigil awakens them, and each rite is drawn anew with its
+live omens once its own have settled. A subject read by an exalted auspex
+stays stale, for that auspex is spoken at invocation alone. Every reading
+of the Librarium — r, the end of an invocation, the sealing of the wizard —
+begins anew, and slays the auspexes still labouring for the reading before,
+whose words are no longer heeded; retreating from the cogitator slays every
+auspex still labouring.
 
 The preview of such a rite tells, for every subject, the omen it was read to
 show, the omen commanded and whether it changes, with the words that would

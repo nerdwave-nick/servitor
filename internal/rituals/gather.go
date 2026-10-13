@@ -14,9 +14,10 @@ const maxAuspexes = 16
 
 // augural is what the servitor learns of one rite of a gathering.
 type augural struct {
-	at     int    // the rite's place among the names gathered
-	entry  *Entry // nil when the rite could not be read
-	lament error  // why it could not be read, or a data-slate that could not be
+	at      int      // the rite's place among the names gathered
+	entry   *Entry   // nil when the rite could not be read
+	reading *Reading // what entry was told from; nil with it
+	lament  error    // why it could not be read, or a data-slate that could not be
 }
 
 // gather augurs the rites names together, keeping at most maxAuspexes
@@ -43,7 +44,7 @@ func (s *Servitor) augural(ctx context.Context, at int, name string, forgoAuspex
 		return augural{at: at, lament: err}
 	}
 	e := s.entry(name, r)
-	return augural{at: at, entry: &e, lament: r.Lament}
+	return augural{at: at, entry: &e, reading: &r, lament: r.Lament}
 }
 
 // read gathers the rites names and returns what it learnt of each, in the

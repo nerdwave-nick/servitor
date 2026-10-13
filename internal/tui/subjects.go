@@ -32,7 +32,8 @@ func (m *model) stateRite(rite *librarium.Rite, a augury.Augury, label func(stri
 // name — with the aspects it fits when they are not the rite's alone.
 //
 // The mark is ✔ when its omen fits the rite's aspect, ✖ when it does not,
-// and · when it yields none, with the reason: mute, unread or forgone. A
+// and · when it yields none, with the reason: mute, unread, awaited or
+// forgone. An omen the data-slate recorded is told stale, with its age. A
 // rite that stands in no aspect marks its subjects by the aspects they
 // agree on; when they agree on none, those fitting no aspect that the most
 // subjects fit are marked ✖ as breaking the agreement.
@@ -69,7 +70,7 @@ func (m *model) subjectLines(rite *librarium.Rite, a augury.Augury) []string {
 			line += t.dim.Render(" (" + strings.Join(o.Aspects, ", ") + ")")
 		}
 		if o != nil && o.Stale {
-			line += t.dim.Render(" stale")
+			line += t.dim.Render(" stale · read " + age(m.now().Sub(o.ReadAt)) + " ago")
 		}
 		if o != nil && !fits && broken {
 			line += t.warn.Render(" · breaks the agreement")
@@ -109,8 +110,9 @@ func (m *model) omenRead(sub librarium.Subject, o *augury.Omen, a augury.Augury,
 }
 
 // silence tells why the subject yields no omen: unread when it has no
-// auspex to be heard outside an invocation, forgone when its auspex was
-// left unawakened, else mute — read, yet fitting no aspect.
+// auspex to be heard outside an invocation, awaited when its auspex still
+// labours, forgone when it was left unawakened, else mute — read, yet
+// fitting no aspect.
 func silence(sub librarium.Subject, a augury.Augury) string {
 	ms, spirit := sub.Matter.(*librarium.MachineSpirit)
 	switch {
@@ -118,6 +120,8 @@ func silence(sub librarium.Subject, a augury.Augury) string {
 		return "mute"
 	case ms.Auspex == nil || ms.Auspex.Exalted:
 		return "unread"
+	case a.Auspex == augury.Awaited:
+		return "awaited"
 	case a.Auspex == augury.Forgone:
 		return "forgone"
 	}
