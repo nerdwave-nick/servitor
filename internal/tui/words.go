@@ -9,6 +9,7 @@ import (
 
 	"github.com/nerdwave-nick/servitor/internal/invocation"
 	"github.com/nerdwave-nick/servitor/internal/librarium"
+	"github.com/nerdwave-nick/servitor/internal/rituals"
 )
 
 // verseName names a verse as "verse 2 · tether <target>", an exalted verse
@@ -140,12 +141,19 @@ func uttered(what, output string) []string {
 	return out
 }
 
-// fallen tells why the rite or edict fell, its last words and how every
-// reversion went.
-func (m *model) fallen(out invocation.Outcome, edict bool) string {
+// fallen tells why the rite or edict of res fell, its last words and how
+// every reversion went. A fallen subject of a state rite is named with its
+// designation, and a machine-spirit with the omen commanded and the omen it
+// was read to show before it was set; the heresy names the omen found.
+func (m *model) fallen(res rituals.Result) string {
 	t := m.t
+	out, edict := *res.Outcome, res.Rite != nil && res.Rite.Edict
 	f := out.Fell
-	b := []string{t.bold.Render("It fell at " + verseName(f.Verse)), t.danger.Render(f.Heresy.Error())}
+	b := []string{t.bold.Render("It fell at " + named(res.Rite, f.Verse)), t.danger.Render(f.Heresy.Error())}
+	if p, ok := planOf(res, f.Verse); ok && spirit(res.Rite, f.Verse) {
+		b = append(b, t.text.Render(fmt.Sprintf("  the omen commanded: %q · the omen read before: %s", p.Target,
+			readBefore(p))))
+	}
 	for _, l := range uttered("its last words", f.Output) {
 		b = append(b, t.text.Render(l))
 	}

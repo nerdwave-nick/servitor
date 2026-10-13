@@ -47,13 +47,21 @@ func (m *model) detailView(w int) string {
 	}
 	b = append(b, label("last rite")+m.lastRite(a.LastRite))
 	b = append(b, label("inscriptions")+m.inscriptionLine(rite, a))
-	b = append(b, "", label("liturgy"))
-	for _, l := range m.liturgy(rite, a) {
-		b = append(b, " "+fit(l, w-1))
-	}
-	b = append(b, "")
-	if !rite.Edict { // an edict knows no auspex
-		b = append(b, label("auspex")+m.auspexLine(rite, a))
+	switch {
+	case rite.MarkII && !rite.Edict: // a state rite: its subjects, and no auspex of its own
+		b = append(b, m.stateRite(rite, a, label, w)...)
+	default:
+		b = append(b, "", label("liturgy"))
+		for _, l := range m.liturgy(rite, a) {
+			b = append(b, " "+fit(l, w-1))
+		}
+		b = append(b, "")
+		switch {
+		case rite.MarkII:
+			b = append(b, label("vox-cast")+m.voxCasts(rite))
+		case !rite.Edict: // an edict knows no auspex
+			b = append(b, label("auspex")+m.auspexLine(rite, a))
+		}
 	}
 	b = append(b, label("recorded in")+t.dim.Render(truncateLeft(shortPath(rite.Path), w-labelW)))
 	return strings.Join(b, "\n")
