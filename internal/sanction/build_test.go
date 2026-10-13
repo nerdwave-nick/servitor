@@ -63,10 +63,9 @@ func librariumOf(t *testing.T, name, scripture string, files map[string]string) 
 	for rel, content := range files {
 		write(rel, content)
 	}
-	lib := librarium.Load(dir)
-	r := lib.Rites[name]
-	if r == nil {
-		t.Fatalf("the rite %s is heretical: %v", name, lib.Findings)
+	r, fs := librarium.LoadFile(filepath.Join(dir, "rites", name+".json"))
+	if r == nil || fs.Heretical() {
+		t.Fatalf("the rite %s is heretical: %v", name, fs)
 	}
 	return r
 }

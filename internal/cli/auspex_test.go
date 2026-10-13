@@ -5,20 +5,36 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 	"time"
 )
 
-// sloth writes the rite "sloth", whose auspex, awakened outside an
-// invocation, marks that it was, then labours long and falls; it returns
-// the path of the mark.
+// spiritRite is a rite of one machine-spirit "spirit", whose omens are the
+// names of the aspects on and off, read by the scan words.
+func spiritRite(scan string) string { return patientSpiritRite(scan, "") }
+
+// patientSpiritRite is spiritRite whose auspex labours for patience ("":
+// as long as the codex grants).
+func patientSpiritRite(scan, patience string) string {
+	if patience != "" {
+		patience = `, "patience": "` + patience + `"`
+	}
+	return `{"pattern": "Mark II", "aspects": ["on", "off"], "subjects": [{"name": "spirit",
+  "designation": "machine-spirit", "auspex": {"scan": ` + strconv.Quote(scan) + patience + `}, "enact": {"*": "true"}}]}`
+}
+
+// sloth writes the rite "sloth", whose auspex shows the target during an
+// invocation, yet awakened outside one marks that it was, then labours long
+// and falls; it returns the path of the mark.
 func (e *env) sloth() string {
 	e.t.Helper()
 	mark := filepath.Join(e.t.TempDir(), "awakened")
-	e.addRite("rites/sloth.json", `{"pattern": "Mark I", "aspects": ["on", "off"],
-  "auspex": {"rite": "[ -n \"$SERVITOR_ASPECT\" ] && exit 1; touch `+mark+`; sleep 5; exit 1",
-             "patience": "10s"}, "liturgy": []}`)
+	e.addRite("rites/sloth.json", `{"pattern": "Mark II", "aspects": ["on", "off"], "subjects": [{"name": "spirit",
+  "designation": "machine-spirit", "enact": {"*": "true"},
+  "auspex": {"scan": "if [ -n \"$SERVITOR_ASPECT\" ]; then echo \"$SERVITOR_ASPECT\"; exit 0; fi; touch `+mark+`; sleep 5; exit 1",
+             "patience": "10s"}}]}`)
 	return mark
 }
 
@@ -37,14 +53,14 @@ func (e *env) census(runes ...string) map[string]map[string]any {
 }
 
 // TestCensus_EveryEntryMarksWhatTheAuspexGave: every entry of the binharic
-// census bears "auspex": heeded, mute, or "" for a rite without auspex, an
-// edict and a heretical rite.
+// census bears "auspex": heeded, mute, or "" for a rite whose subjects bear
+// no auspex, an edict and a heretical rite.
 func TestCensus_EveryEntryMarksWhatTheAuspexGave(t *testing.T) {
 	e := newEnv(t)
 	e.addRite("rites/capture.json", edictJSON)
 	e.addRite("rites/broken.json", `{`)
-	e.addRite("rites/dnd.json", `{"pattern": "Mark I", "aspects": ["on", "off"], "auspex": "echo off", "liturgy": []}`)
-	e.addRite("rites/fallen.json", `{"pattern": "Mark I", "aspects": ["on", "off"], "auspex": "exit 1", "liturgy": []}`)
+	e.addRite("rites/dnd.json", spiritRite("echo off"))
+	e.addRite("rites/fallen.json", spiritRite("exit 1"))
 
 	entries := e.census()
 
@@ -61,8 +77,9 @@ func TestCensus_EveryEntryMarksWhatTheAuspexGave(t *testing.T) {
 }
 
 // TestSpareAuspex_TheCensusAwakensNoAuspex: with --spare-auspex the census
-// answers at once from the other omens and the data-slate, marking forgone
-// every rite that keeps an auspex; its table is spoken as ever.
+// answers at once from the other omens, the omens recorded on the
+// data-slate and the data-slate, marking forgone every rite whose subject
+// keeps an auspex; its table is spoken as ever, a recorded omen marked ~.
 func TestSpareAuspex_TheCensusAwakensNoAuspex(t *testing.T) {
 	e := newEnv(t)
 	mark := e.sloth()
@@ -87,7 +104,7 @@ func TestSpareAuspex_TheCensusAwakensNoAuspex(t *testing.T) {
 	}
 	out := e.mustRun("census", "--spare-auspex")
 	if !regexp.MustCompile(`(?m)^RITE\s+ASPECT\s+STANDING\s+ASPECTS\s+LAST RITE\s+PURPOSE$`).MatchString(out) ||
-		!regexp.MustCompile(`(?m)^sloth\s+on\s+performed\s+on\|off\s+triumph `).MatchString(out) ||
+		!regexp.MustCompile(`(?m)^sloth\s+~on\s+performed\s+on\|off\s+triumph `).MatchString(out) ||
 		strings.Contains(out, "forgone") {
 		t.Errorf("census --spare-auspex:\n%s", out)
 	}
@@ -97,7 +114,8 @@ func TestSpareAuspex_TheCensusAwakensNoAuspex(t *testing.T) {
 }
 
 // TestSpareAuspex_TheAuguryAwakensNoAuspex: with --spare-auspex the augury
-// marks the auspex forgone and never awakens it, in every manner of reading.
+// marks the auspex forgone and never awakens it, in every manner of reading;
+// the omen recorded at the invocation stands in its stead, stale.
 func TestSpareAuspex_TheAuguryAwakensNoAuspex(t *testing.T) {
 	e := newEnv(t)
 	mark := e.sloth()
@@ -108,7 +126,9 @@ func TestSpareAuspex_TheAuguryAwakensNoAuspex(t *testing.T) {
 	if err := json.Unmarshal([]byte(e.mustRun("augury", "sloth", "--spare-auspex")), &reading); err != nil {
 		t.Fatal(err)
 	}
-	if reading["auspex"] != "forgone" || reading["aspect"] != "off" || len(reading["omens"].([]any)) != 0 {
+	omens := reading["omens"].([]any)
+	if reading["auspex"] != "forgone" || reading["aspect"] != "off" || len(omens) != 1 ||
+		omens[0].(map[string]any)["stale"] != true {
 		t.Errorf("augury --spare-auspex: %v", reading)
 	}
 	if got := e.mustRun("augury", "sloth", "aspect", "--spare-auspex"); got != "off\n" {
@@ -132,8 +152,8 @@ func TestSpareAuspex_TheAuguryAwakensNoAuspex(t *testing.T) {
 // the auspex and marks what it gave.
 func TestAugury_MarksAHeededAndAMuteAuspex(t *testing.T) {
 	e := newEnv(t)
-	e.addRite("rites/dnd.json", `{"pattern": "Mark I", "aspects": ["on", "off"], "auspex": "echo on", "liturgy": []}`)
-	e.addRite("rites/fallen.json", `{"pattern": "Mark I", "aspects": ["on", "off"], "auspex": "echo porpl", "liturgy": []}`)
+	e.addRite("rites/dnd.json", spiritRite("echo on"))
+	e.addRite("rites/fallen.json", spiritRite("echo porpl"))
 	for rite, want := range map[string]string{"dnd": `"auspex": "heeded",`, "fallen": `"auspex": "mute",`} {
 		if out := e.mustRun("augury", rite); !strings.Contains(out, want) {
 			t.Errorf("augury %s lacks %s:\n%s", rite, want, out)

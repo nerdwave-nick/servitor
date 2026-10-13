@@ -216,7 +216,7 @@ func TestSanction_LaysTheSanctionWithOneProof(t *testing.T) {
 	if code != 0 || errOut != "" {
 		t.Fatalf("sanction: exit %d\nstdout: %s\nstderr: %s", code, out, errOut)
 	}
-	for _, words := range []string{u.Sigil(), "verse 2 · incantation", "incantation: echo {{aspect}} >> " + e.target +
+	for _, words := range []string{u.Sigil(), "observance exalt · incantation", "words: echo {{aspect}} >> " + e.target +
 		".exalted", "stand sanctioned under the sigil " + sanction.Short(u.Sigil())} {
 		if !strings.Contains(out, strings.ReplaceAll(words, "{{aspect}}", "on")) {
 			t.Errorf("the master is not shown %q:\n%s", words, out)
@@ -256,8 +256,8 @@ func TestSanction_LaysTheSanctionWithOneProof(t *testing.T) {
 	if code != 0 || len(a.called()) != 2 {
 		t.Fatalf("changed: exit %d, %d calls\nstdout: %s\nstderr: %s", code, len(a.called()), out, errOut)
 	}
-	if !strings.Contains(out, "under the sigil "+short) || !strings.Contains(out, "\n-       incantation: echo on") ||
-		!strings.Contains(out, "\n+       incantation: echo anew on") || strings.Contains(out, "verse 1") {
+	if !strings.Contains(out, "under the sigil "+short) || !strings.Contains(out, "\n-       words: echo on") ||
+		!strings.Contains(out, "\n+       words: echo anew on") || strings.Contains(out, "subject veil") {
 		t.Errorf("the difference is not shown:\n%s", out)
 	}
 	if lines := a.journal.lines(); len(lines) != 2 || !strings.Contains(lines[1], "former="+short) {

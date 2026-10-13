@@ -17,7 +17,8 @@
 # proof each through sudo, run0 and pkexec (through an agent of the session,
 # agent.py, for polkit 127 refuses pkexec's own agent), and invoked again into
 # the aspect it bears with no proof at all, for nothing exalted changes; a rite
-# laid in pattern Mark I with exalted verses, converted (test/vm/convert) and
+# laid in pattern Mark I with exalted verses, converted by the census that first
+# reads it and
 # given an exalted auspex only the root may read, invoked on, on again and off
 # through each intercessor with one proof each and its subjects set only when
 # they change; an exalted subject whose proof fails, everything restored with

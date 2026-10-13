@@ -64,12 +64,12 @@ func intercede(t *testing.T, mar func(root string)) {
 }
 
 // TestInquire_TheInstalledServitorOfExaltedRites: while a rite examined
-// holds exalted verses, the servitor installed at /usr/bin/servitor that is
+// holds exalted subjects, the servitor installed at /usr/bin/servitor that is
 // missing, or does not stand where the root alone may write, is an impurity
 // of the machine; --spare-vessels spares it, and a Librarium without
-// exalted verses never needs it.
+// exalted subjects never needs it.
 func TestInquire_TheInstalledServitorOfExaltedRites(t *testing.T) {
-	words := []string{"/usr/bin/servitor", "install the servitor anew", "exalted verses"}
+	words := []string{"/usr/bin/servitor", "install the servitor anew", "exalted subjects and observances"}
 	for what, c := range map[string]struct {
 		mar   func(root string)
 		names []string
@@ -86,7 +86,7 @@ func TestInquire_TheInstalledServitorOfExaltedRites(t *testing.T) {
 		"missing, for an exalted rite named": {mar: func(root string) {
 			_ = os.Remove(filepath.Join(root, "usr/bin/servitor"))
 		}, names: []string{"plain", "fresh"}, noted: true},
-		"missing, for rites without exalted verses": {mar: func(root string) {
+		"missing, for rites without exalted subjects": {mar: func(root string) {
 			_ = os.Remove(filepath.Join(root, "usr/bin/servitor"))
 		}, names: []string{"plain"}},
 		"missing, sparing the vessels": {mar: func(root string) {
@@ -114,6 +114,6 @@ func TestInquire_TheInstalledServitorOfExaltedRites(t *testing.T) {
 	fx.rite("mouse", mouse)
 	intercede(t, func(root string) { _ = os.Remove(filepath.Join(root, "usr/bin/servitor")) })
 	if fs := inquire(t, fx.servitor(), false); len(fs) != 0 {
-		t.Fatalf("a Librarium without exalted verses: %v", fs)
+		t.Fatalf("a Librarium without exalted subjects: %v", fs)
 	}
 }

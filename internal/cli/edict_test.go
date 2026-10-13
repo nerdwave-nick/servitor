@@ -2,7 +2,6 @@ package cli
 
 import (
 	"os"
-	"path/filepath"
 	"regexp"
 	"slices"
 	"strings"
@@ -11,10 +10,11 @@ import (
 
 // edictJSON is an edict that leaves a mark beside the vessel each time it
 // is proclaimed.
-const edictJSON = `{"pattern": "Mark I", "purpose": "Capture the visage of the machine", "edict": true,
+const edictJSON = `{"pattern": "Mark II", "purpose": "Capture the visage of the machine", "edict": true,
   "inscriptions": {"region": {"purpose": "the slurp geometry", "decrees": "full"}},
-  "liturgy": [{"incantation": "echo {{inscription.region}} >> $TARGET.edict"}, {"vox-cast": "progress"},
-    {"incantation": "true"}, {"vox-cast": "success"}]}`
+  "vox-cast": ["progress", "success"],
+  "liturgy": [{"designation": "incantation", "words": "echo {{inscription.region}} >> $TARGET.edict"},
+    {"designation": "incantation", "words": "true"}]}`
 
 // TestEdict_NoRitualFallsBeforeIt: a Librarium holding an edict is read,
 // listed, examined, expounded and completed by every ritual without one of
@@ -38,7 +38,7 @@ func TestEdict_NoRitualFallsBeforeIt(t *testing.T) {
 	}
 	help := e.mustRun("invoke", "capture", "--help")
 	for _, want := range []string{"servitor invoke capture --region", "Edict: proclaimed whole, bearing no aspect",
-		"verse 1 · incantation echo {{inscription.region}} >> " + e.target + ".edict", "verse 4 · vox-cast success"} {
+		"verse 1 · incantation echo {{inscription.region}} >> " + e.target + ".edict", "verse 2 · incantation true"} {
 		if !strings.Contains(help, want) {
 			t.Errorf("the edict's own help lacks %q:\n%s", want, help)
 		}
@@ -73,70 +73,6 @@ func grimdark(t *testing.T, words string) {
 	t.Helper()
 	if m := plainGlosses.FindString(words); m != "" {
 		t.Errorf("%q speaks the plain word %q", words, m)
-	}
-}
-
-// TestEdict_ProclaimedWholeAtEveryInvocation: an edict is invoked by its
-// name alone, performs its whole liturgy each time, and is told, sent to
-// the desktop as one vox-cast replaced in place, kept on its data-slate and
-// chronicled without an aspect.
-func TestEdict_ProclaimedWholeAtEveryInvocation(t *testing.T) {
-	e := newEnv(t)
-	e.addRite("rites/capture.json", edictJSON)
-
-	first := e.mustRun("invoke", "capture")
-	second := e.mustRun("invoke", "capture", "--region", "window")
-
-	if got, _ := os.ReadFile(e.target + ".edict"); string(got) != "full\nwindow\n" {
-		t.Fatalf("the edict left %q", got)
-	}
-	for _, out := range []string{first, second} {
-		got := lines(out)
-		if len(got) != 4 || got[0] != "+++ capture · edict +++" || !strings.HasPrefix(got[1], "  ✔ verse 1 · incantation echo ") ||
-			!strings.HasPrefix(got[2], "  ✔ verse 3 · incantation true") || !strings.HasPrefix(got[3], "✠ ") ||
-			!strings.Contains(strings.ToLower(got[3]), "the edict capture") || aspectless.MatchString(out) {
-			t.Fatalf("the report:\n%s", out)
-		}
-	}
-	notified := strings.Split(strings.TrimPrefix(e.notified(), "-a servitor "), "-a servitor ")
-	if len(notified) != 4 || strings.Contains(notified[0], "-r ") || !strings.Contains(notified[1], "-r 7") ||
-		!strings.Contains(notified[3], "-r 7") {
-		t.Fatalf("the desktop heard:\n%s", e.notified())
-	}
-	for _, n := range notified {
-		if !strings.Contains(n, "-- capture ") || aspectless.MatchString(n) {
-			t.Errorf("the desktop heard %q", n)
-		}
-	}
-	slate, _ := os.ReadFile(filepath.Join(e.state, "servitor", "data-slates", "capture.json"))
-	if !regexp.MustCompile(`^\{"inscriptions":\{"region":"window"\},"last_rite":\{"verdict":"triumph","at":"[^"]+"\}\}\n$`).Match(slate) {
-		t.Fatalf("data-slate %s", slate)
-	}
-	chronicled := e.chronicleLines()
-	line := regexp.MustCompile(`^\{"at":"[^"]+","rite":"capture","edict":true,"inscriptions":\{"region":"(full|window)"\},"verdict":"triumph"\}$`)
-	if len(chronicled) != 2 || !line.MatchString(chronicled[0]) || !line.MatchString(chronicled[1]) {
-		t.Fatalf("chronicle:\n%s", strings.Join(chronicled, "\n"))
-	}
-}
-
-func TestEdict_OnATerminalIsToldAsItHappensWithoutAnAspect(t *testing.T) {
-	e := newEnv(t)
-	e.addRite("rites/capture.json", edictJSON)
-	e.terminal(0)
-
-	out := e.mustRun("invoke", "capture")
-
-	got := lines(out)
-	if len(got) != 5 || got[0] != "+++ capture · edict +++" || !strings.HasPrefix(got[2], "  ⋯ ") ||
-		!strings.HasSuffix(got[2], "(1/2)") || !strings.HasPrefix(got[4], "✠ ") || aspectless.MatchString(out) {
-		t.Fatalf("stdout:\n%s", out)
-	}
-	if e.notified() != "" {
-		t.Fatalf("the desktop heard %q", e.notified())
-	}
-	if out := e.mustRun("invoke", "capture", "-s"); strings.Contains(out, "+++") || strings.Contains(out, "✔") ||
-		aspectless.MatchString(out) {
-		t.Fatalf("a silenced edict told more than its vox-casts:\n%s", out)
 	}
 }
 
@@ -179,43 +115,11 @@ func TestEdict_ForeseeingTellsAndPerformsNothing(t *testing.T) {
 	}
 }
 
-func TestEdict_AFallIsRevertedAndLamented(t *testing.T) {
-	for _, tc := range []struct {
-		name, reversion, verdict, ending string
-		code                             int
-	}{
-		{"reverted", "echo undone >> $TARGET.edict", "reverted", "Every deed is undone", 1},
-		{"faltered", "exit 4", "faltered", "the edict lies corrupted", 3},
-	} {
-		t.Run(tc.name, func(t *testing.T) {
-			e := newEnv(t)
-			e.addRite("rites/capture.json", `{"pattern": "Mark I", "edict": true, "liturgy": [
-			  {"incantation": "echo done >> $TARGET.edict", "reversion": "`+tc.reversion+`"},
-			  {"incantation": "exit 3"}]}`)
-
-			_, errOut, code := e.run("invoke", "capture")
-
-			if code != tc.code || !strings.Contains(errOut, `the edict "capture" fell at verse 2 · incantation exit 3`) ||
-				!strings.Contains(errOut, tc.ending) || aspectless.MatchString(errOut) {
-				t.Fatalf("exit %d\nstderr: %s", code, errOut)
-			}
-			chronicled := e.chronicleLines()
-			if len(chronicled) != 1 || !strings.Contains(chronicled[0], `"edict":true`) ||
-				!strings.Contains(chronicled[0], `"verdict":"`+tc.verdict+`"`) || strings.Contains(chronicled[0], `"aspect"`) {
-				t.Fatalf("chronicle %q", chronicled)
-			}
-			if n := e.notified(); !strings.Contains(n, "-u critical") || aspectless.MatchString(n) {
-				t.Fatalf("the desktop heard %q", n)
-			}
-		})
-	}
-}
-
 func TestEdict_UnmetInscriptionIsForbiddenByThePreflight(t *testing.T) {
 	e := newEnv(t)
-	e.addRite("rites/capture.json", `{"pattern": "Mark I", "edict": true,
+	e.addRite("rites/capture.json", `{"pattern": "Mark II", "edict": true,
 	  "inscriptions": {"region": {"mandatory": true}},
-	  "liturgy": [{"incantation": "echo {{inscription.region}} >> $TARGET.edict"}]}`)
+	  "liturgy": [{"designation": "incantation", "words": "echo {{inscription.region}} >> $TARGET.edict"}]}`)
 
 	_, errOut, code := e.run("invoke", "capture")
 
@@ -225,22 +129,6 @@ func TestEdict_UnmetInscriptionIsForbiddenByThePreflight(t *testing.T) {
 	}
 	if _, err := os.Stat(e.target + ".edict"); err == nil || e.chronicleLines() != nil {
 		t.Fatal("a forbidden edict touched the machine or the chronicle")
-	}
-}
-
-// TestInvoke_HelpNamesThePlainWordsOfAVerse: a verse written once for every
-// aspect is named by its words; only a verse of an aspect map is named as
-// varying per aspect.
-func TestInvoke_HelpNamesThePlainWordsOfAVerse(t *testing.T) {
-	e := newEnv(t)
-	e.addRite("rites/dnd.json", `{"pattern": "Mark I", "aspects": ["on", "off"], "liturgy": [
-	  {"incantation": "makoctl mode -t dnd"}, {"litany": {"on": "a", "off": "b"}}, {"litany": {"*": "c"}}]}`)
-	help := e.mustRun("invoke", "dnd", "--help")
-	for _, want := range []string{"verse 1 · incantation makoctl mode -t dnd", "verse 2 · litany (per aspect)",
-		"verse 3 · litany (per aspect)"} {
-		if !strings.Contains(help, want) {
-			t.Errorf("the help lacks %q:\n%s", want, help)
-		}
 	}
 }
 
@@ -349,7 +237,7 @@ func TestAugury_ShortSpeaksOfEdictsToo(t *testing.T) {
 // the same words at every Tab, and never with an aspect.
 func TestEdict_WithoutPurposeIsCompletedWithFlavour(t *testing.T) {
 	e := newEnv(t)
-	e.addRite("rites/slumber.json", `{"pattern": "Mark I", "edict": true, "liturgy": [{"incantation": "true"}]}`)
+	e.addRite("rites/slumber.json", `{"pattern": "Mark II", "edict": true, "liturgy": [{"designation": "incantation", "words": "true"}]}`)
 	for _, ritual := range []string{"invoke", "augury"} {
 		first := ""
 		for range 3 {

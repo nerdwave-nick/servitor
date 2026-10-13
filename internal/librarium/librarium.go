@@ -26,8 +26,7 @@ type Librarium struct {
 	Scriptures map[string][]string // every scripture found, per rite name
 	Findings   Findings
 	// Conversions are the scriptures of pattern Mark I read converted, yet
-	// not written (LoadConverting): the settings first, then the rites by
-	// name.
+	// not written: the settings first, then the rites by name.
 	Conversions []*Conversion
 }
 
@@ -53,17 +52,14 @@ func (l *Librarium) Names() []string {
 }
 
 // Load reads and examines every scripture in dir's rites/ and the settings
-// kept beside them.
-func Load(dir string) *Librarium { return load(dir, nil, false) }
-
-// LoadConverting reads and examines the Librarium dir as Load does, yet
-// converts every pure scripture of pattern Mark I in memory
-// (ParseConverting): its rites and settings are those converted, and
+// kept beside them. Every pure scripture of pattern Mark I is converted in
+// memory (ParseConverting): its rites and settings are those converted, and
 // Conversions holds what is to be written. Nothing is written.
-func LoadConverting(dir string) *Librarium { return load(dir, nil, true) }
+func Load(dir string) *Librarium { return load(dir, nil) }
 
-// Preview loads dir as if ov were written, without touching the Librarium.
-func Preview(dir string, ov Overlay) *Librarium { return load(dir, &ov, false) }
+// Preview loads dir as Load does, as if ov were written, without touching
+// the Librarium.
+func Preview(dir string, ov Overlay) *Librarium { return load(dir, &ov) }
 
 // LoadFile reads and examines one scripture; the rite is named after it.
 func LoadFile(path string) (*Rite, Findings) {
@@ -96,10 +92,10 @@ func readHeresy(path, name string, err error) Finding {
 	return Finding{Severity: Heresy, Scripture: path, Rite: name, Position: Position{1, 1}, Message: msg}
 }
 
-func load(dir string, ov *Overlay, convert bool) *Librarium {
+func load(dir string, ov *Overlay) *Librarium {
 	lib := &Librarium{Dir: dir, Rites: map[string]*Rite{}, Heretical: map[string]bool{}}
 	var settings *Conversion
-	lib.Settings, lib.Findings, settings = loadSettings(dir, convert)
+	lib.Settings, lib.Findings, settings = loadSettings(dir, true)
 	if settings != nil {
 		lib.Conversions = append(lib.Conversions, settings)
 	}
@@ -117,7 +113,7 @@ func load(dir string, ov *Overlay, convert bool) *Librarium {
 		if ov != nil && name == ov.Name {
 			r, fs = Parse(name, paths[0], ov.Data)
 		} else {
-			r, fs, c = loadFile(paths[0], convert)
+			r, fs, c = loadFile(paths[0], true)
 		}
 		if c != nil {
 			lib.Conversions = append(lib.Conversions, c)

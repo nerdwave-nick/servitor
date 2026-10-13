@@ -12,19 +12,22 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/sanction"
 )
 
-// hallowJSON keeps a common sanctum in the target, speaks an exalted
-// incantation that tells whose home it hears into $TARGET.exalted (its
-// reversion falls while $TARGET.falter stands), and a common verse that
+// hallowJSON keeps a common sanctum in the target; once it changes, an
+// exalted observance tells whose home it hears into $TARGET.exalted (its
+// reversion falls while $TARGET.falter stands), and a common observance
 // falls while $TARGET.fall stands.
 const hallowJSON = `{
-  "pattern": "Mark I",
+  "pattern": "Mark II",
   "aspects": ["on", "off"],
-  "liturgy": [
-    {"sanctum": "$TARGET", "scripture": {"on": "split-lock 0", "off": ""}},
-    {"incantation": "echo \"{{aspect}} $HOME\" >> $TARGET.exalted",
+  "vox-cast": ["success"],
+  "subjects": [
+    {"name": "veil", "designation": "sanctum", "vessel": "$TARGET", "omens": {"on": "split-lock 0", "off": ""},
+     "recessional": ["exalt", "fall"]}
+  ],
+  "observances": [
+    {"name": "exalt", "designation": "incantation", "words": "echo \"{{aspect}} $HOME\" >> $TARGET.exalted",
      "reversion": "test ! -e $TARGET.falter && echo undone >> $TARGET.exalted", "exalted": true},
-    {"incantation": "test ! -e $TARGET.fall"},
-    {"vox-cast": "success"}
+    {"name": "fall", "designation": "incantation", "words": "test ! -e $TARGET.fall"}
   ]
 }`
 
@@ -65,8 +68,9 @@ func (e *env) exaltedSaid() string {
 var at = regexp.MustCompile(`^\{"at":"\d{4}-\d\d-\d\dT\d\d:\d\d:\d\dZ",`)
 
 // TestInvoke_PerformsExaltedVersesWithOneProof: a sanctioned rite is invoked
-// with one proof of the master, its exalted verse spoken by the exalted
-// servitor with the root's home, its common verses by the invoker; the
+// with one proof of the master, its exalted observance spoken by the
+// exalted servitor with the root's home, its common subject and observance
+// by the invoker; the
 // chronicle line names the intercessor and the sigil, and --binharic prints
 // that very line. Upon a terminal the tidings that the proof is asked come
 // first, upon stderr in binharic, and silence mutes them.
@@ -96,7 +100,7 @@ func TestInvoke_PerformsExaltedVersesWithOneProof(t *testing.T) {
 		calls[1][len(calls[1])-2] != sigil || calls[1][len(calls[1])-1] != "on" {
 		t.Errorf("the intercessors were called upon as %q", calls)
 	}
-	want := `"rite":"hallow","aspect":"on","inscriptions":{},"verdict":"triumph","intercessor":"sudo","sigil":"` +
+	want := `"rite":"hallow","aspect":"on","inscriptions":{},"verdict":"triumph","changed":["veil"],"intercessor":"sudo","sigil":"` +
 		sigil + `"}`
 	if line := e.lastChronicled(); !at.MatchString(line) || at.ReplaceAllString(line, "") != want {
 		t.Errorf("chronicled %s\nwant {\"at\":…,%s", line, want)
@@ -108,7 +112,7 @@ func TestInvoke_PerformsExaltedVersesWithOneProof(t *testing.T) {
 		!strings.Contains(strings.Split(errOut, "\n")[0], offSigil) {
 		t.Errorf("binharic: exit %d\nstdout: %s\nstderr: %s", code, out, errOut)
 	}
-	want = `"rite":"hallow","aspect":"off","former":"on","inscriptions":{},"verdict":"triumph","intercessor":"sudo",` +
+	want = `"rite":"hallow","aspect":"off","former":"on","inscriptions":{},"verdict":"triumph","changed":["veil"],"intercessor":"sudo",` +
 		`"sigil":"` + offSigil + "\"}\n"
 	if !at.MatchString(out) || at.ReplaceAllString(out, "") != want {
 		t.Errorf("binharic printed %s\nwant {\"at\":…,%s", out, want)
@@ -138,8 +142,9 @@ func (a *altar) sigil(rite, aspect string) string {
 }
 
 // TestInvoke_TheDeathMarksOfExaltedVerses: an exalted rite bears the
-// death-marks of every rite: 1 when a verse falls and every deed is undone
-// (the exalted verse by the exalted servitor, with no second proof), 3 when
+// death-marks of every rite: 1 when an observance falls and every deed is
+// undone (the exalted observance by the exalted servitor, with no second
+// proof), 3 when
 // its reversion falls too, 2 when the proof is dismissed — and then no
 // chronicle line is written and nothing is touched.
 func TestInvoke_TheDeathMarksOfExaltedVerses(t *testing.T) {
@@ -157,7 +162,7 @@ func TestInvoke_TheDeathMarksOfExaltedVerses(t *testing.T) {
 
 	touch(t, e.target+".falter")
 	out, errOut, code = e.run("invoke", "hallow", "on", "--binharic")
-	if code != 3 || !strings.Contains(out, `"reversions":[{"verse":2,"verdict":"faltered"},{"verse":1,"verdict":"triumph"}]`) ||
+	if code != 3 || !strings.Contains(out, `"reversions":[{"observance":"exalt","verdict":"faltered"},{"subject":"veil","verdict":"triumph"}]`) ||
 		len(a.called()) != 3 {
 		t.Errorf("faltered: exit %d, %d calls\nstdout: %s\nstderr: %s", code, len(a.called()), out, errOut)
 	}
@@ -174,15 +179,15 @@ func TestInvoke_TheDeathMarksOfExaltedVerses(t *testing.T) {
 	grimdark(t, errOut)
 }
 
-// TestInvoke_ForeseesExaltedVerses: foresight marks the exalted verses ✠,
+// TestInvoke_ForeseesExaltedVerses: foresight marks the exalted observances ✠,
 // tells their sanction standing and never raises the exalted servitor.
 func TestInvoke_ForeseesExaltedVerses(t *testing.T) {
 	e := newEnv(t)
 	e.addRite("rites/hallow.json", hallowJSON)
 	a := e.raiseAltar("sudo")
 	out := e.mustRun("invoke", "hallow", "on", "--foresee")
-	if !strings.Contains(out, "verse 2 · incantation") || !strings.Contains(out, ".exalted ✠\n") ||
-		strings.Contains(out, "verse 3 · incantation test ! -e "+e.target+".fall ✠") ||
+	if !strings.Contains(out, "observance exalt · incantation ✠\n") ||
+		strings.Contains(out, "observance fall · incantation ✠") ||
 		!strings.Contains(out, "stand unsanctioned") || !strings.Contains(out, "servitor sanction hallow") {
 		t.Errorf("foresight:\n%s", out)
 	}

@@ -17,12 +17,12 @@ import (
 // rebootEdict is an edict without inscriptions; every proclaiming adds a
 // line to $DATA/runs. It sorts after the rite "mouse".
 const rebootEdict = `{
-  "pattern": "Mark I",
+  "pattern": "Mark II",
   "purpose": "Reboot the machine",
   "edict": true,
+  "vox-cast": ["success"],
   "liturgy": [
-    {"incantation": "echo proclaimed >> $DATA/runs; echo the machine stirs"},
-    {"vox-cast": "success"}
+    {"designation": "incantation", "words": "echo proclaimed >> $DATA/runs; echo the machine stirs"}
   ]
 }`
 
@@ -172,8 +172,8 @@ func TestProclaim_TheInscriptionFormComesFirst(t *testing.T) {
 // edict and of one the pre-flight forbids name the edict alone.
 func TestProclaim_AFallNamesTheEdictWithoutAnAspect(t *testing.T) {
 	h := newHarness(t)
-	h.writeRite("reboot", strings.Replace(rebootEdict, `{"vox-cast": "success"}`,
-		`{"incantation": "echo dying words; exit 3", "reversion": "echo the deed undone"}`, 1))
+	h.writeRite("reboot", strings.Replace(rebootEdict, `the machine stirs"}`, `the machine stirs"},
+		{"designation": "incantation", "words": "echo dying words; exit 3", "reversion": "echo the deed undone"}`, 1))
 	h.keys("r", "j", "enter", "enter")
 	h.await()
 	h.mustShow("The edict reboot has fallen", "It fell at verse 2 · incantation", "dying words",
@@ -196,9 +196,9 @@ func TestProclaim_AFallNamesTheEdictWithoutAnAspect(t *testing.T) {
 func TestProclaim_TheDetailOfAnEdict(t *testing.T) {
 	h := withReboot(t)
 	h.mustShow("❢ dormant", "NATURE", "❢ edict", "STANDING", "○ dormant", "LAST RITE", "never invoked",
-		"INSCRIPTIONS", "none declared", "LITURGY", " 1 » echo proclaimed", " 2 ✉ success", "RECORDED IN",
+		"INSCRIPTIONS", "none declared", "LITURGY", " 1 » echo proclaimed", "VOX-CAST", "success", "RECORDED IN",
 		"rites/reboot.json")
-	h.mustNotShow("ASPECTS", "AUSPEX", "· 1 »", "· 2 ✉", "«", "→")
+	h.mustNotShow("ASPECTS", "AUSPEX", "SUBJECTS", "· 1 »", "«", "→")
 }
 
 // TestProclaim_HintsTellThatAnEdictAsksFirst: the footer offers to proclaim

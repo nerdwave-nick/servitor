@@ -48,73 +48,6 @@ func (h *harness) focusOn(key string) {
 	h.t.Fatalf("the page bears no field %q:\n%s", key, h.screen())
 }
 
-// TestWizard_ConsecrateAnExaltedIncantation: an incantation exalted on its
-// essence page, naming two relics, is consecrated by key presses alone and
-// sealed exactly; the vox-cast beside it is offered no exaltation. The
-// cogitator still refuses to invoke what it consecrated.
-func TestWizard_ConsecrateAnExaltedIncantation(t *testing.T) {
-	h := newHarness(t)
-	h.writeHall("tuning.list", "kernel.split_lock_mitigate = 0\n", 0o644)
-	h.writeHall("scrolls/tune.conf", "smt off\n", 0o644)
-
-	h.keys("n")
-	h.typeText("tune")
-	h.keys("ctrl+s") // aspects on and off, as the wizard proposes
-	h.mustShow("The liturgy of the rite tune")
-
-	h.keys("a", "4")
-	h.mustShow("» incantation", "Exalted verse", "[ ] no", "Further rites")
-	h.mustNotShow("Relics, one per line")
-	h.keys("space")
-	h.mustShow("Exalted verse", "[✔] yes", "Relics, one per line", "Further rites")
-	h.keys("tab")
-	h.typeText("tuning.list")
-	h.keys("enter")
-	h.typeText("scrolls/tune.conf")
-	h.keys("ctrl+s")
-	h.mustShow(`Command for aspect "on"`)
-	h.typeText("sysctl -p ./tuning.list")
-	h.keys("ctrl+s")
-	h.mustShow("1 » sysctl -p ./tuning.list")
-
-	h.keys("a", "6")
-	h.mustShow("✉ vox-cast", "Tidings")
-	h.mustNotShow("Exalted verse", "Relics, one per line")
-	h.keys("space", "ctrl+s")
-	h.mustShow("2 ✉ success")
-
-	h.keys("tab")
-	h.mustShow("The rite is pure", `"exalted": true`, `"relics"`)
-	h.keys("enter")
-	h.mustShow("The rite tune is consecrated")
-
-	want := `{
-  "pattern": "Mark I",
-  "aspects": ["on", "off"],
-  "liturgy": [
-    {
-      "incantation": "sysctl -p ./tuning.list",
-      "exalted": true,
-      "relics": ["tuning.list", "scrolls/tune.conf"]
-    },
-    {"vox-cast": "success"}
-  ]
-}
-`
-	data, err := os.ReadFile(filepath.Join(h.dir, "rites", "tune.json"))
-	if err != nil || string(data) != want {
-		t.Fatalf("the scripture sealed (%v):\n%s\nwant:\n%s", err, data, want)
-	}
-	inc := h.loadRite("tune").Liturgy[0].(*librarium.Incantation)
-	if !inc.Exalted || strings.Join(inc.Relics, ",") != "tuning.list,scrolls/tune.conf" {
-		t.Fatalf("the incantation loads as %+v", inc.Utterance)
-	}
-
-	h.keys("j", "space") // tune sorts after mouse
-	h.await()
-	h.mustShow("The pre-flight forbids the invocation", "nothing was touched", "exalted:")
-}
-
 // TestWizard_ExaltationIsOfferedToEveryKindButTheVoxCast: every step a rite
 // or edict may bear is offered exaltation on its essence page, save the
 // vox-cast; relics are offered to exalted incantations and litanies alone.
@@ -156,33 +89,18 @@ func TestWizard_ExaltationIsOfferedToEveryKindButTheVoxCast(t *testing.T) {
 	}
 }
 
-// exaltedRite holds an exalted step of every kind that may be exalted,
-// each beside the vessels, scrolls and relics it names.
-const exaltedRite = `{
-  "pattern": "Mark I",
-  "aspects": ["on", "off"],
-  "liturgy": [
-    {"sanctum": "$DATA/y.conf", "consecrate": true, "scripture": {"on": "a", "*": ""}, "exalted": true},
-    {"transcription": "$DATA/whole.conf", "scripture": "whole {{aspect}}", "seal": "0600", "exalted": true},
-    {"tether": "$DATA/current", "anchor": {"on": null, "*": "/usr/share"}, "exalted": true},
-    {"incantation": "sysctl -w x=1", "reversion": "sysctl -w x=0", "exalted": true, "relics": []},
-    {"litany": "scrolls/tune", "offerings": ["{{aspect}}"], "exalted": true,
-     "relics": ["scrolls/tune.conf", "tuning.list"]},
-    {"vox-cast": "success"}
-  ]
-}`
-
-const exaltedEdict = `{"pattern": "Mark I", "edict": true, "liturgy": [
-  {"incantation": "systemctl reboot", "exalted": true},
-  {"litany": "scrolls/tune", "exalted": true, "relics": ["tuning.list"]},
-  {"vox-cast": "success"}
+// exaltedEdict is an edict of exalted speech, its litany bearing a relic.
+const exaltedEdict = `{"pattern": "Mark II", "edict": true, "vox-cast": ["success"], "liturgy": [
+  {"designation": "incantation", "words": "systemctl reboot", "exalted": true},
+  {"designation": "litany", "scroll": "scrolls/tune", "exalted": true, "relics": ["tuning.list"]}
 ]}`
 
-// TestWizard_AmendAndReplicateKeepExaltation: a rite and an edict amended
-// through every page of every step, and replicated, keep what is exalted
-// and the relics of their exalted speech.
+// TestWizard_AmendAndReplicateKeepExaltation: an edict amended through
+// every page of every entry, and replicated, keeps what is exalted and the
+// relics of its exalted speech. (The exaltation of subjects and
+// observances is kept by TestWizard_AmendEveryFormOfMarkII.)
 func TestWizard_AmendAndReplicateKeepExaltation(t *testing.T) {
-	for name, scripture := range map[string]string{"tune": exaltedRite, "reboot": exaltedEdict} {
+	for name, scripture := range map[string]string{"reboot": exaltedEdict} {
 		t.Run(name, func(t *testing.T) {
 			h := newHarness(t)
 			h.writeData("themes/.keep", "")
@@ -195,7 +113,7 @@ func TestWizard_AmendAndReplicateKeepExaltation(t *testing.T) {
 			if !before.Exalted() {
 				t.Fatalf("the fixture is not exalted: %v", h.m.s.Librarium.Findings)
 			}
-			h.keys("j", "e") // both sort after mouse
+			h.keys("j", "e") // it sorts after mouse
 			for range before.Inscriptions {
 				h.keys("ctrl+s")
 			}
@@ -203,9 +121,7 @@ func TestWizard_AmendAndReplicateKeepExaltation(t *testing.T) {
 			h.mustShow("The liturgy of the")
 			for i, s := range before.Liturgy {
 				h.keys("enter")
-				if s.Kind() != librarium.KindVoxCast {
-					h.mustShow("Exalted verse", "[✔] yes")
-				}
+				h.mustShow("Exalted verse", "[✔] yes")
 				if s.Kind() == librarium.KindLitany {
 					h.mustShow("Relics, one per line", "tuning.list")
 				}

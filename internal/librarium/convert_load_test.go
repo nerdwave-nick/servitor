@@ -45,18 +45,18 @@ func read(t *testing.T, path string) string {
 	return string(b)
 }
 
-// TestLoadConverting_InMemory: the Librarium read converting holds every
+// TestLoad_ConvertsInMemory: the Librarium read converting holds every
 // pure scripture of pattern Mark I converted, rites and settings alike,
 // yet writes nothing; heretical scripture stays as read, and its heresy
 // tells that it is converted once purged.
-func TestLoadConverting_InMemory(t *testing.T) {
+func TestLoad_ConvertsInMemory(t *testing.T) {
 	dir := librariumOf(t, map[string]string{
 		SettingsName:         markISettings,
 		"rites/plain.json":   markIRite,
 		"rites/fallen.jsonc": `{"pattern": "Mark I", "aspects": ["on"], "liturgy": [{"incantation": 3}]}`,
 		"rites/new.json":     `{"pattern": "Mark II", "edict": true, "liturgy": [{"designation": "incantation", "words": "x"}]}`,
 	})
-	lib := LoadConverting(dir)
+	lib := Load(dir)
 	if r := lib.Rites["plain"]; r == nil || !r.MarkII || r.Subjects[0].Name != "incantation-1" {
 		t.Fatalf("the rite of Mark I is not converted in memory: %+v %v", r, lib.Findings)
 	}
@@ -79,9 +79,6 @@ func TestLoadConverting_InMemory(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(dir, RitesDir, MarkIDir)); err == nil {
 		t.Error("a conversion in memory kept a copy")
 	}
-	if Load(dir).Rites["plain"].MarkII {
-		t.Error("the Librarium read without converting converts")
-	}
 }
 
 // TestConversion_Write: writing a conversion keeps the original in the
@@ -90,7 +87,7 @@ func TestLoadConverting_InMemory(t *testing.T) {
 // pattern rewritten.
 func TestConversion_Write(t *testing.T) {
 	dir := librariumOf(t, map[string]string{SettingsName: markISettings, "rites/plain.json": markIRite})
-	lib := LoadConverting(dir)
+	lib := Load(dir)
 	for _, c := range lib.Conversions {
 		if err := c.Write(); err != nil {
 			t.Fatalf("%q: %v", c.Rite, err)
@@ -108,7 +105,7 @@ func TestConversion_Write(t *testing.T) {
 	if read(t, filepath.Join(dir, MarkIDir, SettingsName)) != markISettings {
 		t.Error("the copy of the settings is not kept beside them")
 	}
-	again := LoadConverting(dir)
+	again := Load(dir)
 	if len(again.Conversions) != 0 || !again.Rites["plain"].MarkII || !again.Settings.MarkII {
 		t.Errorf("the Librarium converted is converted anew: %v", again.Findings)
 	}
@@ -124,7 +121,7 @@ func TestConversion_Write(t *testing.T) {
 // changed since it was read is not written over.
 func TestConversion_NeverOverwritesACopy(t *testing.T) {
 	dir := librariumOf(t, map[string]string{"rites/plain.json": markIRite, "rites/.mark-i/plain.json": "elder"})
-	c := LoadConverting(dir).Conversions[0]
+	c := Load(dir).Conversions[0]
 	if err := c.Write(); err == nil || !strings.Contains(err.Error(), "never overwritten") {
 		t.Errorf("the copy was overwritten: %v", err)
 	}
@@ -138,7 +135,7 @@ func TestConversion_NeverOverwritesACopy(t *testing.T) {
 		t.Errorf("a copy holding the original stayed the conversion: %v", err)
 	}
 	dir = librariumOf(t, map[string]string{"rites/plain.json": markIRite})
-	c = LoadConverting(dir).Conversions[0]
+	c = Load(dir).Conversions[0]
 	if err := os.WriteFile(c.Path, []byte(markIRite+" "), 0o644); err != nil {
 		t.Fatal(err)
 	}
@@ -162,7 +159,7 @@ func TestConversion_WritesThroughATether(t *testing.T) {
 	if err := os.Symlink(elsewhere, link); err != nil {
 		t.Fatal(err)
 	}
-	c := LoadConverting(dir).Conversions[0]
+	c := Load(dir).Conversions[0]
 	if err := c.Write(); err != nil {
 		t.Fatal(err)
 	}
@@ -174,16 +171,30 @@ func TestConversion_WritesThroughATether(t *testing.T) {
 	}
 }
 
-// TestLoadConverting_HereticalSettings: heretical settings of pattern
+// TestLoad_HereticalSettingsStayUnconverted: heretical settings of pattern
 // Mark I are not converted, and their heresy tells that they are once
 // purged.
-func TestLoadConverting_HereticalSettings(t *testing.T) {
+func TestLoad_HereticalSettingsStayUnconverted(t *testing.T) {
 	dir := librariumOf(t, map[string]string{SettingsName: `{"pattern": "Mark I", "vox": "loud"}`})
-	lib := LoadConverting(dir)
+	lib := Load(dir)
 	if lib.Settings.MarkII || len(lib.Conversions) != 0 {
 		t.Errorf("heretical settings are converted: %+v", lib.Settings)
 	}
 	if !strings.Contains(fmt.Sprint(lib.Findings), "converted once their heresies are purged") {
 		t.Errorf("the heresy does not tell the conversion awaited: %v", lib.Findings)
+	}
+}
+
+// TestPreview_ConvertsInMemory: the preview of a scripture reads every
+// other scripture of pattern Mark I converted, and writes nothing.
+func TestPreview_ConvertsInMemory(t *testing.T) {
+	dir := librariumOf(t, map[string]string{"rites/plain.json": markIRite})
+	lib := Preview(dir, Overlay{Name: "new", Data: []byte(`{"pattern": "Mark II", "edict": true,
+		"liturgy": [{"designation": "incantation", "words": "x"}]}`)})
+	if r := lib.Rites["plain"]; r == nil || !r.MarkII || r.Subjects[0].Name != "incantation-1" {
+		t.Fatalf("the rite beside the preview is not converted: %+v\n%v", r, lib.Findings)
+	}
+	if got := read(t, filepath.Join(dir, "rites", "plain.json")); got != markIRite {
+		t.Errorf("the preview wrote the conversion:\n%s", got)
 	}
 }

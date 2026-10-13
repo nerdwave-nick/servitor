@@ -2,7 +2,7 @@ package cli
 
 import (
 	"encoding/json"
-	"fmt"
+
 	"os"
 	"path/filepath"
 	"strings"
@@ -13,14 +13,27 @@ import (
 
 const markISettingsJSON = "{\n  // the standing orders\n  \"pattern\": \"Mark I\",\n  \"vox\": \"off\"\n}\n"
 
-// converting turns the conversion of pattern Mark I on for t, with the
-// settings of pattern Mark I beside the rites; it returns the scripture of
+// markIMouseJSON is the rite of mouseJSON, written in pattern Mark I.
+const markIMouseJSON = `{
+  "pattern": "Mark I",
+  "purpose": "Hide the cursor after inactivity",
+  "aspects": ["on", "off"],
+  "inscriptions": {
+    "reason": {"purpose": "why the rite was invoked"}, // speaks of its purpose
+    "example-key": {"mandatory": true, "decrees": {"on": "example-value", "off": "other-value"}},
+  },
+  "liturgy": [
+    {"sanctum": "$TARGET", "scripture": {"on": "cursor {\n    hide-after-inactive-ms 400\n}", "off": ""}},
+    {"vox-cast": "success"},
+  ],
+}`
+
+// converting writes the rite and the settings of the Librarium in pattern
+// Mark I, which every ritual reads converted; it returns the scripture of
 // the rite and of the settings, as written.
 func (e *env) converting() (rite, settings string) {
 	e.t.Helper()
-	orig := convertMarkI
-	e.t.Cleanup(func() { convertMarkI = orig })
-	convertMarkI = true
+	e.addRite("rites/mouse-autohide-toggle.json", markIMouseJSON)
 	e.addRite("servitor.json", markISettingsJSON)
 	return e.scripture("rites/mouse-autohide-toggle.json"), markISettingsJSON
 }
@@ -139,18 +152,6 @@ func TestConvert_InMemoryAlone(t *testing.T) {
 	}
 }
 
-// TestConvert_OffUntilMarkIIIsPerformed: until the servitor performs rites
-// of pattern Mark II, it reads Mark I as written and converts nothing.
-func TestConvert_OffUntilMarkIIIsPerformed(t *testing.T) {
-	e := newEnv(t)
-	e.addRite("servitor.json", markISettingsJSON)
-	rite := e.scripture("rites/mouse-autohide-toggle.json")
-	if _, errOut, code := e.run("census"); code != 0 || errOut != "" {
-		t.Fatalf("census: exit %d\n%s", code, errOut)
-	}
-	e.unconverted(rite, markISettingsJSON, "census")
-}
-
 // TestConvert_TheCogitatorTellsByItself: the cogitator converts and tells
 // the conversion in a toast of its own; the command line that awakens it
 // writes nothing before it.
@@ -158,8 +159,8 @@ func TestConvert_TheCogitatorTellsByItself(t *testing.T) {
 	e := newEnv(t)
 	origRun, origTerm := runTUI, isTerminal
 	t.Cleanup(func() { runTUI, isTerminal = origRun, origTerm })
-	var told []bool
-	runTUI = func(opt tui.Options) error { told = append(told, opt.Convert); return nil }
+	awakened := 0
+	runTUI = func(tui.Options) error { awakened++; return nil }
 	isTerminal = func() bool { return true }
 	e.mustRun("cogitator")
 	rite, settings := e.converting()
@@ -169,7 +170,7 @@ func TestConvert_TheCogitatorTellsByItself(t *testing.T) {
 		}
 		e.unconverted(rite, settings, "the awakening of the cogitator")
 	}
-	if fmt.Sprint(told) != "[false true true]" {
-		t.Errorf("the cogitator was told to convert: %v", told)
+	if awakened != 3 {
+		t.Errorf("the cogitator was awakened %d times, want 3", awakened)
 	}
 }

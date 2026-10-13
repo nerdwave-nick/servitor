@@ -324,17 +324,24 @@ func (h *harness) listLine(name string) string {
 	return ""
 }
 
-// hallowRite speaks a common verse, then an exalted one that tells who
-// speaks it and utters words of its own; both revert by word.
+// hallowRite speaks, before its one subject changes, a common observance,
+// then an exalted one that tells who speaks it and utters words of its own;
+// both revert by word.
 const hallowRite = `{
-  "pattern": "Mark I",
+  "pattern": "Mark II",
   "purpose": "Hallow the machine",
   "aspects": ["on", "off"],
-  "liturgy": [
-    {"incantation": "echo 1 >> $DATA/said", "reversion": "echo undo 1 >> $DATA/said"},
-    {"incantation": "echo exalted {{aspect}} $HOME >> $DATA/said; echo spoken {{aspect}}",
-     "reversion": "echo undo exalted >> $DATA/said", "exalted": true},
-    {"vox-cast": "success"}
+  "vox-cast": ["success"],
+  "subjects": [
+    {"name": "mark", "designation": "machine-spirit", "auspex": {"scan": "cat $DATA/mark"},
+     "enact": {"*": "echo {{omen}} > $DATA/mark"}, "introit": ["common", "hallowed"]}
+  ],
+  "observances": [
+    {"name": "common", "designation": "incantation", "words": "echo 1 >> $DATA/said",
+     "reversion": "echo undo 1 >> $DATA/said"},
+    {"name": "hallowed", "designation": "incantation",
+     "words": "echo exalted {{aspect}} $HOME >> $DATA/said; echo spoken {{aspect}}",
+     "reversion": "echo undo exalted >> $DATA/said", "exalted": true}
   ]
 }`
 
@@ -371,8 +378,8 @@ func TestOverview_ShowsTheSanctionOfEveryRite(t *testing.T) {
 	}
 	// hallow, lapsed, mouse, plain, unsanctioned
 	h.keys("g")
-	h.mustShow("SANCTION", "✠ sanctioned", "sigil "+sanction.Short(kept.Sigil), "· 1 » echo 1 >>",
-		"· 2 » ✠ echo exalted {{aspect}}")
+	h.mustShow("SANCTION", "✠ sanctioned", "sigil "+sanction.Short(kept.Sigil), "» common · echo 1 >>",
+		"» ✠ hallowed · echo exalted {{aspect}}")
 	h.keys("j")
 	h.mustShow("☓ lapsed since sigil", "s to sanction anew")
 	h.keys("j")
@@ -380,11 +387,11 @@ func TestOverview_ShowsTheSanctionOfEveryRite(t *testing.T) {
 	h.keys("j")
 	h.mustShow("† forsaken", "abjure")
 	h.keys("j")
-	h.mustShow("○ unsanctioned", "s to sanction its exalted verses")
+	h.mustShow("○ unsanctioned", "s to sanction its exalted subjects")
 
 	// foresight marks the exalted verse and tells the standing
 	h.keys("g", "enter", "p")
-	h.mustShow("Foresight of aspect", "✠ The exalted verses stand sanctioned under the sigil", "verse 2 · incantation ✠",
+	h.mustShow("Foresight of aspect", "stand sanctioned under the sigil", "observance hallowed · incantation",
 		"Nothing was performed.")
 	if len(s.called()) != 0 {
 		t.Errorf("the intercessor was called upon: %q", s.called())
@@ -402,9 +409,11 @@ func TestSanction_ShowsTheUnitThenAsksOneProof(t *testing.T) {
 	h := newHarness(t)
 	s := h.raiseShrine("sudo", "run0")
 	h.writeRite("hallow", hallowRite)
+	h.send(tea.WindowSizeMsg{Width: 160, Height: 70})
 	h.keys("r", "g", "s")
 	h.mustShow("Sanction of hallow", "offered for sanction under the sigil", "echo exalted on",
 		"The intercessor asks the master's proof")
+	h.send(tea.WindowSizeMsg{Width: 120, Height: 36}) // the list of rites as wide as listLine reads it
 	if len(s.called()) != 0 {
 		t.Fatalf("the intercessor was called upon before enter: %q", s.called())
 	}
@@ -547,7 +556,7 @@ func TestInvoke_TheCogitatorPerformsExaltedVerses(t *testing.T) {
 	if n := s.lends(); n != 1 {
 		t.Errorf("the terminal was lent %d times", n)
 	}
-	if got := s.journal.deeds(); !slices.Equal(got, []string{"accept accepted", "perform 2 triumph",
+	if got := s.journal.deeds(); !slices.Equal(got, []string{"accept accepted", "perform triumph",
 		"finish finished"}) {
 		t.Errorf("journaled %q", got)
 	}
@@ -555,7 +564,7 @@ func TestInvoke_TheCogitatorPerformsExaltedVerses(t *testing.T) {
 		t.Errorf("the rite stands as %q", line)
 	}
 	h.keys("O")
-	h.mustShow("verse 2 · incantation ✠", "spoken on")
+	h.mustShow("observance hallowed", "spoken on")
 	h.keys("esc", "h")
 	h.mustShow("hallow", "dormant → on")
 }
@@ -608,8 +617,8 @@ func TestInvoke_TheFallShowsTheWordsOfTheExaltedServitor(t *testing.T) {
 	s.sanctify("hallow")
 	h.keys("g", "enter", "1")
 	h.await()
-	h.mustShow("The rite hallow has fallen", "It fell at verse 2 · incantation ✠", "doomed on", "REVERSIONS",
-		"✔ verse 1 · incantation echo 1", "Every deed is undone")
+	h.mustShow("The rite hallow has fallen", "It fell at observance hallowed · incantation", "doomed on", "REVERSIONS",
+		"✔ observance hallowed is undone", "✔ observance common is undone", "Every deed is undone")
 	if said := h.said(); len(said) != 4 || said[3] != "undo 1" {
 		t.Errorf("said %q", said)
 	}
@@ -647,7 +656,7 @@ func TestInvoke_TheCogitatorShowsRefusalsAsHeresies(t *testing.T) {
 		}, words: []string{"The pre-flight forbids", "unsanctioned", "servitor sanction hallow"}},
 		{name: "lapsed", present: []string{"sudo"}, mar: func(h *harness, s *shrine) {
 			h.writeRite("hallow", strings.Replace(hallowRite, "echo spoken", "echo uttered", 1))
-		}, words: []string{"The pre-flight forbids", "lapsed", "servitor sanction hallow"}},
+		}, words: []string{"The pre-flight forbids", "lapsed", "servitor sanction"}},
 		{name: "no intercessor", words: []string{"No exalted servitor was raised", "no intercessor is found"}},
 		{name: "not installed", present: []string{"sudo"}, mar: func(h *harness, _ *shrine) {
 			me := uint32(os.Getuid())

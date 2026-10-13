@@ -95,11 +95,12 @@ func TestAsRoot_ReadingRitualsServe(t *testing.T) {
 }
 
 // veilJSON is a rite whose vessel lies in the home of the one who invokes it.
-const veilJSON = `{"pattern": "Mark I", "purpose": "Veil the cursor", "aspects": ["on", "off"],
-  "liturgy": [{"sanctum": "~/util.kdl", "scripture": {"on": "cursor {}", "off": ""}}]}`
+const veilJSON = `{"pattern": "Mark II", "purpose": "Veil the cursor", "aspects": ["on", "off"],
+  "subjects": [{"name": "cursor", "designation": "sanctum", "vessel": "~/util.kdl", "omens": {"on": "cursor {}", "off": ""}}]}`
 
 // decoyJSON is a rite of root's own Librarium.
-const decoyJSON = `{"pattern": "Mark I", "aspects": ["on", "off"], "liturgy": [{"incantation": "true"}]}`
+const decoyJSON = `{"pattern": "Mark II", "aspects": ["on", "off"],
+  "subjects": [{"name": "decoy", "designation": "machine-spirit", "enact": {"*": "true"}}]}`
 
 // sudoWorld is an invoker's world and root's, side by side.
 type sudoWorld struct {

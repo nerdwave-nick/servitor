@@ -20,13 +20,15 @@ func writeScripture(t *testing.T, dir, rel, body string) string {
 	return p
 }
 
+// sanctumRite is a rite keeping one sanctum subject named "s" in vessel
+// under ward ("" for the rite's name).
 func sanctumRite(vessel, ward string) string {
 	w := ""
 	if ward != "" {
 		w = `, "ward": "` + ward + `"`
 	}
-	return `{"pattern": "Mark I", "aspects": ["on"],
-  "liturgy": [{"sanctum": "` + vessel + `"` + w + `, "scripture": ""}]}`
+	return `{"pattern": "Mark II", "aspects": ["on"],
+  "subjects": [{"name": "s", "designation": "sanctum", "vessel": "` + vessel + `"` + w + `, "omens": {"*": ""}}]}`
 }
 
 func findingsWith(fs Findings, substr string) Findings {
@@ -72,10 +74,11 @@ func TestLoad_MissingRitesIsEmpty(t *testing.T) {
 func TestLoad_HereticalRitesAreSetApart(t *testing.T) {
 	dir := t.TempDir()
 	writeScripture(t, dir, "rites/good.json", sanctumRite("~/a.kdl", ""))
-	writeScripture(t, dir, "rites/bad.json", `{"pattern": "Mark I", "aspects": []}`)
+	writeScripture(t, dir, "rites/bad.json", `{"pattern": "Mark II", "aspects": []}`)
 	writeScripture(t, dir, "rites/old.json", `{"states": ["on"]}`)
-	writeScripture(t, dir, "rites/impure.json", `{"pattern": "Mark I", "aspects": ["on"],
-  "liturgy": [{"vox-cast": "success"}, {"incantation": "true"}]}`)
+	writeScripture(t, dir, "rites/impure.json", `{"pattern": "Mark II", "aspects": ["on"],
+  "subjects": [{"name": "s", "designation": "machine-spirit", "enact": {"*": "true"}}],
+  "observances": [{"name": "unheard", "designation": "incantation", "words": "true"}]}`)
 	lib := Load(dir)
 	if got := lib.Names(); !reflect.DeepEqual(got, []string{"bad", "good", "impure", "old"}) {
 		t.Fatalf("Names() = %v", got)
@@ -86,8 +89,8 @@ func TestLoad_HereticalRitesAreSetApart(t *testing.T) {
 	if !lib.Heretical["bad"] || !lib.Heretical["old"] || lib.Heretical["impure"] || lib.Heretical["good"] {
 		t.Fatalf("heretical: %v", lib.Heretical)
 	}
-	if len(lib.Rites["impure"].Liturgy) != 2 {
-		t.Fatalf("a step after a success vox-cast must be kept: %v", lib.Rites["impure"].Liturgy)
+	if len(lib.Rites["impure"].Observances) != 1 {
+		t.Fatalf("an observance no subject names must be kept: %v", lib.Rites["impure"].Observances)
 	}
 }
 
@@ -114,9 +117,9 @@ func TestLoad_WardUsedTwiceInOneVessel(t *testing.T) {
 	writeScripture(t, dir, "rites/c.json", sanctumRite("~/x.kdl", "own"))
 	writeScripture(t, dir, "rites/d.json", sanctumRite("~/x.kdl", "e"))
 	writeScripture(t, dir, "rites/e.json", sanctumRite("~/x.kdl", ""))
-	writeScripture(t, dir, "rites/f.json", `{"pattern": "Mark I", "aspects": ["on"], "liturgy": [
-  {"sanctum": "/y.kdl", "scripture": ""},
-  {"sanctum": "/y.kdl", "scripture": ""}]}`)
+	writeScripture(t, dir, "rites/f.json", `{"pattern": "Mark II", "aspects": ["on"], "subjects": [
+  {"name": "s", "designation": "sanctum", "vessel": "/y.kdl", "omens": {"*": ""}},
+  {"name": "t", "designation": "sanctum", "vessel": "/y.kdl", "omens": {"*": ""}}]}`)
 	lib := Load(dir)
 	clash := findingsWith(lib.Findings, "is claimed twice")
 	var rites []string

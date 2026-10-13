@@ -9,9 +9,8 @@ import (
 )
 
 // TestInquisitionII_KeepsItsBinharicAndDeathMarks: the inquisition of rites
-// of pattern Mark II speaks its findings in the shape it speaks those of
-// Mark I — the same keys in binharic, file:line:column in the plain form —
-// and ends as before: in triumph over impurities alone, with death-mark 1
+// of pattern Mark II speaks its findings in the shape of the codex — the
+// same keys in binharic, file:line:column in the plain form — and ends: in triumph over impurities alone, with death-mark 1
 // over heresy. --spare-vessels spares the machine of the subjects.
 func TestInquisitionII_KeepsItsBinharicAndDeathMarks(t *testing.T) {
 	e := newEnv(t)

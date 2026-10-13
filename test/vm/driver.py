@@ -10,7 +10,7 @@ beneath a failure; guest.sh adds the root's assertions and the verdict.
 Every transcript of servitor at a terminal is kept in /mnt/share/transcripts.log.
 
 Every rite is of pattern Mark II but one: trial-gaming is laid in pattern
-Mark I with exalted verses, converted as the servitor converts (test/vm/convert),
+Mark I with exalted verses, converted by the first ritual that reads it (census),
 and then given auspexes by its master as the faithful would, one of them an
 exalted auspex the invoker cannot read.
 
@@ -239,7 +239,7 @@ def lay_the_librarium():
 
 def convert_trial_gaming():
     """trial-gaming, laid in pattern Mark I with exalted verses, is converted
-    as the servitor converts on its first reading, then given its auspexes
+    by the census, the first ritual that reads it, then given its auspexes
     by its master: the knob is read by the invoker, the hidden omen by an
     exalted auspex alone."""
     path = f"{RITES}/trial-gaming.json"
@@ -252,17 +252,13 @@ def convert_trial_gaming():
              "exalted": True},
             {"vox-cast": "success"},
         ]}, f, indent=1)
-    env = dict(os.environ, GOTOOLCHAIN="local", GOFLAGS="-mod=readonly -modcacherw")
-    gopath = f"{FORGE}/packaging/arch/src/gopath"
-    if os.path.isdir(gopath):
-        env["GOPATH"] = gopath
-    p = subprocess.run(["go", "run", "./test/vm/convert", LIB], cwd=FORGE, env=env, capture_output=True,
-                       text=True, timeout=900)
+    t = servitor("census")
     with open(path) as f:
         converted = json.load(f)
-    check(p.returncode == 0 and 'the rite "trial-gaming" is converted to pattern "Mark II"' in p.stdout
-          and "servitor sanction trial-gaming" in p.stdout,
-          "trial-gaming is converted, and the tidings bid it be sanctioned anew", p.stdout + p.stderr)
+    check(t.code == 0 and 'the rite "trial-gaming" is converted to pattern "Mark II"' in t.text()
+          and "servitor sanction trial-gaming" in t.text(),
+          "the census converts trial-gaming on its first reading, and the tidings bid it be sanctioned anew",
+          t.text())
     check(converted.get("pattern") == "Mark II" and os.path.exists(f"{RITES}/.mark-i/trial-gaming.json")
           and [(s["name"], s["designation"], s.get("exalted")) for s in converted["subjects"]]
           == [("incantation-1", "machine-spirit", True), ("incantation-3", "machine-spirit", True)],

@@ -91,20 +91,44 @@ func exists(p string) bool {
 	return err == nil
 }
 
-// mouse is a rite with a sanctum, an incantation and a decreed inscription.
+// mouse is a rite with a sanctum subject, an observance spoken after it
+// changes and a decreed inscription.
 const mouse = `{
-  "pattern": "Mark I",
+  "pattern": "Mark II",
   "purpose": "Hide the cursor after inactivity",
   "aspects": ["on", "off"],
   "inscriptions": {
     "reason": {"purpose": "why the rite was invoked", "decrees": {"off": "restored"}}
   },
-  "liturgy": [
-    {"sanctum": "$DATA/util.kdl", "scripture": {"on": "hide-after-inactive-ms 400", "off": ""}},
-    {"incantation": "echo {{aspect}}-$SERVITOR_INSCRIPTION_REASON >> $DATA/said"},
-    {"vox-cast": "success"}
+  "vox-cast": ["success"],
+  "subjects": [
+    {"name": "util", "designation": "sanctum", "vessel": "$DATA/util.kdl",
+     "omens": {"on": "hide-after-inactive-ms 400", "off": ""}, "recessional": ["said"]}
+  ],
+  "observances": [
+    {"name": "said", "designation": "incantation", "words": "echo {{aspect}}-$SERVITOR_INSCRIPTION_REASON >> $DATA/said"}
   ]
 }`
+
+// falling is mouse whose last observance falls with the death-mark 3 after
+// telling "dying".
+var falling = strings.Replace(strings.Replace(mouse, `"recessional": ["said"]`, `"recessional": ["said", "fall"]`, 1),
+	`"observances": [`, `"observances": [
+    {"name": "fall", "designation": "incantation", "words": "echo dying; exit 3"},`, 1)
+
+// spirit is a rite of the aspects on and off whose one machine-spirit is
+// read by auspex, the JSON of its auspex ("" for none), and set by words
+// that change nothing.
+func spirit(auspex string) string {
+	if auspex != "" {
+		auspex = `"auspex": ` + auspex + `, `
+	}
+	return `{"pattern": "Mark II", "aspects": ["on", "off"], "subjects": [
+  {"name": "spirit", "designation": "machine-spirit", ` + auspex + `"enact": {"*": "true"}}]}`
+}
+
+// broken is a heretical rite: it declares no aspect.
+const broken = `{"pattern": "Mark II", "aspects": [], "subjects": []}`
 
 // herald records every proclamation.
 type herald struct{ heard []invocation.Tidings }

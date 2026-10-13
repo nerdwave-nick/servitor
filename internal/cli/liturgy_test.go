@@ -68,7 +68,8 @@ func TestInquisition_CountsInTheLiturgy(t *testing.T) {
 	if code != 0 || !strings.Contains(out, "examined 1 rite in") || !strings.Contains(out, "0 heresies, 0 impurities") {
 		t.Fatalf("one clean rite: %d %q", code, out)
 	}
-	e.addRite("rites/heretic.json", `{"pattern": "Mark I", "aspects": []}`)
+	e.addRite("rites/heretic.json", `{"pattern": "Mark II", "aspects": ["on"], "colour": 1,
+	  "subjects": [{"name": "s", "designation": "machine-spirit", "enact": {"*": "true"}}]}`)
 	out, errOut, code = e.run("inquisition")
 	out += errOut
 	if code != 1 || !strings.Contains(out, "examined 2 rites in") || !strings.Contains(out, "1 heresy,") {
@@ -95,9 +96,9 @@ func TestInvoke_NamesAFormerStandingThatIsNotDormancy(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	e.addRite("rites/twain.json", `{"pattern": "Mark I", "aspects": ["dawn", "dusk"], "liturgy": [
-	  {"transcription": "`+first+`", "scripture": {"dawn": "dawn", "dusk": "dusk"}},
-	  {"transcription": "`+second+`", "scripture": {"dawn": "dawn", "dusk": "dusk"}}]}`)
+	e.addRite("rites/twain.json", `{"pattern": "Mark II", "aspects": ["dawn", "dusk"], "subjects": [
+	  {"name": "first", "designation": "transcription", "vessel": "`+first+`", "omens": {"dawn": "dawn", "dusk": "dusk"}},
+	  {"name": "second", "designation": "transcription", "vessel": "`+second+`", "omens": {"dawn": "dawn", "dusk": "dusk"}}]}`)
 	out := e.mustRun("invoke", "twain", "dawn", "--foresee")
 	if !strings.Contains(out, "(corrupted) → dawn") {
 		t.Fatalf("a corrupted rite is not named so: %q", out)

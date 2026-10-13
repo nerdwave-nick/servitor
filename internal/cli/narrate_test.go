@@ -9,17 +9,21 @@ import (
 	"unicode/utf8"
 )
 
-// visageJSON is a rite like the visage of the machine: a long incantation, a
-// tether, a progress vox-cast, a litany beside the rite and a triumph.
+// visageJSON is a rite like the visage of the machine: a tether of a long
+// name, an incantation spoken before it and a litany beside the rite after
+// it, its progress and its triumph proclaimed.
 const visageJSON = `{
-  "pattern": "Mark I",
+  "pattern": "Mark II",
   "aspects": ["default", "porpl"],
-  "liturgy": [
-    {"incantation": "echo the screen is veiled in a transition of two hundred milliseconds or more || true"},
-    {"tether": "$HALL/current-theme", "anchor": "$HALL/themes/{{aspect}}"},
-    {"vox-cast": "progress"},
-    {"litany": "scripts/hooks", "offerings": ["~/themes/{{aspect}}"]},
-    {"vox-cast": "success"}
+  "vox-cast": ["progress", "success"],
+  "subjects": [
+    {"name": "visage", "designation": "tether",
+     "tether": "$HALL/the-current-theme-veiled-in-a-transition-of-two-hundred-milliseconds-or-more",
+     "omens": {"*": "$HALL/themes/{{aspect}}"}, "introit": ["veil"], "recessional": ["hooks"]}
+  ],
+  "observances": [
+    {"name": "veil", "designation": "incantation", "words": "echo the screen is veiled || true"},
+    {"name": "hooks", "designation": "litany", "scroll": "scripts/hooks", "offerings": ["~/themes/{{aspect}}"]}
   ]
 }`
 
@@ -72,7 +76,7 @@ func TestInvoke_OnATerminalTheInvocationIsToldOnceAsItHappens(t *testing.T) {
 	if code != 0 || errOut != "" || len(got) != 3 {
 		t.Fatalf("code=%d stderr=%q stdout:\n%s", code, errOut, out)
 	}
-	if got[0] != "+++ mouse-autohide-toggle · (dormant) → on +++" || got[1] != "  ✔ verse 1 · sanctum ~/util.kdl" ||
+	if got[0] != "+++ mouse-autohide-toggle · (dormant) → on +++" || got[1] != "  ✔ subject cursor · sanctum ~/util.kdl" ||
 		!strings.HasPrefix(got[2], "✠ ") || !speaksAspect(got[2], "on") {
 		t.Fatalf("stdout:\n%s", out)
 	}
@@ -81,12 +85,13 @@ func TestInvoke_OnATerminalTheInvocationIsToldOnceAsItHappens(t *testing.T) {
 	}
 
 	again := lines(e.mustRun("invoke", "mouse-autohide-toggle", "on"))
-	if again[0] != "+++ mouse-autohide-toggle · on → on +++" || len(again) != 3 {
+	// the cursor already stands in its omen, and nothing is set or told
+	if again[0] != "+++ mouse-autohide-toggle · on → on +++" || len(again) != 2 || !strings.HasPrefix(again[1], "✠ ") {
 		t.Fatalf("re-invoked:\n%s", strings.Join(again, "\n"))
 	}
 }
 
-func TestInvoke_OnATerminalEveryVerseAndVoxCastIsToldInItsPlace(t *testing.T) {
+func TestInvoke_OnATerminalEverySubjectObservanceAndVoxCastIsToldInItsPlace(t *testing.T) {
 	for _, cols := range []int{0, 60} {
 		e := newEnv(t)
 		e.home()
@@ -102,17 +107,17 @@ func TestInvoke_OnATerminalEveryVerseAndVoxCastIsToldInItsPlace(t *testing.T) {
 		if width == 0 {
 			width = 80
 		}
-		want := []string{"+++ theme · (dormant) → porpl +++", "  ✔ verse 1 · incantation echo the screen is veiled",
-			"  ✔ verse 2 · tether ~/current-theme", "  ⋯ ", "  ✔ verse 4 · litany scripts/hooks", "✠ "}
+		want := []string{"+++ theme · (dormant) → porpl +++", "  ✔ observance veil · incantation",
+			"  ✔ subject visage · tether ~/the-current-theme", "  ⋯ ", "  ✔ observance hooks · litany", "✠ "}
 		for i, w := range want {
 			if !strings.HasPrefix(got[i], w) {
 				t.Errorf("%d columns, line %d is %q, want it to begin %q", cols, i, got[i], w)
 			}
 		}
-		if !strings.HasSuffix(got[1], "…") || utf8.RuneCountInString(got[1]) != width {
-			t.Errorf("%d columns: the long verse is not cut to fit: %q", cols, got[1])
+		if !strings.HasSuffix(got[2], "…") || utf8.RuneCountInString(got[2]) != width {
+			t.Errorf("%d columns: the long subject is not cut to fit: %q", cols, got[2])
 		}
-		if !strings.HasSuffix(got[3], "  (2/3)") || !strings.Contains(got[3], "tether") {
+		if !strings.HasSuffix(got[3], "  (1/1)") || !strings.Contains(got[3], "visage") {
 			t.Errorf("progress told as %q", got[3])
 		}
 		if !speaksAspect(got[5], "porpl") {
@@ -132,11 +137,12 @@ func TestInvoke_SilenceOnATerminalLeavesOnlyTheVoxCasts(t *testing.T) {
 
 	got := lines(e.mustRun("invoke", "theme", "porpl", "--silence"))
 
-	if len(got) != 2 || !strings.HasPrefix(got[0], "  ⋯ ") || !strings.HasSuffix(got[0], "  (2/3)") ||
+	if len(got) != 2 || !strings.HasPrefix(got[0], "  ⋯ ") || !strings.HasSuffix(got[0], "  (1/1)") ||
 		!strings.HasPrefix(got[1], "✠ ") {
 		t.Fatalf("stdout:\n%s", strings.Join(got, "\n"))
 	}
-	e.addRite("rites/mute.json", `{"pattern": "Mark I", "aspects": ["on"], "liturgy": [{"incantation": "true"}]}`)
+	e.addRite("rites/mute.json", `{"pattern": "Mark II", "aspects": ["on"], "subjects": [
+	  {"name": "mute", "designation": "machine-spirit", "enact": {"*": "true"}}]}`)
 	if out := e.mustRun("invoke", "mute", "on", "-s"); out != "" {
 		t.Fatalf("a rite without vox-casts spoke in silence: %q", out)
 	}
@@ -145,18 +151,18 @@ func TestInvoke_SilenceOnATerminalLeavesOnlyTheVoxCasts(t *testing.T) {
 func TestInvoke_OnATerminalAFallIsToldOnceInTheLament(t *testing.T) {
 	e := newEnv(t)
 	e.home()
-	e.addRite("rites/falling.json", strings.Replace(fallingJSON, `{"incantation"`, `{"vox-cast": "progress"}, {"incantation"`, 1))
+	e.addRite("rites/falling.json", strings.Replace(fallingJSON, `"aspects"`, `"vox-cast": ["progress"], "aspects"`, 1))
 	e.terminal(0)
 
 	out, errOut, code := e.run("invoke", "falling", "on", "--reason", "")
 
 	got := lines(out)
 	if code != 1 || len(got) != 3 || got[0] != "+++ falling · (dormant) → on +++" ||
-		got[1] != "  ✔ verse 1 · sanctum ~/util.kdl" || !strings.HasPrefix(got[2], "  ⋯ ") || closings(out) != 0 {
+		got[1] != "  ✔ subject warded · sanctum ~/util.kdl" || !strings.HasPrefix(got[2], "  ⋯ ") || closings(out) != 0 {
 		t.Fatalf("code=%d stdout:\n%s", code, out)
 	}
 	if strings.Count(errOut, "death-mark 3") != 1 || strings.Count(errOut, "fell at") != 1 ||
-		!strings.Contains(errOut, "verse 1 · sanctum ~/util.kdl is undone") {
+		!strings.Contains(errOut, "subject warded · sanctum ~/util.kdl is undone") {
 		t.Fatalf("the fall is not told once:\n%s", errOut)
 	}
 	if e.notified() != "" {
@@ -171,8 +177,8 @@ func TestInvoke_WithoutATerminalTheDesktopHearsAndTheReportFollows(t *testing.T)
 
 	got := lines(e.mustRun("invoke", "theme", "porpl"))
 
-	if len(got) != 5 || got[0] != "+++ theme · (dormant) → porpl +++" || got[2] != "  ✔ verse 2 · tether ~/current-theme" ||
-		got[3] != "  ✔ verse 4 · litany scripts/hooks" || !strings.HasPrefix(got[4], "✠ ") {
+	if len(got) != 5 || got[0] != "+++ theme · (dormant) → porpl +++" || !strings.HasPrefix(got[2], "  ✔ subject visage · tether ~/the-current-theme") ||
+		got[3] != "  ✔ observance hooks · litany" || !strings.HasPrefix(got[4], "✠ ") {
 		t.Fatalf("stdout:\n%s", strings.Join(got, "\n"))
 	}
 	notified := e.notified()
@@ -181,7 +187,8 @@ func TestInvoke_WithoutATerminalTheDesktopHearsAndTheReportFollows(t *testing.T)
 		t.Fatalf("the report closes otherwise than the desktop heard:\n%s\nnotify-send heard:\n%s", got[4], notified)
 	}
 
-	e.addRite("rites/mute.json", `{"pattern": "Mark I", "aspects": ["on"], "liturgy": [{"incantation": "true"}]}`)
+	e.addRite("rites/mute.json", `{"pattern": "Mark II", "aspects": ["on"], "subjects": [
+	  {"name": "mute", "designation": "machine-spirit", "enact": {"*": "true"}}]}`)
 	mute := lines(e.mustRun("invoke", "mute", "on"))
 	if len(mute) != 3 || !strings.HasPrefix(mute[2], "✠ ") || !speaksAspect(mute[2], "on") {
 		t.Fatalf("a rite without vox-casts is not closed:\n%s", strings.Join(mute, "\n"))
@@ -191,11 +198,11 @@ func TestInvoke_WithoutATerminalTheDesktopHearsAndTheReportFollows(t *testing.T)
 	}
 }
 
-func TestInvoke_TheHomeIsSpokenAsTildeWhereVersesAreNamed(t *testing.T) {
+func TestInvoke_TheHomeIsSpokenAsTildeWhereSubjectsAreNamed(t *testing.T) {
 	e := newEnv(t)
 	e.home()
 	out := e.mustRun("invoke", "mouse-autohide-toggle", "on", "--foresee")
-	if !slices.Contains(lines(out), "verse 1 · sanctum ~/util.kdl") {
+	if !slices.Contains(lines(out), "subject cursor · sanctum ~/util.kdl: changing") {
 		t.Fatalf("foreseen:\n%s", out)
 	}
 	e.addTheme()

@@ -27,8 +27,7 @@ const captureIIJSON = `{"pattern": "Mark II", "edict": true, "vox-cast": ["succe
   "liturgy": [{"designation": "incantation", "words": "echo proclaimed >> $TARGET.edict"}]}`
 
 // TestMarkII_IsReadByEveryRitualYetNeverInvokedUnsanctioned: rites of
-// pattern Mark II stand in the Librarium beside those of Mark I; every
-// reading ritual heeds them. Invoking a rite of aspects of that pattern
+// pattern Mark II stand in the Librarium; every reading ritual heeds them. Invoking a rite of aspects of that pattern
 // whose exalted subject bears a privileged auspex is refused before
 // anything is read or touched while it stands unsanctioned, naming the
 // ritual that sanctions it; foreseeing it never speaks the privileged

@@ -18,7 +18,7 @@ func TestAugury_IsAndExitCodes(t *testing.T) {
 		t.Fatalf("--is on before invoke: code=%d", code)
 	}
 	e.mustRun("invoke", "mouse-autohide-toggle", "on", "-s")
-	e.addRite("rites/broken.json", `{"pattern": "Mark I", "aspects": []}`)
+	e.addRite("rites/broken.json", `{"pattern": "Mark II", "aspects": []}`)
 	cases := []struct {
 		args []string
 		code int
@@ -57,7 +57,9 @@ func TestAugury_SpeaksTheJSONOfTheCodex(t *testing.T) {
 		`      "mandatory": true,\n      "decrees": \{\n        "off": "other-value",\n        "on": "example-value"\n      \},\n` +
 		`      "decree": null\n    \}\n  \],\n` +
 		`  "last_rite": \{\n    "verdict": "triumph",\n    "at": "[0-9T:Z-]+"\n  \},\n` +
-		`  "omens": \[\n    \{\n      "verse": 1,\n      "sanctum": "` + regexp.QuoteMeta(e.target) + `",\n      "aspect": "on"\n    \}\n  \],\n` +
+		`  "fitting": \[\n    "on"\n  \],\n` +
+		`  "omens": \[\n    \{\n      "subject": "cursor",\n      "designation": "sanctum",\n` +
+		`      "aspects": \[\n        "on"\n      \],\n      "aspect": "on"\n    \}\n  \],\n` +
 		`  "taint": \[\]\n\}\n$`)
 	if !want.MatchString(out) {
 		t.Fatalf("augury:\n%s", out)
@@ -106,7 +108,9 @@ func TestInquisition(t *testing.T) {
 		t.Fatalf("clean inquisition: code=%d out=%q err=%q", code, out, errOut)
 	}
 	e.addRite("rites/mouse-autohide-toggle.jsonc", mouseJSON)
-	e.addRite("rites/bad.json", "{\n  \"pattern\": \"Mark I\",\n  \"aspects\": [\"on\"],\n  \"colour\": 1,\n  \"liturgy\": []\n}")
+	e.addRite("rites/bad.json", "{\n  \"pattern\": \"Mark II\",\n  \"aspects\": [\"on\"],\n  \"colour\": 1,\n"+
+		"  \"subjects\": [{\"name\": \"s\", \"designation\": \"machine-spirit\", \"enact\": {\"*\": \"true\"},\n"+
+		"    \"auspex\": {\"scan\": \"echo on\"}}]\n}")
 	out, _, code = e.run("inquisition")
 	for _, want := range []string{
 		`the rite "mouse-autohide-toggle" is recorded in more than one scripture`,
@@ -139,7 +143,8 @@ func TestInquisition(t *testing.T) {
 
 func TestInquisition_Vessels(t *testing.T) {
 	e := newEnv(t)
-	e.addRite("rites/missing.json", `{"pattern": "Mark I", "aspects": ["a"], "liturgy": [{"sanctum": "/nonexistent/f", "scripture": ""}]}`)
+	e.addRite("rites/missing.json", `{"pattern": "Mark II", "aspects": ["a"], "subjects": [
+	  {"name": "s", "designation": "sanctum", "vessel": "/nonexistent/f", "omens": {"*": ""}}]}`)
 	e.mustRun("invoke", "mouse-autohide-toggle", "on", "-s")
 	e.writeTarget(strings.Replace(e.targetContent(), "400", "999", 1))
 	out, _, code := e.run("inquisition")

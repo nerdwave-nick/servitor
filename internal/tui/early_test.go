@@ -92,8 +92,8 @@ func slain(pid int) bool {
 // TestEarly_TheFirstFrameShowsTheStaleOmenThenTheLiveOne: the cogitator
 // draws its rites at once, while their auspexes still labour: a subject
 // from the omen its data-slate recorded, dimmed stale with its age, one
-// without a record as awaited, a rite of Mark I its auspex awaited. Once
-// the auspexes settle, it draws the live omens.
+// without a record as awaited. Once the auspexes settle, it draws the live
+// omens.
 func TestEarly_TheFirstFrameShowsTheStaleOmenThenTheLiveOne(t *testing.T) {
 	h := newHarness(t)
 	h.hasty = true
@@ -102,7 +102,7 @@ func TestEarly_TheFirstFrameShowsTheStaleOmenThenTheLiveOne(t *testing.T) {
 	h.send(tea.WindowSizeMsg{Width: 160, Height: 40})
 
 	h.keys("r")
-	h.mustShow("mouse", "AUSPEX", "· awaited")
+	h.mustShow("mouse", "· ⚙ chant · awaited")
 	h.keys("j")
 	h.mustShow("◆ off", "~off", `✔ ⚙ smt "on" stale · read 2h ago`, "· ⚙ gov · awaited")
 	h.scans(2) // the frame was drawn while both scans laboured
@@ -112,7 +112,7 @@ func TestEarly_TheFirstFrameShowsTheStaleOmenThenTheLiveOne(t *testing.T) {
 	h.mustShow("◆ on", `✔ ⚙ smt "off"`, `✔ ⚙ gov "performance"`)
 	h.mustNotShow("stale", "awaited", "~off")
 	h.keys("k")
-	h.mustShow("AUSPEX", "· silent")
+	h.mustShow("· ⚙ chant · mute")
 }
 
 // TestEarly_AnExaltedAuspexStaysStale: a subject read by an exalted

@@ -88,7 +88,7 @@ func TestMarkII_NoFormFellsTheCogitator(t *testing.T) {
 		h.writeRite(name, body)
 	}
 	h.writeData("smt", "off\n")
-	h.renew(librarium.Runes{}, true)
+	h.renew(librarium.Runes{})
 	h.keys("r", "g")
 	h.mustShow("Rites (7)", "every", "gaming", "dnd")
 	for range len(h.m.rows) {

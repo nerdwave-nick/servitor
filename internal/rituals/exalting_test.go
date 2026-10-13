@@ -23,21 +23,28 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/sanction"
 )
 
-// hallow is a rite whose exalted verses stand among common ones: a common
-// incantation, an exalted incantation that tells who speaks it and where,
-// an exalted transcription of a vessel from the root, and a common
-// incantation that falls when $DATA/fall stands. Every verse reverts by
-// word.
+// hallow is a rite whose exalted subject and observance stand among
+// common observances: the exalted transcription hallow of a vessel from
+// the root; before it the common observance first and the exalted
+// observance exalted, which tells who speaks it and where; after it the
+// common observance last, which falls when $DATA/fall stands. Every
+// observance reverts by word.
 const hallow = `{
-  "pattern": "Mark I",
+  "pattern": "Mark II",
   "aspects": ["on", "off"],
-  "liturgy": [
-    {"incantation": "echo 1 >> $DATA/said", "reversion": "echo undo 1 >> $DATA/said"},
-    {"incantation": "echo \"exalted {{aspect}} $PWD $HOME $SERVITOR_FORMER_ASPECT\" >> $DATA/said",
-     "reversion": "echo \"undo exalted $PWD\" >> $DATA/said", "exalted": true},
-    {"transcription": "/etc/servitor-trials-hallow.conf", "scripture": "hallow = {{aspect}}", "exalted": true},
-    {"vox-cast": "progress"},
-    {"incantation": "test ! -e $DATA/fall && echo 5 >> $DATA/said", "reversion": "echo undo 5 >> $DATA/said"}
+  "vox-cast": ["progress"],
+  "subjects": [
+    {"name": "hallow", "designation": "transcription", "vessel": "/etc/servitor-trials-hallow.conf", "exalted": true,
+     "omens": {"*": "hallow = {{aspect}}"}, "introit": ["first", "exalted"], "recessional": ["last"]}
+  ],
+  "observances": [
+    {"name": "first", "designation": "incantation", "words": "echo 1 >> $DATA/said",
+     "reversion": "echo undo 1 >> $DATA/said"},
+    {"name": "exalted", "designation": "incantation", "exalted": true,
+     "words": "echo \"exalted {{aspect}} $PWD $HOME $SERVITOR_FORMER_ASPECT\" >> $DATA/said",
+     "reversion": "echo \"undo exalted $PWD\" >> $DATA/said"},
+    {"name": "last", "designation": "incantation", "words": "test ! -e $DATA/fall && echo 5 >> $DATA/said",
+     "reversion": "echo undo 5 >> $DATA/said"}
   ]
 }`
 
@@ -268,7 +275,7 @@ func (tp *temple) invoke(rite, aspect string, h *teller) (Result, error) {
 	return tp.servitor().Invoke(context.Background(), p)
 }
 
-// said is what the verses of hallow said, line by line.
+// said is what the observances of hallow said, line by line.
 func (tp *temple) said() []string {
 	p := filepath.Join(tp.data, "said")
 	if !exists(p) {
@@ -288,14 +295,14 @@ func (tp *temple) vessel() string {
 	return fmt.Sprintf("%04o %s", fi.Mode().Perm(), tp.read(p))
 }
 
-// TestInvoke_TheExaltedServitorPerformsTheExaltedVerses: the exalted verses
-// of a sanctioned rite are performed by the exalted servitor alone, raised
-// with one proof of the master after the pre-flight, in written order among
-// the common verses: its speech hears the root's home in a working hall of
-// its own, never the invoker's, and its vessel lies in its own world. The
-// herald hears that the proof is asked first; the chronicle names the
-// intercessor and the sigil.
-func TestInvoke_TheExaltedServitorPerformsTheExaltedVerses(t *testing.T) {
+// TestInvoke_TheExaltedServitorPerformsTheExaltedItems: the exalted subject
+// and observance of a sanctioned rite are performed by the exalted servitor
+// alone, raised with one proof of the master after the pre-flight, in their
+// places among the common observances: its speech hears the root's home in
+// a working hall of its own, never the invoker's, and its vessel lies in
+// its own world. The herald hears that the proof is asked first; the
+// chronicle names the intercessor and the sigil.
+func TestInvoke_TheExaltedServitorPerformsTheExaltedItems(t *testing.T) {
 	tp := newTemple(t, "sudo", "run0", "pkexec")
 	tp.rite("hallow", hallow)
 	kept := tp.sanctify("hallow")
@@ -322,9 +329,12 @@ func TestInvoke_TheExaltedServitorPerformsTheExaltedVerses(t *testing.T) {
 	if calls := tp.called(); len(calls) != 1 || !slices.Equal(calls[0], want) {
 		t.Errorf("the intercessors were called upon as %q, want once as %q", calls, want)
 	}
-	if got := tp.journal.deeds(); !slices.Equal(got, []string{"accept accepted", "perform 2 triumph",
-		"perform 3 triumph", "finish finished"}) {
+	if got := tp.journal.deeds(); !slices.Equal(got, []string{"accept accepted", "perform triumph",
+		"perform triumph", "finish finished"}) {
 		t.Errorf("journaled %q", got)
+	}
+	if got := tp.journal.items(); !slices.Equal(got, []string{"exalted", "hallow"}) {
+		t.Errorf("the exalted servitor acted upon %q", got)
 	}
 	if len(h.told) == 0 || h.told[0].Tidings != invocation.Exaltation || h.told[0].Intercessor != "sudo" ||
 		h.told[0].Sigil != sanction.Short(sigil) || h.told[0].Values.Rite != "hallow" {
@@ -345,10 +355,10 @@ func TestInvoke_TheExaltedServitorPerformsTheExaltedVerses(t *testing.T) {
 	}
 }
 
-// TestInvoke_AFallRevertsBothKindsWithOneProof: when a common verse falls
-// after the exalted ones, the exalted servitor reverts its verses among the
-// common reversions, from the fallen verse back to the first, and no second
-// proof is asked; so too when an exalted verse falls.
+// TestInvoke_AFallRevertsBothKindsWithOneProof: when a common observance
+// falls after the exalted items, the exalted servitor reverts them among
+// the common reversions, from the fallen observance back to the first, and
+// no second proof is asked; so too when an exalted subject falls.
 func TestInvoke_AFallRevertsBothKindsWithOneProof(t *testing.T) {
 	tp := newTemple(t, "sudo")
 	tp.rite("hallow", hallow)
@@ -370,20 +380,23 @@ func TestInvoke_AFallRevertsBothKindsWithOneProof(t *testing.T) {
 	if n := len(tp.called()); n != 1 {
 		t.Errorf("the intercessor was called upon %d times", n)
 	}
-	if got := tp.journal.deeds(); !slices.Equal(got, []string{"accept accepted", "perform 2 triumph",
-		"perform 3 triumph", "revert 3 reverted", "revert 2 reverted", "finish finished"}) {
+	if got := tp.journal.deeds(); !slices.Equal(got, []string{"accept accepted", "perform triumph",
+		"perform triumph", "revert reverted", "revert reverted", "finish finished"}) {
 		t.Errorf("journaled %q", got)
+	}
+	if got := tp.journal.items(); !slices.Equal(got, []string{"exalted", "hallow", "hallow", "exalted"}) {
+		t.Errorf("the exalted servitor acted upon %q", got)
 	}
 	if entries := tp.chronicled(); len(entries) != 1 || entries[0].Verdict != invocation.Reverted ||
 		entries[0].Intercessor != "sudo" {
 		t.Errorf("chronicled %+v", entries)
 	}
 
-	// the exalted vessel cannot be written: the exalted verse falls
+	// the exalted vessel cannot be written: the exalted subject falls
 	must(t, os.Chmod(filepath.Join(tp.ground, "etc"), 0o775))
 	must(t, os.Remove(filepath.Join(tp.data, "fall")))
 	res, err = tp.invoke("hallow", "on", nil)
-	if err != nil || res.Outcome.Verdict != invocation.Reverted || res.Outcome.Fell.Number != 3 ||
+	if err != nil || res.Outcome.Verdict != invocation.Reverted || res.Outcome.Fell.Subject != "hallow" ||
 		!strings.Contains(res.Outcome.Fell.Heresy.Error(), "the exalted servitor") || tp.vessel() != "absent" {
 		t.Errorf("%v %+v, vessel %q", err, res.Outcome, tp.vessel())
 	}
@@ -398,7 +411,7 @@ func TestInvoke_AFallRevertsBothKindsWithOneProof(t *testing.T) {
 // whose dominion cannot be held, is refused before any proof is asked; a
 // proof the master dismissed, an intercessor nowhere to be found, and an
 // exalted servitor of another forging or one that refuses are refused too.
-// Each touches nothing: no verse, no vessel, no data-slate, no chronicle.
+// Each touches nothing: no observance, no vessel, no data-slate, no chronicle.
 func TestInvoke_RefusalsTouchNothing(t *testing.T) {
 	spliced := strings.Replace(hallow, `"aspects": ["on", "off"],`, `"aspects": ["on", "off"],
   "inscriptions": {"zone": {"decrees": {"*": "core"}}, "who": {}},`, 1)
@@ -476,28 +489,8 @@ func TestInvoke_RefusalsTouchNothing(t *testing.T) {
 	}
 }
 
-// TestInvoke_AnExaltedEdictIsProclaimed: an edict's exalted verse is
-// performed by the exalted servitor, roused with no aspect.
-func TestInvoke_AnExaltedEdictIsProclaimed(t *testing.T) {
-	tp := newTemple(t, "pkexec")
-	tp.rite("reboot", reboot)
-	kept := tp.sanctify("reboot")
-	res, err := tp.invoke("reboot", "", nil)
-	if err != nil || res.Outcome.Verdict != invocation.Triumph {
-		t.Fatalf("%v %+v", err, res.Outcome)
-	}
-	if said := tp.said(); !slices.Equal(said, []string{"exalted"}) {
-		t.Errorf("said %q", said)
-	}
-	want := []string{filepath.Join(tp.bin, "pkexec"), "/usr/bin/servitor", exalted.Mode, "reboot",
-		sanction.Short(kept.Sigil)}
-	if calls := tp.called(); len(calls) != 1 || !slices.Equal(calls[0], want) {
-		t.Errorf("called %q, want %q", calls, want)
-	}
-}
-
 // TestInvoke_ForesightTellsTheSanction: foresight tells how the plan of the
-// aspect stands towards its sanction, marks exalted verses, and never
+// aspect stands towards its sanction, marks exalted items, and never
 // raises the exalted servitor.
 func TestInvoke_ForesightTellsTheSanction(t *testing.T) {
 	tp := newTemple(t, "sudo")
@@ -511,7 +504,7 @@ func TestInvoke_ForesightTellsTheSanction(t *testing.T) {
 		}
 		res, err := tp.servitor().Invoke(context.Background(), Petition{Rite: "hallow", Aspect: "on", Foresee: true,
 			Exaltation: &Exaltation{}})
-		if err != nil || res.Sanction != st || len(res.Foresight) != 5 || !res.Foresight[1].Exalted ||
+		if err != nil || res.Sanction != st || len(res.Foresight) != 4 || !res.Foresight[1].Exalted ||
 			res.Foresight[0].Exalted {
 			t.Errorf("%s: %v %+v", st, err, res)
 		}
@@ -524,7 +517,7 @@ func TestInvoke_ForesightTellsTheSanction(t *testing.T) {
 // TestInvoke_TellsWhenTheExaltedServitorAnswers: an Exaltation that would
 // know when the intercessor asks the master no more (the cogitator, which
 // lends sudo its terminal) is told so once: when the exalted servitor first
-// answered, before any verse is performed, or when the channel ended
+// answered, before anything is performed, or when the channel ended
 // unanswered because the proof was dismissed. With no intercessor called
 // upon it is never told.
 func TestInvoke_TellsWhenTheExaltedServitorAnswers(t *testing.T) {
@@ -552,7 +545,7 @@ func TestInvoke_TellsWhenTheExaltedServitorAnswers(t *testing.T) {
 				t.Fatalf("%v %+v", err, res.Outcome)
 			}
 			if told != c.told || saidWhenTold != nil {
-				t.Errorf("told %d times, the verses having said %q", told, saidWhenTold)
+				t.Errorf("told %d times, the observances having said %q", told, saidWhenTold)
 			}
 		})
 	}

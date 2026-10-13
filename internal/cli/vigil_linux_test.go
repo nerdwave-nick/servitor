@@ -21,8 +21,7 @@ func (e *env) sloths(n int) (pids string) {
 	e.t.Helper()
 	pids = filepath.Join(e.state, "pids")
 	for i := range n {
-		e.addRite(fmt.Sprintf("rites/sloth%d.json", i), `{"pattern": "Mark I", "aspects": ["on", "off"],
-		  "auspex": {"rite": "sleep 30 & echo $$ $! >> `+pids+`; wait", "patience": "60s"}, "liturgy": []}`)
+		e.addRite(fmt.Sprintf("rites/sloth%d.json", i), patientSpiritRite("sleep 30 & echo $$ $! >> "+pids+"; wait", "60s"))
 	}
 	return pids
 }
@@ -49,7 +48,7 @@ func awake(t *testing.T, pids string, n int) []int {
 func TestVigil_ADepartedListenerEndsTheVigil(t *testing.T) {
 	e := newEnv(t)
 	pids := e.sloths(2)
-	e.addRite("rites/hasty.json", `{"pattern": "Mark I", "aspects": ["on", "off"], "auspex": "sleep 0.3; echo on", "liturgy": []}`)
+	e.addRite("rites/hasty.json", spiritRite("sleep 0.3; echo on"))
 	l := &listener{t: t, bear: 4} // the first telling only
 	var errb bytes.Buffer
 

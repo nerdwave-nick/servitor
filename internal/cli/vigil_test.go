@@ -100,11 +100,10 @@ func TestVigil_TellsTheCensusAsItIsLearnt(t *testing.T) {
 	e := newEnv(t)
 	e.addRite("rites/capture.json", edictJSON)
 	e.addRite("rites/broken.json", `{`)
-	e.addRite("rites/dnd.json", `{"pattern": "Mark I", "aspects": ["on", "off"], "auspex": "sleep 0.3; echo off", "liturgy": []}`)
-	e.addRite("rites/fallen.json", `{"pattern": "Mark I", "aspects": ["on", "off"], "auspex": "exit 1", "liturgy": []}`)
-	e.addRite("rites/nonsense.json", `{"pattern": "Mark I", "aspects": ["on", "off"], "auspex": "echo porpl", "liturgy": []}`)
-	e.addRite("rites/sluggard.json", `{"pattern": "Mark I", "aspects": ["on", "off"],
-	  "auspex": {"rite": "sleep 5; echo on", "patience": "0.2s"}, "liturgy": []}`)
+	e.addRite("rites/dnd.json", spiritRite("sleep 0.3; echo off"))
+	e.addRite("rites/fallen.json", spiritRite("exit 1"))
+	e.addRite("rites/nonsense.json", spiritRite("echo porpl"))
+	e.addRite("rites/sluggard.json", patientSpiritRite("sleep 5; echo on", "0.2s"))
 	e.mustRun("invoke", "mouse-autohide-toggle", "on", "-s")
 	slates := filepath.Join(e.state, "servitor", augury.SlatesDir)
 	for _, rite := range []string{"fallen", "broken"} {
@@ -169,8 +168,7 @@ func TestVigil_DoesNotWaitForOneAuspexAfterAnother(t *testing.T) {
 	e := newEnv(t)
 	const n = 12
 	for i := range n {
-		e.addRite(fmt.Sprintf("rites/vigil%02d.json", i), `{"pattern": "Mark I", "aspects": ["on", "off"],
-  "auspex": {"rite": "sleep 1; echo on", "patience": "10s"}, "liturgy": []}`)
+		e.addRite(fmt.Sprintf("rites/vigil%02d.json", i), patientSpiritRite("sleep 1; echo on", "10s"))
 	}
 
 	start := time.Now()
@@ -193,7 +191,7 @@ func TestVigil_DoesNotWaitForOneAuspexAfterAnother(t *testing.T) {
 }
 
 // TestVigil_SparedTellsEveryRiteOnce: with --spare-auspex every rite is told
-// once, final, forgone where it keeps an auspex, and the vigil concludes
+// once, final, forgone where a subject keeps an auspex, and the vigil concludes
 // without awakening one.
 func TestVigil_SparedTellsEveryRiteOnce(t *testing.T) {
 	e := newEnv(t)

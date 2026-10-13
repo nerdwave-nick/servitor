@@ -32,15 +32,14 @@ func TestVigil_TellsEveryRiteThenEveryAuspexAsItSettles(t *testing.T) {
 	fx := newFixture(t)
 	fx.vessel("util.kdl", "")
 	fx.rite("mouse", mouse)
-	fx.rite("capture", capture)
-	fx.rite("broken", `{"pattern": "Mark I", "aspects": []}`)
-	fx.rite("fallen", `{"pattern": "Mark I", "aspects": ["on", "off"], "auspex": "exit 1", "liturgy": []}`)
-	fx.rite("nonsense", `{"pattern": "Mark I", "aspects": ["on", "off"], "auspex": "echo porpl", "liturgy": []}`)
-	fx.rite("sluggard", `{"pattern": "Mark I", "aspects": ["on", "off"],
-	  "auspex": {"rite": "sleep 5; echo on", "patience": "0.3s"}, "liturgy": []}`)
+	fx.rite("capture", captureII)
+	fx.rite("broken", broken)
+	fx.rite("fallen", spirit(`{"scan": "exit 1"}`))
+	fx.rite("nonsense", spirit(`{"scan": "echo porpl"}`))
+	fx.rite("sluggard", spirit(`{"scan": "sleep 5; echo on", "patience": "0.3s"}`))
 	for i, nap := range []string{"1.2", "0.9", "0.6"} {
 		fx.rite(fmt.Sprintf("slow%d", i),
-			`{"pattern": "Mark I", "aspects": ["on", "off"], "auspex": "sleep `+nap+`; echo on", "liturgy": []}`)
+			spirit(`{"scan": "sleep `+nap+`; echo on"}`))
 	}
 	s := fx.servitor()
 	for _, rite := range []string{"fallen", "broken", "slow1"} {
@@ -107,8 +106,8 @@ func TestVigil_ForgoneTellsEveryRiteOnce(t *testing.T) {
 	fx := newFixture(t)
 	mark := filepath.Join(fx.state, "awakened")
 	fx.rite("mouse", mouse)
-	fx.rite("capture", capture)
-	fx.rite("sloth", `{"pattern": "Mark I", "aspects": ["on", "off"], "auspex": "touch `+mark+`; sleep 5", "liturgy": []}`)
+	fx.rite("capture", captureII)
+	fx.rite("sloth", spirit(`{"scan": "touch `+mark+`; sleep 5"}`))
 	s := fx.servitor()
 
 	start := time.Now()
@@ -137,8 +136,7 @@ func TestVigil_AnEndedVigilSlaysItsAuspexes(t *testing.T) {
 	fx := newFixture(t)
 	pids := filepath.Join(fx.state, "pids")
 	for i := range 3 {
-		fx.rite(fmt.Sprintf("sloth%d", i), `{"pattern": "Mark I", "aspects": ["on", "off"],
-		  "auspex": {"rite": "sleep 30 & echo $$ $! >> `+pids+`; wait", "patience": "60s"}, "liturgy": []}`)
+		fx.rite(fmt.Sprintf("sloth%d", i), spirit(`{"scan": "sleep 30 & echo $$ $! >> `+pids+`; wait", "patience": "60s"}`))
 	}
 	s := fx.servitor()
 	ctx, end := context.WithCancel(context.Background())
@@ -198,9 +196,9 @@ func TestVigil_HeraldThenAttendIsTheVigilWithItsReadings(t *testing.T) {
 	fx := newFixture(t)
 	fx.vessel("util.kdl", "")
 	fx.rite("mouse", mouse)
-	fx.rite("capture", capture)
-	fx.rite("broken", `{"pattern": "Mark I", "aspects": []}`)
-	fx.rite("slow", `{"pattern": "Mark I", "aspects": ["on", "off"], "auspex": "sleep 0.2; echo on", "liturgy": []}`)
+	fx.rite("capture", captureII)
+	fx.rite("broken", broken)
+	fx.rite("slow", spirit(`{"scan": "sleep 0.2; echo on"}`))
 	s := fx.servitor()
 
 	var parted []Heralding

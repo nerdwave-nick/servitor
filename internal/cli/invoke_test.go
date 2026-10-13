@@ -16,7 +16,7 @@ func TestInvokeAndAugury_UserScenario(t *testing.T) {
 	e.home()
 	out := e.mustRun("invoke", "mouse-autohide-toggle", "on", "--reason", "gaming remnant")
 	for _, want := range []string{"+++ mouse-autohide-toggle · (dormant) → on +++\n",
-		"\n  ✔ verse 1 · sanctum ~/util.kdl\n", "\n✠ "} {
+		"\n  ✔ subject cursor · sanctum ~/util.kdl\n", "\n✠ "} {
 		if !strings.Contains(out, want) {
 			t.Fatalf("the report lacks %q:\n%s", want, out)
 		}
@@ -57,11 +57,11 @@ func TestInvokeAndAugury_UserScenario(t *testing.T) {
 	}
 }
 
-// TestInvoke_Errors: whatever is refused before a verse is performed exits
+// TestInvoke_Errors: whatever is refused before a subject is set exits
 // 2 and speaks only to stderr.
 func TestInvoke_Errors(t *testing.T) {
 	e := newEnv(t)
-	e.addRite("rites/broken.json", `{"pattern": "Mark I", "aspects": []}`)
+	e.addRite("rites/broken.json", `{"pattern": "Mark II", "aspects": []}`)
 	cases := []struct {
 		args []string
 		err  string
@@ -94,7 +94,7 @@ func TestInvoke_HelpAndForesee(t *testing.T) {
 		t.Fatal("bare 'invoke' should print help")
 	}
 	sub := e.mustRun("invoke", "mouse-autohide-toggle", "--help")
-	for _, want := range []string{"Aspects: on, off", e.target, "--reason word", "why the rite was invoked",
+	for _, want := range []string{"Aspects: on, off", "--reason word", "why the rite was invoked",
 		"--example-key word", "mandatory", "-f, --foresee", "-s, --silence"} {
 		if !strings.Contains(sub, want) {
 			t.Errorf("invoke help missing %q:\n%s", want, sub)
@@ -102,7 +102,7 @@ func TestInvoke_HelpAndForesee(t *testing.T) {
 	}
 	for _, flag := range []string{"--foresee", "-f"} {
 		out := e.mustRun("invoke", "mouse-autohide-toggle", "on", flag)
-		for _, want := range []string{"verse 1 · sanctum " + e.target, "+ cursor {", "verse 2 · vox-cast success",
+		for _, want := range []string{"subject cursor · sanctum " + e.target + ": changing", "+ cursor {",
 			"Nothing was performed."} {
 			if !strings.Contains(out, want) {
 				t.Fatalf("%s output lacks %q:\n%s", flag, want, out)
@@ -123,13 +123,19 @@ func TestInvoke_Silence(t *testing.T) {
 	}
 }
 
+// fallingJSON is a rite whose sanctum is kept, then whose observance
+// falls once it changed.
 const fallingJSON = `{
-  "pattern": "Mark I",
+  "pattern": "Mark II",
   "aspects": ["on", "off"],
   "inscriptions": {"reason": {"decrees": {"*": "decreed"}}},
-  "liturgy": [
-    {"sanctum": "$TARGET", "ward": "falling", "scripture": "x"},
-    {"incantation": "echo $SERVITOR_INSCRIPTION_REASON >> $TARGET.said; echo dying words; exit 3"}
+  "subjects": [
+    {"name": "warded", "designation": "sanctum", "vessel": "$TARGET", "ward": "falling", "omens": {"*": "x"},
+     "recessional": ["dying"]}
+  ],
+  "observances": [
+    {"name": "dying", "designation": "incantation",
+     "words": "echo $SERVITOR_INSCRIPTION_REASON >> $TARGET.said; echo dying words; exit 3"}
   ]
 }`
 
@@ -142,8 +148,8 @@ func TestInvoke_AFallIsRevertedAndTold(t *testing.T) {
 	if code != 1 || out != "" {
 		t.Fatalf("code=%d out=%q", code, out)
 	}
-	for _, want := range []string{`the rite "falling" fell at verse 2`, "death-mark 3", "dying words",
-		"verse 1 · sanctum " + e.target + " is undone", "Every deed is undone"} {
+	for _, want := range []string{`the rite "falling" fell at observance dying`, "death-mark 3", "dying words",
+		"subject warded · sanctum " + e.target + " is undone", "Every deed is undone"} {
 		if !strings.Contains(errOut, want) {
 			t.Errorf("the lament lacks %q:\n%s", want, errOut)
 		}
@@ -168,9 +174,10 @@ func TestInvoke_AFallIsRevertedAndTold(t *testing.T) {
 func TestInvoke_AnInterruptHaltsAndRevertsTheRite(t *testing.T) {
 	e := newEnv(t)
 	marker := filepath.Join(e.state, "spoken")
-	e.addRite("rites/long.json", `{"pattern": "Mark I", "aspects": ["on"], "liturgy": [
-	  {"sanctum": "$TARGET", "ward": "long", "scripture": "x"},
-	  {"incantation": "touch `+marker+`; sleep 30"}]}`)
+	e.addRite("rites/long.json", `{"pattern": "Mark II", "aspects": ["on"], "subjects": [
+	  {"name": "warded", "designation": "sanctum", "vessel": "$TARGET", "ward": "long", "omens": {"*": "x"},
+	   "recessional": ["long"]}], "observances": [
+	  {"name": "long", "designation": "incantation", "words": "touch `+marker+`; sleep 30"}]}`)
 	type result struct {
 		errOut string
 		code   int

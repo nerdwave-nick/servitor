@@ -1,21 +1,24 @@
 package tui
 
 import (
-	"os"
-	"path/filepath"
 	"strings"
 	"testing"
 
 	tea "charm.land/bubbletea/v2"
 )
 
+// TestInvoke_PickForeseeInscribeAndWatchTheRiteRun: the aspect is chosen,
+// foreseen subject by subject without touching a vessel, inscribed, and
+// the invocation watched as it sets each changing subject; its words are
+// kept for O.
 func TestInvoke_PickForeseeInscribeAndWatchTheRiteRun(t *testing.T) {
 	h := newHarness(t)
 	h.keys("enter")
 	h.mustShow("Invoke mouse", "Choose the aspect to invoke", "on", "off")
 	h.keys("p")
-	h.mustShow("Foresight of aspect on", "verse 2 · sanctum", "+ // +++ begin of sanctum cursor -- aspect|on +++",
-		"+ a", "spoken in the tongue bash", "echo chanting on", "should the rite fall, its reversion",
+	h.mustShow("Foresight of aspect on", "subject cursor · sanctum: changing",
+		"+ // +++ begin of sanctum cursor -- aspect|on +++", "+ a",
+		`subject chant · machine-spirit: (mute) → "on", changing`, "spoken in the tongue bash", "echo chanting on",
 		"Nothing was performed.")
 	if got := h.readData("x.kdl"); got != "input {}\n" {
 		t.Fatalf("the foresight touched the vessel: %q", got)
@@ -30,14 +33,16 @@ func TestInvoke_PickForeseeInscribeAndWatchTheRiteRun(t *testing.T) {
 	h.keys("esc")
 	h.mustShow("Inscriptions for aspect on")
 	h.keys("enter", "enter") // past mode, its decree kept, to perform
-	h.mustShow("Invocation of mouse → on", "step 0 / 2")
+	h.mustShow("Invocation of mouse → on", "the subjects await their setting")
 
-	h.next() // the progress vox-cast before any real step
-	h.mustShow("The machine spirit stirs; the liturgy begins.", "step 0 / 2")
-	h.next() // the sanctum begins
-	h.mustShow("step 1 / 2", "verse 2 · sanctum")
-	h.next() // the incantation begins
-	h.mustShow("step 2 / 2", "verse 3 · incantation echo chanting on")
+	h.next() // the plan is drawn
+	h.mustShow("subject 0 / 2")
+	h.next() // the sanctum is set
+	h.mustShow("subject 1 / 2", "▸ subject cursor · sanctum")
+	h.next() // its progress, which names it
+	h.mustShow("cursor")
+	h.next() // the machine-spirit is set
+	h.mustShow("subject 2 / 2", `▸ subject chant · machine-spirit: (mute) → "on"`)
 	h.await()
 
 	h.mustNotShow("Invocation of mouse")
@@ -48,28 +53,34 @@ func TestInvoke_PickForeseeInscribeAndWatchTheRiteRun(t *testing.T) {
 	h.desktopSilent()
 
 	h.keys("O")
-	h.mustShow("Words of the last invocation", "verse 3 · incantation", "chanting on")
+	h.mustShow("Words of the last invocation", "subject chant", "chanting on")
 	h.keys("esc")
 	h.mustNotShow("Words of the last invocation")
 }
 
+// TestInvoke_AFallShowsTheHeresyTheReversionsAndTheLastWords: a subject
+// whose enact words fall is named with its death-mark and last words, and
+// everything set before it is restored and told.
 func TestInvoke_AFallShowsTheHeresyTheReversionsAndTheLastWords(t *testing.T) {
 	h := newHarness(t)
-	h.writeRite("mouse", strings.Replace(markRite, `{"vox-cast": "success"}`,
-		`{"incantation": "echo dying words; exit 3", "reversion": "echo the deed undone"}`, 1))
+	h.writeRite("mouse", strings.Replace(markRite, `"enact": {"*": "echo chanting {{aspect}}; echo {{omen}} > $DATA/mode"}`,
+		`"enact": {"on": "echo dying words; exit 3", "*": "echo the deed undone; echo {{omen}} > $DATA/mode"}`, 1))
+	h.writeData("mode", "off\n")
 	h.keys("r", "space")
 	h.await()
-	h.mustShow("The rite mouse has fallen", "It fell at verse 4 · incantation echo dying words; exit 3",
-		"death-mark 3", "its last words:", "dying words", "verse 4 · incantation", "is undone",
-		"the deed undone", "verse 2 · sanctum", "Every deed is undone")
+	h.mustShow("The rite mouse has fallen", "It fell at subject chant · machine-spirit",
+		"death-mark 3", "its last words:", "dying words", "subject chant is undone",
+		"subject cursor is undone", "Every deed is undone")
 	if got := h.readData("x.kdl"); got != "input {}\n" {
 		t.Fatalf("the vessel was not restored: %q", got)
 	}
+	if got := h.readData("mode"); got != "off\n" {
+		t.Fatalf("the machine-spirit was not restored: %q", got)
+	}
 	h.keys("esc")
 	h.mustNotShow("has fallen")
-	h.mustShow("dormant")
 	h.keys("O")
-	h.mustShow("Words of the last invocation", "chanting on", "dying words", "the deed undone")
+	h.mustShow("Words of the last invocation", "dying words", "the deed undone")
 	h.desktopSilent()
 }
 
@@ -89,11 +100,15 @@ func TestInvoke_ThePreflightRefusalIsShown(t *testing.T) {
 	}
 }
 
+// TestInvoke_CtrlCHaltsTheRiteRatherThanTheCogitator: ctrl+c while a rite
+// runs halts the rite, which is reverted, and leaves the cogitator be.
 func TestInvoke_CtrlCHaltsTheRiteRatherThanTheCogitator(t *testing.T) {
 	h := newHarness(t)
-	h.writeRite("mouse", strings.Replace(markRite, `{"vox-cast": "success"}`, `{"incantation": "sleep 30"}`, 1))
+	h.writeRite("mouse", strings.Replace(markRite, `"enact": {"*": "echo chanting {{aspect}}; echo {{omen}} > $DATA/mode"}`,
+		`"enact": {"on": "echo {{omen}} > $DATA/mode; sleep 30", "*": "echo {{omen}} > $DATA/mode"}`, 1))
+	h.writeData("mode", "off\n")
 	h.keys("r", "space")
-	h.next() // the progress vox-cast
+	h.next() // the plan is drawn
 	_, cmd := h.m.Update(keyMsg("ctrl+c"))
 	if cmd != nil {
 		if msg, ok := runQuick(cmd); ok {
@@ -106,7 +121,7 @@ func TestInvoke_CtrlCHaltsTheRiteRatherThanTheCogitator(t *testing.T) {
 	h.await()
 	h.mustShow("The rite mouse has fallen", "halted at its master's command", "Every deed is undone")
 	h.mustShow("further step") // a long heresy is wrapped, not cut short
-	if _, err := os.Stat(filepath.Join(h.dataDir, "mode")); !os.IsNotExist(err) {
-		t.Fatal("the reversion of the incantation was not spoken")
+	if got := h.readData("mode"); got != "off\n" {
+		t.Fatalf("the machine-spirit was not restored: %q", got)
 	}
 }

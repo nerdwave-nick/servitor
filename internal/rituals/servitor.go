@@ -35,7 +35,8 @@ type Servitor struct {
 	Sanctions *sanction.Store
 }
 
-// Open loads the Librarium at dir.
+// Open loads the Librarium at dir, every pure scripture of pattern Mark I
+// converted in memory (librarium.Load); Convert writes the conversions.
 func Open(dir string, runes librarium.Runes) *Servitor {
 	return &Servitor{Librarium: librarium.Load(dir), Runes: runes}
 }

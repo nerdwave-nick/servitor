@@ -9,13 +9,13 @@ import (
 // edictRite is an edict that leaves a mark among the vessels, were it ever
 // performed. It sorts before the rite "mouse".
 const edictRite = `{
-  "pattern": "Mark I",
+  "pattern": "Mark II",
   "purpose": "Capture the visage",
   "edict": true,
   "inscriptions": {"region": {"purpose": "the slurp geometry", "decrees": "full"}},
+  "vox-cast": ["success"],
   "liturgy": [
-    {"incantation": "echo {{inscription.region}} > $DATA/captured"},
-    {"vox-cast": "success"}
+    {"designation": "incantation", "words": "echo {{inscription.region}} > $DATA/captured"}
   ]
 }`
 

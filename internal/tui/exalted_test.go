@@ -9,16 +9,16 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/librarium"
 )
 
-// TestInvoke_TheCogitatorRefusesExaltedVerses: the cogitator performs no
-// exalted verse with its invoker's authority. Its invocation of a rite
+// TestInvoke_TheCogitatorRefusesExaltedSubjects: the cogitator sets no
+// exalted subject with its invoker's authority. Its invocation of a rite
 // never sanctioned is refused before anything is touched and the refusal
 // is shown, while foresight still reveals what the rite would do.
-func TestInvoke_TheCogitatorRefusesExaltedVerses(t *testing.T) {
+func TestInvoke_TheCogitatorRefusesExaltedSubjects(t *testing.T) {
 	h := newHarness(t)
-	h.writeRite("mouse", strings.Replace(markRite, `"reversion": "rm -f $DATA/mode"}`,
-		`"reversion": "rm -f $DATA/mode", "exalted": true}`, 1))
+	h.writeRite("mouse", strings.Replace(markRite, `{"name": "chant", "designation": "machine-spirit",`,
+		`{"name": "chant", "designation": "machine-spirit", "exalted": true,`, 1))
 	h.keys("r", "enter", "p")
-	h.mustShow("Foresight of aspect on", "verse 3 · incantation", "Nothing was performed.")
+	h.mustShow("Foresight of aspect on", "subject chant · machine-spirit", "Nothing was performed.")
 	h.keys("esc", "1", "enter", "enter")
 	h.await()
 	h.mustShow("The pre-flight forbids the invocation", "nothing was touched", "exalted:", "sanction")
@@ -26,7 +26,7 @@ func TestInvoke_TheCogitatorRefusesExaltedVerses(t *testing.T) {
 		t.Fatalf("the vessel was touched: %q", got)
 	}
 	if _, err := os.Stat(filepath.Join(h.dataDir, "mode")); err == nil {
-		t.Fatal("the exalted verse was spoken")
+		t.Fatal("the exalted subject was set")
 	}
 	h.desktopSilent()
 }

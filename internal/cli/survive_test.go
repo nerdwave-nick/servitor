@@ -17,23 +17,24 @@ func gate(marker, release string) string {
 	return "touch " + marker + "; while [ ! -e " + release + " ]; do sleep 0.01; done"
 }
 
-// lingering is a rite (or, with edict, an edict) whose liturgy halts at a
-// gate between two deeds, so that a test may strike at it mid-liturgy.
+// lingering is a rite (or, with edict, an edict) that halts at a gate
+// between two deeds, so that a test may strike at it mid-liturgy.
 // Its second deed leaves $TARGET.after.
 func (e *env) lingering(name string, edict bool) (marker, release string) {
 	e.t.Helper()
 	marker, release = filepath.Join(e.state, name+".spoken"), filepath.Join(e.state, name+".release")
 	if edict {
-		e.addRite("rites/"+name+".json", `{"pattern": "Mark I", "edict": true, "liturgy": [
-		  {"incantation": "echo before >> $TARGET.before"},
-		  {"incantation": "`+gate(marker, release)+`"},
-		  {"incantation": "echo after >> $TARGET.after"}]}`)
+		e.addRite("rites/"+name+".json", `{"pattern": "Mark II", "edict": true, "liturgy": [
+		  {"designation": "incantation", "words": "echo before >> $TARGET.before"},
+		  {"designation": "incantation", "words": "`+gate(marker, release)+`"},
+		  {"designation": "incantation", "words": "echo after >> $TARGET.after"}]}`)
 		return marker, release
 	}
-	e.addRite("rites/"+name+".json", `{"pattern": "Mark I", "aspects": ["on"], "liturgy": [
-	  {"sanctum": "$TARGET", "ward": "`+name+`", "scripture": "x"},
-	  {"incantation": "`+gate(marker, release)+`"},
-	  {"transcription": "$TARGET.after", "scripture": "after"}]}`)
+	e.addRite("rites/"+name+".json", `{"pattern": "Mark II", "aspects": ["on"], "subjects": [
+	  {"name": "warded", "designation": "sanctum", "vessel": "$TARGET", "ward": "`+name+`", "omens": {"*": "x"}},
+	  {"name": "after", "designation": "transcription", "vessel": "$TARGET.after", "omens": {"*": "after"},
+	   "introit": ["gate"]}],
+	  "observances": [{"name": "gate", "designation": "incantation", "words": "`+gate(marker, release)+`"}]}`)
 	return marker, release
 }
 

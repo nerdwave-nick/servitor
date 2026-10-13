@@ -106,7 +106,7 @@ func within(t *testing.T, ok func() bool, what string) {
 }
 
 // TestInvoke_SurvivesTheDeathOfItsCaller: the caller who invoked the
-// servitor upon its terminal is slain mid-liturgy; its terminal hangs up
+// servitor upon its terminal is slain mid-invocation; its terminal hangs up
 // and its readers are gone, yet the servitor, orphaned, performs the rite
 // or edict whole, tells it to no one and chronicles its triumph.
 func TestInvoke_SurvivesTheDeathOfItsCaller(t *testing.T) {
@@ -125,7 +125,11 @@ func TestInvoke_SurvivesTheDeathOfItsCaller(t *testing.T) {
 		}
 		await(t, marker, "the gate was never reached")
 		heard := func() string { b, _ := os.ReadFile(heardFile); return string(b) }
-		within(t, func() bool { return strings.Contains(heard(), "✔ verse 1") },
+		told := "✔ verse 1"
+		if !edict {
+			told = "✔ subject warded"
+		}
+		within(t, func() bool { return strings.Contains(heard(), told) },
 			"the servitor did not narrate upon its terminal")
 		pid, err := strconv.Atoi(func() string { b, _ := os.ReadFile(pidFile); return string(b) }())
 		if err != nil {

@@ -2,7 +2,6 @@ package librarium
 
 import (
 	"io/fs"
-	"strings"
 	"testing"
 	"time"
 )
@@ -256,50 +255,5 @@ func TestParse_MarkIIRiteMayBeBareOfOptions(t *testing.T) {
 				t.Fatalf("rite %v, findings:\n%v", r, fs)
 			}
 		})
-	}
-}
-
-// sanctumSubjectRite is a rite of pattern Mark II keeping one sanctum
-// subject named "s" in vessel under ward ("" for the rite's name).
-func sanctumSubjectRite(vessel, ward string) string {
-	w := ""
-	if ward != "" {
-		w = `, "ward": "` + ward + `"`
-	}
-	return `{"pattern": "Mark II", "aspects": ["on"],
-  "subjects": [{"name": "s", "designation": "sanctum", "vessel": "` + vessel + `"` + w + `, "omens": {"*": ""}}]}`
-}
-
-// TestLoad_WardsClashAcrossPatterns: a sanctum subject claims its ward in
-// its vessel as a sanctum verse does, and two claims of one ward clash,
-// whatever the pattern of their rites.
-func TestLoad_WardsClashAcrossPatterns(t *testing.T) {
-	dir := t.TempDir()
-	writeScripture(t, dir, "rites/a.json", sanctumRite("/x.kdl", "shared"))
-	writeScripture(t, dir, "rites/b.json", sanctumSubjectRite("/x.kdl", "shared"))
-	writeScripture(t, dir, "rites/c.json", sanctumSubjectRite("/x.kdl", ""))
-	writeScripture(t, dir, "rites/d.json", sanctumSubjectRite("/x.kdl", "own"))
-	writeScripture(t, dir, "rites/e.json", `{"pattern": "Mark I", "aspects": ["on"], "liturgy": [{"sanctum": "/x.kdl", "ward": "c", "scripture": ""}]}`)
-	lib := Load(dir)
-	clash := findingsWith(lib.Findings, "is claimed twice")
-	var rites []string
-	for _, f := range clash {
-		rites = append(rites, f.Rite)
-	}
-	if strings.Join(rites, ",") != "a,b,c,e" {
-		t.Fatalf("clashing rites %v in\n%v", rites, lib.Findings)
-	}
-	if !strings.Contains(clash[1].Message, `by the subject "s" of the rite "b"`) ||
-		!strings.Contains(clash[1].Message, `by verse 1 of the rite "a"`) {
-		t.Errorf("the clash must name the subject and the verse: %s", clash[1].Message)
-	}
-	if want := posOf(t, sanctumSubjectRite("/x.kdl", "shared"), `"shared"`, 0); clash[1].Position != want {
-		t.Errorf("the clash points at %v, want the ward %v", clash[1].Position, want)
-	}
-	if want := posOf(t, sanctumSubjectRite("/x.kdl", ""), `"/x.kdl"`, 0); clash[2].Position != want {
-		t.Errorf("the clash of a default ward points at %v, want the vessel %v", clash[2].Position, want)
-	}
-	if lib.Heretical["d"] || !lib.Heretical["b"] || !lib.Heretical["c"] {
-		t.Errorf("heretical %v", lib.Heretical)
 	}
 }

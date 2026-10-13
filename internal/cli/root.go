@@ -77,7 +77,7 @@ func NewRootCmd(args []string, stdout, stderr io.Writer) *cobra.Command {
 // newRoot builds the command tree and the app its rituals serve.
 func newRoot(args []string, stdout, stderr io.Writer) (*cobra.Command, *app) {
 	a := &app{configDir: resolveConfigDir(args), completing: isCompletionRequest(args)}
-	a.lib = loadLibrarium(a.configDir)
+	a.lib = librarium.Load(a.configDir)
 
 	root := &cobra.Command{
 		Use:               "servitor",
@@ -127,7 +127,7 @@ func (a *app) cogitator(cmd *cobra.Command) error {
 	if err := unexalted("the awakening of the cogitator"); err != nil {
 		return err
 	}
-	return runTUI(tui.Options{Dir: a.lib.Dir, Runes: runesOf(cmd), Convert: convertMarkI})
+	return runTUI(tui.Options{Dir: a.lib.Dir, Runes: runesOf(cmd)})
 }
 
 // unknownRitual rejects arguments to the servitor itself: whatever was
