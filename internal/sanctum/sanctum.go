@@ -1,5 +1,5 @@
-// Package sanctum finds, renders and rewrites the sanctums of pattern Mark I
-// within the scripture of a vessel.
+// Package sanctum finds, renders and rewrites the sanctums of a vessel: the
+// warded regions its sanctum subjects keep within its scripture.
 //
 // A sanctum with glyph "//" and ward "mouse" reads:
 //

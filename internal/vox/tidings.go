@@ -71,7 +71,7 @@ var edictTemplates = map[invocation.Tidings][]string{
 }
 
 // subjectTemplates are the embedded template lists of the progress and fall
-// of a state rite of pattern Mark II: they name the subject. Its triumph,
+// of a rite of aspects: they name the subject. Its triumph,
 // dominion and exaltation are told as every rite's.
 var subjectTemplates = map[invocation.Tidings][]string{
 	invocation.Progress: parseTemplates("subject-progress.txt", subjectProgressFile),
@@ -110,7 +110,7 @@ const awakening = "The machine spirit stirs; the liturgy begins."
 // of progress ends in "step x / n", that of failure in how the reversion
 // went. An edict's vox-cast is drawn from its own templates, and neither it
 // nor its summary speaks an aspect. The progress and fall of a subject of a
-// state rite are drawn from templates naming it, and progress ends in
+// rite of aspects are drawn from templates naming it, and progress ends in
 // "subject x / n".
 func Compose(p invocation.Proclamation, pick func(n int) int) Message {
 	tid := p.Values.Tidings

@@ -8,13 +8,12 @@ import (
 	tea "charm.land/bubbletea/v2"
 
 	"github.com/nerdwave-nick/servitor/internal/invocation"
-	"github.com/nerdwave-nick/servitor/internal/librarium"
 	"github.com/nerdwave-nick/servitor/internal/rituals"
 )
 
 // verseName names a verse as "verse 2 · tether <target>", an exalted verse
 // as "verse 2 · tether ✠ <target>", and a subject or an observance of a
-// state rite as "subject smt" or "observance veil".
+// rite of aspects as "subject smt" or "observance veil".
 func verseName(v invocation.Verse) string {
 	switch {
 	case v.Subject != "":
@@ -142,7 +141,7 @@ func uttered(what, output string) []string {
 }
 
 // fallen tells why the rite or edict of res fell, its last words and how
-// every reversion went. A fallen subject of a state rite is named with its
+// every reversion went. A fallen subject of a rite of aspects is named with its
 // designation, and a machine-spirit with the omen commanded and the omen it
 // was read to show before it was set; the heresy names the omen found.
 func (m *model) fallen(res rituals.Result) string {
@@ -194,9 +193,6 @@ func (m *model) showWords() tea.Cmd {
 	}
 	b := []string{t.bold.Render(head), ""}
 	for _, d := range out.Deeds {
-		if d.Kind == librarium.KindVoxCast {
-			continue
-		}
 		b = append(b, t.accent.Render(verseName(d.Verse)))
 		b = append(b, m.words(d.Output)...)
 	}

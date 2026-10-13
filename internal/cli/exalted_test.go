@@ -9,27 +9,30 @@ import (
 )
 
 // splitLockJSON keeps a common sanctum in the target and speaks one
-// exalted incantation after it.
+// exalted observance after it changes.
 const splitLockJSON = `{
-  "pattern": "Mark I",
+  "pattern": "Mark II",
   "aspects": ["on", "off"],
-  "liturgy": [
-    {"sanctum": "$TARGET", "scripture": {"on": "split-lock 0", "off": ""}},
-    {"incantation": "echo {{aspect}} >> $TARGET.exalted", "exalted": true},
-    {"vox-cast": "success"}
+  "vox-cast": ["success"],
+  "subjects": [
+    {"name": "veil", "designation": "sanctum", "vessel": "$TARGET", "omens": {"on": "split-lock 0", "off": ""},
+     "recessional": ["exalt"]}
+  ],
+  "observances": [
+    {"name": "exalt", "designation": "incantation", "words": "echo {{aspect}} >> $TARGET.exalted", "exalted": true}
   ]
 }`
 
 // TestInvoke_UnsanctionedExaltedVersesAreRefused: invoking a rite or
-// proclaiming an edict whose exalted verses were never sanctioned exits 2
-// before anything is touched — no proof, no vessel, no speech, no dominion,
-// no chronicle — and the binharic forbiddance names the exalted verse;
-// --foresee still reveals it.
+// proclaiming an edict whose exalted observances or verses were never
+// sanctioned exits 2 before anything is touched — no proof, no vessel, no
+// speech, no dominion, no chronicle — and the binharic forbiddance names
+// the exalted observance; --foresee still reveals it.
 func TestInvoke_UnsanctionedExaltedVersesAreRefused(t *testing.T) {
 	e := newEnv(t)
 	e.addRite("rites/split-lock.json", splitLockJSON)
-	e.addRite("rites/reboot.json", `{"pattern": "Mark I", "edict": true, "liturgy": [
-	  {"incantation": "echo proclaimed >> $TARGET.exalted", "exalted": true}]}`)
+	e.addRite("rites/reboot.json", `{"pattern": "Mark II", "edict": true, "liturgy": [
+	  {"designation": "incantation", "words": "echo proclaimed >> $TARGET.exalted", "exalted": true}]}`)
 	untouched := func(args []string) {
 		t.Helper()
 		if got := e.targetContent(); got != "input {}\n" {
@@ -60,7 +63,8 @@ func TestInvoke_UnsanctionedExaltedVersesAreRefused(t *testing.T) {
 		t.Fatalf("exit %d, %v\nstdout: %s\nstderr: %s", code, err, out, errOut)
 	}
 	if refusal.Rite != "split-lock" || refusal.Aspect != "off" || len(refusal.Forbidden) != 1 ||
-		!strings.Contains(refusal.Forbidden[0], "split-lock.json:6:") || !strings.Contains(refusal.Forbidden[0], "verse 2 is exalted") {
+		!strings.Contains(refusal.Forbidden[0], "split-lock.json:10:") ||
+		!strings.Contains(refusal.Forbidden[0], `the observance "exalt" is exalted`) {
 		t.Fatalf("refusal %+v", refusal)
 	}
 	untouched([]string{"--binharic"})

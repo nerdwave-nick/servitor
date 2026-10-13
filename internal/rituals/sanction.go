@@ -98,13 +98,13 @@ func (s *Servitor) ListSanctions() ([]Sanctioned, []error) {
 // ForsakenSanction is the lament of a forsaken sanction.
 type ForsakenSanction struct {
 	Rite string
-	Gone bool // the rite is gone; else it holds no exalted verse
+	Gone bool // the rite is gone; else it holds nothing exalted
 }
 
 func (f *ForsakenSanction) Error() string {
 	why := fmt.Sprintf("no rite named %q is recorded in the Librarium any more", f.Rite)
 	if !f.Gone {
-		why = fmt.Sprintf("the rite %q holds no exalted verse any more", f.Rite)
+		why = fmt.Sprintf("the rite %q holds nothing exalted any more", f.Rite)
 	}
 	return fmt.Sprintf("the sanction of %q is forsaken: %s, and the sanction serves nothing — abjure it: "+
 		"servitor abjure %s", f.Rite, why, f.Rite)

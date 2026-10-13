@@ -26,10 +26,12 @@ func (e *env) complete(args ...string) (values []string, directive string) {
 
 const noFileComp = ":4"
 
-// themeJSON is a rite whose auspex, were it ever awakened, leaves a mark.
-const themeJSON = `{"pattern": "Mark I", "purpose": "Color theme", "aspects": ["dark", "light", "auto"],
-  "auspex": "touch $TARGET.auspex; echo dark",
-  "liturgy": [{"sanctum": "$TARGET", "ward": "theme", "scripture": {"*": "{{aspect}}"}}]}`
+// themeJSON is a rite whose machine-spirit's auspex, were it ever
+// awakened, leaves a mark; it shows the target during an invocation.
+const themeJSON = `{"pattern": "Mark II", "purpose": "Color theme", "aspects": ["dark", "light", "auto"],
+  "subjects": [{"name": "visage", "designation": "sanctum", "vessel": "$TARGET", "ward": "theme", "omens": {"*": "{{aspect}}"}},
+    {"name": "spirit", "designation": "machine-spirit", "enact": {"*": "true"},
+     "auspex": {"scan": "touch $TARGET.auspex; echo ${SERVITOR_ASPECT:-dark}"}}]}`
 
 func TestCompletion_Callbacks(t *testing.T) {
 	e := newEnv(t)
@@ -140,7 +142,7 @@ func TestCompletion_DescriptionsAndTheCurrentAspect(t *testing.T) {
 func TestCompletion_LibrariumRuneIsHonoured(t *testing.T) {
 	e := newEnv(t)
 	other := newEnv(t)
-	other.addRite("rites/only-here.json", `{"pattern": "Mark I", "aspects": ["x"], "liturgy": []}`)
+	other.addRite("rites/only-here.json", `{"pattern": "Mark II", "edict": true, "liturgy": []}`)
 	got, _ := e.complete("--librarium", other.cfgDir, "invoke", "")
 	if !slices.Contains(got, "only-here") {
 		t.Fatalf("--librarium not used during completion: %v", got)

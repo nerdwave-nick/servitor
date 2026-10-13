@@ -15,16 +15,17 @@ type env struct {
 }
 
 const mouseJSON = `{
-  "pattern": "Mark I",
+  "pattern": "Mark II",
   "purpose": "Hide the cursor after inactivity",
   "aspects": ["on", "off"],
   "inscriptions": {
     "reason": {"purpose": "why the rite was invoked"}, // speaks of its purpose
     "example-key": {"mandatory": true, "decrees": {"on": "example-value", "off": "other-value"}},
   },
-  "liturgy": [
-    {"sanctum": "$TARGET", "scripture": {"on": "cursor {\n    hide-after-inactive-ms 400\n}", "off": ""}},
-    {"vox-cast": "success"},
+  "vox-cast": ["success"],
+  "subjects": [
+    {"name": "cursor", "designation": "sanctum", "vessel": "$TARGET",
+     "omens": {"on": "cursor {\n    hide-after-inactive-ms 400\n}", "off": ""}},
   ],
 }`
 

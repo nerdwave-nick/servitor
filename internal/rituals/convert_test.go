@@ -18,11 +18,11 @@ import (
 func TestConvert_WritesEveryConversion(t *testing.T) {
 	fx := newFixture(t)
 	vessel := fx.vessel("util.kdl", "input {}\n")
-	path := fx.rite("mouse", mouse)
+	path := fx.rite("mouse", mouseI)
 	original := fx.read(path)
 	settings := fx.write(fx.lib, librarium.SettingsName, "{\n  // kept\n  \"pattern\": \"Mark I\"\n}\n")
-	s := OpenConverting(fx.lib, librarium.Runes{})
-	if r := s.Librarium.Rites["mouse"]; r == nil || !r.MarkII {
+	s := Open(fx.lib, librarium.Runes{})
+	if r := s.Librarium.Rites["mouse"]; r == nil || len(r.Subjects) == 0 {
 		t.Fatalf("the rite is not read converted: %v", s.Librarium.Findings)
 	}
 	told := s.Convert()
@@ -49,7 +49,7 @@ func TestConvert_WritesEveryConversion(t *testing.T) {
 	if again := s.Convert(); len(again.Tidings)+len(again.Laments) != 0 {
 		t.Errorf("a conversion is told twice: %+v", again)
 	}
-	if again := OpenConverting(fx.lib, librarium.Runes{}); len(again.Librarium.Conversions) != 0 {
+	if again := Open(fx.lib, librarium.Runes{}); len(again.Librarium.Conversions) != 0 {
 		t.Errorf("the Librarium converted is converted anew")
 	}
 }
@@ -59,18 +59,18 @@ func TestConvert_WritesEveryConversion(t *testing.T) {
 // memory alone, to be written at a later reading.
 func TestConvert_AwaitsNoDominion(t *testing.T) {
 	fx := newFixture(t)
-	path := fx.rite("mouse", mouse)
+	path := fx.rite("mouse", mouseI)
 	original := fx.read(path)
 	held, err := dominion.Seize(context.Background(), []string{dominion.Rite(os.LookupEnv, "mouse")}, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer held.Relinquish()
-	s := OpenConverting(fx.lib, librarium.Runes{})
+	s := Open(fx.lib, librarium.Runes{})
 	if told := s.Convert(); len(told.Tidings)+len(told.Laments) != 0 {
 		t.Errorf("a rite under another's dominion was converted: %+v", told)
 	}
-	if fx.read(path) != original || !s.Librarium.Rites["mouse"].MarkII {
+	if fx.read(path) != original || len(s.Librarium.Rites["mouse"].Subjects) == 0 {
 		t.Error("the rite under another's dominion was written, or is not converted in memory")
 	}
 	held.Relinquish()
@@ -83,12 +83,28 @@ func TestConvert_AwaitsNoDominion(t *testing.T) {
 // is lamented in grimdark, and the scripture stays as it was.
 func TestConvert_LamentsACopyThatStands(t *testing.T) {
 	fx := newFixture(t)
-	path := fx.rite("mouse", mouse)
+	path := fx.rite("mouse", mouseI)
 	original := fx.read(path)
 	fx.write(fx.lib, "rites/.mark-i/mouse.json", "elder")
-	told := OpenConverting(fx.lib, librarium.Runes{}).Convert()
+	told := Open(fx.lib, librarium.Runes{}).Convert()
 	if len(told.Tidings) != 0 || len(told.Laments) != 1 || fx.read(path) != original {
 		t.Fatalf("tidings %q, laments %v", told.Tidings, told.Laments)
 	}
 	grimdark(t, told.Laments[0].Error())
 }
+
+// mouseI is a rite of pattern Mark I with a sanctum, an incantation and a
+// decreed inscription.
+const mouseI = `{
+  "pattern": "Mark I",
+  "purpose": "Hide the cursor after inactivity",
+  "aspects": ["on", "off"],
+  "inscriptions": {
+    "reason": {"purpose": "why the rite was invoked", "decrees": {"off": "restored"}}
+  },
+  "liturgy": [
+    {"sanctum": "$DATA/util.kdl", "scripture": {"on": "hide-after-inactive-ms 400", "off": ""}},
+    {"incantation": "echo {{aspect}}-$SERVITOR_INSCRIPTION_REASON >> $DATA/said"},
+    {"vox-cast": "success"}
+  ]
+}`

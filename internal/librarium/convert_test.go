@@ -27,11 +27,11 @@ func TestConvert_Golden(t *testing.T) {
 			}
 			name := strings.TrimSuffix(filepath.Base(path), ".json")
 			at := filepath.Join("/librarium", RitesDir, name+".json")
-			r, fs, c := ParseConverting(name, at, data)
+			r, fs, c := parseConverting(name, at, data)
 			if c == nil {
 				t.Fatalf("the rite was not converted: %v", fs)
 			}
-			if fs.Heretical() || r == nil || !r.MarkII {
+			if fs.Heretical() || r == nil || r.markI {
 				t.Fatalf("the converted rite is not a pure rite of Mark II: %v", fs)
 			}
 			if string(c.Original) != string(data) || c.Path != at || c.Rite != name {
@@ -39,7 +39,7 @@ func TestConvert_Golden(t *testing.T) {
 			}
 			golden(t, strings.TrimSuffix(path, ".json")+".mark-ii", c.Data)
 			golden(t, strings.TrimSuffix(path, ".json")+".tidings", []byte(c.Tidings()+"\n"))
-			back, fs := Parse(name, at, c.Data)
+			back, fs := parse(name, at, c.Data)
 			if fs.Heretical() || !back.Equal(r) {
 				t.Errorf("the converted scripture does not read back as the rite converted: %v", fs)
 			}

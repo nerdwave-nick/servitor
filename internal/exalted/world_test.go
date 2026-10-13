@@ -81,7 +81,7 @@ func TestIdentity_PipesFallBackToSudoUID(t *testing.T) {
 				t.Fatalf("heard %+v", r)
 			}
 			if c.accepted {
-				inv.perform(1)
+				inv.perform(conf)
 				inv.say(Request{Finish: new(true)})
 			}
 			want := map[bool]int{true: 0, false: 2}[c.accepted]
@@ -105,22 +105,23 @@ func TestIdentity_TheRootIsNeverTheMaster(t *testing.T) {
 
 // TestSession_SpeechAwaitsItsVoice: a plan holding exalted speech is
 // refused before anything is touched while the exalted servitor has no
-// voice; a voice lent to it speaks the verse in its turn, reverts it in
-// reverse and is closed when the session ends.
+// voice; a voice lent to it speaks the observance in its turn, reverts it
+// in reverse and is closed when the session ends.
 func TestSession_SpeechAwaitsItsVoice(t *testing.T) {
 	speaking := func() *sanction.Unit {
 		u := hallowUnit()
 		for i := range u.Aspects {
 			p := &u.Aspects[i]
-			p.Liturgy = slices.Insert(p.Liturgy, 1, sanction.Verse{Verse: 2, Kind: librarium.KindIncantation,
-				Target: "sysctl -wq kernel.hallow=1", Tongue: "/usr/bin/bash", Patience: time.Second,
-				Reversion: "sysctl -wq kernel.hallow=0", Relics: []sanction.Relic{}})
+			p.Observances = append(p.Observances, sanction.Verse{Observance: "chant",
+				Kind: librarium.KindIncantation, Target: "sysctl -wq kernel.hallow=1", Tongue: "/usr/bin/bash",
+				Patience: time.Second, Reversion: "sysctl -wq kernel.hallow=0", Relics: []sanction.Relic{},
+				Introit: []int{2}, Recessional: []int{}})
 		}
 		return u
 	}
 	sh := newShrine(t, speaking())
 	inv := sh.rouseFor("on")
-	if r := inv.say(sh.handshake("on")); r.Verdict != Refused || !strings.Contains(r.Lament, "verse 2") {
+	if r := inv.say(sh.handshake("on")); r.Verdict != Refused || !strings.Contains(r.Lament, `the observance "chant"`) {
 		t.Fatalf("heard %+v", r)
 	}
 	if m := inv.ended(); m != 2 {
@@ -132,17 +133,17 @@ func TestSession_SpeechAwaitsItsVoice(t *testing.T) {
 	v := &voice{}
 	sh.cfg.Voice = v.lend
 	inv = sh.accepted("on")
-	inv.perform(1)
-	if r := inv.perform(2); r.Heard != "spoke 2" || !r.Changed {
-		t.Fatalf("verse 2: %+v", r)
+	inv.perform(conf)
+	if r := inv.perform(observance("chant")); r.Heard != "spoke chant" || !r.Changed {
+		t.Fatalf("chant: %+v", r)
 	}
-	inv.perform(3)
+	inv.perform(lock)
 	must(t, inv.conn.Close())
 	if m := inv.ended(); m != 1 {
 		t.Fatalf("ended with the death-mark %d", m)
 	}
 	sh.untouched()
-	if want := []string{"sitting on off x; echo INJECTED", "speak 2", "undo 2", "close"}; !slices.Equal(v.said(), want) {
+	if want := []string{"sitting on off x; echo INJECTED", "speak chant", "undo chant", "close"}; !slices.Equal(v.said(), want) {
 		t.Errorf("the voice heard %v, want %v", v.said(), want)
 	}
 }
@@ -171,7 +172,7 @@ func (v *voice) lend(s Sitting) (Speaker, error) {
 }
 
 func (v *voice) Speak(_ context.Context, verse sanction.Verse) (string, Undo, error) {
-	n := strconv.Itoa(verse.Verse)
+	n := verse.Observance
 	v.record("speak " + n)
 	return "spoke " + n, func(context.Context) (string, error) { v.record("undo " + n); return "", nil }, nil
 }
@@ -186,7 +187,7 @@ func (v *voice) Close() error { v.record("close"); return nil }
 // TestSession_HoldsTheRootSideDominion: the session is accepted only once
 // the exalted servitor holds dominion over the rite of its master and over
 // every vessel and bound name of the plan, waiting while another holds it;
-// a dominion that cannot be held refuses the session before verse 1.
+// a dominion that cannot be held refuses the session before any item.
 func TestSession_HoldsTheRootSideDominion(t *testing.T) {
 	sh := newShrine(t, nil)
 	rite := filepath.Join(sh.cfg.Dominions, "rites", strconv.Itoa(me)+"-hallow")

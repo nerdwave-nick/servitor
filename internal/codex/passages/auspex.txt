@@ -66,12 +66,6 @@ census, under the key "auspex":
 The key is no omen; the omens themselves, and the standing judged from
 them, are told apart (see omens).
 
-In the elder pattern "Mark I" the auspex was the rite's own, one set of
-words printing the aspect of the whole rite, short as the words alone or
-long as {"rite": "<words>", "patience": "5s"}. Conversion makes it the scan
-of the rite's only machine-spirit, and strikes it when there are several or
-none (see conversion).
-
 Kindred passages: scan, trials, machine-spirit, omens, standing, augury,
 census, spare-auspex, vigil, patience, tongue, exalted
 

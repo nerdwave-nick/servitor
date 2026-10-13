@@ -34,7 +34,6 @@ type reference struct {
 // aspects with its subjects and observances, or an edict with its liturgy.
 func (d *decoder) decodeMarkII(root *hujson.Value) *Rite {
 	r := d.rite
-	r.MarkII = true
 	all, _ := d.object(root, "a rite", nil)
 	var fs fields
 	for _, m := range all {
@@ -43,9 +42,9 @@ func (d *decoder) decodeMarkII(root *hujson.Value) *Rite {
 			d.heresy(m.key, "a rite of pattern %q bears no \"auspex\" of its own: each subject is read by itself, "+
 				"a sanctum by its marker, a tether by its anchor, a transcription by its vessel, and a "+
 				"machine-spirit by the \"auspex\" among its own keys — move these words into the \"scan\" of the "+
-				"auspex of a machine-spirit among \"subjects\", or strike them", PatternMarkII)
-		case !slices.Contains(MarkIIRiteKeys, m.name):
-			d.unknownKey(m, "a rite", MarkIIRiteKeys)
+				"auspex of a machine-spirit among \"subjects\", or strike them", Pattern)
+		case !slices.Contains(RiteKeys, m.name):
+			d.unknownKey(m, "a rite", RiteKeys)
 		default:
 			fs = append(fs, m)
 		}
@@ -98,7 +97,7 @@ func (d *decoder) decodeAspectsII(root *hujson.Value, fs fields) {
 		d.heresy(m.key, "a rite of aspects of pattern %q bears no \"liturgy\": what it brings into each aspect "+
 			"is declared under \"subjects\", each read and set by itself, and what it does besides as named "+
 			"\"observances\" spoken before or after a subject changes — move each step there; only an edict "+
-			"keeps a liturgy", PatternMarkII)
+			"keeps a liturgy", Pattern)
 	}
 	if m, ok := fs.get("observances"); ok {
 		d.decodeObservances(m.val)
@@ -143,7 +142,7 @@ func (d *decoder) decodeVoxCasts(v *hujson.Value) {
 // decrees reads the decrees of an inscription: one plain word in an edict,
 // an aspect map in a rite of aspects (always an object in pattern Mark II).
 func (d *decoder) decrees(v *hujson.Value, what string) AspectMap[string] {
-	if d.rite.MarkII && !d.rite.Edict {
+	if !d.rite.markI && !d.rite.Edict {
 		return keyedMap(d, v, what, d.aspectKeying(), false, d.str)
 	}
 	return aspectMap(d, v, what, false, nil, func(v *hujson.Value, what string) (string, bool) {

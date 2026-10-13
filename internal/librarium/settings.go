@@ -40,24 +40,22 @@ type Settings struct {
 	// Intercessor is one of Intercessors, or "" when not written. It is
 	// judged, yet no invocation heeds it so far.
 	Intercessor string
-	// MarkII marks settings written in pattern Mark II; their keys are
-	// those of Mark I.
-	MarkII bool
 }
 
 // SettingsPath returns where the settings of the Librarium dir are kept.
 func SettingsPath(dir string) string { return filepath.Join(dir, SettingsName) }
 
-// LoadSettings reads and examines the settings of the Librarium dir. A
-// Librarium without settings yields unwritten settings and no finding.
+// LoadSettings reads and examines the settings of the Librarium dir, those
+// of pattern Mark I converted in memory. A Librarium without settings yields
+// unwritten settings and no finding.
 func LoadSettings(dir string) (*Settings, Findings) {
-	s, fs, _ := loadSettings(dir, false)
+	s, fs, _ := loadSettings(dir)
 	return s, fs
 }
 
 // loadSettings reads and examines the settings of the Librarium dir,
-// converting them in memory when convert (convertSettings).
-func loadSettings(dir string, convert bool) (*Settings, Findings, *Conversion) {
+// converting them in memory (convertSettings).
+func loadSettings(dir string) (*Settings, Findings, *Conversion) {
 	path := SettingsPath(dir)
 	data, err := os.ReadFile(path)
 	switch {
@@ -67,9 +65,6 @@ func loadSettings(dir string, convert bool) (*Settings, Findings, *Conversion) {
 		return &Settings{Path: path}, Findings{readHeresy(path, "", err)}, nil
 	}
 	s, found := ParseSettings(path, data)
-	if !convert {
-		return s, found, nil
-	}
 	return convertSettings(s, found, data)
 }
 
@@ -100,11 +95,9 @@ func (d *decoder) decodeSettings(root *hujson.Value, s *Settings) {
 		d.wrongForm(root, "the settings", "one object of keys between { and }")
 		return
 	}
-	markII, ok := d.decodePattern(root, obj)
-	if !ok {
+	if _, ok := d.decodePattern(root, obj); !ok {
 		return
 	}
-	s.MarkII = markII
 	fs, _ := d.object(root, "the settings", SettingsKeys)
 	if m, ok := fs.get(SchemaKey); ok {
 		// Only the faithful's editors heed the schema.

@@ -45,14 +45,23 @@ func (r *Rite) ExaltedVerses() []int {
 // of pattern Mark II, an exalted subject or observance.
 func (r *Rite) Exalted() bool { return len(r.ExaltedItems()) > 0 }
 
-// ExaltedNoun names what of the rite is exalted, as laments name it: its
-// "exalted verses", or the "exalted subjects and observances" of a state
-// rite of pattern Mark II.
+// ExaltedNoun names what of the rite is exalted, as laments name it: the
+// "exalted verses" of an edict, or of a rite of aspects its "exalted
+// subjects", its "exalted observances", or its "exalted subjects and
+// observances", as it holds them (the latter when it holds none).
 func (r *Rite) ExaltedNoun() string {
-	if r.MarkII && !r.Edict {
-		return "exalted subjects and observances"
+	if r.Edict {
+		return "exalted verses"
 	}
-	return "exalted verses"
+	subjects := slices.ContainsFunc(r.Subjects, Subject.Exalted)
+	observances := slices.ContainsFunc(r.Observances, Observance.Exalted)
+	switch {
+	case subjects && !observances:
+		return "exalted subjects"
+	case observances && !subjects:
+		return "exalted observances"
+	}
+	return "exalted subjects and observances"
 }
 
 // ExaltedItem is one exalted verse of a liturgy, or one exalted subject or
@@ -132,7 +141,7 @@ func (s stepDecoder) exaltation() bool {
 	switch {
 	case !ok:
 		return false
-	case s.kind == KindVoxCast:
+	case s.kind == kindVoxCast:
 		s.d.heresy(m.key, "a vox-cast is never exalted: it only sends word of the invocation, which needs no "+
 			"authority but its invoker's — strike \"exalted\" from verse %d", s.verse)
 		return false
@@ -249,7 +258,7 @@ func (s stepDecoder) rootedPath(path, noun string, own *hujson.Value) {
 // litany of the rite speaks: its commands and reversions.
 func (d *decoder) judgeSpeech() {
 	r := d.rite
-	if r.MarkII && !r.Edict {
+	if !r.markI && !r.Edict {
 		d.judgeSpeechII()
 		return
 	}
@@ -261,7 +270,7 @@ func (d *decoder) judgeSpeech() {
 		switch st := step.(type) {
 		case *Incantation:
 			u, words, keys = st.Utterance, []AspectMap[string]{st.Command}, []string{"incantation"}
-			if r.MarkII {
+			if !r.markI {
 				keys = []string{"words"}
 			}
 		case *Litany:

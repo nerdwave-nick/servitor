@@ -12,7 +12,7 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/librarium"
 )
 
-// behold bids the exalted servitor e read the subjects of the state rite r
+// behold bids the exalted servitor e read the subjects of the rite of aspects r
 // the invoker cannot read (unread), and prepares the invocation anew with
 // what it told, so that its plan is whole before the first item: each
 // reading is marked as the exalted servitor's, at the moment it was told.
@@ -28,7 +28,7 @@ func (s *Servitor) behold(r *librarium.Rite, p Petition, inscriptions map[string
 		return nil, fmt.Errorf("%s is refused, and nothing was touched: the subjects only the exalted servitor reads "+
 			"were not read: %w", e.deed, err)
 	}
-	opts, at := s.auguryOf(r, p, inscriptions), s.now()
+	opts, at := s.auguryOf(p, inscriptions), s.now()
 	readings := make([]invocation.Reading, len(r.Subjects))
 	copy(readings, res.Options.Readings)
 	for _, sight := range sights {

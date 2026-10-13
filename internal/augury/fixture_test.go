@@ -25,16 +25,16 @@ func newFixture(t *testing.T) fixture {
 }
 
 // rite writes the rite "mouse" of the given aspects, further keys of the
-// rite (e.g. `"auspex": "…",`) and liturgy ($DATA is the vessels' place)
+// rite (e.g. `"tongue": "sh",`) and subjects ($DATA is the vessels' place)
 // into the Librarium and loads it.
-func (fx fixture) rite(t *testing.T, aspects, keys, liturgy string) *librarium.Rite {
+func (fx fixture) rite(t *testing.T, aspects, keys, subjects string) *librarium.Rite {
 	t.Helper()
 	scripture := fmt.Sprintf(`{
-  "pattern": "Mark I",
+  "pattern": "Mark II",
   "aspects": [%s],%s
   "inscriptions": {"place": {"purpose": "where"}, "reason": {"purpose": "why"}},
-  "liturgy": [%s]
-}`, aspects, keys, liturgy)
+  "subjects": [%s]
+}`, aspects, keys, subjects)
 	scripture = strings.ReplaceAll(scripture, "$DATA", fx.data)
 	path := filepath.Join(fx.lib, "rites", "mouse.json")
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
@@ -107,24 +107,10 @@ func link(t *testing.T, anchor, name string) {
 	}
 }
 
-// omens renders the omens compactly: "<verse>:<key>=<aspect>" and
-// "auspex=<aspect>".
-func omens(a Augury) string {
-	var parts []string
-	for _, o := range a.Omens {
-		if o.Auspex {
-			parts = append(parts, "auspex="+o.Aspect)
-			continue
-		}
-		parts = append(parts, fmt.Sprintf("%d:%s=%s", o.Number, o.Kind.Key(), o.Aspect))
-	}
-	return strings.Join(parts, " ")
-}
-
 // standing expects aspect and standing of a.
 func standing(t *testing.T, a Augury, aspect string, s Standing) {
 	t.Helper()
 	if a.Aspect != aspect || a.Standing != s {
-		t.Errorf("aspect %q standing %q, want %q %q (omens %s)", a.Aspect, a.Standing, aspect, s, omens(a))
+		t.Errorf("aspect %q standing %q, want %q %q (omens %s)", a.Aspect, a.Standing, aspect, s, readings(a))
 	}
 }

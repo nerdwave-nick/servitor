@@ -193,9 +193,8 @@ func mismatched(spoken int) error {
 // could speak.
 func (s *session) sanctionable(u *sanction.Unit) error {
 	switch {
-	case !slices.Contains(sanction.Patterns, u.Pattern):
-		return fmt.Errorf("the unit is of the pattern %q, yet this exalted servitor reads only %q and %q", u.Pattern,
-			sanction.Pattern, sanction.PatternMarkII)
+	case u.Pattern != sanction.Pattern:
+		return elder(u.Pattern, "the unit")
 	case u.Misshapen() != "":
 		return errors.New(u.Misshapen())
 	case u.UID != s.uid:

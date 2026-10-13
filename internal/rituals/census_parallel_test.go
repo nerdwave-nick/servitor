@@ -35,16 +35,16 @@ func TestCensus_EqualsASequentialRun(t *testing.T) {
 	fx := newFixture(t)
 	fx.vessel("util.kdl", "")
 	fx.rite("mouse", mouse)
-	fx.rite("capture", capture)
-	fx.rite("broken", `{"pattern": "Mark I", "aspects": []}`)
-	fx.rite("fallen", `{"pattern": "Mark I", "aspects": ["on", "off"], "auspex": "exit 1", "liturgy": []}`)
-	fx.rite("nonsense", `{"pattern": "Mark I", "aspects": ["on", "off"], "auspex": "echo porpl", "liturgy": []}`)
+	fx.rite("capture", captureII)
+	fx.rite("broken", broken)
+	fx.rite("fallen", spirit(`{"scan": "exit 1"}`))
+	fx.rite("nonsense", spirit(`{"scan": "echo porpl"}`))
 	// The slower an auspex, the earlier its rite in the census: they settle
 	// against the order of their names.
 	for i, nap := range []string{"0.4", "0.3", "0.2", "0.1", "0"} {
 		aspect := []string{"on", "off"}[i%2]
 		fx.rite(fmt.Sprintf("slow%d", i),
-			`{"pattern": "Mark I", "aspects": ["on", "off"], "auspex": "sleep `+nap+`; echo `+aspect+`", "liturgy": []}`)
+			spirit(`{"scan": "sleep `+nap+`; echo `+aspect+`"}`))
 	}
 	s := fx.servitor()
 	if _, err := s.Invoke(context.Background(), Petition{Rite: "mouse", Aspect: "on"}); err != nil {

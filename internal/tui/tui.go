@@ -19,13 +19,10 @@ import (
 
 // Options configure the TUI.
 type Options struct {
-	Dir   string
-	Runes librarium.Runes // the servitor's runes that sway the settings
-	// Convert converts every scripture of pattern Mark I the cogitator
-	// reads to pattern Mark II, on disk, and tells it in a toast.
-	Convert bool
-	Input   io.Reader // defaults to the terminal
-	Output  io.Writer
+	Dir    string
+	Runes  librarium.Runes // the servitor's runes that sway the settings
+	Input  io.Reader       // defaults to the terminal
+	Output io.Writer
 }
 
 // Run starts the TUI and blocks until it exits.
@@ -37,7 +34,7 @@ func Run(opt Options) error {
 	if opt.Output != nil {
 		popts = append(popts, tea.WithOutput(opt.Output))
 	}
-	m := newModel(opt.Dir, opt.Runes, opt.Convert)
+	m := newModel(opt.Dir, opt.Runes)
 	p := tea.NewProgram(m, popts...)
 	m.send = p.Send
 	_, err := p.Run()
@@ -95,7 +92,6 @@ type screen interface {
 type model struct {
 	dir     string
 	runes   librarium.Runes
-	convert bool // scripture of pattern Mark I is converted at every reading
 	t       *theme
 	s       *rituals.Servitor // the Librarium as last read
 	send    func(tea.Msg)     // delivers what a running invocation tells
@@ -122,10 +118,10 @@ type model struct {
 	watching sync.WaitGroup // every vigil whose auspexes may still labour
 }
 
-func newModel(dir string, runes librarium.Runes, convert bool) *model {
+func newModel(dir string, runes librarium.Runes) *model {
 	f := textinput.New()
 	f.Prompt = "/ "
-	m := &model{dir: dir, runes: runes, convert: convert, t: newTheme(), filter: f, send: func(tea.Msg) {},
+	m := &model{dir: dir, runes: runes, t: newTheme(), filter: f, send: func(tea.Msg) {},
 		thought: int(time.Now().UnixNano() % int64(len(lexicon.Thoughts))), width: 100, height: 30,
 		gone: make(chan struct{}), exec: tea.Exec, now: time.Now,
 		vigil: vigil{halt: func() {}}}
@@ -141,12 +137,8 @@ func (m *model) reload(selected string) {
 			selected = r.name
 		}
 	}
-	if m.convert {
-		m.s = rituals.OpenConverting(m.dir, m.runes)
-		m.converted(m.s.Convert())
-	} else {
-		m.s = rituals.Open(m.dir, m.runes)
-	}
+	m.s = rituals.Open(m.dir, m.runes)
+	m.converted(m.s.Convert())
 	kept := map[string]*rituals.Sanctioned{}
 	list, _ := m.s.ListSanctions() // a sanction that cannot be read lapses its rite in the augury
 	for i := range list {

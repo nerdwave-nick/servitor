@@ -169,7 +169,7 @@ func TestChronicle_SilentAndPlacedByTheRune(t *testing.T) {
 
 	elsewhere := filepath.Join(t.TempDir(), "rites.jsonl")
 	seedChronicle(t, elsewhere, fallenTheme)
-	h.renew(librarium.Runes{Chronicle: elsewhere}, false)
+	h.renew(librarium.Runes{Chronicle: elsewhere})
 	h.keys("h", "/", "esc")
 	h.mustShow("Chronicle (1)", shortPath(elsewhere))
 	h.inOrder("theme default → porpl")

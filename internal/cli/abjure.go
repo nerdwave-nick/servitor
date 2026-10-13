@@ -13,7 +13,7 @@ func (a *app) newAbjureCmd() *cobra.Command {
 	var all bool
 	cmd := &cobra.Command{
 		Use:   "abjure <rite> | --all",
-		Short: "Withdraw the sanction of a rite's exalted verses, or every sanction, with one proof",
+		Short: "Withdraw the sanction of what a rite holds exalted, or every sanction, with one proof",
 		Args: func(_ *cobra.Command, args []string) error {
 			if (all && len(args) == 0) || (!all && len(args) == 1) {
 				return nil

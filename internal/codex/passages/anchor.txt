@@ -3,10 +3,7 @@ Where a tether leads: the far end of the binding for each aspect
 The anchor is the place a tether's name leads to. A tether subject writes
 its anchors as its "omens": an object naming the anchor of each aspect,
 with "*" serving the rest. Written null for an aspect, the anchor decrees
-that the name shall be unbound when that aspect is invoked. The key
-"anchor" itself belongs to the elder pattern "Mark I", where it stood beside
-the tether step, one place for every aspect or an aspect map; conversion
-makes it the omens of the tether subject.
+that the name shall be unbound when that aspect is invoked.
 
 The anchor may speak placeholders, so one anchor may serve every aspect:
 "~/.config/nfluff/themes/{{aspect}}". A leading "~" and $NAMES are expanded,
@@ -33,6 +30,3 @@ Exempla:
   {"name": "shaders", "designation": "tether", "tether": "~/.config/mpv/shaders",
    "omens": {"crisp": "~/.local/share/shaders/crisp", "*": null}}
 
-  // pattern Mark I, before conversion
-  {"tether": "~/.config/mpv/shaders",
-   "anchor": {"crisp": "~/.local/share/shaders/crisp", "*": null}}

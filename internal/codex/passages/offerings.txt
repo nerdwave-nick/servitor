@@ -19,9 +19,8 @@ and must learn what it needs from the environment (SERVITOR_ASPECT and its
 kin; for an edict, SERVITOR_RITE and its inscriptions).
 
 Offerings belong to litanies alone — observances and verses of an edict.
-(In the elder pattern "Mark I" an offering might differ by aspect; conversion
-splits such a litany into one observance per aspect group.) An incantation's words are handed whole
-to its tongue instead, and need no offerings.
+An incantation's words are handed whole to its tongue instead, and need no
+offerings.
 
 Kindred passages: litany, placeholders, aspect-maps, inscriptions
 

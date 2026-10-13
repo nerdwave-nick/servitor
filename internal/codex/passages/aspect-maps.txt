@@ -32,12 +32,6 @@ An edict bears no aspect to key a map by, so every value of an edict is
 written once and plainly: an aspect map in an edict is heresy wherever it
 stands, even one keyed by "*" alone, and its decree is one plain word.
 
-In the elder pattern "Mark I" any value of a step — its scripture, anchor,
-words, scroll, offerings or reversion — might be one plain value or an
-aspect map. Conversion writes every such map as an object, makes the
-scripture or anchor of a step the omens of its subject, and splits words
-that differ by aspect into observances guarded by "to" (see conversion).
-
 Kindred passages: aspects, omens, placeholders, decrees, enact, edict,
 conversion
 

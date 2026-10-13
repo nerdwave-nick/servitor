@@ -20,16 +20,13 @@ func (h *harness) sealedScripture(name, want string) {
 	}
 }
 
-// choosePatternMarkII turns the Rite page of a new rite, its name focused,
-// to pattern Mark II, and returns to the name.
-func (h *harness) choosePatternMarkII() {
+// beholdTheRitePage holds the Rite page of a new rite, its name focused, to
+// pattern Mark II: no pattern is chosen, every rite is written in Mark II
+// and asks its vox-casts, and none is asked an auspex of its own.
+func (h *harness) beholdTheRitePage() {
 	h.t.Helper()
-	h.keys("up")
-	h.mustShow("Pattern", "◆ Mark I", "◇ Mark II", "Auspex")
-	h.keys("space")
-	h.mustShow("◆ Mark II", "Vox-cast of progress", "Vox-cast of success")
-	h.mustNotShow("Auspex", "Patience of the auspex")
-	h.keys("down")
+	h.mustShow("Its scripture is written in pattern Mark II", "Vox-cast of progress", "Vox-cast of success")
+	h.mustNotShow("Pattern", "Mark I ", "Auspex", "Patience of the auspex")
 }
 
 // TestWizard_ConsecrateASanctumRiteOfMarkII: a rite of pattern Mark II
@@ -41,7 +38,7 @@ func TestWizard_ConsecrateASanctumRiteOfMarkII(t *testing.T) {
 	h := newHarness(t)
 	h.keys("n")
 	h.typeText("cursor")
-	h.choosePatternMarkII()
+	h.beholdTheRitePage()
 	h.keys("down")
 	h.typeText("Hide the cursor")
 	h.keys("down", "down", "down")
@@ -109,7 +106,7 @@ func TestWizard_ConsecrateASanctumRiteOfMarkII(t *testing.T) {
   ]
 }
 `)
-	if r := h.loadRite("cursor"); !r.MarkII || len(r.Subjects) != 1 || r.Subjects[0].Designation() != librarium.DesignationSanctum {
+	if r := h.loadRite("cursor"); len(r.Subjects) != 1 || r.Subjects[0].Designation() != librarium.DesignationSanctum {
 		t.Fatalf("the scripture does not load as a rite of Mark II: %+v", r)
 	}
 }
@@ -123,7 +120,7 @@ func TestWizard_ConsecrateATetherRiteOfMarkII(t *testing.T) {
 	h := newHarness(t)
 	h.keys("n")
 	h.typeText("theme")
-	h.choosePatternMarkII()
+	h.beholdTheRitePage()
 	h.keys("down", "down", "down", "ctrl+u")
 	h.typeText("dark, porpl")
 	h.keys("ctrl+s")
@@ -211,11 +208,11 @@ func TestWizard_ConsecrateAnEdictOfMarkII(t *testing.T) {
 	h := newHarness(t)
 	h.keys("n")
 	h.typeText("capture")
-	h.choosePatternMarkII()
+	h.beholdTheRitePage()
 	h.keys("down")
 	h.typeText("Capture the visage")
 	h.keys("down", "space")
-	h.mustShow("Consecration of a new edict", "◆ edict", "◆ Mark II", "Vox-cast of success")
+	h.mustShow("Consecration of a new edict", "◆ edict", "pattern Mark II", "Vox-cast of success")
 	h.mustNotShow("Aspects", "Auspex")
 	h.keys("down")
 	h.typeText("region")

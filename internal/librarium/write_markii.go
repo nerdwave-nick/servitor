@@ -10,7 +10,7 @@ import (
 func (w *writer) riteII(r *Rite) {
 	w.begin()
 	w.optional(SchemaKey, r.Schema)
-	w.field("pattern", PatternMarkII)
+	w.field("pattern", Pattern)
 	w.optional("purpose", r.Purpose)
 	if r.Edict {
 		w.flag("edict", true)
@@ -92,7 +92,7 @@ func (w *writer) fail(format string, args ...any) {
 // plain writes words written once for every aspect.
 func (w *writer) plain(m AspectMap[string]) {
 	if len(m.entries) != 1 || m.entries[0].Aspect != Fallback {
-		w.fail("the servitor cannot transcribe words keyed by aspect where pattern %q writes them once", PatternMarkII)
+		w.fail("the servitor cannot transcribe words keyed by aspect where pattern %q writes them once", Pattern)
 		w.str("")
 		return
 	}
@@ -229,7 +229,7 @@ func (w *writer) speech(s Step, guards ...func()) {
 		u = s.Utterance
 	default:
 		w.fail("the servitor cannot transcribe into pattern %q speech that is neither an incantation nor a litany",
-			PatternMarkII)
+			Pattern)
 		return
 	}
 	w.optional("tongue", u.Tongue)

@@ -19,7 +19,7 @@ func (fx fixture) edictII(t *testing.T, voxCasts, inscriptions, liturgy string) 
   "liturgy": [` + strings.ReplaceAll(liturgy, "$DATA", fx.data) + `]}`
 	path := write(t, fx.lib, "rites/capture.json", scripture, 0o644)
 	r, findings := librarium.LoadFile(path)
-	if findings.Heretical() || !r.Edict || !r.MarkII {
+	if findings.Heretical() || !r.Edict {
 		t.Fatalf("the edict is heretical or no edict of Mark II:\n%v", findings)
 	}
 	return r

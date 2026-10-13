@@ -47,21 +47,14 @@ func (m *model) detailView(w int) string {
 	}
 	b = append(b, label("last rite")+m.lastRite(a.LastRite))
 	b = append(b, label("inscriptions")+m.inscriptionLine(rite, a))
-	switch {
-	case rite.MarkII && !rite.Edict: // a state rite: its subjects, and no auspex of its own
-		b = append(b, m.stateRite(rite, a, label, w)...)
-	default:
+	if rite.Edict {
 		b = append(b, "", label("liturgy"))
-		for _, l := range m.liturgy(rite, a) {
+		for _, l := range m.liturgy(rite) {
 			b = append(b, " "+fit(l, w-1))
 		}
-		b = append(b, "")
-		switch {
-		case rite.MarkII:
-			b = append(b, label("vox-cast")+m.voxCasts(rite))
-		case !rite.Edict: // an edict knows no auspex
-			b = append(b, label("auspex")+m.auspexLine(rite, a))
-		}
+		b = append(b, "", label("vox-cast")+m.voxCasts(rite))
+	} else { // a rite of aspects: its subjects, each read by itself
+		b = append(b, m.stateRite(rite, a, label, w)...)
 	}
 	b = append(b, label("recorded in")+t.dim.Render(truncateLeft(shortPath(rite.Path), w-labelW)))
 	return strings.Join(b, "\n")
@@ -110,19 +103,22 @@ func (m *model) sanctionLine(r *row) string {
 	return head + t.dim.Render(" · no "+exaltedOf(r.rite(), false)+" — s, then a, to abjure")
 }
 
-// exaltedOf names what the rite holds exalted, as many or as one: the
-// subjects and observances of a state rite of pattern Mark II, else verses.
+// exaltedOf names what the rite holds exalted, as many or as one, as
+// librarium.Rite.ExaltedNoun does: the verses of an edict, else the
+// subjects, the observances, or both, of a rite of aspects (both for a
+// rite that cannot be read).
 func exaltedOf(rite *librarium.Rite, many bool) string {
-	switch {
-	case rite == nil || !rite.MarkII || rite.Edict:
-		if many {
-			return "exalted verses"
-		}
-		return "exalted verse"
-	case many:
-		return "exalted subjects and observances"
+	noun := "exalted subjects and observances"
+	if rite != nil {
+		noun = rite.ExaltedNoun()
 	}
-	return "exalted subject or observance"
+	switch {
+	case many:
+		return noun
+	case noun == "exalted subjects and observances":
+		return "exalted subject or observance"
+	}
+	return strings.TrimSuffix(noun, "s")
 }
 
 func (m *model) lastRite(lr *augury.LastRite) string {
@@ -153,68 +149,21 @@ func (m *model) inscriptionLine(rite *librarium.Rite, a augury.Augury) string {
 	return strings.Join(parts, "  ")
 }
 
-// omenMark is ✔ for an omen naming the rite's aspect, ✖ (with the aspect
-// it names) for one naming another, and · for no omen.
-func (m *model) omenMark(o *augury.Omen, aspect string) string {
+// liturgy is one line per entry of an edict's liturgy: its verse, kind
+// glyph and words, an exalted entry marked ✠. An edict reveals no omen, so
+// its entries bear no mark.
+func (m *model) liturgy(rite *librarium.Rite) []string {
 	t := m.t
-	switch {
-	case o == nil:
-		return t.dim.Render("·")
-	case o.Aspect == aspect:
-		return t.ok.Render("✔")
-	}
-	return t.danger.Render("✖")
-}
-
-// liturgy is one line per step: its omen, verse, kind glyph and what its
-// own key holds, an exalted verse marked ✠. An edict reveals no omen, so
-// its steps bear no mark.
-func (m *model) liturgy(rite *librarium.Rite, a augury.Augury) []string {
-	t := m.t
-	omens, tainted := map[int]*augury.Omen{}, map[int]bool{}
-	for i := range a.Omens {
-		omens[a.Omens[i].Number] = &a.Omens[i]
-	}
-	for _, tt := range a.Taint {
-		tainted[tt.Number] = true
-	}
 	lines := make([]string, len(rite.Liturgy))
 	for i, step := range rite.Liturgy {
-		o := omens[i+1]
 		glyph := kindGlyph(step.Kind())
 		if librarium.IsExalted(step) {
 			glyph += " ✠"
 		}
-		line := t.dim.Render(fmt.Sprintf("%d", i+1)) + " " +
-			t.accent.Render(glyph) + " " + t.text.Render(stepWords(step, a.Aspect))
-		if !rite.Edict {
-			line = m.omenMark(o, a.Aspect) + " " + line
-		}
-		if o != nil && o.Aspect != a.Aspect {
-			line += t.dim.Render(" (" + o.Aspect + ")")
-		}
-		if tainted[i+1] {
-			line += t.warn.Render(" tainted")
-		}
-		lines[i] = line
+		lines[i] = t.dim.Render(fmt.Sprintf("%d", i+1)) + " " + t.accent.Render(glyph) + " " +
+			t.text.Render(stepWords(step, ""))
 	}
 	return lines
-}
-
-func (m *model) auspexLine(rite *librarium.Rite, a augury.Augury) string {
-	t := m.t
-	if rite.Auspex == nil {
-		return t.dim.Render("none")
-	}
-	for i := range a.Omens {
-		if o := &a.Omens[i]; o.Auspex {
-			return m.omenMark(o, a.Aspect) + " " + t.text.Render(o.Aspect)
-		}
-	}
-	if a.Auspex == augury.Awaited {
-		return t.dim.Render("· awaited")
-	}
-	return t.dim.Render("· silent")
 }
 
 // kindGlyph is the glyph of a step's kind.
@@ -236,9 +185,9 @@ func kindGlyph(k librarium.Kind) string {
 	return "✉"
 }
 
-// stepWords is what a step's own key holds as written: the vessel, the
-// tether and its anchor, the command, the scroll and its offerings, or the
-// tidings. A value written per aspect is shown for aspect.
+// stepWords is what a step holds as written: the vessel, the tether and
+// its anchor, the words, or the scroll and its offerings. A value written
+// per aspect is shown for aspect.
 func stepWords(step librarium.Step, aspect string) string {
 	switch s := step.(type) {
 	case *librarium.Sanctum:
@@ -262,8 +211,6 @@ func stepWords(step librarium.Step, aspect string) string {
 			words += " " + written(o, aspect)
 		}
 		return words
-	case *librarium.VoxCast:
-		return s.Tidings
 	}
 	return ""
 }

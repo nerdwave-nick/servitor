@@ -67,19 +67,13 @@ func (w *wizard) formHeading(m *model) string {
 	t := m.t
 	switch w.page {
 	case pageRite:
-		var pattern string
-		if w.d.patternKept {
-			pattern = "\n" + t.dim.Render("Its scripture is of pattern "+w.d.pattern()+", which it keeps.")
-		}
-		switch {
-		case w.d.edict:
-			return t.text.Render("Speak the name and purpose of the edict and the inscriptions it bears.") + pattern
-		case w.d.markII:
-			return t.text.Render("Speak the name, purpose and aspects of the rite, or declare it an edict, the "+
-				"inscriptions it bears and its vox-casts.") + pattern
+		pattern := "\n" + t.dim.Render("Its scripture is written in pattern "+librarium.Pattern+".")
+		if w.d.edict {
+			return t.text.Render("Speak the name and purpose of the edict, the inscriptions it bears and its "+
+				"vox-casts.") + pattern
 		}
 		return t.text.Render("Speak the name, purpose and aspects of the rite, or declare it an edict, the "+
-			"inscriptions it bears and the auspex that reads it.") + pattern
+			"inscriptions it bears and its vox-casts.") + pattern
 	case pageInscription:
 		return t.bold.Render(fmt.Sprintf("Inscription %q", w.d.inscriptions[w.index].key)) +
 			t.dim.Render(fmt.Sprintf("  ·  %d/%d", w.index+1, len(w.d.inscriptions)))
@@ -92,35 +86,21 @@ func (w *wizard) formHeading(m *model) string {
 		verse = fmt.Sprintf("Verse %d", w.widx+1)
 	}
 	k := w.work.kind
-	aspects := w.d.aspectList()
-	spoken := len(aspects) // the pages of the words: one per aspect, or one for an edict
-	if w.d.edict {
-		spoken = 1
-	}
-	pages := 1
-	if k != librarium.KindVoxCast {
-		pages += spoken
-	}
+	pages := 2 // the essence, and the words spoken once
 	if w.work.further && hasFurther(k) {
 		pages++
 	}
 	page, at := "essence", 1
-	switch {
-	case w.page == pageFurther:
+	switch w.page {
+	case pageFurther:
 		page, at = "further rites", 2
-	case w.page == pageAspect && w.d.edict:
+	case pageAspect:
 		page, at = w.varying()[0][1], pages
-	case w.page == pageAspect:
-		page, at = "aspect "+t.accent.Render(aspects[w.index]), pages-len(aspects)+w.index+1
 	}
 	head := t.bold.Render(verse) + t.dim.Render("  ·  ") + t.accent.Render(kindGlyph(k)+" "+k.Key()) +
 		t.dim.Render("  ·  ") + t.dim.Render(page) + t.dim.Render(fmt.Sprintf("  ·  %d/%d", at, pages))
-	if w.page == pageEssence && (k == librarium.KindIncantation || k == librarium.KindLitany) {
-		where := "the pages of the aspects that follow"
-		if w.d.edict {
-			where = "the page that follows"
-		}
-		head += "\n" + t.dim.Render("Its "+w.varying()[0][1]+" is spoken on "+where+".")
+	if w.page == pageEssence {
+		head += "\n" + t.dim.Render("Its "+w.varying()[0][1]+" is spoken on the page that follows.")
 	}
 	return head
 }

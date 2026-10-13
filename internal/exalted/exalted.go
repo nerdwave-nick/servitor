@@ -11,19 +11,22 @@
 // sanction is then read from the root's store, the root-side dominions are
 // seized, and the session is accepted. Every answer to the handshake names
 // the protocol, which the invoker's servitor hears first (Channel.Answer).
-// Thereafter only Requests are heard: perform the next exalted verse,
-// revert the last performed, finish, abort. A state rite of pattern Mark II
-// is performed by its exalted subjects and observances instead, each named
-// (Item), skipping forward but never back (order.go); a machine-spirit is
-// set by its enact words and restored to a declared omen named. Before its
-// first item, the invoker may name in one Read the subjects it cannot read
-// itself: the exalted servitor speaks their privileged auspexes, or
-// beholds their vessels, and answers only the declared omens they fit, or
-// whether they stand as the plan demands (behold.go); it proves a
-// privileged subject it set or restored alike. The end of
-// the channel before finish, ten minutes without a word, or SIGTERM revert
-// every verse or item performed, in reverse. Vessels and tethers are acted upon through package
-// hallowed; exalted speech is lent by a Voice. Every act is journaled as
+// Thereafter only Requests are heard: perform an exalted item, revert the
+// last performed, finish, abort. A rite of aspects is performed by its
+// exalted subjects and observances, each named (Item), skipping forward but
+// never back (order.go); an edict by its exalted verses, each the next of
+// its liturgy. Only units of pattern Mark II are performed or sanctioned:
+// a sanction laid while its rite was of pattern Mark I is refused. A
+// machine-spirit is set by its enact words and restored to a declared omen
+// named. Before its first item, the invoker may name in one Read the
+// subjects it cannot read itself: the exalted servitor speaks their
+// privileged auspexes, or beholds their vessels, and answers only the
+// declared omens they fit, or whether they stand as the plan demands
+// (behold.go); it proves a privileged subject it set or restored alike.
+// The end of the channel before finish, ten minutes without a word, or
+// SIGTERM revert every verse or item performed, in reverse. Vessels and
+// tethers are acted upon through package hallowed; exalted speech is lent
+// by a Voice. Every act is journaled as
 // the root's.
 //
 // Roused with SanctionWord or AbjureWord after its Mode, the exalted

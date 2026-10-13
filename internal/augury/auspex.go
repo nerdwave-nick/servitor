@@ -4,11 +4,9 @@ import (
 	"context"
 	"errors"
 	"os/exec"
-	"strings"
 	"syscall"
 	"time"
 
-	"github.com/nerdwave-nick/servitor/internal/invocation"
 	"github.com/nerdwave-nick/servitor/internal/librarium"
 	"github.com/nerdwave-nick/servitor/internal/placeholder"
 )
@@ -17,8 +15,8 @@ import (
 // ended while children it sent away still hold its output open.
 const auspexLinger = 100 * time.Millisecond
 
-// maxAuspexWords is how much the servitor hears of an auspex: an aspect's
-// name is short, and longer words name no aspect.
+// maxAuspexWords is how much the servitor hears of an auspex: an omen is
+// short, and longer words name none.
 const maxAuspexWords = 4 << 10
 
 // Places bound how many processes of auspexes labour at once: each takes a
@@ -107,30 +105,6 @@ func tongueOf(orders librarium.Orders, tongues ...string) string {
 		return orders.Tongue
 	}
 	return librarium.DefaultTongue
-}
-
-// auspex awakens the rite's auspex and returns the declared aspect it
-// printed. It is spoken in the rite's tongue (else the settings', else
-// bash) in its own process group, from the rite's directory, with the
-// environment of the rite's commands: the target aspect of opts, no former
-// aspect and the data-slate's inscriptions. When its patience runs out the
-// whole group is slain. A failure, an impatient auspex and words that name
-// no declared aspect give no omen; only its standard output is heard.
-// When ctx ends the group is slain as well, and the auspex gives no omen.
-func (s *seer) auspex(ctx context.Context, opts Options) (string, bool) {
-	v := s.auspexValues(opts)
-	command, ok := s.render(s.rite.Auspex.Rite, v)
-	if !ok {
-		return "", false
-	}
-	sp := speech{tongue: tongueOf(opts.Orders, s.rite.Tongue), words: command, hall: s.rite.Dir(),
-		env: invocation.Environ(s.rite, v), patience: s.rite.Auspex.Wait()}
-	heard, f := sp.speak(ctx, opts.Places, true)
-	if f != spoke {
-		return "", false
-	}
-	aspect := strings.TrimSpace(heard)
-	return aspect, s.rite.HasAspect(aspect)
 }
 
 // auspexValues are the values every auspex is rendered with: the target

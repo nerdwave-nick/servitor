@@ -16,9 +16,9 @@ const SchemaKey = "$schema"
 
 // Keys of the objects of a Mark I scripture, in the order of the codex.
 var (
-	RiteKeys        = []string{"pattern", "purpose", "aspects", "edict", "inscriptions", "auspex", "tongue", "liturgy", SchemaKey}
+	markIRiteKeys   = []string{"pattern", "purpose", "aspects", "edict", "inscriptions", "auspex", "tongue", "liturgy", SchemaKey}
 	InscriptionKeys = []string{"purpose", "mandatory", "decrees"}
-	AuspexKeys      = []string{"rite", "patience"}
+	auspexKeys      = []string{"rite", "patience"}
 	TomeKeys        = []string{"tome", "illuminate"}
 	// Aliases maps every alias key to the key it stands for.
 	Aliases = map[string]string{"force": "zeal"}
@@ -37,11 +37,23 @@ var (
 // inscription.
 func ValidName(name string) bool { return nameRe.MatchString(name) }
 
-// Parse reads the scripture data of the rite name recorded at path. The rite
-// is nil when the scripture cannot be read as pattern Mark I at all;
+// Parse reads the scripture data of the rite name recorded at path, as
+// scripture of pattern Mark II: pure scripture of pattern Mark I is
+// converted in memory, and the rite and findings are those of the scripture
+// it becomes. The rite is nil when the scripture cannot be read as a rite
+// at all, and for scripture of pattern Mark I that is not converted;
 // otherwise it holds everything that could be read, even when findings
 // denounce heresy.
 func Parse(name, path string, data []byte) (*Rite, Findings) {
+	r, fs, _ := parseConverting(name, path, data)
+	return r, fs
+}
+
+// parse reads the scripture data of the rite name recorded at path, of
+// either pattern, as it is written: a rite of pattern Mark I is read in its
+// own model (markI), for conversion alone. The rite is nil when the
+// scripture cannot be read as a rite at all.
+func parse(name, path string, data []byte) (*Rite, Findings) {
 	src := &source{path: path, data: data}
 	d := &decoder{src: src, rite: &Rite{Name: name, Path: path, src: src}}
 	ast, err := hujson.Parse(data)
@@ -75,7 +87,8 @@ func (d *decoder) decodeRite(root *hujson.Value) *Rite {
 	if markII {
 		return d.decodeMarkII(root)
 	}
-	fs, _ := d.object(root, "a rite", RiteKeys)
+	r.markI = true
+	fs, _ := d.object(root, "a rite", markIRiteKeys)
 	if m, ok := fs.get(SchemaKey); ok {
 		r.Schema, _ = d.str(m.val, `the "$schema" of a rite`)
 	}
@@ -124,12 +137,12 @@ func (d *decoder) decodePattern(root *hujson.Value, obj *hujson.Object) (markII,
 			d.heresy(&m.Value, "the \"pattern\" must be \"Mark\" followed by numerals of the old tongue, such "+
 				"as \"Mark I\"; %s is no Mark the Adeptus Mechanicus recognises", written)
 			return false, false
-		case !slices.Contains(Patterns, lit.String()):
+		case !slices.Contains(patterns, lit.String()):
 			d.heresy(&m.Value, "this scripture is written in pattern %q, but this servitor was forged to read "+
 				"only %s; it will not attempt a form it does not know", lit.String(), patternNames())
 			return false, false
 		}
-		return lit.String() == PatternMarkII, true
+		return lit.String() == Pattern, true
 	}
 	d.heresy(root, "the scripture bears no \"pattern\"; every scripture of the Librarium must declare the "+
 		"Mark of its form, and "+
@@ -140,7 +153,7 @@ func (d *decoder) decodePattern(root *hujson.Value, obj *hujson.Object) (markII,
 
 // patternNames names the patterns this package reads: "Mark I" and "Mark II".
 func patternNames() string {
-	return fmt.Sprintf("%q and %q", Pattern, PatternMarkII)
+	return fmt.Sprintf("%q and %q", PatternMarkI, Pattern)
 }
 
 // elderKeys are the keys by which a rite of the elder form, which knew no
@@ -161,7 +174,7 @@ func elderLament(obj *hujson.Object) string {
 	}
 	return fmt.Sprintf("; its %s are the words of the elder scripture that knew no Mark, a form this "+
 		"servitor has abjured: not one of its vessels will be read or rewritten, and nothing of it will be "+
-		"converted — rewrite the rite by hand in pattern %q, its vessels bound as steps of a \"liturgy\", "+
+		"converted — rewrite the rite by hand in pattern %q, its vessels declared as its \"subjects\", "+
 		"or strike it from the Librarium", strings.Join(found, " and "), Pattern)
 }
 
@@ -259,17 +272,17 @@ func (d *decoder) decodeInscriptions(v *hujson.Value) {
 
 func (d *decoder) decodeAuspex(v *hujson.Value) {
 	const what = "the auspex"
-	a := &Auspex{}
+	a := &riteAuspex{}
 	if lit, ok := literal(v); ok && lit.Kind() == '"' {
 		a.Rite, _ = d.templated(v, what, false)
-		d.rite.Auspex = a
+		d.rite.auspex = a
 		return
 	}
 	if _, ok := v.Value.(*hujson.Object); !ok {
 		d.wrongForm(v, what, `a command, or {"rite": "<command>", "patience": "2s"}`)
 		return
 	}
-	fs, _ := d.object(v, what, AuspexKeys)
+	fs, _ := d.object(v, what, auspexKeys)
 	if m, ok := fs.get("rite"); ok {
 		a.Rite, _ = d.templated(m.val, `the "rite" of the auspex`, false)
 	} else {
@@ -279,7 +292,7 @@ func (d *decoder) decodeAuspex(v *hujson.Value) {
 	if m, ok := fs.get("patience"); ok {
 		a.Patience = d.patience(m.val, `the "patience" of the auspex`)
 	}
-	d.rite.Auspex = a
+	d.rite.auspex = a
 }
 
 func (d *decoder) decodeLiturgy(v *hujson.Value) {
@@ -302,7 +315,7 @@ func (d *decoder) decodeLiturgy(v *hujson.Value) {
 		}
 		d.rite.Liturgy = append(d.rite.Liturgy, s)
 		d.rite.verses = append(d.rite.verses, i+1)
-		if vc, ok := s.(*VoxCast); ok && vc.Tidings == VoxSuccess {
+		if vc, ok := s.(*voxCast); ok && vc.Tidings == VoxSuccess {
 			success = stepValue(e, "vox-cast")
 		}
 	}

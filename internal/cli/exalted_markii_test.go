@@ -33,7 +33,7 @@ func TestInvokeII_AnExaltedSubjectIsSetWithOneProof(t *testing.T) {
 		t.Fatalf("unsanctioned: exit %d\n%s", code, errOut)
 	}
 	out := e.mustRun("sanction", "smt")
-	for _, want := range []string{"The exalted subjects and observances of \"smt\"", "subject smt · machine-spirit",
+	for _, want := range []string{"The exalted subjects of \"smt\"", "subject smt · machine-spirit",
 		"enact on: echo on >", "omen: off"} {
 		if !strings.Contains(out, want) {
 			t.Errorf("the sanction shown lacks %q:\n%s", want, out)
@@ -58,7 +58,7 @@ func TestInvokeII_AnExaltedSubjectIsSetWithOneProof(t *testing.T) {
 		t.Errorf("chronicled %s", line)
 	}
 	out = e.mustRun("invoke", "smt", "off", "--foresee")
-	if !strings.Contains(out, "subject smt · machine-spirit ✠") || !strings.Contains(out, "The exalted subjects and observances stand "+
+	if !strings.Contains(out, "subject smt · machine-spirit ✠") || !strings.Contains(out, "The exalted subjects stand "+
 		"sanctioned") {
 		t.Errorf("foreseen:\n%s", out)
 	}

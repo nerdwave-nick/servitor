@@ -29,12 +29,8 @@ func (w *wizard) exaltedNoun() string {
 }
 
 // addExaltation offers the step sd its exaltation as the noun it is
-// written as, save a vox-cast, and exalted speech or an exalted
-// machine-spirit its relics.
+// written as, and exalted speech or an exalted machine-spirit its relics.
 func addExaltation(f *form, sd stepDraft, noun string) {
-	if sd.kind == librarium.KindVoxCast {
-		return
-	}
 	exalted := sd.fixed["exalted"] == "true"
 	f.addToggle("exalted", "Exalted "+noun, exalted, exaltedHints[noun]+" with the machine's own authority, by an "+
 		"exalted servitor from the sanction of its master; space turns it.")

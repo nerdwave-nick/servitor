@@ -13,16 +13,10 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/librarium"
 )
 
-// EnvironmentPattern is the pattern of the environment the exalted servitor
-// grants exalted speech: the variables it admits besides those a unit
-// declares. A new pattern lapses every sanction. A unit of pattern Mark II
-// bears the environment of PatternMarkII, which grants SERVITOR_OMEN too.
-const EnvironmentPattern = "Mark I"
-
 // Unit is the canonical exalted unit of a rite: everything its exalted
 // verses do, for every aspect. Its JSON is the shape of the sanction.
 type Unit struct {
-	Pattern string `json:"pattern"` // Pattern or PatternMarkII
+	Pattern string `json:"pattern"` // Pattern; PatternMarkI for a sanction of old
 	UID     int    `json:"uid"`     // the master's
 	Rite    string `json:"rite"`
 	Edict   bool   `json:"edict"` // an edict has one plan, of aspect ""
@@ -34,9 +28,10 @@ type Unit struct {
 
 // Environment names the variables of the environment exalted speech hears:
 // those the unit declares, and the pattern of those the exalted servitor
-// grants besides.
+// grants besides (Pattern, which grants SERVITOR_OMEN too). A new pattern
+// lapses every sanction.
 type Environment struct {
-	Pattern string   `json:"pattern"` // EnvironmentPattern or PatternMarkII
+	Pattern string   `json:"pattern"` // Pattern; PatternMarkI for a sanction of old
 	Keys    []string `json:"keys"`    // sorted
 }
 
@@ -191,9 +186,9 @@ func (u *Unit) written() *Unit {
 	return &w
 }
 
-// State tells that the unit is that of a state rite of pattern Mark II,
-// whose plans hold subjects and observances.
-func (u *Unit) State() bool { return u.Pattern == PatternMarkII && !u.Edict }
+// State tells that the unit is that of a state rite, whose plans hold
+// subjects and observances.
+func (u *Unit) State() bool { return u.Pattern == Pattern && !u.Edict }
 
 func orEmpty[T any](s []T) []T {
 	if s == nil {

@@ -8,7 +8,7 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/librarium"
 )
 
-// A state rite of pattern Mark II is invoked by its subjects, not by a
+// A rite of aspects is invoked by its subjects, not by a
 // liturgy. Every subject is examined in written order against the shadow of
 // the machine, as a step would be, and planned by what it was read to show
 // (Options.Readings): unchanged when it already shows the omen of the
@@ -19,7 +19,7 @@ import (
 // machine-spirit enacts the omen it was read to show, or that of the former
 // aspect, and is proven again.
 
-// subjects examines every subject of the state rite, foreseeing each and
+// subjects examines every subject of the rite of aspects, foreseeing each and
 // making the changing ones ready to be performed, then every observance;
 // the observances admitted are set around the changing subjects (see
 // observances.go).
@@ -44,7 +44,7 @@ func (inv *Invocation) subjects(p *preflight) {
 	inv.ordain(subjects, p.observances())
 }
 
-// Unread names the subjects of a state rite the invoker cannot read
+// Unread names the subjects of a rite of aspects the invoker cannot read
 // itself, in written order: those whose auspex is privileged, and the
 // exalted sanctums, transcriptions and tethers hidden from it. The exalted
 // servitor reads them in its stead, and their readings, marked Exalted,
@@ -94,7 +94,7 @@ type settler interface {
 }
 
 // builtInSubject is a changing sanctum, transcription or tether subject: it
-// is performed as its step of Mark I, then proven by planning it anew
+// is performed as the step it holds, then proven by planning it anew
 // against the machine, which must find nothing left to change.
 type builtInSubject struct {
 	performer

@@ -45,11 +45,15 @@ func lines(t *testing.T, p string) []string {
 	return strings.Split(strings.TrimSuffix(read(t, p), "\n"), "\n")
 }
 
+// TestIncantation_SpeaksInBashWithTheInvocationsEnvironment: an
+// observance's incantation is spoken by bash from the rite's hall, hearing
+// the aspect, the former aspect, the rite and the inscriptions of this
+// invocation alone, and its words are kept.
 func TestIncantation_SpeaksInBashWithTheInvocationsEnvironment(t *testing.T) {
 	fx := newFixture(t)
 	t.Setenv("SERVITOR_INSCRIPTION_STALE", "from a former invocation")
 	t.Setenv("SERVITOR_ASPECT", "stale")
-	r := fx.rite(t, `{"incantation": "printf '%s|' \"$SERVITOR_ASPECT\" \"$SERVITOR_FORMER_ASPECT\" \"$SERVITOR_RITE\" \"$SERVITOR_INSCRIPTION_REASON\" \"$SERVITOR_INSCRIPTION_STALE\" \"{{aspect}}-{{inscription.reason}}\" \"${BASH_VERSION:+bash}\" \"$PWD\" > $DATA/said; echo uttered; echo lamented >&2"}`)
+	r := fx.spoken(t, "", `{"designation": "incantation", "words": "printf '%s|' \"$SERVITOR_ASPECT\" \"$SERVITOR_FORMER_ASPECT\" \"$SERVITOR_RITE\" \"$SERVITOR_INSCRIPTION_REASON\" \"$SERVITOR_INSCRIPTION_STALE\" \"{{aspect}}-{{inscription.reason}}\" \"${BASH_VERSION:+bash}\" \"$PWD\" > $DATA/said; echo uttered; echo lamented >&2"}`)
 
 	out, seen := perform(t, r, Options{Aspect: "on", Former: "off", Inscriptions: map[string]string{"reason": "gaming remnant"}})
 
@@ -60,10 +64,10 @@ func TestIncantation_SpeaksInBashWithTheInvocationsEnvironment(t *testing.T) {
 	if got := read(t, filepath.Join(fx.data, "said")); got != want {
 		t.Fatalf("the incantation said %q, want %q", got, want)
 	}
-	if len(out.Deeds) != 1 || out.Deeds[0].Output != "uttered\nlamented\n" || out.Deeds[0].Heresy != nil {
+	if len(out.Deeds) != 2 || out.Deeds[0].Output != "uttered\nlamented\n" || out.Deeds[0].Heresy != nil {
 		t.Fatalf("deeds %+v", out.Deeds)
 	}
-	if d := out.Deeds[0]; d.Number != 1 || d.Kind != librarium.KindIncantation || !strings.HasPrefix(d.Target, "printf") {
+	if d := out.Deeds[0]; d.Observance != "v1" || d.Kind != librarium.KindIncantation || !strings.HasPrefix(d.Target, "printf") {
 		t.Fatalf("deed names %+v", d.Verse)
 	}
 	if s := seen[0].Speech; s == nil || s.Tongue != "bash" || s.Argv[0] != "bash" || s.Argv[1] != "-c" || s.Argv[2] != s.Words {
@@ -71,6 +75,9 @@ func TestIncantation_SpeaksInBashWithTheInvocationsEnvironment(t *testing.T) {
 	}
 }
 
+// TestIncantation_TongueOfStepOverRiteOverSettingsOverBash: an observance
+// is spoken in its own tongue, else the rite's, else the settings', else
+// bash.
 func TestIncantation_TongueOfStepOverRiteOverSettingsOverBash(t *testing.T) {
 	bin, log := t.TempDir(), filepath.Join(t.TempDir(), "spoken")
 	for _, name := range []string{"tongue-of-step", "tongue-of-rite", "tongue-of-settings"} {
@@ -90,7 +97,7 @@ func TestIncantation_TongueOfStepOverRiteOverSettingsOverBash(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			_ = os.Remove(log)
 			fx := newFixture(t)
-			r := fx.riteWith(t, c.riteKeys, `{`+c.step+` "incantation": "true"}`)
+			r := fx.spoken(t, c.riteKeys, `{`+c.step+` "designation": "incantation", "words": "true"}`)
 			out, seen := perform(t, r, Options{Aspect: "on", Orders: librarium.Orders{Tongue: c.settings}})
 			if out.Verdict != Triumph {
 				t.Fatalf("outcome %+v", out)
@@ -116,19 +123,22 @@ func TestIncantation_TongueOfStepOverRiteOverSettingsOverBash(t *testing.T) {
 // each of them, to the vessel named by its first offering.
 const recorder = "out=$1\nshift\nprintf '%s\\n' \"$#\" \"$@\" > \"$out\"\n"
 
+// TestLitany_RecitedByItsShebangWithExactlyItsOfferings: an executable
+// scroll is recited by its own shebang, each offering handed over whole,
+// rendered and never interpreted.
 func TestLitany_RecitedByItsShebangWithExactlyItsOfferings(t *testing.T) {
 	fx := newFixture(t)
 	scroll := write(t, fx.lib, "rites/scripts/recite", "#!/bin/bash\n"+recorder, 0o755)
 	args := filepath.Join(fx.data, "args")
-	r := fx.rite(t, `{"litany": "scripts/recite", "offerings": ["$DATA/args", "two words", "$HOME; rm -rf /",
-	  "themes/{{aspect}}", {"on": "lit", "*": "unlit"}, "it's \"quoted\"", ""]}`)
+	r := fx.spoken(t, "", `{"designation": "litany", "scroll": "scripts/recite", "offerings": ["$DATA/args", "two words",
+	  "$HOME; rm -rf /", "themes/{{aspect}}", "lit-{{aspect}}", "it's \"quoted\"", ""]}`)
 
 	out, seen := perform(t, r, Options{Aspect: "on"})
 
 	if out.Verdict != Triumph {
 		t.Fatalf("outcome %+v", out)
 	}
-	want := []string{"6", "two words", "$HOME; rm -rf /", "themes/on", "lit", `it's "quoted"`, ""}
+	want := []string{"6", "two words", "$HOME; rm -rf /", "themes/on", "lit-on", `it's "quoted"`, ""}
 	if got := strings.Split(read(t, args), "\n"); !slices.Equal(got[:len(got)-1], want) {
 		t.Fatalf("offered %q, want %q", got, want)
 	}
@@ -151,7 +161,7 @@ func TestLitany_OfferingsBearTheHomeOfTheFaithful(t *testing.T) {
 	t.Setenv("HOME", home)
 	write(t, fx.lib, "rites/scripts/recite", "#!/bin/bash\n"+recorder, 0o755)
 	args := filepath.Join(fx.data, "args")
-	r := fx.rite(t, `{"litany": "scripts/recite", "offerings": ["$DATA/args",
+	r := fx.spoken(t, "", `{"designation": "litany", "scroll": "scripts/recite", "offerings": ["$DATA/args",
 	  "~/.config/nfluff/themes/{{aspect}}", "~", "{{inscription.reason}}", "a~b", "x/~", "~faithful/x", "$HOME/x",
 	  "./~/x", " ~/x"]}`)
 
@@ -170,21 +180,25 @@ func TestLitany_OfferingsBearTheHomeOfTheFaithful(t *testing.T) {
 	}
 }
 
+// TestLitany_ReceivesNothingItIsNotOffered: a litany without offerings is
+// recited bare.
 func TestLitany_ReceivesNothingItIsNotOffered(t *testing.T) {
 	fx := newFixture(t)
 	write(t, fx.lib, "rites/scripts/count", "#!/bin/bash\necho \"$#\"\n", 0o755)
-	r := fx.rite(t, `{"litany": "scripts/count"}`)
+	r := fx.spoken(t, "", `{"designation": "litany", "scroll": "scripts/count"}`)
 	out, _ := perform(t, r, Options{Aspect: "on", Former: "off"})
 	if out.Deeds[0].Output != "0\n" {
 		t.Fatalf("the litany was offered %q arguments", out.Deeds[0].Output)
 	}
 }
 
+// TestLitany_RecitedThroughTheTongueWhenItCannotBeExecuted: a scroll that
+// is not executable is recited through its tongue.
 func TestLitany_RecitedThroughTheTongueWhenItCannotBeExecuted(t *testing.T) {
 	fx := newFixture(t)
 	scroll := write(t, fx.data, "scroll", recorder+"echo \"${BASH_VERSION:+bash}\"\n", 0o644)
 	args := filepath.Join(fx.data, "args")
-	r := fx.rite(t, `{"litany": "$DATA/scroll", "offerings": ["$DATA/args", "{{aspect}}"]}`)
+	r := fx.spoken(t, "", `{"designation": "litany", "scroll": "$DATA/scroll", "offerings": ["$DATA/args", "{{aspect}}"]}`)
 
 	out, seen := perform(t, r, Options{Aspect: "off"})
 
@@ -199,10 +213,13 @@ func TestLitany_RecitedThroughTheTongueWhenItCannotBeExecuted(t *testing.T) {
 	}
 }
 
+// TestLitany_MayBeWrittenByAnEarlierStep: the scroll of an observance may
+// be written by a subject set before it.
 func TestLitany_MayBeWrittenByAnEarlierStep(t *testing.T) {
 	fx := newFixture(t)
-	r := fx.rite(t, `{"transcription": "$DATA/scroll", "scripture": "#!/bin/bash\necho recited {{aspect}}", "seal": "0755"},
-	  {"litany": "$DATA/scroll"}`)
+	r := fx.following(t, `{"name": "s", "designation": "transcription", "vessel": "$DATA/scroll",
+	  "omens": {"*": "#!/bin/bash\necho recited {{aspect}}"}, "seal": "0755"}`,
+		`{"designation": "litany", "scroll": "$DATA/scroll"}`)
 	out, seen := perform(t, r, Options{Aspect: "on"})
 	if out.Verdict != Triumph || out.Deeds[1].Output != "recited on\n" {
 		t.Fatalf("outcome %+v", out)
@@ -234,10 +251,13 @@ func pidIn(t *testing.T, p string) int {
 	return pid
 }
 
+// TestPatience_ExpiryKillsTheWholeGroupAndTheStepFalls: when its patience
+// runs out, an observance's whole process group is slain and it falls,
+// telling its patience; nothing after it is spoken.
 func TestPatience_ExpiryKillsTheWholeGroupAndTheStepFalls(t *testing.T) {
 	fx := newFixture(t)
-	r := fx.rite(t, `{"incantation": "sleep 60 & echo $! > $DATA/child; echo waiting; sleep 60", "patience": "300ms"},
-	  {"incantation": "touch $DATA/never"}`)
+	r := fx.spoken(t, "", `{"designation": "incantation", "words": "sleep 60 & echo $! > $DATA/child; echo waiting; sleep 60",
+	  "patience": "300ms"}`, `{"designation": "incantation", "words": "touch $DATA/never"}`)
 
 	start := time.Now()
 	out, seen := perform(t, r, Options{Aspect: "on"})
@@ -246,7 +266,7 @@ func TestPatience_ExpiryKillsTheWholeGroupAndTheStepFalls(t *testing.T) {
 	if elapsed > 10*time.Second {
 		t.Fatalf("patience of 300ms ran out only after %v", elapsed)
 	}
-	if out.Verdict != Reverted || out.Fell == nil || out.Fell.Number != 1 || out.Fell.Output != "waiting\n" {
+	if out.Verdict != Reverted || out.Fell == nil || out.Fell.Observance != "v1" || out.Fell.Output != "waiting\n" {
 		t.Fatalf("outcome %+v", out)
 	}
 	grimdark(t, out.Fell.Heresy.Error())
@@ -270,13 +290,16 @@ func TestPatience_ExpiryKillsTheWholeGroupAndTheStepFalls(t *testing.T) {
 	}
 }
 
+// TestPatience_OfStepOverSettingsOverDefault: an observance waits its own
+// patience, else the settings', else the default.
 func TestPatience_OfStepOverSettingsOverDefault(t *testing.T) {
 	fx := newFixture(t)
-	r := fx.rite(t, `{"incantation": "sleep 0.5", "patience": "20s"}, {"incantation": "sleep 20"}`)
+	r := fx.spoken(t, "", `{"designation": "incantation", "words": "sleep 0.5", "patience": "20s"}`,
+		`{"designation": "incantation", "words": "sleep 20"}`)
 
 	out, seen := perform(t, r, Options{Aspect: "on", Orders: librarium.Orders{Patience: 200 * time.Millisecond}})
 
-	if out.Fell == nil || out.Fell.Number != 2 {
+	if out.Fell == nil || out.Fell.Observance != "v2" {
 		t.Fatalf("outcome %+v", out)
 	}
 	if seen[0].Speech.Patience != 20*time.Second || seen[1].Speech.Patience != 200*time.Millisecond {
@@ -291,10 +314,12 @@ func TestPatience_OfStepOverSettingsOverDefault(t *testing.T) {
 	}
 }
 
+// TestIncantation_BackgroundChildrenOfATriumphantStepSurvive: children an
+// observance sends away outlive it, and do not hold the invocation.
 func TestIncantation_BackgroundChildrenOfATriumphantStepSurvive(t *testing.T) {
 	fx := newFixture(t)
-	r := fx.rite(t, `{"incantation": "sleep 60 & echo $! > $DATA/child; echo spoken"},
-	  {"incantation": "echo after"}`)
+	r := fx.spoken(t, "", `{"designation": "incantation", "words": "sleep 60 & echo $! > $DATA/child; echo spoken"}`,
+		`{"designation": "incantation", "words": "echo after"}`)
 
 	start := time.Now()
 	out, _ := perform(t, r, Options{Aspect: "on"})
@@ -313,19 +338,22 @@ func TestIncantation_BackgroundChildrenOfATriumphantStepSurvive(t *testing.T) {
 	}
 }
 
+// TestCommands_RevertedFromTheFallenStepBackToTheFirst: when an observance
+// falls, it and every observance and subject before it are reverted in
+// reverse order, each by its own reversion; those without one are passed
+// over.
 func TestCommands_RevertedFromTheFallenStepBackToTheFirst(t *testing.T) {
 	fx := newFixture(t)
 	util := write(t, fx.data, "util.kdl", "input {}\n", 0o644)
 	scroll := write(t, fx.data, "scroll", "echo recited >> \"$1\"\necho dying words\nexit 3\n", 0o644)
 	log := filepath.Join(fx.data, "log")
-	r := fx.rite(t, `{"sanctum": "$DATA/util.kdl", "scripture": "x"},
-	  {"incantation": "echo spoke-{{aspect}} >> $DATA/log",
-	   "reversion": "echo unspoke-{{former}}-$SERVITOR_FORMER_ASPECT >> $DATA/log"},
-	  {"incantation": "echo quiet >> $DATA/log"},
-	  {"vox-cast": "progress"},
-	  {"litany": "$DATA/scroll", "offerings": ["$DATA/log"],
-	   "reversion": {"on": "echo unrecited-{{aspect}} >> $DATA/log; echo undone", "*": "false"}},
-	  {"incantation": "echo never >> $DATA/log"}`)
+	r := fx.following(t, `{"name": "s", "designation": "sanctum", "vessel": "$DATA/util.kdl", "omens": {"*": "x"}}`,
+		`{"designation": "incantation", "words": "echo spoke-{{aspect}} >> $DATA/log",
+	   "reversion": "echo unspoke-{{former}}-$SERVITOR_FORMER_ASPECT >> $DATA/log"}`,
+		`{"designation": "incantation", "words": "echo quiet >> $DATA/log"}`,
+		`{"designation": "litany", "scroll": "$DATA/scroll", "offerings": ["$DATA/log"],
+	   "reversion": "echo unrecited-{{aspect}} >> $DATA/log; echo undone"}`,
+		`{"designation": "incantation", "words": "echo never >> $DATA/log"}`)
 
 	out, _ := perform(t, r, Options{Aspect: "on", Former: "off"})
 
@@ -333,22 +361,22 @@ func TestCommands_RevertedFromTheFallenStepBackToTheFirst(t *testing.T) {
 		t.Fatalf("verdict %q", out.Verdict)
 	}
 	f := out.Fell
-	if f == nil || f.Number != 5 || f.Kind != librarium.KindLitany || f.Target != scroll || f.Output != "dying words\n" {
+	if f == nil || f.Observance != "v3" || f.Kind != librarium.KindLitany || f.Target != scroll || f.Output != "dying words\n" {
 		t.Fatalf("fell %+v", f)
 	}
 	grimdark(t, f.Heresy.Error())
 	if !strings.Contains(f.Heresy.Error(), "3") {
 		t.Errorf("the heresy %q does not tell the status", f.Heresy)
 	}
-	var verses []int
+	var reverted []string
 	for _, rv := range out.Reversions {
 		if rv.Heresy != nil {
-			t.Errorf("reversion of verse %d fell: %v", rv.Number, rv.Heresy)
+			t.Errorf("reversion of %s%s fell: %v", rv.Observance, rv.Subject, rv.Heresy)
 		}
-		verses = append(verses, rv.Number)
+		reverted = append(reverted, rv.Observance+rv.Subject)
 	}
-	if !slices.Equal(verses, []int{5, 2, 1}) {
-		t.Fatalf("reverted verses %v", verses)
+	if !slices.Equal(reverted, []string{"v3", "v1", "s"}) {
+		t.Fatalf("reverted %v", reverted)
 	}
 	if out.Reversions[0].Output != "undone\n" {
 		t.Fatalf("reversion uttered %q", out.Reversions[0].Output)
@@ -359,30 +387,33 @@ func TestCommands_RevertedFromTheFallenStepBackToTheFirst(t *testing.T) {
 	if read(t, util) != "input {}\n" {
 		t.Fatal("the sanctum was not reverted")
 	}
-	if len(out.Deeds) != 5 || out.Deeds[4].Heresy == nil || out.Deeds[2].Output != "" {
+	if len(out.Deeds) != 4 || out.Deeds[3].Heresy == nil || out.Deeds[2].Output != "" {
 		t.Fatalf("deeds %+v", out.Deeds)
 	}
 }
 
+// TestCommands_FalterWhenAReversionFalls: a reversion that falls or
+// outlasts its patience makes the invocation falter; every other reversion
+// is still spoken.
 func TestCommands_FalterWhenAReversionFalls(t *testing.T) {
 	fx := newFixture(t)
 	log := filepath.Join(fx.data, "log")
-	r := fx.rite(t, `{"incantation": "true", "reversion": "echo first-undone >> $DATA/log"},
-	  {"incantation": "true", "reversion": "echo broken; exit 1"},
-	  {"incantation": "true", "reversion": "sleep 20", "patience": "200ms"},
-	  {"incantation": "exit 1"}`)
+	r := fx.spoken(t, "", `{"designation": "incantation", "words": "true", "reversion": "echo first-undone >> $DATA/log"}`,
+		`{"designation": "incantation", "words": "true", "reversion": "echo broken; exit 1"}`,
+		`{"designation": "incantation", "words": "true", "reversion": "sleep 20", "patience": "200ms"}`,
+		`{"designation": "incantation", "words": "exit 1"}`)
 
 	out, _ := perform(t, r, Options{Aspect: "on"})
 
-	if out.Verdict != Faltered || out.Fell == nil || out.Fell.Number != 4 {
+	if out.Verdict != Faltered || out.Fell == nil || out.Fell.Observance != "v4" {
 		t.Fatalf("outcome %+v", out)
 	}
 	if len(out.Reversions) != 3 {
 		t.Fatalf("reversions %+v", out.Reversions)
 	}
 	r3, r2, r1 := out.Reversions[0], out.Reversions[1], out.Reversions[2]
-	if r3.Number != 3 || r3.Heresy == nil || r2.Number != 2 || r2.Heresy == nil || r2.Output != "broken\n" ||
-		r1.Number != 1 || r1.Heresy != nil {
+	if r3.Observance != "v3" || r3.Heresy == nil || r2.Observance != "v2" || r2.Heresy == nil ||
+		r2.Output != "broken\n" || r1.Observance != "v1" || r1.Heresy != nil {
 		t.Fatalf("reversions %+v", out.Reversions)
 	}
 	grimdark(t, r2.Heresy.Error())
@@ -392,11 +423,16 @@ func TestCommands_FalterWhenAReversionFalls(t *testing.T) {
 	}
 }
 
+// TestForesee_ListsRenderedCommandsAndSpeaksNothing: the foresight tells
+// the words, reversion, tongue and offerings of each observance rendered,
+// and speaks nothing.
 func TestForesee_ListsRenderedCommandsAndSpeaksNothing(t *testing.T) {
 	fx := newFixture(t)
 	scroll := write(t, fx.data, "scroll", "#!/bin/bash\ntouch \"$1\"\n", 0o755)
-	r := fx.rite(t, `{"incantation": "touch $DATA/spoken-{{aspect}}", "reversion": "rm -f $DATA/spoken-{{former}}"},
-	  {"litany": "$DATA/scroll", "offerings": ["$DATA/recited-{{inscription.reason}}"], "tongue": "sh"}`)
+	r := fx.spoken(t, "", `{"designation": "incantation", "words": "touch $DATA/spoken-{{aspect}}",
+	  "reversion": "rm -f $DATA/spoken-{{former}}"}`,
+		`{"designation": "litany", "scroll": "$DATA/scroll", "offerings": ["$DATA/recited-{{inscription.reason}}"],
+	  "tongue": "sh"}`)
 	before := tree(t, fx.data)
 
 	inv, err := Prepare(r, Options{Aspect: "on", Former: "off", Inscriptions: map[string]string{"reason": "why"}})
@@ -419,33 +455,37 @@ func TestForesee_ListsRenderedCommandsAndSpeaksNothing(t *testing.T) {
 	}
 }
 
+// TestPrepare_RefusesCommandsItCannotSpeak: an observance whose tongue is
+// spoken nowhere, or whose scroll does not stand, refuses the invocation
+// before anything is touched, the heresy found at the observance.
 func TestPrepare_RefusesCommandsItCannotSpeak(t *testing.T) {
 	cases := []struct {
-		name, liturgy string
-		orders        librarium.Orders
-		want          string
+		name, observance string
+		orders           librarium.Orders
+		want             string
 	}{
-		{"tongue of the step unknown", `{"incantation": "true", "tongue": "no-such-tongue-of-the-machine"}`, librarium.Orders{},
-			"no-such-tongue-of-the-machine"},
-		{"tongue of the settings unknown", `{"incantation": "true"}`, librarium.Orders{Tongue: "no-such-tongue-of-the-settings"},
-			"no-such-tongue-of-the-settings"},
-		{"tongue of a reversion unknown", `{"litany": "$DATA/exe", "reversion": "true", "tongue": "no-such-tongue"}`, librarium.Orders{},
-			"no-such-tongue"},
-		{"tongue of an unexecutable litany unknown", `{"litany": "$DATA/plain", "tongue": "no-such-tongue"}`, librarium.Orders{},
-			"no-such-tongue"},
-		{"scroll absent", `{"litany": "$DATA/absent"}`, librarium.Orders{}, "absent"},
-		{"scroll a hall", `{"litany": "$DATA"}`, librarium.Orders{}, "scroll"},
+		{"tongue of the step unknown", `{"designation": "incantation", "words": "true", "tongue": "no-such-tongue-of-the-machine"}`,
+			librarium.Orders{}, "no-such-tongue-of-the-machine"},
+		{"tongue of the settings unknown", `{"designation": "incantation", "words": "true"}`,
+			librarium.Orders{Tongue: "no-such-tongue-of-the-settings"}, "no-such-tongue-of-the-settings"},
+		{"tongue of a reversion unknown", `{"designation": "litany", "scroll": "$DATA/exe", "reversion": "true", "tongue": "no-such-tongue"}`,
+			librarium.Orders{}, "no-such-tongue"},
+		{"tongue of an unexecutable litany unknown", `{"designation": "litany", "scroll": "$DATA/plain", "tongue": "no-such-tongue"}`,
+			librarium.Orders{}, "no-such-tongue"},
+		{"scroll absent", `{"designation": "litany", "scroll": "$DATA/absent"}`, librarium.Orders{}, "absent"},
+		{"scroll a hall", `{"designation": "litany", "scroll": "$DATA"}`, librarium.Orders{}, "scroll"},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			fx := newFixture(t)
 			write(t, fx.data, "exe", "#!/bin/sh\ntouch spoken\n", 0o755)
 			write(t, fx.data, "plain", "touch spoken\n", 0o644)
-			r := fx.rite(t, `{"sanctum": "$DATA/util.kdl", "consecrate": true, "scripture": "x"}, `+c.liturgy)
+			r := fx.following(t, `{"name": "s", "designation": "sanctum", "vessel": "$DATA/util.kdl", "consecrate": true,
+			  "omens": {"*": "x"}}`, c.observance)
 			before := tree(t, fx.data)
 			hs := refused(t, r, Options{Aspect: "on", Orders: c.orders}, c.want)
 			sameTree(t, before, tree(t, fx.data))
-			if len(hs) != 1 || hs[0].Verse != 2 || hs[0].Line == 0 {
+			if len(hs) != 1 || hs[0].Verse != 0 || hs[0].Line == 0 {
 				t.Fatalf("heresies %+v", hs)
 			}
 			grimdark(t, hs[0].Message)
@@ -453,22 +493,28 @@ func TestPrepare_RefusesCommandsItCannotSpeak(t *testing.T) {
 	}
 }
 
+// TestPrepare_ExecutableLitanyNeedsNoTongue: an executable scroll without
+// reversion is recited by its shebang, whatever tongue is named.
 func TestPrepare_ExecutableLitanyNeedsNoTongue(t *testing.T) {
 	fx := newFixture(t)
 	write(t, fx.data, "exe", "#!/bin/sh\necho recited\n", 0o755)
-	r := fx.rite(t, `{"litany": "$DATA/exe", "tongue": "no-such-tongue"}`)
+	r := fx.spoken(t, "", `{"designation": "litany", "scroll": "$DATA/exe", "tongue": "no-such-tongue"}`)
 	out, _ := perform(t, r, Options{Aspect: "on"})
 	if out.Verdict != Triumph || out.Deeds[0].Output != "recited\n" {
 		t.Fatalf("outcome %+v", out)
 	}
 }
 
+// TestPerformContext_HaltSlaysTheSpokenStepAndRevertsTheRest: a halt
+// slays the observance being spoken and reverts it and the subject before
+// it; nothing after it is spoken.
 func TestPerformContext_HaltSlaysTheSpokenStepAndRevertsTheRest(t *testing.T) {
 	fx := newFixture(t)
 	util := write(t, fx.data, "util.kdl", "input {}\n", 0o644)
-	r := fx.rite(t, `{"sanctum": "$DATA/util.kdl", "scripture": "x"},
-	  {"incantation": "sleep 30 & echo $! > $DATA/child; wait", "reversion": "echo unspoken >> $DATA/log"},
-	  {"incantation": "echo never >> $DATA/log"}`)
+	r := fx.following(t, `{"name": "s", "designation": "sanctum", "vessel": "$DATA/util.kdl", "omens": {"*": "x"}}`,
+		`{"designation": "incantation", "words": "sleep 30 & echo $! > $DATA/child; wait",
+	  "reversion": "echo unspoken >> $DATA/log"}`,
+		`{"designation": "incantation", "words": "echo never >> $DATA/log"}`)
 	inv, err := Prepare(r, Options{Aspect: "on"})
 	if err != nil {
 		t.Fatal(err)
@@ -492,7 +538,7 @@ func TestPerformContext_HaltSlaysTheSpokenStepAndRevertsTheRest(t *testing.T) {
 	if elapsed := time.Since(start); elapsed > 10*time.Second {
 		t.Fatalf("the halt was not heeded for %v", elapsed)
 	}
-	if out.Verdict != Reverted || out.Fell == nil || out.Fell.Number != 2 {
+	if out.Verdict != Reverted || out.Fell == nil || out.Fell.Observance != "v1" {
 		t.Fatalf("outcome %+v", out)
 	}
 	grimdark(t, out.Fell.Heresy.Error())

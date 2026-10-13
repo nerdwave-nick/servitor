@@ -145,15 +145,12 @@ func Index() []Chapter {
 	return append(chapters, further)
 }
 
-// riteKeys are the keys a rite's scripture may hold beneath and beside its
-// steps' own keys, in the order of the codex, without aliases.
+// riteKeys are the keys a rite's scripture may hold, beneath and beside the
+// designations of its subjects, observances and verses, in the order of the
+// codex, without aliases.
 func riteKeys(kinds []string) []string {
-	keys := slices.Concat(librarium.RiteKeys, librarium.InscriptionKeys, librarium.AuspexKeys, librarium.TomeKeys)
-	for _, k := range librarium.Kinds {
-		keys = append(keys, librarium.StepKeys(k)...)
-	}
-	keys = slices.Concat(keys, librarium.MarkIIRiteKeys, librarium.SubjectKeys, librarium.SpiritAuspexKeys,
-		librarium.ObservanceKeys)
+	keys := slices.Concat(librarium.RiteKeys, librarium.InscriptionKeys, librarium.TomeKeys,
+		librarium.SubjectKeys, librarium.SpiritAuspexKeys, librarium.ObservanceKeys)
 	for _, d := range slices.Concat(librarium.SubjectDesignations, librarium.SpeechDesignations) {
 		keys = append(keys, librarium.DesignationKeys(d)...)
 	}

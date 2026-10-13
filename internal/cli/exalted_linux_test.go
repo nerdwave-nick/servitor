@@ -134,10 +134,12 @@ func TestInvoke_TheExaltedServitorRevertsWhenItsInvokerIsSlain(t *testing.T) {
 		t.Fatal(err)
 	}
 	marker, release := filepath.Join(e.state, "slain.spoken"), filepath.Join(e.state, "slain.release")
-	e.addRite("rites/slain.json", `{"pattern": "Mark I", "aspects": ["on"], "liturgy": [
-	  {"incantation": "echo performed >> $TARGET.exalted", "reversion": "echo reverted >> $TARGET.exalted",
-	   "exalted": true},
-	  {"incantation": "`+gate(marker, release)+`"}]}`)
+	e.addRite("rites/slain.json", `{"pattern": "Mark II", "aspects": ["on"], "subjects": [
+	  {"name": "warded", "designation": "transcription", "vessel": "$TARGET.slain", "omens": {"*": "x"},
+	   "introit": ["exalt"], "recessional": ["gate"]}], "observances": [
+	  {"name": "exalt", "designation": "incantation", "words": "echo performed >> $TARGET.exalted",
+	   "reversion": "echo reverted >> $TARGET.exalted", "exalted": true},
+	  {"name": "gate", "designation": "incantation", "words": "`+gate(marker, release)+`"}]}`)
 	e.sanctify(sanction.Store{Root: filepath.Join(dir, "store"), UID: os.Getuid()}, "slain", "slain")
 
 	cmd := e.servitorProcess("invoke", "slain", "on")
@@ -172,7 +174,7 @@ func TestInvoke_TheExaltedServitorRevertsWhenItsInvokerIsSlain(t *testing.T) {
 	}
 	got, _ := os.ReadFile(journal)
 	lines := strings.Split(strings.TrimSpace(string(got)), "\n")
-	if len(lines) != 4 || !strings.Contains(lines[1], "verse=1 sigil=") || !strings.Contains(lines[1], "deed=perform") ||
+	if len(lines) != 4 || !strings.Contains(lines[1], `observance="exalt" sigil=`) || !strings.Contains(lines[1], "deed=perform") ||
 		!strings.Contains(lines[2], "deed=revert verdict=reverted") || !strings.Contains(lines[3], "deed=fall verdict=reverted") {
 		t.Errorf("journaled:\n%s", got)
 	}

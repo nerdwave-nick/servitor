@@ -17,14 +17,16 @@
 # proof each through sudo, run0 and pkexec (through an agent of the session,
 # agent.py, for polkit 127 refuses pkexec's own agent), and invoked again into
 # the aspect it bears with no proof at all, for nothing exalted changes; a rite
-# laid in pattern Mark I with exalted verses, converted (test/vm/convert) and
-# given an exalted auspex only the root may read, invoked on, on again and off
-# through each intercessor with one proof each and its subjects set only when
-# they change; an exalted subject whose proof fails, everything restored with
-# no second proof; the invoker slain mid-invocation, the exalted servitor
-# reverting alone; sudo servitor census; the cogitator lending sudo its
-# terminal, and asking through the session's agent for run0 (with run0 -k) and
-# pkexec; abjure; and, as root, the journal and the store of sanctions.
+# laid in pattern Mark I with exalted verses, converted by the census that
+# first reads it and given an exalted auspex only the root may read, invoked
+# on, on again and off through each intercessor with one proof each and its
+# subjects set only when they change; an exalted subject whose proof fails,
+# everything restored with no second proof; the invoker slain mid-invocation,
+# the exalted servitor reverting alone; sudo servitor census; the cogitator
+# lending sudo its terminal, and asking through the session's agent for run0
+# (with run0 -k) and pkexec; abjure; the example split-lock as written in
+# pattern Mark I, converted, sanctioned anew and invoked on, on again, off and
+# off again; and, as root, the journal and the store of sanctions.
 #
 # SERVITOR_VM_DIR keeps the cloud image, the overlay and the guest's share
 # (default ${XDG_CACHE_HOME:-~/.cache}/servitor-vm); nothing is written

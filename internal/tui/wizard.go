@@ -8,9 +8,9 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/librarium"
 )
 
-// station is a stage of the consecration wizard: Rite → Liturgy → Seal,
-// or Rite → Subjects → Observances → Seal for a rite of aspects of pattern
-// Mark II.
+// station is a stage of the consecration wizard: Rite → Subjects →
+// Observances → Seal for a rite of aspects, or Rite → Liturgy → Seal for
+// an edict.
 type station int
 
 const (
@@ -28,7 +28,7 @@ const (
 	pageInscription          // one inscription, index
 	pageEssence              // the essential fields of the step
 	pageFurther              // the further rites of the step
-	pageAspect               // the aspect-varying fields of the step for aspect index, or its words spoken once
+	pageAspect               // the words of an edict's verse or an observance, spoken once
 	pageOmens                // the omens of the subject, a row for each aspect
 	pageAuspex               // the auspex of a machine-spirit: its scan, a trial per omen, its patience
 	pageEnact                // the enact words of a machine-spirit, a row for each omen
@@ -37,7 +37,7 @@ const (
 )
 
 // wizard is the guided, full-screen flow for consecrating, amending and
-// replicating rites of every form, of pattern Mark I and Mark II.
+// replicating rites of every form of pattern Mark II.
 type wizard struct {
 	d        riteDraft
 	station  station
@@ -148,10 +148,7 @@ func (w *wizard) back(m *model) (screen, tea.Cmd) {
 	case pageFurther:
 		return w, w.essencePage(m)
 	}
-	switch {
-	case w.index > 0:
-		return w, w.aspectPage(m, w.index-1)
-	case w.work.further && hasFurther(w.work.kind):
+	if w.work.further && hasFurther(w.work.kind) {
 		return w, w.furtherPage(m)
 	}
 	return w, w.essencePage(m)
@@ -180,21 +177,16 @@ func (w *wizard) onward(m *model) tea.Cmd {
 	switch w.page {
 	case pageEssence:
 		w.keepEssence()
-		switch {
-		case w.work.kind == librarium.KindVoxCast:
-			return w.finishStep()
-		case w.work.further && hasFurther(w.work.kind):
+		if w.work.further && hasFurther(w.work.kind) {
 			return w.furtherPage(m)
 		}
-		return w.wordsPage(m)
+		return w.oncePage(m)
 	case pageFurther:
 		w.keepFurther()
-		return w.wordsPage(m)
+		return w.oncePage(m)
 	}
-	if w.keepAspect() {
-		return w.finishStep()
-	}
-	return w.aspectPage(m, w.index+1)
+	w.keepOnce()
+	return w.finishStep()
 }
 
 // afterInscription turns to the inscription after i, or to the liturgy.
@@ -210,10 +202,6 @@ func (w *wizard) afterInscription(m *model, i int) tea.Cmd {
 	w.cursor = max(0, min(w.cursor, n-1))
 	return nil
 }
-
-// wordsPage turns to what the step holds per aspect: the pages of its
-// aspects.
-func (w *wizard) wordsPage(m *model) tea.Cmd { return w.aspectPage(m, 0) }
 
 // keepFurther keeps the further rites of the step.
 func (w *wizard) keepFurther() {

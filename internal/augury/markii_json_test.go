@@ -41,7 +41,7 @@ func TestAugurMarkII_MarshalsOmensBySubject(t *testing.T) {
 }
 
 func TestAugurMarkII_MarshalsOneAspectAndTaintBySubject(t *testing.T) {
-	a := Augury{Rite: "gaming", MarkII: true, Standing: Tainted, Aspect: "on", Fitting: []string{"on"},
+	a := Augury{Rite: "gaming", Standing: Tainted, Aspect: "on", Fitting: []string{"on"},
 		Omens: []Omen{{Subject: "niri", Designation: "sanctum", Aspects: []string{"on"}, Aspect: "on"},
 			{Subject: "smt", Designation: "machine-spirit", Read: "off", Aspects: []string{"on"}, Aspect: "on"}},
 		Taint: []Taint{{Subject: "niri"}}}
@@ -53,7 +53,7 @@ func TestAugurMarkII_MarshalsOneAspectAndTaintBySubject(t *testing.T) {
 	if got := marshal(t, a); got != want {
 		t.Errorf("got  %s\nwant %s", got, want)
 	}
-	a = Augury{Rite: "gaming", MarkII: true, Standing: Corrupted}
+	a = Augury{Rite: "gaming", Standing: Corrupted}
 	if got := marshal(t, a); got != compact(t, `{"rite": "gaming", "edict": false, "aspect": "", "standing": "corrupted",
 	  "sanction": "", "auspex": "", "desecrated": false, "inscriptions": {}, "canon": [], "last_rite": null,
 	  "fitting": [], "omens": [], "taint": []}`) {

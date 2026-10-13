@@ -113,7 +113,7 @@ Exalted subjects await the master's proof before the header, the proof
 asked in the intercessor's own words:
 
   ❯ servitor invoke split-lock on
-  ⋯ The exalted verses of split-lock await the master's proof: sudo asks it, under the sigil 4f0c2a9e1b7d.
+  ⋯ The exalted deeds of split-lock await the master's proof: sudo asks it, under the sigil 4f0c2a9e1b7d.
   servitor: authenticate to perform split-lock (sigil 4f0c2a9e1b7d):
   +++ split-lock · off → on +++
     ✔ subject penance · machine-spirit
@@ -140,7 +140,7 @@ After a performance the servitor writes the rite's data-slate — with the
 omens it knew at the end — and adds one line to the chronicle, naming the
 subjects it changed, whatever the verdict. An invocation the pre-flight
 forbade, or one merely foreseen, is neither chronicled nor recorded on the
-data-slate, for nothing was performed. Scripture of the elder pattern Mark I
+data-slate, for nothing was performed. Scripture of pattern Mark I
 is converted before it is invoked (see conversion).
 
 The servitor's death-mark tells how the invocation ended, with or without

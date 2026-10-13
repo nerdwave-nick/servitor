@@ -10,7 +10,7 @@ type beholder interface {
 	witnessed() (index int, last Reading, begun bool)
 }
 
-// known are the omens the subjects of a state rite are known to show at
+// known are the omens the subjects of a rite of aspects are known to show at
 // the end of its performance, by subject: those whose last deed was a
 // reading that showed one declared omen. That is the reading before for a
 // subject unchanged or never reached, the proof of a subject set, or the

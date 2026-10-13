@@ -31,23 +31,24 @@ type harness struct {
 	hasty   bool // the auspexes are left to settle when settle is called
 }
 
-// markRite is a rite of pattern Mark I: a progress vox-cast, a sanctum, an
-// incantation that utters words and leaves the aspect for the auspex, and a
-// success vox-cast. $DATA is the place of its vessels.
+// markRite is a rite of pattern Mark II: a sanctum subject, a machine-spirit
+// read by its scan whose enact words utter words and leave its omen for the
+// scan, and the vox-casts of progress and success. $DATA is the place of its
+// vessels.
 const markRite = `{
-  "pattern": "Mark I",
+  "pattern": "Mark II",
   "purpose": "Hide the cursor",
   "aspects": ["on", "off"],
   "inscriptions": {
     "reason": {"purpose": "why"},
     "mode": {"mandatory": true, "decrees": {"on": "hide", "off": "show"}}
   },
-  "auspex": "cat $DATA/mode",
-  "liturgy": [
-    {"vox-cast": "progress"},
-    {"sanctum": "$DATA/x.kdl", "ward": "cursor", "scripture": {"on": "a\nb", "off": ""}},
-    {"incantation": "echo chanting {{aspect}}; echo {{aspect}} > $DATA/mode", "reversion": "rm -f $DATA/mode"},
-    {"vox-cast": "success"}
+  "vox-cast": ["progress", "success"],
+  "subjects": [
+    {"name": "cursor", "designation": "sanctum", "vessel": "$DATA/x.kdl", "ward": "cursor",
+     "omens": {"on": "a\nb", "off": ""}},
+    {"name": "chant", "designation": "machine-spirit", "auspex": {"scan": "cat $DATA/mode"},
+     "enact": {"*": "echo chanting {{aspect}}; echo {{omen}} > $DATA/mode"}}
   ]
 }`
 
@@ -67,18 +68,18 @@ func newHarness(t *testing.T) *harness {
 	h.writeRite("mouse", markRite)
 	h.writeData("x.kdl", "input {}\n")
 	t.Cleanup(func() { h.m.forsake() }) // no auspex outlives its test
-	h.renew(librarium.Runes{}, false)
+	h.renew(librarium.Runes{})
 	return h
 }
 
 // renew awakens the cogitator anew upon the harness's Librarium, read with
-// runes, converting when convert, its vigil of the last one forsaken.
-func (h *harness) renew(runes librarium.Runes, convert bool) {
+// runes, its vigil of the last one forsaken.
+func (h *harness) renew(runes librarium.Runes) {
 	h.t.Helper()
 	if h.m != nil {
 		h.m.forsake()
 	}
-	h.m = newModel(h.dir, runes, convert)
+	h.m = newModel(h.dir, runes)
 	h.m.send = func(msg tea.Msg) {
 		switch msg.(type) {
 		case settledMsg, attendedMsg:
@@ -285,32 +286,34 @@ func (h *harness) desktopSilent() {
 
 func TestOverview_ShowsRitesAndDetails(t *testing.T) {
 	h := newHarness(t)
-	h.writeRite("broken", `{"pattern": "Mark I", "aspects": [}`)
+	h.writeRite("broken", `{"pattern": "Mark II", "aspects": [}`)
 	h.keys("r")
 	h.mustShow("SERVITOR", "COGITATOR", "Rites (2)", "mouse", "dormant", "heretical", "Thought for the day")
 	h.keys("j")
 	h.mustShow("Hide the cursor", "ASPECTS", "◇ on", "◇ off", "STANDING", "dormant",
-		"LAST RITE", "never invoked", "INSCRIPTIONS", "mode=—", "reason=—", "LITURGY",
-		"· 1 ✉ progress", "· 2 § "+shortPath(filepath.Join(h.dataDir, "x.kdl")),
-		"· 3 » echo chanting {{aspect}}", "· 4 ✉ success", "AUSPEX", "· silent",
-		"RECORDED IN", "rites/mouse.json")
+		"LAST RITE", "never invoked", "INSCRIPTIONS", "mode=—", "reason=—", "SUBJECTS",
+		"· § cursor ", "x.kdl", "· ⚙ chant · mute",
+		"VOX-CAST", "progress · success", "RECORDED IN", "rites/mouse.json")
 	h.keys("k")
 	h.mustShow("tainted by heresy", "1:", "break the holy form")
 	h.keys("enter")
 	h.mustShow("This rite is heretical")
 }
 
-func TestDetail_ShowsTheOmensOfEveryStep(t *testing.T) {
+// TestDetail_ShowsTheOmensOfEverySubject: once invoked, every subject is
+// marked as fitting the aspect; when other hands rewrite the sanctum's
+// marker, the omens no longer agree and the rite stands corrupted.
+func TestDetail_ShowsTheOmensOfEverySubject(t *testing.T) {
 	h := newHarness(t)
 	h.keys("space")
 	h.await()
 	h.mustShow("◆ on", "◇ off", "performed", "LAST RITE", "✔ triumph", "mode=hide",
-		"✔ 2 § ", "· 3 » echo chanting {{aspect}}", "AUSPEX", "✔ on")
+		"✔ § cursor ", `✔ ⚙ chant "on"`)
 
 	// other hands rewrite the sanctum's marker: the omens disagree
 	h.writeData("x.kdl", strings.Replace(h.readData("x.kdl"), "aspect|on", "aspect|off", 1))
 	h.keys("r")
-	h.mustShow("corrupted", "✖ 2 § ", "(off)", "✖ on")
+	h.mustShow("corrupted", "✖ § cursor ", `✖ ⚙ chant "on" (on) · breaks the agreement`)
 }
 
 func TestOverview_Cycle(t *testing.T) {
@@ -353,7 +356,7 @@ func TestOverview_TKeyIsSilent(t *testing.T) {
 
 func TestDelete_StrikeAndPurge(t *testing.T) {
 	h := newHarness(t)
-	h.writeRite("broken", `{"pattern": "Mark I", "aspects": [}`)
+	h.writeRite("broken", `{"pattern": "Mark II", "aspects": [}`)
 	h.writeData("whole.conf", "kept\n")
 	h.keys("r", "j", "space") // invoke mouse into "on"
 	h.await()

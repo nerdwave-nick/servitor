@@ -26,8 +26,9 @@ func TestCensus_AugursInParallel(t *testing.T) {
 			// auspexes awake beside it.
 			auspex := fmt.Sprintf(`touch %[1]s/$$; ls %[1]s | wc -l >> %[2]s; sleep 1; rm %[1]s/$$; echo on`, awake, counted)
 			for i := range n {
-				e.addRite(fmt.Sprintf("rites/vigil%02d.json", i), `{"pattern": "Mark I", "aspects": ["on", "off"],
-  "auspex": {"rite": "`+auspex+`", "patience": "10s"}, "liturgy": []}`)
+				e.addRite(fmt.Sprintf("rites/vigil%02d.json", i), `{"pattern": "Mark II", "aspects": ["on", "off"],
+  "subjects": [{"name": "spirit", "designation": "machine-spirit", "enact": {"*": "true"},
+    "auspex": {"scan": "`+auspex+`", "patience": "10s"}}]}`)
 			}
 
 			start := time.Now()

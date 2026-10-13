@@ -55,7 +55,7 @@ func (s *session) readSubjects(names []string) error {
 func (s *session) readable(names []string) ([]sanction.Verse, error) {
 	switch {
 	case !s.sn.State():
-		return nil, errors.New("a read is heard only for a state rite of pattern Mark II")
+		return nil, errors.New("a read is heard only for a rite of aspects, never for an edict")
 	case s.beheld:
 		return nil, errors.New("the subjects are read once, and they were read already")
 	case s.fallen || s.reverting || len(s.performed) > 0 || s.cursor != (position{place: -1, phase: afterSubject}):

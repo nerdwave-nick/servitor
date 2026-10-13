@@ -13,12 +13,12 @@ type Foresight struct {
 	Vessel *VesselChange // sanctums and transcriptions
 	Tether *TetherChange // tethers
 	Speech *Speech       // incantations and litanies; a machine-spirit's enact words
-	// Plan tells, for a subject of a state rite of pattern Mark II, the omen
+	// Plan tells, for a subject of a rite of aspects, the omen
 	// it was read to show and the omen commanded; nil for a step.
 	Plan *SubjectPlan
 }
 
-// SubjectPlan is what an invocation of a state rite would do with one
+// SubjectPlan is what an invocation of a rite of aspects would do with one
 // subject. Only a changing subject bears the change or the words that set
 // it.
 type SubjectPlan struct {

@@ -2,37 +2,12 @@ package sanction
 
 import (
 	"math/rand/v2"
-	"os"
-	"path/filepath"
 	"slices"
 	"strings"
 	"testing"
 
 	"github.com/nerdwave-nick/servitor/internal/librarium"
 )
-
-// TestShow_TheGoldenUnit: the unit of splitLock is shown to its master as
-// recorded: every plan under its sigil, every exalted verse with every field
-// of its kind, and every scripture as words.
-func TestShow_TheGoldenUnit(t *testing.T) {
-	u := build(t, splitLock, splitLockFiles())
-	got := strings.Join(Show(u), "\n") + "\n"
-	golden := filepath.Join("testdata", "split-lock.shown")
-	if *update {
-		must(t, os.WriteFile(golden, []byte(got), 0o644))
-	}
-	want, err := os.ReadFile(golden)
-	must(t, err)
-	if got != string(want) {
-		t.Errorf("shown:\n%s\nwant:\n%s", got, want)
-	}
-	for _, line := range []string{"sigil " + u.Sigil(), "  ✠ aspect \"on\" · sigil " + mustSigil(t, u, "on"),
-		"      incantation: sysctl -wq kernel.split_lock_mitigate=0", "        │ level=3"} {
-		if !slices.Contains(Show(u), line) {
-			t.Errorf("no line %q in\n%s", line, got)
-		}
-	}
-}
 
 func mustSigil(t *testing.T, u *Unit, aspect string) string {
 	t.Helper()
@@ -47,8 +22,8 @@ func mustSigil(t *testing.T, u *Unit, aspect string) string {
 // its size and SHA-256, never written out.
 func TestShow_ScriptureThatIsNoWords(t *testing.T) {
 	blob := []byte{0, 1, 2, 0xff}
-	u := &Unit{Pattern: Pattern, UID: 1000, Rite: "blob", Edict: true, Aspects: []Plan{{Liturgy: []Verse{
-		{Verse: 1, Kind: librarium.KindTranscription, Target: "/etc/blob", Scripture: blob}}}}}
+	u := &Unit{Pattern: Pattern, UID: 1000, Rite: "blob", Aspects: []Plan{{Aspect: "on", Subjects: []Verse{
+		{Subject: "blob", Kind: librarium.KindTranscription, Target: "/etc/blob", Scripture: blob}}}}}
 	shown := strings.Join(Show(u), "\n")
 	if want := "4 bytes that are no words · sha256 " + digest(blob); !strings.Contains(shown, want) {
 		t.Errorf("shown:\n%s\nwant a line holding %q", shown, want)
@@ -63,9 +38,8 @@ func TestShow_ScriptureThatIsNoWords(t *testing.T) {
 // changed, amid a little of what stayed; a unit unchanged differs in
 // nothing.
 func TestDifference_ShowsWhatChanged(t *testing.T) {
-	before := build(t, splitLock, splitLockFiles())
-	after := build(t, strings.Replace(splitLock, "kernel.split_lock_mitigate=0\"", "kernel.split_lock_mitigate=2\"", 1),
-		splitLockFiles())
+	before := buildGaming(t, gaming, gamingFiles())
+	after := buildGaming(t, strings.Replace(gaming, `"logger war"`, `"logger wars"`, 1), gamingFiles())
 	diff := Difference(before, after)
 	var lost, gained []string
 	for _, line := range diff {
@@ -79,9 +53,9 @@ func TestDifference_ShowsWhatChanged(t *testing.T) {
 		}
 	}
 	wantLost := []string{"- sigil " + before.Sigil(), "-   ✠ aspect \"on\" · sigil " + mustSigil(t, before, "on"),
-		"-       incantation: sysctl -wq kernel.split_lock_mitigate=0"}
+		"-       words: logger war"}
 	wantGained := []string{"+ sigil " + after.Sigil(), "+   ✠ aspect \"on\" · sigil " + mustSigil(t, after, "on"),
-		"+       incantation: sysctl -wq kernel.split_lock_mitigate=2"}
+		"+       words: logger wars"}
 	if !slices.Equal(lost, wantLost) || !slices.Equal(gained, wantGained) {
 		t.Errorf("lost %q\ngained %q\nin\n%s", lost, gained, strings.Join(diff, "\n"))
 	}

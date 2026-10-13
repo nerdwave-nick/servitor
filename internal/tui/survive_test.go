@@ -10,15 +10,20 @@ import (
 	"time"
 )
 
-// lingeringRite halts at a gate between two deeds until $DATA/release
-// exists, so that a test may strike at it mid-liturgy.
+// lingeringRite halts at a gate between two subjects until $DATA/release
+// exists, so that a test may strike at it mid-invocation: the introit of
+// its second subject.
 const lingeringRite = `{
-  "pattern": "Mark I",
+  "pattern": "Mark II",
   "aspects": ["on", "off"],
-  "liturgy": [
-    {"sanctum": "$DATA/x.kdl", "ward": "lingering", "scripture": "x"},
-    {"incantation": "touch $DATA/spoken; while [ ! -e $DATA/release ]; do sleep 0.01; done"},
-    {"transcription": "$DATA/after", "scripture": "after"}
+  "subjects": [
+    {"name": "x", "designation": "sanctum", "vessel": "$DATA/x.kdl", "ward": "lingering", "omens": {"*": "x"}},
+    {"name": "after", "designation": "transcription", "vessel": "$DATA/after", "omens": {"*": "after"},
+     "introit": ["gate"]}
+  ],
+  "observances": [
+    {"name": "gate", "designation": "incantation",
+     "words": "touch $DATA/spoken; while [ ! -e $DATA/release ]; do sleep 0.01; done"}
   ]
 }`
 

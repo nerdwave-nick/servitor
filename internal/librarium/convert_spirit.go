@@ -28,13 +28,13 @@ func (c *converting) spirits() {
 		m.Tongue, m.Patience, m.Relics, m.Exalted = u.Tongue, u.Patience, u.Relics, u.Exalted
 		if !u.Reversion.IsZero() {
 			c.note(fmt.Sprintf("/subjects/%d", len(c.to.Subjects)),
-				fmt.Sprintf("pattern %q spoke the reversion %s should a later verse fall;", Pattern, quoteMap(u.Reversion)),
+				fmt.Sprintf("pattern %q spoke the reversion %s should a later verse fall;", PatternMarkI, quoteMap(u.Reversion)),
 				"it is struck, for a machine-spirit is restored by enacting the omen it showed before")
 			c.changes = append(c.changes, fmt.Sprintf("the reversion of verse %d is struck", c.from.verse(i)))
 		}
 		c.to.Subjects = append(c.to.Subjects, Subject{Name: c.nameOf(i), Matter: m})
 	}
-	a := c.from.Auspex
+	a := c.from.auspex
 	switch {
 	case a == nil:
 	case len(c.to.Subjects) == 1:
@@ -67,7 +67,7 @@ func (c *converting) recited(i, k int) AspectMap[string] {
 		}
 	}
 	c.note(fmt.Sprintf("/subjects/%d", k), fmt.Sprintf("pattern %q recited the scroll %s with its offerings;",
-		Pattern, quoteMap(s.Scroll)), "its enact words now call that scroll, spoken in the hall of the rite")
+		PatternMarkI, quoteMap(s.Scroll)), "its enact words now call that scroll, spoken in the hall of the rite")
 	c.changes = append(c.changes, fmt.Sprintf("the litany of verse %d is spoken as enact words", c.from.verse(i)))
 	return m
 }

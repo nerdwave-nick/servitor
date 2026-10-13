@@ -14,13 +14,8 @@ type Converted struct {
 	Laments []error  // why a scripture stays of pattern Mark I on disk
 }
 
-// OpenConverting loads the Librarium at dir with every pure scripture of
-// pattern Mark I converted in memory (librarium.LoadConverting).
-func OpenConverting(dir string, runes librarium.Runes) *Servitor {
-	return &Servitor{Librarium: librarium.LoadConverting(dir), Runes: runes}
-}
-
-// Convert writes every conversion of the Librarium read converting: the
+// Convert writes every conversion of the Librarium (Open reads it
+// converted in memory): the
 // settings, then each rite under its dominion. A rite whose dominion
 // another holds is not awaited: it stays converted in memory alone, to be
 // written at a later reading. Each conversion written is told once, and
@@ -64,7 +59,7 @@ func (s *Servitor) holdForConversion(c *librarium.Conversion) (*dominion.Dominio
 	held, _, err := dominion.Try([]string{dominion.Rite(s.env(), c.Rite)})
 	if err != nil {
 		return nil, fmt.Errorf("the scripture %s stays of pattern %q, for the dominion over the rite %q cannot be "+
-			"held: %v", c.Path, librarium.Pattern, c.Rite, err)
+			"held: %v", c.Path, librarium.PatternMarkI, c.Rite, err)
 	}
 	return held, nil
 }

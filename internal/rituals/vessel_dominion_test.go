@@ -14,25 +14,27 @@ import (
 )
 
 // keeper is a rite that keeps a sanctum in the vessel %s (consecrating it
-// when %t), then tells its beginning and waits at $DATA/gate; invoked into
-// "fall" it falls there and reverts.
-const keeper = `{"pattern": "Mark I", "aspects": ["on", "fall"], "liturgy": [
-  {"sanctum": "%s", "consecrate": %t, "scripture": {"*": "%s {{aspect}}"}},
-  {"incantation": "touch $DATA/began-%s; while [ ! -e $DATA/gate ]; do sleep 0.01; done; [ {{aspect}} != fall ]"}
-]}`
+// when %t), then, in an observance, tells its beginning and waits at
+// $DATA/gate; invoked into "fall" the observance falls there and the rite
+// reverts.
+const keeper = `{"pattern": "Mark II", "aspects": ["on", "fall"], "subjects": [
+  {"name": "kept", "designation": "sanctum", "vessel": "%s", "consecrate": %t, "omens": {"*": "%s {{aspect}}"},
+   "recessional": ["wait"]}],
+  "observances": [{"name": "wait", "designation": "incantation",
+   "words": "touch $DATA/began-%s; while [ ! -e $DATA/gate ]; do sleep 0.01; done; [ {{aspect}} != fall ]"}]}`
 
 // sharer keeps a sanctum in the vessel %s (consecrating it when %t) and is
 // done.
-const sharer = `{"pattern": "Mark I", "aspects": ["on"], "liturgy": [
-  {"sanctum": "%s", "consecrate": %t, "scripture": {"*": "%s {{aspect}}"}}
-]}`
+const sharer = `{"pattern": "Mark II", "aspects": ["on"], "subjects": [
+  {"name": "shared", "designation": "sanctum", "vessel": "%s", "consecrate": %t, "omens": {"*": "%s {{aspect}}"}}]}`
 
-// binder tethers $DATA/current to $DATA/%s, then tells its beginning and
-// waits at $DATA/gate.
-const binder = `{"pattern": "Mark I", "aspects": ["on"], "liturgy": [
-  {"tether": "$DATA/current", "anchor": {"*": "$DATA/%s"}},
-  {"incantation": "touch $DATA/began-%s; while [ ! -e $DATA/gate ]; do sleep 0.01; done"}
-]}`
+// binder tethers $DATA/current to $DATA/%s, then, in an observance, tells
+// its beginning and waits at $DATA/gate.
+const binder = `{"pattern": "Mark II", "aspects": ["on"], "subjects": [
+  {"name": "current", "designation": "tether", "tether": "$DATA/current", "omens": {"*": "$DATA/%s"},
+   "recessional": ["wait"]}],
+  "observances": [{"name": "wait", "designation": "incantation",
+   "words": "touch $DATA/began-%s; while [ ! -e $DATA/gate ]; do sleep 0.01; done"}]}`
 
 func (fx *fixture) tether(rel, anchor string) {
 	fx.t.Helper()
@@ -122,7 +124,7 @@ func TestInvoke_RitesSharingAVesselKeepEachOthersSanctums(t *testing.T) {
 }
 
 // TestInvoke_RitesSharingATetheredNameAwaitOneAnother: the tethered name is
-// a place the liturgy writes, so its dominion is awaited too.
+// a place the rite writes, so its dominion is awaited too.
 func TestInvoke_RitesSharingATetheredNameAwaitOneAnother(t *testing.T) {
 	fx := newFixture(t)
 	fx.rite("alpha", fmt.Sprintf(binder, "a", "alpha"))
@@ -155,8 +157,9 @@ func TestInvoke_RitesOfDifferentVesselsOverlap(t *testing.T) {
 	}{
 		{"another vessel", fmt.Sprintf(sharer, "$DATA/other.kdl", false, "beta"),
 			func(fx *fixture) { fx.vessel("other.kdl", "") }},
-		{"another tethered name", `{"pattern": "Mark I", "aspects": ["on"], "liturgy": [
-			{"tether": "$DATA/elsewhere", "anchor": {"*": "$DATA/shared.kdl"}}]}`, func(*fixture) {}},
+		{"another tethered name", `{"pattern": "Mark II", "aspects": ["on"], "subjects": [
+			{"name": "elsewhere", "designation": "tether", "tether": "$DATA/elsewhere", "omens": {"*": "$DATA/shared.kdl"}}]}`,
+			func(*fixture) {}},
 	}
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
@@ -182,9 +185,9 @@ func TestInvoke_RitesOfDifferentVesselsOverlap(t *testing.T) {
 }
 
 // crossing keeps sanctums in two vessels, in the order written.
-const crossing = `{"pattern": "Mark I", "aspects": ["on", "off"], "liturgy": [
-  {"sanctum": "$DATA/%s.kdl", "scripture": {"*": "%s {{aspect}}"}},
-  {"sanctum": "$DATA/%s.kdl", "scripture": {"*": "%s {{aspect}}"}}
+const crossing = `{"pattern": "Mark II", "aspects": ["on", "off"], "subjects": [
+  {"name": "first", "designation": "sanctum", "vessel": "$DATA/%s.kdl", "omens": {"*": "%s {{aspect}}"}},
+  {"name": "second", "designation": "sanctum", "vessel": "$DATA/%s.kdl", "omens": {"*": "%s {{aspect}}"}}
 ]}`
 
 // TestInvoke_DominionOverVesselsIsSeizedInOneOrder: a rite writing its
@@ -241,8 +244,9 @@ func TestInvoke_RitesWritingVesselsInOpposingOrdersNeverDeadlock(t *testing.T) {
 
 // drifting keeps its sanctum in a vessel named by the former aspect, which
 // only the augury reveals.
-const drifting = `{"pattern": "Mark I", "aspects": ["on", "off"], "liturgy": [
-  {"sanctum": "$DATA/from-{{former}}.kdl", "consecrate": true, "scripture": {"*": "drift {{aspect}}"}}
+const drifting = `{"pattern": "Mark II", "aspects": ["on", "off"], "subjects": [
+  {"name": "drift", "designation": "sanctum", "vessel": "$DATA/from-{{former}}.kdl", "consecrate": true,
+   "omens": {"*": "drift {{aspect}}"}}
 ]}`
 
 // TestInvoke_AVesselRevealedByTheAuguryIsAwaitedToo: a vessel whose path

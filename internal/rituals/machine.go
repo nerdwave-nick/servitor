@@ -16,31 +16,19 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/sanctum"
 )
 
-// machine examines what the rite's steps act upon: vessels, anchors and
-// tongues.
+// machine examines what the rite acts upon: the vessels, anchors and
+// tongues of its subjects and observances, or the scrolls and tongues of
+// an edict's verses.
 func (e *examiner) machine() {
-	for i, step := range e.rite.Liturgy {
+	for i, step := range e.rite.Liturgy { // an edict's alone
 		switch st := step.(type) {
-		case *librarium.Sanctum:
-			e.vessel(field(i, "sanctum"), "the sanctum", st)
-		case *librarium.Tether:
-			e.anchors(field(i, "anchor"), "", st)
 		case *librarium.Incantation:
 			e.tongue(i, st.Tongue)
 		case *librarium.Litany:
-			if e.rite.Edict {
-				e.scroll(i, st)
-			}
+			e.scroll(i, st)
 			if e.litanyNeedsTongue(st) {
 				e.tongue(i, st.Tongue)
 			}
-		}
-	}
-	if a := e.rite.Auspex; a != nil {
-		if t := e.tongueOf(""); !speakable(t) {
-			e.note(librarium.Impurity, "/auspex", "the tongue %q of the auspex is spoken nowhere on this "+
-				"machine: no program of that name lies along its PATH, so the auspex could never be heard and "+
-				"the rite loses its omen — name another \"tongue\" for the rite or the settings", t)
 		}
 	}
 	e.subjectsMachine()
@@ -190,10 +178,7 @@ func (e *examiner) scroll(i int, l *librarium.Litany) {
 	if !ok {
 		return
 	}
-	ptr := field(i, "litany")
-	if e.rite.MarkII {
-		ptr = field(i, "scroll") // an entry of the designation form names its scroll so
-	}
+	ptr := field(i, "scroll")
 	p, ok := e.path("", text)
 	if !ok || !e.once(ptr+" "+p) {
 		return
@@ -210,7 +195,7 @@ func speakable(tongue string) bool {
 	return err == nil
 }
 
-// omens reads the rite's augury, auspex and all, and denounces its taint
+// omens reads the rite's augury, auspexes and all, and denounces its taint
 // and its desecration.
 func (e *examiner) omens(s *Servitor) {
 	a, lament := augury.Augur(e.rite, augury.Options{Orders: e.orders, Env: s.env()})
@@ -220,15 +205,9 @@ func (e *examiner) omens(s *Servitor) {
 			Position: librarium.Position{Line: 1, Column: 1}, Message: lament.Error()})
 	}
 	for _, t := range a.Taint {
-		if t.Subject != "" {
-			e.note(librarium.Impurity, subjectField(e.rite, t.Subject), "the sanctum subject %q in the vessel %s is "+
-				"tainted: other hands altered its scripture, which no longer matches the aspect its marker records "+
-				"— the next invocation will overwrite their work", t.Subject, e.rite.ResolvePath(t.Target))
-			continue
-		}
-		e.note(librarium.Impurity, field(t.Number-1, "sanctum"), "the sanctum of verse %d in the vessel %s is "+
+		e.note(librarium.Impurity, subjectField(e.rite, t.Subject), "the sanctum subject %q in the vessel %s is "+
 			"tainted: other hands altered its scripture, which no longer matches the aspect its marker records "+
-			"— the next invocation will overwrite their work", t.Number, e.rite.ResolvePath(t.Target))
+			"— the next invocation will overwrite their work", t.Subject, e.rite.ResolvePath(t.Vessel))
 	}
 	if a.Desecrated {
 		e.note(librarium.Impurity, "/aspects", "the rite is desecrated: its omens agree that it stands in the "+

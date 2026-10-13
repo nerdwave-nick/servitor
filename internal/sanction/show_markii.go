@@ -9,7 +9,7 @@ import (
 )
 
 // subject adds the exalted subject v of a state rite: a sanctum,
-// transcription or tether with the fields of its verse of Mark I under the
+// transcription or tether with the fields of its kind under the
 // keys of its designation, a machine-spirit with the omen of the plan and
 // the enact words of every omen it declares.
 func (s *shower) subject(v Verse) {

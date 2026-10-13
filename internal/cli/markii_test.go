@@ -27,8 +27,7 @@ const captureIIJSON = `{"pattern": "Mark II", "edict": true, "vox-cast": ["succe
   "liturgy": [{"designation": "incantation", "words": "echo proclaimed >> $TARGET.edict"}]}`
 
 // TestMarkII_IsReadByEveryRitualYetNeverInvokedUnsanctioned: rites of
-// pattern Mark II stand in the Librarium beside those of Mark I; every
-// reading ritual heeds them. Invoking a rite of aspects of that pattern
+// pattern Mark II stand in the Librarium; every reading ritual heeds them. Invoking a rite of aspects of that pattern
 // whose exalted subject bears a privileged auspex is refused before
 // anything is read or touched while it stands unsanctioned, naming the
 // ritual that sanctions it; foreseeing it never speaks the privileged
@@ -80,5 +79,23 @@ func TestMarkII_IsReadByEveryRitualYetNeverInvokedUnsanctioned(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(e.state, "servitor", "data-slates")); err == nil {
 		t.Error("a refused invocation kept a data-slate")
+	}
+}
+
+// TestMarkII_TheHelpOfARiteNamesItsSubjectsAndObservances: the help of a
+// rite of aspects names each subject by its designation and what it reads
+// or sets, then each observance by its words, the exalted marked ✠.
+func TestMarkII_TheHelpOfARiteNamesItsSubjectsAndObservances(t *testing.T) {
+	e := newEnv(t)
+	e.addRite("rites/gaming.json", gamingIIJSON)
+	help := e.mustRun("invoke", "gaming", "--help")
+	want := "Subjects:\n" +
+		"  smt · machine-spirit cat " + e.target + ".smt\n" +
+		"  util · sanctum " + e.target + "\n" +
+		"  nft · machine-spirit ✠ echo on > " + e.target + ".nft; echo on\n" +
+		"Observances:\n" +
+		"  herald · incantation ✠ echo heard >> " + e.target + ".herald\n"
+	if !strings.Contains(help, want) {
+		t.Errorf("the rite's help lacks\n%s\nin\n%s", want, help)
 	}
 }

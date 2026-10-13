@@ -7,8 +7,8 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/librarium"
 )
 
-// The subjects and observances of a state rite of pattern Mark II are
-// examined as the verses of Mark I are: their tomes, the relics, scrolls
+// The subjects and observances of a rite of aspects are
+// examined as the verses of an edict are: their tomes, the relics, scrolls
 // and tongues of their exalted speech, and the machine they act upon. A
 // rite free of heresy holds every subject and observance at its written
 // place, so each is found by its index.

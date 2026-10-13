@@ -45,10 +45,10 @@ func (c *Conversion) Copy() string {
 func (c *Conversion) Tidings() string {
 	if c.Rite == "" {
 		return fmt.Sprintf("the settings are converted to pattern %q, only their \"pattern\" rewritten; their "+
-			"scripture of pattern %q is kept at %s", PatternMarkII, Pattern, c.Copy())
+			"scripture of pattern %q is kept at %s", Pattern, PatternMarkI, c.Copy())
 	}
 	line := fmt.Sprintf("the rite %q is converted to pattern %q; its scripture of pattern %q is kept at %s",
-		c.Rite, PatternMarkII, Pattern, c.Copy())
+		c.Rite, Pattern, PatternMarkI, c.Copy())
 	if len(c.Changes) > 0 {
 		line += "; changed in meaning, as the comments of its scripture tell: " + strings.Join(c.Changes, ", ")
 	}
@@ -72,10 +72,9 @@ func convertSettings(s *Settings, found Findings, data []byte) (*Settings, Findi
 		src := &source{path: s.Path, data: data}
 		return s, append(found, Finding{Severity: Heresy, Scripture: s.Path, Position: src.position(start),
 			Message: fmt.Sprintf("the settings of pattern %q are not converted to pattern %q, which this servitor "+
-				"reads in their stead; they are converted once their heresies are purged", Pattern, PatternMarkII)}), nil
+				"reads in their stead; they are converted once their heresies are purged", PatternMarkI, Pattern)}), nil
 	}
-	s.MarkII = true
-	converted := slices.Concat(data[:start], []byte(fmt.Sprintf("%q", PatternMarkII)), data[end:])
+	converted := slices.Concat(data[:start], []byte(fmt.Sprintf("%q", Pattern)), data[end:])
 	return s, found, &Conversion{Path: s.Path, Original: data, Data: converted}
 }
 
@@ -92,7 +91,7 @@ func elderPattern(data []byte) (start, end int, ok bool) {
 	}
 	for _, m := range obj.Members {
 		lit, isLit := m.Value.Value.(hujson.Literal)
-		if m.Name.Value.(hujson.Literal).String() == "pattern" && isLit && lit.Kind() == '"' && lit.String() == Pattern {
+		if m.Name.Value.(hujson.Literal).String() == "pattern" && isLit && lit.Kind() == '"' && lit.String() == PatternMarkI {
 			return m.Value.StartOffset, m.Value.EndOffset, true
 		}
 	}
@@ -130,7 +129,7 @@ func (c *Conversion) unwritten(err error) error {
 		return nil
 	}
 	return fmt.Errorf("the scripture %s stays of pattern %q, for the servitor cannot write its conversion: %v",
-		c.Path, Pattern, err)
+		c.Path, PatternMarkI, err)
 }
 
 // keep writes the original to its copy, which must not stand already
@@ -147,7 +146,7 @@ func (c *Conversion) keep(perm fs.FileMode) error {
 		}
 		return fmt.Errorf("the scripture %s stays of pattern %q: a copy already stands at %s and differs from it, "+
 			"and a copy is never overwritten — move that copy aside, and the scripture is converted at its next "+
-			"reading", c.Path, Pattern, at)
+			"reading", c.Path, PatternMarkI, at)
 	}
 	if err != nil {
 		return c.unwritten(err)

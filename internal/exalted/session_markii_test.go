@@ -45,8 +45,8 @@ func stateShrine(t *testing.T) (*shrine, string) {
 			},
 			Observances: []sanction.Verse{prep, post, late}}
 	}
-	u := &sanction.Unit{Pattern: sanction.PatternMarkII, UID: me, Rite: "hallow",
-		Environment: sanction.Environment{Pattern: sanction.PatternMarkII, Keys: []string{"SERVITOR_ASPECT",
+	u := &sanction.Unit{Pattern: sanction.Pattern, UID: me, Rite: "hallow",
+		Environment: sanction.Environment{Pattern: sanction.Pattern, Keys: []string{"SERVITOR_ASPECT",
 			"SERVITOR_FORMER_ASPECT", "SERVITOR_INSCRIPTION_WHO", "SERVITOR_OMEN", "SERVITOR_RITE"}},
 		Aspects: []sanction.Plan{plan("on", "off"), plan("off", "on")}}
 	return speakingShrine(t, u), hall
@@ -279,7 +279,7 @@ func TestSanctionII_LaysTheUnitOfAStateRite(t *testing.T) {
 	}
 	inv.ended()
 	if kept, err := sh.store().Read("hallow"); err != nil || kept == nil || kept.Sigil != u.Sigil() ||
-		kept.Pattern != sanction.PatternMarkII {
+		kept.Pattern != sanction.Pattern {
 		t.Fatalf("the store keeps %+v, %v", kept, err)
 	}
 	for what, c := range map[string]struct {

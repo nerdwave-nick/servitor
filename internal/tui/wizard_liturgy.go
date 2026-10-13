@@ -10,14 +10,11 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/librarium"
 )
 
-// kindWords tell what each kind of step does, in the order of the codex.
+// kindWords tell what each kind of an edict's verse does, in the order of
+// the codex.
 var kindWords = map[librarium.Kind]string{
-	librarium.KindSanctum:       "keep a warded region within a vessel",
-	librarium.KindTranscription: "transcribe a whole vessel anew, or strike it",
-	librarium.KindTether:        "bind a name to an anchor",
-	librarium.KindIncantation:   "speak one line of command in a tongue",
-	librarium.KindLitany:        "recite a scroll, given its offerings",
-	librarium.KindVoxCast:       "proclaim progress or triumph",
+	librarium.KindIncantation: "speak one line of command in a tongue",
+	librarium.KindLitany:      "recite a scroll, given its offerings",
 }
 
 func (w *wizard) updateLiturgy(m *model, msg tea.Msg) (screen, tea.Cmd) {
@@ -40,10 +37,6 @@ func (w *wizard) updateLiturgy(m *model, msg tea.Msg) (screen, tea.Cmd) {
 	case "a", "n":
 		w.choosing, w.kind = true, 0
 	case "enter", "e":
-		if n > 0 && w.d.edict && !edictBears(steps[w.cursor].kind) {
-			return w, m.notify(toastErr, "An edict bears no "+steps[w.cursor].kind.Key()+": it holds no aspect "+
-				"for one to keep. Cast it out with d.")
-		}
 		if n > 0 {
 			return w, w.editStep(m, w.cursor, steps[w.cursor])
 		}
@@ -138,12 +131,11 @@ func (w *wizard) liturgyView(m *model, width, height int) string {
 	if len(w.d.steps) == 0 {
 		lines = append(lines, t.dim.Render("  No step is written yet. Press a to add one."))
 	}
-	aspects := w.d.aspectList()
 	avail := max(1, height-len(lines))
 	start := max(0, min(w.cursor-avail/2, len(w.d.steps)-avail))
 	for i := start; i < min(len(w.d.steps), start+avail); i++ {
 		sd := w.d.steps[i]
-		step := sd.toStep(aspects)
+		step := sd.toStep(nil)
 		line := t.dim.Render(fmt.Sprint(i+1)) + " " + t.accent.Render(kindGlyph(sd.kind)) + " " +
 			t.text.Render(stepWords(step, ""))
 		lines = append(lines, w.marked(m, i == w.cursor, line, width))

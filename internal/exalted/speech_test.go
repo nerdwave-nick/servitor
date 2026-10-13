@@ -41,14 +41,26 @@ func incantation(t *testing.T, n int, words string) sanction.Verse {
 		Patience: patience, Relics: []sanction.Relic{}}
 }
 
-// speakingUnit is the unit of hallow, its plans holding verses alone.
+// speakingUnit is the unit of hallow, its plans holding exalted observances
+// alone: the speech written as verse n becomes the observance "v<n>" (see
+// spoken), the introit of the subject at place n, so that they are spoken
+// in the order of their numbers.
 func speakingUnit(verses ...sanction.Verse) *sanction.Unit {
 	u := hallowUnit()
 	for i := range u.Aspects {
-		u.Aspects[i].Liturgy = slices.Clone(verses)
+		p := &u.Aspects[i]
+		p.Subjects, p.Observances = nil, make([]sanction.Verse, len(verses))
+		for j, v := range verses {
+			v.Observance, v.Introit, v.Recessional = "v"+strconv.Itoa(v.Verse), []int{v.Verse}, []int{}
+			v.Verse = 0
+			p.Observances[j] = v
+		}
 	}
 	return u
 }
+
+// spoken names the observance speakingUnit makes of the speech of verse n.
+func spoken(n int) *Item { return observance("v" + strconv.Itoa(n)) }
 
 // speakingShrine is the world of a trial of exalted speech for u: its
 // working halls lie beneath a temporary hall, its tongues are judged upon
@@ -94,14 +106,14 @@ func TestSpeech_HearsItsEnvironmentAlone(t *testing.T) {
 	want := append(slices.Clone(common), "PWD="+sh.hall("on"), "SERVITOR_ASPECT=on", "SERVITOR_FORMER_ASPECT=off",
 		"SERVITOR_INSCRIPTION_WHO=x; echo INJECTED", "SERVITOR_RITE=hallow")
 	slices.Sort(want)
-	if got := strings.Split(strings.TrimSpace(inv.perform(1).Heard), "\n"); !slices.Equal(got, want) {
+	if got := strings.Split(strings.TrimSpace(inv.perform(spoken(1)).Heard), "\n"); !slices.Equal(got, want) {
 		t.Errorf("exalted speech heard\n%s\nwant\n%s", strings.Join(got, "\n"), strings.Join(want, "\n"))
 	}
 	inv.say(Request{Finish: new(true)})
 
-	u := speakingUnit(incantation(t, 1, words))
-	u.Edict, u.Aspects = true, u.Aspects[:1]
-	u.Aspects[0].Aspect = ""
+	u := hallowUnit()
+	u.Edict, u.Aspects = true, []sanction.Plan{{Inscriptions: map[string]string{},
+		Liturgy: []sanction.Verse{incantation(t, 1, words)}}}
 	u.Environment.Keys = []string{"SERVITOR_INSCRIPTION_WHO", "SERVITOR_RITE"}
 	sh = speakingShrine(t, u)
 	inv = sh.rouse("hallow", sanction.Short(sh.sigil("")))
@@ -111,7 +123,7 @@ func TestSpeech_HearsItsEnvironmentAlone(t *testing.T) {
 	}
 	want = append(slices.Clone(common), "PWD="+sh.hall(""), "SERVITOR_INSCRIPTION_WHO=edict", "SERVITOR_RITE=hallow")
 	slices.Sort(want)
-	if got := strings.Split(strings.TrimSpace(inv.perform(1).Heard), "\n"); !slices.Equal(got, want) {
+	if got := strings.Split(strings.TrimSpace(inv.perform(numbered(1)).Heard), "\n"); !slices.Equal(got, want) {
 		t.Errorf("the edict heard\n%s\nwant\n%s", strings.Join(got, "\n"), strings.Join(want, "\n"))
 	}
 }
@@ -122,7 +134,7 @@ func TestSpeech_HearsItsEnvironmentAlone(t *testing.T) {
 func TestSpeech_TheInjectionIsHeardAsAValue(t *testing.T) {
 	sh := speakingShrine(t, speakingUnit(incantation(t, 1, `echo "who=$SERVITOR_INSCRIPTION_WHO"`)))
 	inv := sh.accepted("on")
-	if r := inv.perform(1); r.Heard != "who=x; echo INJECTED\n" {
+	if r := inv.perform(spoken(1)); r.Heard != "who=x; echo INJECTED\n" {
 		t.Errorf("exalted speech uttered %q", r.Heard)
 	}
 }
@@ -147,13 +159,13 @@ func TestSpeech_LaysTheRelicsInAHallOfItsOwn(t *testing.T) {
 	sh := speakingShrine(t, speakingUnit(speaking, through, shebang))
 	inv := sh.accepted("on")
 	hall := sh.hall("on")
-	if got, want := inv.perform(1).Heard, hall+"\n700\nsplit-lock\nperformance\n"; got != want {
+	if got, want := inv.perform(spoken(1)).Heard, hall+"\n700\nsplit-lock\nperformance\n"; got != want {
 		t.Errorf("verse 1 uttered %q, want %q", got, want)
 	}
-	if got, want := inv.perform(2).Heard, "recited "+hall+"/scrolls/governor on a b\nsplit-lock\n"; got != want {
+	if got, want := inv.perform(spoken(2)).Heard, "recited "+hall+"/scrolls/governor on a b\nsplit-lock\n"; got != want {
 		t.Errorf("verse 2 uttered %q, want %q", got, want)
 	}
-	if got, want := inv.perform(3).Heard, "by its shebang "+hall+"/dusk dusk\nunbending\n"; got != want {
+	if got, want := inv.perform(spoken(3)).Heard, "by its shebang "+hall+"/dusk dusk\nunbending\n"; got != want {
 		t.Errorf("verse 3 uttered %q, want %q", got, want)
 	}
 	inv.say(Request{Finish: new(true)})
@@ -236,7 +248,7 @@ func TestSpeech_SlaysWhatItLeavesBehind(t *testing.T) {
 	sh := speakingShrine(t, speakingUnit(incantation(t, 1, "sleep 300 >/dev/null 2>&1 & echo $!"),
 		incantation(t, 2, "set -m; sleep 300 >/dev/null 2>&1 & echo $!")))
 	inv := sh.accepted("on")
-	lingering, apart := pidOf(t, inv.perform(1).Heard), pidOf(t, inv.perform(2).Heard)
+	lingering, apart := pidOf(t, inv.perform(spoken(1)).Heard), pidOf(t, inv.perform(spoken(2)).Heard)
 	t.Cleanup(func() { spare(lingering); spare(apart) })
 	if !alive(lingering) || !alive(apart) {
 		t.Fatal("the children of exalted speech did not outlive their verses")
@@ -257,7 +269,7 @@ func TestSpeech_PatienceSlaysTheProcessGroup(t *testing.T) {
 	v.Patience = 300 * time.Millisecond
 	sh := speakingShrine(t, speakingUnit(v))
 	inv := sh.accepted("on")
-	r := inv.say(Request{Perform: numbered(1)})
+	r := inv.say(Request{Perform: spoken(1)})
 	if r.Verdict != Fell || !strings.Contains(r.Lament, "patience") {
 		t.Fatalf("verse 1: %+v", r)
 	}
@@ -273,10 +285,10 @@ func TestSpeech_TellsItsLastWordsAlone(t *testing.T) {
 		incantation(t, 1, `head -c 100000 /dev/zero | tr '\0' a; echo; echo END`),
 		incantation(t, 2, `printf 'a\xff\xfeb\n'`)))
 	inv := sh.accepted("on")
-	if got := inv.perform(1).Heard; len(got) != 64<<10 || !strings.HasSuffix(got, "a\nEND\n") {
+	if got := inv.perform(spoken(1)).Heard; len(got) != 64<<10 || !strings.HasSuffix(got, "a\nEND\n") {
 		t.Errorf("verse 1 told %d bytes, ending %q", len(got), got[max(0, len(got)-8):])
 	}
-	if got := inv.perform(2).Heard; !utf8.ValidString(got) || !strings.HasPrefix(got, "a") ||
+	if got := inv.perform(spoken(2)).Heard; !utf8.ValidString(got) || !strings.HasPrefix(got, "a") ||
 		!strings.HasSuffix(got, "b\n") {
 		t.Errorf("verse 2 told %q", got)
 	}
@@ -294,18 +306,18 @@ func TestSpeech_RevertsInTheExaltedServitor(t *testing.T) {
 	falls.Reversion = "echo undone"
 	sh := speakingShrine(t, speakingUnit(v, falls))
 	inv := sh.accepted("on")
-	if r := inv.perform(1); !r.Changed {
+	if r := inv.perform(spoken(1)); !r.Changed {
 		t.Errorf("speech with a reversion stands unchanged: %+v", r)
 	}
-	r := inv.say(Request{Revert: numbered(1)})
+	r := inv.say(Request{Revert: spoken(1)})
 	if r.Verdict != Reverted || r.Heard != "reverted on to off\nsplit-lock\n" {
 		t.Errorf("the reversion: %+v", r)
 	}
 
 	sh = speakingShrine(t, speakingUnit(v, falls))
 	inv = sh.accepted("on")
-	inv.perform(1)
-	r = inv.say(Request{Perform: numbered(2)})
+	inv.perform(spoken(1))
+	r = inv.say(Request{Perform: spoken(2)})
 	if r.Verdict != Fell || !r.Changed || r.Heard != "falling\n" || !strings.Contains(r.Lament, "death-mark 3") {
 		t.Fatalf("verse 2: %+v", r)
 	}
@@ -313,7 +325,7 @@ func TestSpeech_RevertsInTheExaltedServitor(t *testing.T) {
 	if m := inv.ended(); m != 1 {
 		t.Fatalf("ended with the death-mark %d", m)
 	}
-	want := []string{"accept accepted", "perform 1 triumph", "perform 2 fell", "revert 2 reverted", "revert 1 reverted",
+	want := []string{"accept accepted", "perform v1 triumph", "perform v2 fell", "revert v2 reverted", "revert v1 reverted",
 		"fall reverted"}
 	if got := sh.journal.deeds(); !slices.Equal(got, want) {
 		t.Errorf("journaled %v, want %v", got, want)
@@ -360,8 +372,8 @@ func TestSpeech_RefusesWhatItCannotSpeakSafely(t *testing.T) {
 			u := speakingUnit()
 			sh := speakingShrine(t, u)
 			c.mend(sh, &v)
-			for i := range u.Aspects {
-				u.Aspects[i].Liturgy = []sanction.Verse{v}
+			for i, p := range speakingUnit(v).Aspects {
+				u.Aspects[i].Observances = p.Observances
 			}
 			sh.lay(sh.cfg.Store, u)
 			inv := sh.rouseFor("on")
@@ -396,7 +408,7 @@ func TestSpeech_WeighsWithoutRaising(t *testing.T) {
 	if err := sh.speech().Weigh(sitting); err != nil {
 		t.Errorf("Weigh = %v", err)
 	}
-	sitting.Plan.Liturgy[0].Tongue = "bash"
+	sitting.Plan.Observances[0].Tongue = "bash"
 	if err := sh.speech().Weigh(sitting); err == nil || !strings.Contains(err.Error(), "begin at the root") {
 		t.Errorf("Weigh of a tongue spoken from no root = %v", err)
 	}
@@ -438,11 +450,11 @@ func TestSpeech_BidsEachTongueReadNoScriptureOfItsOwn(t *testing.T) {
 			sp.Tongues = tongues
 			sh.cfg.Voice = sp.Voice
 			inv := sh.accepted("on")
-			if r := inv.perform(1); r.Heard != want {
+			if r := inv.perform(spoken(1)); r.Heard != want {
 				t.Errorf("the tongue heard %q, want %q", r.Heard, want)
 			}
 			unspoken := strings.Replace(want, "spoken", "unspoken", 1)
-			if r := inv.say(Request{Revert: numbered(1)}); r.Verdict != Reverted || r.Heard != unspoken {
+			if r := inv.say(Request{Revert: spoken(1)}); r.Verdict != Reverted || r.Heard != unspoken {
 				t.Errorf("the reversion: %+v, want heard %q", r, unspoken)
 			}
 			inv.say(Request{Finish: new(true)})

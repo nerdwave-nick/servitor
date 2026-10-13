@@ -10,7 +10,7 @@ import (
 func TestMarshal_MarkIIScripturesRoundTrip(t *testing.T) {
 	for name, scripture := range map[string]string{"gaming": gaming, "dnd": dnd, "visage": visageII, "screenshot": screenshot} {
 		t.Run(name, func(t *testing.T) {
-			r, fs := Parse(name, "/lib/rites/"+name+".json", []byte(scripture))
+			r, fs := parse(name, "/lib/rites/"+name+".json", []byte(scripture))
 			if len(fs) != 0 {
 				t.Fatalf("findings:\n%v", fs)
 			}
@@ -28,8 +28,8 @@ func TestMarshal_ForgedMarkIIRitesRoundTrip(t *testing.T) {
 		return Subject{Name: name, Matter: &MachineSpirit{Auspex: &SpiritAuspex{Scan: "cat x"}, Enact: PerAspect(Entry[string]{"*", "x"})}}
 	}
 	cases := map[string]*Rite{
-		"bare": {Name: "bare", MarkII: true, Aspects: []string{"on"}, Subjects: []Subject{spirit("x")}},
-		"every designation": {Name: "x", MarkII: true, Purpose: "p", Aspects: []string{"on", "off"}, Tongue: "fish",
+		"bare": {Name: "bare", Aspects: []string{"on"}, Subjects: []Subject{spirit("x")}},
+		"every designation": {Name: "x", Purpose: "p", Aspects: []string{"on", "off"}, Tongue: "fish",
 			VoxCasts: []string{VoxSuccess, VoxProgress},
 			Inscriptions: []Inscription{{Key: "m", Purpose: "why", Mandatory: true, Decrees: PerAspect(Entry[string]{"on", "a"}, Entry[string]{"*", "b"})},
 				{Key: "e", Decrees: PerAspect[string]()}, {Key: "z"}},
@@ -56,14 +56,14 @@ func TestMarshal_ForgedMarkIIRitesRoundTrip(t *testing.T) {
 				{Name: "l", To: []string{"on"}, From: []string{"off"}, Speech: &Litany{Scroll: Uniform("s"),
 					Offerings: []AspectMap[string]{Uniform("~/{{aspect}}"), Uniform("")}}},
 			}},
-		"edict": {Name: "e", MarkII: true, Edict: true, Purpose: "p", VoxCasts: []string{},
+		"edict": {Name: "e", Edict: true, Purpose: "p", VoxCasts: []string{},
 			Inscriptions: []Inscription{{Key: "region", Decrees: Uniform("whole")}},
 			Liturgy: []Step{
 				&Incantation{Command: Uniform("a"), Utterance: Utterance{Patience: 2 * time.Minute, Reversion: Uniform("b")}},
 				&Litany{Scroll: Uniform("s"), Offerings: []AspectMap[string]{}, Utterance: Utterance{Tongue: "sh"}},
 				&Litany{Scroll: Uniform("s"), Utterance: Utterance{Exalted: true, Relics: []string{"s.list"}}},
 			}},
-		"empty edict": {Name: "e", MarkII: true, Edict: true},
+		"empty edict": {Name: "e", Edict: true},
 	}
 	for name, r := range cases {
 		t.Run(name, func(t *testing.T) {
@@ -78,7 +78,7 @@ func TestMarshal_ForgedMarkIIRitesRoundTrip(t *testing.T) {
 // TestMarshal_MarkIIWritesEveryMapAsAnObject: pattern Mark II knows no
 // single value in place of a map, and no aspect map in an edict's words.
 func TestMarshal_MarkIIWritesEveryMapAsAnObject(t *testing.T) {
-	r := &Rite{Name: "x", MarkII: true, Aspects: []string{"on"},
+	r := &Rite{Name: "x", Aspects: []string{"on"},
 		Inscriptions: []Inscription{{Key: "m", Decrees: Uniform("all")}},
 		Subjects: []Subject{{Name: "t", Matter: &Tether{Name: "/t", Anchor: Uniform(Anchor{Path: "/a"})}},
 			{Name: "x", Matter: &MachineSpirit{Enact: Uniform("a")}}}}
@@ -91,18 +91,18 @@ func TestMarshal_MarkIIWritesEveryMapAsAnObject(t *testing.T) {
 			t.Errorf("scripture lacks %s:\n%s", want, data)
 		}
 	}
-	if _, fs := Parse("x", "/x.json", data); fs.Heretical() {
+	if _, fs := parse("x", "/x.json", data); fs.Heretical() {
 		t.Errorf("written scripture is heretical:\n%v\n%s", fs, data)
 	}
 }
 
 func TestMarshal_RefusesWhatMarkIICannotWrite(t *testing.T) {
 	cases := map[string]*Rite{
-		"words keyed by aspect": {Name: "x", MarkII: true, Edict: true, Liturgy: []Step{
+		"words keyed by aspect": {Name: "x", Edict: true, Liturgy: []Step{
 			&Incantation{Command: PerAspect(Entry[string]{"on", "a"}, Entry[string]{"*", "b"})}}},
-		"a sanctum in an edict":  {Name: "x", MarkII: true, Edict: true, Liturgy: []Step{&Sanctum{Vessel: "/v"}}},
-		"a subject of no matter": {Name: "x", MarkII: true, Aspects: []string{"on"}, Subjects: []Subject{{Name: "s"}}},
-		"a vox-cast step":        {Name: "x", MarkII: true, Edict: true, Liturgy: []Step{&VoxCast{Tidings: VoxSuccess}}},
+		"a sanctum in an edict":  {Name: "x", Edict: true, Liturgy: []Step{&Sanctum{Vessel: "/v"}}},
+		"a subject of no matter": {Name: "x", Aspects: []string{"on"}, Subjects: []Subject{{Name: "s"}}},
+		"a vox-cast step":        {Name: "x", Edict: true, Liturgy: []Step{&voxCast{Tidings: VoxSuccess}}},
 	}
 	for name, r := range cases {
 		if data, err := Marshal(r); err == nil {

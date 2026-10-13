@@ -59,8 +59,9 @@ func TestCensus_EveryEntryBearsItsCanon(t *testing.T) {
 	e := newEnv(t)
 	e.addRite("rites/capture.json", edictJSON)
 	e.addRite("rites/broken.json", `{`)
-	e.addRite("rites/dnd.json", `{"pattern": "Mark I", "aspects": ["on", "off", "idle"],
-  "inscriptions": {"mode": {"purpose": "how silent", "decrees": {"on": "deep", "*": "light"}}}, "liturgy": []}`)
+	e.addRite("rites/dnd.json", `{"pattern": "Mark II", "aspects": ["on", "off", "idle"],
+  "inscriptions": {"mode": {"purpose": "how silent", "decrees": {"on": "deep", "*": "light"}}},
+  "subjects": [{"name": "mako", "designation": "machine-spirit", "enact": {"*": "true"}}]}`)
 
 	entries := e.census()
 

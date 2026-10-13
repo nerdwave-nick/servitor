@@ -62,3 +62,16 @@ func TestCompose_ExaltationNamesTheIntercessorAndTheSigil(t *testing.T) {
 		t.Errorf("the intercessor was illuminated: %q", m.Flavour)
 	}
 }
+
+// TestExaltationTemplates_OfARiteOfAspectsSpeakNoVerse: a rite of aspects
+// bears subjects and observances, never verses, and may hold only one of
+// them exalted: its tidings of exaltation speak of neither by name.
+func TestExaltationTemplates_OfARiteOfAspectsSpeakNoVerse(t *testing.T) {
+	for _, tmpl := range templates[invocation.Exaltation] {
+		for _, word := range []string{"verse", "subject", "observance"} {
+			if strings.Contains(strings.ToLower(tmpl), word) {
+				t.Errorf("template %q speaks of %ss", tmpl, word)
+			}
+		}
+	}
+}

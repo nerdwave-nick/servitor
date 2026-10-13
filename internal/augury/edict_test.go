@@ -16,7 +16,7 @@ func (fx fixture) edict(t *testing.T, liturgy string) *librarium.Rite {
 	t.Helper()
 	path := filepath.Join(fx.lib, "rites", "capture.json")
 	write(t, path, strings.ReplaceAll(`{
-  "pattern": "Mark I",
+  "pattern": "Mark II",
   "edict": true,
   "inscriptions": {"region": {"purpose": "the slurp geometry", "decrees": "full"}},
   "liturgy": [`+liturgy+`]
@@ -84,7 +84,7 @@ func TestAugur_AnEdictStandsByItsLastVerdict(t *testing.T) {
 		t.Run(tc.name, func(t *testing.T) {
 			fx := newFixture(t)
 			write(t, filepath.Join(fx.data, "scroll.sh"), "true\n")
-			r := fx.edict(t, `{"incantation": "true"}, {"litany": "$DATA/scroll.sh"}, {"vox-cast": "success"}`)
+			r := fx.edict(t, `{"designation": "incantation", "words": "true"}, {"designation": "litany", "scroll": "$DATA/scroll.sh"}`)
 			for _, b := range tc.before {
 				b(t, fx, r)
 			}
@@ -93,7 +93,7 @@ func TestAugur_AnEdictStandsByItsLastVerdict(t *testing.T) {
 				t.Errorf("augury %+v, want an edict standing %q, bearing no aspect", a, tc.standing)
 			}
 			if len(a.Omens) != 0 || len(a.Taint) != 0 {
-				t.Errorf("an edict yields omens %s or taint %v", omens(a), a.Taint)
+				t.Errorf("an edict yields omens %s or taint %v", readings(a), a.Taint)
 			}
 		})
 	}
@@ -101,7 +101,7 @@ func TestAugur_AnEdictStandsByItsLastVerdict(t *testing.T) {
 
 func TestAugur_AnEdictKeepsTheInscriptionsAndLastRiteOfItsSlate(t *testing.T) {
 	fx := newFixture(t)
-	r := fx.edict(t, `{"incantation": "true"}`)
+	r := fx.edict(t, `{"designation": "incantation", "words": "true"}`)
 	fx.proclaim(t, r, map[string]string{"region": "window"})
 	a := fx.augur(t, r, Options{})
 	if !maps.Equal(a.Inscriptions, map[string]string{"region": "window"}) {
@@ -116,7 +116,7 @@ func TestAugur_AnEdictReadsNoAspectEvenFromASlateThatRecordsOne(t *testing.T) {
 	// The slate of a rite later rewritten by hand as an edict still bears
 	// the aspect it last stood in.
 	fx := newFixture(t)
-	r := fx.edict(t, `{"incantation": "true"}`)
+	r := fx.edict(t, `{"designation": "incantation", "words": "true"}`)
 	fx.slate(t, r, "on", invocation.Triumph, nil)
 	a := fx.augur(t, r, Options{})
 	if a.Aspect != "" || a.Standing != Proclaimed || !a.Edict {
@@ -126,7 +126,7 @@ func TestAugur_AnEdictReadsNoAspectEvenFromASlateThatRecordsOne(t *testing.T) {
 
 func TestHeretic_AnEdictOfHereticalScriptureStandsHeretical(t *testing.T) {
 	fx := newFixture(t)
-	r := fx.edict(t, `{"incantation": "true"}`)
+	r := fx.edict(t, `{"designation": "incantation", "words": "true"}`)
 	fx.proclaim(t, r, map[string]string{"region": "window"})
 	a, err := Heretic(r.Name, Options{Env: fx.env})
 	if err != nil || a.Standing != Heretical {
@@ -151,7 +151,7 @@ func TestAugury_MarshalsAnEdictWithoutAspect(t *testing.T) {
 
 func TestAugury_MarshalsAnEdictReadFromItsSlate(t *testing.T) {
 	fx := newFixture(t)
-	r := fx.edict(t, `{"incantation": "true"}`)
+	r := fx.edict(t, `{"designation": "incantation", "words": "true"}`)
 	fx.proclaim(t, r, map[string]string{"region": "window"})
 	fx.fall(t, r, invocation.Faltered)
 	want := `{"rite":"capture","edict":true,"standing":"corrupted","sanction":"","auspex":"","inscriptions":{"region":"window"},` +

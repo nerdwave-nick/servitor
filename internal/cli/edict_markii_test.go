@@ -113,6 +113,10 @@ func TestEdictII_OnATerminalIsToldAsItHappensWithoutAnAspect(t *testing.T) {
 	if e.notified() != "" {
 		t.Fatalf("the desktop heard %q", e.notified())
 	}
+	if out := e.mustRun("invoke", "capture", "-s"); strings.Contains(out, "+++") || strings.Contains(out, "✔") ||
+		aspectless.MatchString(out) {
+		t.Fatalf("a silenced edict told more than its vox-casts:\n%s", out)
+	}
 }
 
 func TestEdictII_RefusesEveryWordAfterItsNameAndForeseesNothing(t *testing.T) {

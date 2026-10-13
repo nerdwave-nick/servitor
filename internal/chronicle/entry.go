@@ -25,7 +25,7 @@ type Entry struct {
 	// Reversions are the steps undone, from the fallen step back to the
 	// first.
 	Reversions []Reversion `json:"reversions,omitempty"`
-	// Changed names, for a state rite of pattern Mark II alone, the
+	// Changed names, for a rite of aspects alone, the
 	// subjects it set and proved, in written order; [] when it changed
 	// nothing, and absent for every other rite.
 	Changed []string `json:"changed,omitzero"`
@@ -39,7 +39,7 @@ type Entry struct {
 
 // Verse names a step as the chronicle writes it: its verse and its own key
 // holding its target, e.g. {"verse": 3, "incantation": "source …/hooks"};
-// or a subject or an observance of a state rite by its name alone,
+// or a subject or an observance of a rite of aspects by its name alone,
 // {"subject": "smt"}, {"observance": "herald-silence"}.
 type Verse struct {
 	Number     int    // counted from one; zero for a subject or an observance

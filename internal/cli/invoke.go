@@ -35,7 +35,7 @@ func (a *app) newInvokeCmd() *cobra.Command {
 		},
 	}
 	cmd.PersistentFlags().BoolVarP(&runes.foresee, "foresee", "f", false,
-		"divine the outcome without touching anything, not even the auspex")
+		"divine the outcome without touching anything: each subject is read, none is set")
 	cmd.PersistentFlags().BoolVarP(&runes.silence, "silence", "s", false,
 		"perform the rite in reverent silence")
 	const binharic = "speak the chronicled verdict in binharic for lesser machines, and narrate upon stderr"
@@ -241,34 +241,74 @@ func riteLong(r *librarium.Rite) string {
 	} else {
 		fmt.Fprintf(&b, "Aspects: %s\n", strings.Join(r.Aspects, ", "))
 	}
-	fmt.Fprintf(&b, "Recorded in: %s\n\nLiturgy:\n", r.Path)
-	for i, step := range r.Liturgy {
-		fmt.Fprintf(&b, "  verse %d · %s %s\n", i+1, step.Kind().Key(), stepWords(step))
+	fmt.Fprintf(&b, "Recorded in: %s\n\n", r.Path)
+	if r.Edict {
+		b.WriteString("Liturgy:\n")
+		for i, step := range r.Liturgy {
+			fmt.Fprintf(&b, "  verse %d · %s%s %s\n", i+1, step.Kind().Key(), exaltedMark(librarium.IsExalted(step)),
+				stepWords(step))
+		}
+		return strings.TrimRight(b.String(), "\n")
+	}
+	b.WriteString("Subjects:\n")
+	for _, s := range r.Subjects {
+		fmt.Fprintf(&b, "  %s · %s%s %s\n", s.Name, s.Designation(), exaltedMark(s.Exalted()), subjectWords(s))
+	}
+	if len(r.Observances) > 0 {
+		b.WriteString("Observances:\n")
+		for _, o := range r.Observances {
+			fmt.Fprintf(&b, "  %s · %s%s %s\n", o.Name, o.Designation(), exaltedMark(o.Exalted()), stepWords(o.Speech))
+		}
 	}
 	return strings.TrimRight(b.String(), "\n")
 }
 
-// stepWords is what a step's own key holds, as written.
+// exaltedMark marks what is exalted ✠.
+func exaltedMark(exalted bool) string {
+	if exalted {
+		return " ✠"
+	}
+	return ""
+}
+
+// subjectWords is what a subject reads and sets, as written: the vessel of
+// a sanctum or transcription, the bound name of a tether, the scan of a
+// machine-spirit (else "(tried)" when its auspex holds trials alone, or
+// "(never read)" without one).
+func subjectWords(s librarium.Subject) string {
+	switch m := s.Matter.(type) {
+	case *librarium.Sanctum:
+		return m.Vessel
+	case *librarium.Transcription:
+		return m.Vessel
+	case *librarium.Tether:
+		return m.Name
+	case *librarium.MachineSpirit:
+		switch {
+		case m.Auspex == nil:
+			return "(never read)"
+		case m.Auspex.Scan == "":
+			return "(tried)"
+		}
+		return m.Auspex.Scan
+	}
+	return ""
+}
+
+// stepWords is what the words or scroll of an observance or verse hold, as
+// written.
 func stepWords(step librarium.Step) string {
 	written := func(m librarium.AspectMap[string]) string {
-		if m.IsUniform() {
-			return m.Entries()[0].Value
+		if v, ok := m.For(""); ok {
+			return v
 		}
-		return "(per aspect)"
+		return ""
 	}
 	switch s := step.(type) {
-	case *librarium.Sanctum:
-		return s.Vessel
-	case *librarium.Transcription:
-		return s.Vessel
-	case *librarium.Tether:
-		return s.Name
 	case *librarium.Incantation:
 		return written(s.Command)
 	case *librarium.Litany:
 		return written(s.Scroll)
-	case *librarium.VoxCast:
-		return s.Tidings
 	}
 	return ""
 }

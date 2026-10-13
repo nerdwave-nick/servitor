@@ -19,12 +19,6 @@ just performed as {{step}}.
 The heresies of a verse are found by line and column within the scripture,
 not by verse; the verse names it in what the servitor performed.
 
-In the elder pattern "Mark I" every rite kept a liturgy of steps, each a
-verse, vox-casts among them, and omens, taints and the chronicle named a
-step by its verse and its own key: {"verse": 2, "tether": "…"}. Conversion
-names each subject and observance it makes after the verse it was:
-"tether-2", "incantation-1-on" (see conversion).
-
 Kindred passages: liturgy, edict, chronicle, verdicts, foresee, conversion
 
 Exempla:

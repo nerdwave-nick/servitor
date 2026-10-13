@@ -71,10 +71,10 @@ func (s *Servitor) raise(r *librarium.Rite, res *Result, x *exaltedPlan, ex Exal
 
 // unlike tells how the plan the exalted servitor accepted, as its reply
 // names it, differs from the plan of the aspect the rite holds: its
-// exalted verses, or the exalted subjects and observances of a state rite;
+// exalted verses, or the exalted subjects and observances of a rite of aspects;
 // "" when they are one.
 func unlike(r *librarium.Rite, x *exaltedPlan, aspect string, reply exalted.Reply) string {
-	if !r.MarkII || r.Edict {
+	if r.Edict {
 		if want := r.ExaltedVerses(); !slices.Equal(reply.Verses, want) {
 			return fmt.Sprintf("it would perform the verses %v of the sanction, yet the rite holds the exalted verses %v",
 				reply.Verses, want)
@@ -104,7 +104,7 @@ func (e *exalter) abandon() {
 	_ = e.c.end()
 }
 
-// itemOf names the verse, or the subject or observance of a state rite, v
+// itemOf names the verse, or the subject or observance of a rite of aspects, v
 // is.
 func itemOf(v invocation.Verse) exalted.Item {
 	return exalted.Item{Verse: v.Number, Subject: v.Subject, Observance: v.Observance}

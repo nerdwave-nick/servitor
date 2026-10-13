@@ -16,13 +16,9 @@ import (
 // keysOfTheLibrarium are every key a rite or the settings may hold and every
 // step kind, as the librarium itself knows them.
 func keysOfTheLibrarium() []string {
-	keys := slices.Concat(librarium.RiteKeys, librarium.InscriptionKeys, librarium.AuspexKeys,
-		librarium.TomeKeys, librarium.SettingsKeys)
-	for _, k := range librarium.Kinds {
-		keys = append(keys, librarium.StepKeys(k)...)
-	}
-	keys = slices.Concat(keys, librarium.MarkIIRiteKeys, librarium.SubjectKeys, librarium.SpiritAuspexKeys,
-		librarium.ObservanceKeys, librarium.SubjectDesignations, librarium.SpeechDesignations)
+	keys := slices.Concat(librarium.RiteKeys, librarium.InscriptionKeys, librarium.TomeKeys,
+		librarium.SettingsKeys, librarium.SubjectKeys, librarium.SpiritAuspexKeys, librarium.ObservanceKeys,
+		librarium.SubjectDesignations, librarium.SpeechDesignations)
 	for _, d := range slices.Concat(librarium.SubjectDesignations, librarium.SpeechDesignations) {
 		keys = append(keys, librarium.DesignationKeys(d)...)
 	}

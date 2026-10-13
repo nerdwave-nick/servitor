@@ -122,15 +122,11 @@ func (w Speech) prepare(s Sitting) (*speaker, map[string]relic, error) {
 // words hear is not among them: it is valued as each is spoken.
 func (w Speech) environ(s Sitting) ([]string, error) {
 	e := s.Sanction.Environment
-	allowed := granted
-	switch e.Pattern {
-	case sanction.EnvironmentPattern:
-	case sanction.PatternMarkII:
-		allowed = append(slices.Clone(granted), sanction.OmenVariable)
-	default:
+	if e.Pattern != sanction.Pattern {
 		return nil, fmt.Errorf("the sanction of %q grants its speech the environment of the pattern %q, which "+
 			"this exalted servitor knows not", s.Sanction.Rite, e.Pattern)
 	}
+	allowed := append(slices.Clone(granted), sanction.OmenVariable)
 	words := map[string]string{"SERVITOR_RITE": s.Sanction.Rite, "SERVITOR_ASPECT": s.Plan.Aspect,
 		"SERVITOR_FORMER_ASPECT": s.Former}
 	for key, v := range s.Inscriptions {

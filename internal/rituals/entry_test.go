@@ -3,7 +3,6 @@ package rituals
 import (
 	"context"
 	"reflect"
-	"strings"
 	"testing"
 )
 
@@ -14,7 +13,7 @@ func TestInvoke_TheResultBearsTheChronicledEntry(t *testing.T) {
 	fx := newFixture(t)
 	fx.vessel("util.kdl", "input {}\n")
 	fx.rite("mouse", mouse)
-	fx.rite("falling", strings.Replace(mouse, `{"vox-cast": "success"}`, `{"incantation": "exit 3"}`, 1))
+	fx.rite("falling", falling)
 	s := fx.servitor()
 
 	for i, p := range []Petition{

@@ -23,7 +23,7 @@ func (m *model) converted(told rituals.Converted) {
 		t = toast{kind: toastInfo, text: told.Tidings[0]}
 	case n > 1:
 		t = toast{kind: toastInfo, text: fmt.Sprintf("%d scriptures are converted to pattern %q: %s", n,
-			librarium.PatternMarkII, strings.Join(told.Tidings, " · "))}
+			librarium.Pattern, strings.Join(told.Tidings, " · "))}
 	default:
 		return
 	}

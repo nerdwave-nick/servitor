@@ -71,6 +71,8 @@ func (s *session) accept() error {
 		return err
 	case sn == nil:
 		return fmt.Errorf("the rite %q of uid %d stands unsanctioned: no sanction is kept for it", s.argv.rite, s.uid)
+	case sn.Pattern != sanction.Pattern:
+		return elder(sn.Pattern, fmt.Sprintf("the sanction of %q", s.argv.rite))
 	case sn.Edict != s.argv.edict:
 		return fmt.Errorf("the sanction of %q is that of %s", s.argv.rite,
 			map[bool]string{true: "an edict", false: "a rite of aspects"}[sn.Edict])
@@ -92,6 +94,15 @@ func (s *session) accept() error {
 		return err
 	}
 	return s.lendVoice()
+}
+
+// elder is the lament for a unit, or the sanction what names, of a pattern
+// other than sanction.Pattern: a sanction of pattern Mark I lapsed when its
+// rite was converted, and is performed never.
+func elder(pattern, what string) error {
+	return fmt.Errorf("%s is of the pattern %q, yet this exalted servitor performs and sanctions only units of "+
+		"the pattern %q; its rite is converted to that pattern, and its sanction lapsed with it — sanction it anew",
+		what, pattern, sanction.Pattern)
 }
 
 // of names the aspect of the session, or that it is an edict.

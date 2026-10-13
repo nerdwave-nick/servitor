@@ -12,7 +12,7 @@ import (
 // plan, each by its place among the rite's subjects, and the exalted
 // observances the plan's aspect admits by "to", each with its "from" and
 // the places of the subjects that name it. A sanctum, transcription or
-// tether is drawn as its verse of Mark I would be, an observance as its
+// tether is drawn by the fields of its kind (draw), an observance as its
 // incantation or litany; a machine-spirit by the omen of the aspect and
 // its enact words for every omen it declares.
 func (d *drawer) state(plan *Plan) error {

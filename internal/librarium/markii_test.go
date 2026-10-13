@@ -2,7 +2,6 @@ package librarium
 
 import (
 	"io/fs"
-	"strings"
 	"testing"
 	"time"
 )
@@ -124,7 +123,7 @@ func TestParse_MarkIIRitesYieldEveryField(t *testing.T) {
 		name, scripture string
 		want            *Rite
 	}{
-		{"gaming", gaming, &Rite{MarkII: true, Purpose: "enable or disable gaming optimization",
+		{"gaming", gaming, &Rite{Purpose: "enable or disable gaming optimization",
 			Aspects: []string{"on", "off"}, VoxCasts: []string{VoxProgress, VoxSuccess},
 			Subjects: []Subject{
 				{Name: "smt", Matter: &MachineSpirit{Exalted: true,
@@ -142,7 +141,7 @@ func TestParse_MarkIIRitesYieldEveryField(t *testing.T) {
 					Enact: PerAspect(Entry[string]{"cosmos", "systemd-run --unit=scx-cosmos --collect scx_cosmos -p 0 -c 0"},
 						Entry[string]{"*", "systemctl stop scx-cosmos"})}},
 			}}},
-		{"dnd", dnd, &Rite{MarkII: true, Purpose: "silence the heralds of the machine",
+		{"dnd", dnd, &Rite{Purpose: "silence the heralds of the machine",
 			Aspects: []string{"on", "off"}, VoxCasts: []string{VoxSuccess},
 			Subjects: []Subject{{Name: "mako", Recessional: []string{"herald-silence"}, Matter: &MachineSpirit{
 				Omens:  PerAspect(Entry[string]{"on", "do-not-disturb"}, Entry[string]{"*", "default"}),
@@ -151,7 +150,7 @@ func TestParse_MarkIIRitesYieldEveryField(t *testing.T) {
 			Observances: []Observance{{Name: "herald-silence", To: []string{"on"},
 				Speech: &Incantation{Command: Uniform("notify-send -t 2000 'The heralds fall silent'")}}},
 		}},
-		{"visage", visageII, &Rite{MarkII: true, Schema: "https://example.org/rite.json", Purpose: "The visage of the machine",
+		{"visage", visageII, &Rite{Schema: "https://example.org/rite.json", Purpose: "The visage of the machine",
 			Aspects: []string{"default", "porpl"},
 			Inscriptions: []Inscription{{Key: "reason", Purpose: "why"},
 				{Key: "mode", Mandatory: true, Decrees: PerAspect(Entry[string]{"*", "plain"})}},
@@ -183,7 +182,7 @@ func TestParse_MarkIIRitesYieldEveryField(t *testing.T) {
 					Offerings: []AspectMap[string]{Uniform("~/.config/nfluff/themes/{{aspect}}"), Uniform("{{inscription.reason}}"), Uniform("")}}},
 			},
 		}},
-		{"screenshot", screenshot, &Rite{MarkII: true, Edict: true, Purpose: "Capture the visage of the machine",
+		{"screenshot", screenshot, &Rite{Edict: true, Purpose: "Capture the visage of the machine",
 			Inscriptions: []Inscription{{Key: "region", Purpose: `"chosen" or "whole"`, Decrees: Uniform("chosen")}},
 			VoxCasts:     []string{VoxSuccess},
 			Liturgy: []Step{
@@ -197,7 +196,7 @@ func TestParse_MarkIIRitesYieldEveryField(t *testing.T) {
 	for _, c := range cases {
 		t.Run(c.name, func(t *testing.T) {
 			path := "/lib/rites/" + c.name + ".json"
-			r, fs := Parse(c.name, path, []byte(c.scripture))
+			r, fs := parse(c.name, path, []byte(c.scripture))
 			if r == nil || len(fs) != 0 {
 				t.Fatalf("rite %v, findings:\n%v", r, fs)
 			}
@@ -213,7 +212,7 @@ func TestParse_MarkIIRitesYieldEveryField(t *testing.T) {
 }
 
 func TestRite_SubjectsAndObservancesAreFoundByName(t *testing.T) {
-	r, fs := Parse("visage", "/lib/rites/visage.json", []byte(visageII))
+	r, fs := parse("visage", "/lib/rites/visage.json", []byte(visageII))
 	if len(fs) != 0 {
 		t.Fatalf("findings:\n%v", fs)
 	}
@@ -231,7 +230,7 @@ func TestRite_SubjectsAndObservancesAreFoundByName(t *testing.T) {
 	if _, ok := r.Observance("nonesuch"); ok {
 		t.Fatal("found an observance never declared")
 	}
-	g, _ := Parse("gaming", "/lib/rites/gaming.json", []byte(gaming))
+	g, _ := parse("gaming", "/lib/rites/gaming.json", []byte(gaming))
 	if s, _ := g.Subject("smt"); !s.Exalted() || s.Designation() != DesignationMachineSpirit {
 		t.Fatalf("smt %+v", s)
 	}
@@ -252,54 +251,9 @@ func TestParse_MarkIIRiteMayBeBareOfOptions(t *testing.T) {
 	}
 	for name, scripture := range cases {
 		t.Run(name, func(t *testing.T) {
-			if r, fs := Parse("rite", "/r.json", []byte(scripture)); r == nil || !r.MarkII || fs.Heretical() {
+			if r, fs := parse("rite", "/r.json", []byte(scripture)); r == nil || r.markI || fs.Heretical() {
 				t.Fatalf("rite %v, findings:\n%v", r, fs)
 			}
 		})
-	}
-}
-
-// sanctumSubjectRite is a rite of pattern Mark II keeping one sanctum
-// subject named "s" in vessel under ward ("" for the rite's name).
-func sanctumSubjectRite(vessel, ward string) string {
-	w := ""
-	if ward != "" {
-		w = `, "ward": "` + ward + `"`
-	}
-	return `{"pattern": "Mark II", "aspects": ["on"],
-  "subjects": [{"name": "s", "designation": "sanctum", "vessel": "` + vessel + `"` + w + `, "omens": {"*": ""}}]}`
-}
-
-// TestLoad_WardsClashAcrossPatterns: a sanctum subject claims its ward in
-// its vessel as a sanctum verse does, and two claims of one ward clash,
-// whatever the pattern of their rites.
-func TestLoad_WardsClashAcrossPatterns(t *testing.T) {
-	dir := t.TempDir()
-	writeScripture(t, dir, "rites/a.json", sanctumRite("/x.kdl", "shared"))
-	writeScripture(t, dir, "rites/b.json", sanctumSubjectRite("/x.kdl", "shared"))
-	writeScripture(t, dir, "rites/c.json", sanctumSubjectRite("/x.kdl", ""))
-	writeScripture(t, dir, "rites/d.json", sanctumSubjectRite("/x.kdl", "own"))
-	writeScripture(t, dir, "rites/e.json", `{"pattern": "Mark I", "aspects": ["on"], "liturgy": [{"sanctum": "/x.kdl", "ward": "c", "scripture": ""}]}`)
-	lib := Load(dir)
-	clash := findingsWith(lib.Findings, "is claimed twice")
-	var rites []string
-	for _, f := range clash {
-		rites = append(rites, f.Rite)
-	}
-	if strings.Join(rites, ",") != "a,b,c,e" {
-		t.Fatalf("clashing rites %v in\n%v", rites, lib.Findings)
-	}
-	if !strings.Contains(clash[1].Message, `by the subject "s" of the rite "b"`) ||
-		!strings.Contains(clash[1].Message, `by verse 1 of the rite "a"`) {
-		t.Errorf("the clash must name the subject and the verse: %s", clash[1].Message)
-	}
-	if want := posOf(t, sanctumSubjectRite("/x.kdl", "shared"), `"shared"`, 0); clash[1].Position != want {
-		t.Errorf("the clash points at %v, want the ward %v", clash[1].Position, want)
-	}
-	if want := posOf(t, sanctumSubjectRite("/x.kdl", ""), `"/x.kdl"`, 0); clash[2].Position != want {
-		t.Errorf("the clash of a default ward points at %v, want the vessel %v", clash[2].Position, want)
-	}
-	if lib.Heretical["d"] || !lib.Heretical["b"] || !lib.Heretical["c"] {
-		t.Errorf("heretical %v", lib.Heretical)
 	}
 }

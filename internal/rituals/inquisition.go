@@ -28,8 +28,8 @@ import (
 // or open to others while a rite holds exalted verses — and heresy for a
 // vessel whose sanctum markers are broken. An edict's machine is examined once, as it bears no aspect.
 //
-// A state rite of pattern Mark II is examined subject by subject and
-// observance by observance as Mark I's liturgy is verse by verse: the tomes
+// A rite of aspects is examined subject by subject and
+// observance by observance, an edict verse by verse: the tomes
 // of its sanctum and transcription subjects, the relics and tongues of its
 // exalted machine-spirits and observances, the scrolls of its observances,
 // the vessels and anchors of its subjects, and every tongue — that of a
@@ -123,14 +123,9 @@ func (e *examiner) path(aspect, text string) (string, bool) {
 	return e.rite.ResolvePath(out), true
 }
 
-// field is the JSON pointer of field within the step at index i.
+// field is the JSON pointer of field within the verse of an edict at index
+// i.
 func field(i int, f string) string { return fmt.Sprintf("/liturgy/%d/%s", i, f) }
-
-// mapField is the JSON pointer of the entry of m, the field f of the step
-// at index i, that answers for aspect.
-func mapField[T any](i int, f string, m librarium.AspectMap[T], aspect string) string {
-	return mapPointer(field(i, f), m, aspect)
-}
 
 // mapPointer is the JSON pointer of the entry of m, written at ptr, that
 // answers for aspect.
@@ -141,31 +136,8 @@ func mapPointer[T any](ptr string, m librarium.AspectMap[T], aspect string) stri
 	return ptr
 }
 
-// tomes opens every tome of the rite's sanctums and transcriptions.
-func (e *examiner) tomes() {
-	for i, step := range e.rite.Liturgy {
-		var m librarium.AspectMap[librarium.Scripture]
-		switch st := step.(type) {
-		case *librarium.Sanctum:
-			m = st.Scripture
-		case *librarium.Transcription:
-			m = st.Scripture
-		default:
-			continue
-		}
-		for _, aspect := range e.aspects() {
-			sc, ok := m.For(aspect)
-			if !ok || !sc.IsTome() {
-				continue
-			}
-			p, ok := e.path(aspect, sc.Tome)
-			if ok && e.once("tome "+p) {
-				e.tome(mapField(i, "scripture", m, aspect)+"/tome", p, sc.Illuminate, e.rite.ScopeOf(step))
-			}
-		}
-	}
-	e.subjectTomes()
-}
+// tomes opens every tome of the rite's sanctum and transcription subjects.
+func (e *examiner) tomes() { e.subjectTomes() }
 
 // tome opens the tome at p, written at ptr, and examines its placeholders
 // within scope when it is illuminated.

@@ -13,7 +13,7 @@ import (
 )
 
 // Exalter performs the exalted verses of one invocation — or the exalted
-// subjects and observances of a state rite of pattern Mark II that change:
+// subjects and observances of a rite of aspects that change:
 // the exalted servitor, raised for it alone with the machine's own
 // authority, which performs each from the sanction of its master. The
 // invoker's servitor never performs an exalted verse itself, nor reverts
@@ -27,8 +27,8 @@ type Exalter interface {
 	// Revert reverts the exalted verse v, the last performed and not yet
 	// reverted; changed is false when there was nothing to undo.
 	Revert(v Verse) (heard string, changed bool, err error)
-	// Enact sets the exalted machine-spirit v of a state rite of pattern
-	// Mark II by the enact words of the omen of the aspect invoked, as
+	// Enact sets the exalted machine-spirit v of a rite of aspects
+	// by the enact words of the omen of the aspect invoked, as
 	// Perform performs a verse; restore is the omen it is restored to
 	// should the exalted servitor revert it by itself, "" when none is
 	// known.
@@ -143,7 +143,7 @@ func (inv *Invocation) PerformExalted(ctx context.Context, x Exalter) (Outcome, 
 	}
 	c := newCrier(inv.opts.Herald, inv.rite, values(inv.rite, inv.opts, inv.opts.Inscriptions), inv.steps)
 	out := performAll(ctx, inv.steps, c, finish)
-	if inv.rite.MarkII && !inv.rite.Edict {
+	if !inv.rite.Edict {
 		out.Changed, out.Known = changed(out.Deeds), inv.known()
 	}
 	return out, nil
@@ -176,17 +176,17 @@ func (inv *Invocation) unexalted(x Exalter) Heresies {
 	return hs
 }
 
-// noun is what the invocation performs: verses, or the subjects and
-// observances of a state rite.
+// noun is what the invocation performs: the subjects and observances of a
+// rite of aspects, or the verses of an edict.
 func (inv *Invocation) noun() string {
-	if inv.rite.MarkII && !inv.rite.Edict {
+	if !inv.rite.Edict {
 		return "subject or observance"
 	}
 	return "verse"
 }
 
 // Exalts reports whether the invocation performs anything exalted: an
-// exalted verse, or an exalted subject or observance of a state rite that
+// exalted verse, or an exalted subject or observance of a rite of aspects that
 // changes. Only then is the exalted servitor raised.
 func (inv *Invocation) Exalts() bool { return lastExalted(inv.steps) >= 0 }
 
@@ -235,10 +235,22 @@ func (p *preflight) exaltedTongue(tongue string) bool {
 		return true
 	}
 	if _, known := librarium.ExaltedTongue(program); !known {
-		p.denounce("exalted", "the tongue %s of the exalted verse is %s, which exalted speech is never spoken in: it "+
-			"knows only %s, each bidden to read no scripture of its own as it awakens — name one of them as the "+
-			"\"tongue\" of the step", tongue, filepath.Base(program), librarium.ExaltedTongueNames)
+		p.denounce("exalted", "the tongue %s of %s is %s, which exalted speech is never spoken in: it knows only %s, "+
+			"each bidden to read no scripture of its own as it awakens — name one of them as its \"tongue\"", tongue,
+			p.exaltedItem(), filepath.Base(program), librarium.ExaltedTongueNames)
 		return false
 	}
 	return true
+}
+
+// exaltedItem names the exalted subject, observance or verse being
+// examined, as laments name it.
+func (p *preflight) exaltedItem() string {
+	switch {
+	case p.subject != "":
+		return fmt.Sprintf("the exalted subject %q", p.subject)
+	case p.observance != "":
+		return fmt.Sprintf("the exalted observance %q", p.observance)
+	}
+	return fmt.Sprintf("the exalted verse %d", p.index+1)
 }

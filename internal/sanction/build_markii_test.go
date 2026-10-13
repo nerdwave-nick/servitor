@@ -9,6 +9,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/nerdwave-nick/servitor/internal/librarium"
 )
 
 // gaming is a state rite of pattern Mark II holding every designation
@@ -55,9 +57,11 @@ const gaming = `{
 
 // gamingFiles are the tome, scroll and relic of gaming.
 func gamingFiles() map[string]string {
-	f := splitLockFiles()
-	f["tomes/split-lock.conf"] = "split-lock {{aspect}} {{inscription.level}}\n"
-	return f
+	return map[string]string{
+		"tomes/split-lock.conf": "split-lock {{aspect}} {{inscription.level}}\n",
+		"scrolls/tune":          "#!/bin/sh\n. ./scrolls/tune.conf\n",
+		"scrolls/tune.conf":     "level=3\n",
+	}
 }
 
 func buildGaming(t *testing.T, scripture string, files map[string]string) *Unit {
@@ -112,12 +116,12 @@ var goldenSigilsII = []string{
 // subjects that name it, and its "from".
 func TestBuildII_EveryExaltedItemIsResolvedForEachAspect(t *testing.T) {
 	u := buildGaming(t, gaming, gamingFiles())
-	if u.Pattern != PatternMarkII || u.Edict || len(u.Aspects) != 2 {
+	if u.Pattern != Pattern || u.Edict || len(u.Aspects) != 2 {
 		t.Fatalf("unit %s", u.Canonical())
 	}
 	want := []string{"SERVITOR_ASPECT", "SERVITOR_FORMER_ASPECT", "SERVITOR_INSCRIPTION_LEVEL",
 		"SERVITOR_INSCRIPTION_REASON", "SERVITOR_OMEN", "SERVITOR_RITE"}
-	if u.Environment.Pattern != PatternMarkII || !slices.Equal(u.Environment.Keys, want) {
+	if u.Environment.Pattern != Pattern || !slices.Equal(u.Environment.Keys, want) {
 		t.Errorf("environment %+v", u.Environment)
 	}
 	on, off := u.Aspects[0], u.Aspects[1]
@@ -244,27 +248,6 @@ func TestBuildII_APlanMayHoldNothing(t *testing.T) {
 	}
 }
 
-// TestBuildII_AnEdictOfMarkIIIsOfItsPattern: an edict of pattern Mark II is
-// drawn as an edict of Mark I is, under the pattern Mark II, so that its
-// conversion lapses its sanction.
-func TestBuildII_AnEdictOfMarkIIIsOfItsPattern(t *testing.T) {
-	markI := librariumOf(t, "reboot", `{"pattern": "Mark I", "edict": true,
-	  "liturgy": [{"incantation": "systemctl reboot", "exalted": true}]}`, nil)
-	markII := librariumOf(t, "reboot", `{"pattern": "Mark II", "edict": true,
-	  "liturgy": [{"designation": "incantation", "words": "systemctl reboot", "exalted": true}]}`, nil)
-	a, err := Build(markI, options)
-	must(t, err)
-	b, err := Build(markII, options)
-	must(t, err)
-	if a.Pattern != Pattern || b.Pattern != PatternMarkII || b.Environment.Pattern != PatternMarkII ||
-		len(b.Aspects[0].Liturgy) != 1 || b.Aspects[0].Liturgy[0].Verse != 1 || a.Sigil() == b.Sigil() {
-		t.Errorf("Mark I %s\nMark II %s", a.Canonical(), b.Canonical())
-	}
-	if slices.Contains(b.Environment.Keys, "SERVITOR_OMEN") {
-		t.Errorf("an edict hears an omen: %v", b.Environment.Keys)
-	}
-}
-
 // TestBuildII_ASanctionIsReadBackWhole: the sanction of a state rite is
 // written and read back strictly, its sigil unchanged.
 func TestBuildII_ASanctionIsReadBackWhole(t *testing.T) {
@@ -284,21 +267,31 @@ func TestBuildII_ASanctionIsReadBackWhole(t *testing.T) {
 }
 
 // TestBuildII_AMisshapenSanctionIsNoTrueOne: a sanction whose plans hold
-// what its pattern does not — subjects in a unit of Mark I, verses in the
-// unit of a state rite — is no true sanction, whatever its sigil.
+// what its form does not — subjects in the unit of an edict, verses in the
+// unit of a state rite, a vessel among the verses of an edict — is no true
+// sanction, whatever its sigil.
 func TestBuildII_AMisshapenSanctionIsNoTrueOne(t *testing.T) {
-	markI := build(t, splitLock, splitLockFiles())
-	markI.Aspects[0].Subjects = buildGaming(t, gaming, gamingFiles()).Aspects[0].Subjects
 	state := buildGaming(t, gaming, gamingFiles())
-	state.Aspects[1].Liturgy = build(t, splitLock, splitLockFiles()).Aspects[1].Liturgy
-	for _, u := range []*Unit{markI, state} {
+	edict := func() *Unit {
+		u, err := Build(librariumOf(t, "gaming", `{"pattern": "Mark II", "edict": true,
+		  "liturgy": [{"designation": "incantation", "words": "systemctl reboot", "exalted": true}]}`, nil), options)
+		must(t, err)
+		return u
+	}
+	subjected, vessel, versed := edict(), edict(), buildGaming(t, gaming, gamingFiles())
+	subjected.Aspects[0].Subjects = state.Aspects[0].Subjects
+	vessel.Aspects[0].Liturgy = append(vessel.Aspects[0].Liturgy, Verse{Verse: 2, Kind: librarium.KindTranscription,
+		Target: "/etc/sysctl.d/90-gaming.conf", Scripture: []byte("kernel.split_lock_mitigate = 0")})
+	versed.Aspects[1].Liturgy = edict().Aspects[0].Liturgy
+	for what, u := range map[string]*Unit{"subjects in an edict": subjected, "a vessel in an edict": vessel,
+		"verses in a state rite": versed} {
 		store := Store{Root: t.TempDir(), UID: 1000}
 		data, err := json.Marshal(New(u, time.Date(2026, 10, 13, 18, 0, 0, 0, time.UTC)))
 		must(t, err)
 		must(t, os.MkdirAll(filepath.Dir(store.Path(u.Rite)), 0o750))
 		must(t, os.WriteFile(store.Path(u.Rite), data, 0o640))
 		if kept, err := store.Read(u.Rite); err == nil || kept != nil || !strings.Contains(err.Error(), "no true sanction") {
-			t.Errorf("a misshapen sanction of %s was read: %v %v", u.Pattern, kept, err)
+			t.Errorf("%s: a misshapen sanction was read: %v %v", what, kept, err)
 		}
 	}
 }

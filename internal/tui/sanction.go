@@ -14,14 +14,15 @@ import (
 // proof and ended.
 type provenMsg struct {
 	rite    string
-	abjured bool // an abjuring; else a sanctioning
+	exalted string // what the rite holds exalted, as exaltedOf names it
+	abjured bool   // an abjuring; else a sanctioning
 	sigil   string
 	err     error
 	words   string  // what the intercessor and the exalted servitor spoke upon stderr
 	laments []error // what went amiss after it, undoing nothing
 }
 
-// sanctionScreen shows the master the exalted verses of a rite as they
+// sanctionScreen shows the master what a rite holds exalted as it
 // would be sanctioned — the whole unit beneath its sigil, or only what
 // changed since the sanction that stands — or why none may be. enter asks
 // the intercessor for the one proof that lays the sanction, a for the one
@@ -30,6 +31,7 @@ type provenMsg struct {
 type sanctionScreen struct {
 	*textScreen
 	rite     string
+	exalted  string            // what the rite holds exalted, as exaltedOf names it
 	offering *rituals.Offering // nil when nothing may be sanctioned
 	kept     bool              // a sanction is laid under the rite's name
 	proving  bool
@@ -38,8 +40,8 @@ type sanctionScreen struct {
 // openSanction opens the sanction of the rite of r.
 func (m *model) openSanction(r *row) {
 	o, err := m.s.Offer(r.name)
-	s := &sanctionScreen{rite: r.name, offering: o, kept: r.sanction != sanction.None &&
-		r.sanction != sanction.Unsanctioned}
+	s := &sanctionScreen{rite: r.name, exalted: exaltedOf(r.rite(), true), offering: o,
+		kept: r.sanction != sanction.None && r.sanction != sanction.Unsanctioned}
 	s.textScreen = newTextScreen("Sanction of "+r.name, m.offered(r.name, o, err, s.kept))
 	m.screen = s
 }
@@ -60,18 +62,18 @@ func (m *model) offered(name string, o *rituals.Offering, err error, kept bool) 
 	if o.Lament != nil {
 		b = append(b, t.warn.Render(o.Lament.Error()), "")
 	}
-	shown := o.Shown()
+	shown, exalted := o.Shown(), exaltedOf(o.Rite, true)
 	switch {
 	case o.Unchanged():
-		b = append(b, t.ok.Render(fmt.Sprintf("✠ The exalted verses of %s stand sanctioned already under the sigil "+
-			"%s.", name, sanction.Short(o.Sigil()))), t.text.Render("Nothing is to be sanctioned anew."), "")
+		b = append(b, t.ok.Render(fmt.Sprintf("✠ The %s of %s stand sanctioned already under the sigil %s.",
+			exalted, name, sanction.Short(o.Sigil()))), t.text.Render("Nothing is to be sanctioned anew."), "")
 		shown = sanction.Show(o.Unit)
 	case o.Kept == nil:
-		b = append(b, t.bold.Render(fmt.Sprintf("✠ The exalted verses of %s, offered for sanction under the sigil %s:",
-			name, o.Sigil())), "")
+		b = append(b, t.bold.Render(fmt.Sprintf("✠ The %s of %s, offered for sanction under the sigil %s:",
+			exalted, name, o.Sigil())), "")
 	default:
-		b = append(b, t.bold.Render(fmt.Sprintf("✠ The exalted verses of %s changed since they were sanctioned under "+
-			"the sigil %s; offered anew under the sigil %s:", name, sanction.Short(o.Kept.Sigil), o.Sigil())), "")
+		b = append(b, t.bold.Render(fmt.Sprintf("✠ The %s of %s changed since they were sanctioned under the sigil "+
+			"%s; offered anew under the sigil %s:", exalted, name, sanction.Short(o.Kept.Sigil), o.Sigil())), "")
 	}
 	for _, l := range shown {
 		st := t.text
@@ -101,7 +103,7 @@ func (s *sanctionScreen) update(m *model, msg tea.Msg) (screen, tea.Cmd) {
 		}
 		o, sv := s.offering, m.s
 		s.prove(m, false, func(x rituals.Exaltation) provenMsg {
-			return provenMsg{rite: s.rite, sigil: o.Sigil(), err: sv.Sanction(o, x)}
+			return provenMsg{rite: s.rite, exalted: s.exalted, sigil: o.Sigil(), err: sv.Sanction(o, x)}
 		})
 	case "a":
 		if !s.kept {
@@ -110,7 +112,7 @@ func (s *sanctionScreen) update(m *model, msg tea.Msg) (screen, tea.Cmd) {
 		sv := m.s
 		s.prove(m, true, func(x rituals.Exaltation) provenMsg {
 			_, err := sv.Abjure(s.rite, x)
-			return provenMsg{rite: s.rite, abjured: true, err: err}
+			return provenMsg{rite: s.rite, exalted: s.exalted, abjured: true, err: err}
 		})
 	default:
 		next, cmd := s.textScreen.update(m, msg)
@@ -177,11 +179,11 @@ func (m *model) proven(msg provenMsg) tea.Cmd {
 		m.screen = newTextScreen(deed, strings.Join(b, "\n"))
 		return nil
 	}
-	text := fmt.Sprintf("The exalted verses of %s stand sanctioned under the sigil %s.", msg.rite,
+	text := fmt.Sprintf("The %s of %s stand sanctioned under the sigil %s.", msg.exalted, msg.rite,
 		sanction.Short(msg.sigil))
 	if msg.abjured {
-		text = "The sanction of " + msg.rite + " is abjured; its exalted verses are performed no more until " +
-			"they are sanctioned anew."
+		text = "The sanction of " + msg.rite + " is abjured; its " + msg.exalted + " are performed no more " +
+			"until they are sanctioned anew."
 	}
 	if len(msg.laments) > 0 {
 		return m.notify(toastErr, text+" Yet: "+msg.laments[0].Error())
