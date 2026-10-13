@@ -9,10 +9,11 @@ line of /mnt/share/trial.log, "ok - …" or "not ok - …", with what was seen
 beneath a failure; guest.sh adds the root's assertions and the verdict.
 Every transcript of servitor at a terminal is kept in /mnt/share/transcripts.log.
 
-Every rite is of pattern Mark II but one: trial-gaming is laid in pattern
-Mark I with exalted verses, converted by the first ritual that reads it (census),
-and then given auspexes by its master as the faithful would, one of them an
-exalted auspex the invoker cannot read.
+Every rite is of pattern Mark II but two, each converted by the first ritual
+that reads it (census): trial-gaming is laid in pattern Mark I with exalted
+verses, and then given auspexes by its master as the faithful would, one of
+them an exalted auspex the invoker cannot read; and split-lock-mark-i is the
+example split-lock as it was written in pattern Mark I, invoked as converted.
 
 The cogitator is driven by its keys: sudo is lent its terminal (and Ctrl-C at
 sudo's prompt is tried), while run0 and pkexec, called upon apart from any
@@ -526,6 +527,40 @@ def abjure():
     refusals_before_any_proof("abjured")
 
 
+def elder_split_lock():
+    """The example split-lock as it was written in pattern Mark I, laid as
+    split-lock-mark-i, is converted by the census that first reads it, then
+    sanctioned anew; it goes on and off with one proof each, and invoked
+    again into the aspect it bears asks no proof and changes nothing."""
+    shutil.copy(f"{FORGE}/internal/librarium/testdata/conversion/examples/split-lock.json",
+                f"{RITES}/split-lock-mark-i.json")
+    t = servitor("census")
+    check(t.code == 0 and 'the rite "split-lock-mark-i" is converted to pattern "Mark II"' in t.text()
+          and "servitor sanction split-lock-mark-i" in t.text()
+          and os.path.exists(f"{RITES}/.mark-i/split-lock-mark-i.json"),
+          "the census converts the example split-lock of Mark I, its elder scripture kept in .mark-i", t.text())
+    t = servitor("sanction", "split-lock-mark-i")
+    check(t.code == 0 and t.proofs == 1, "sanction split-lock-mark-i: one proof, exit 0", t.text())
+    for aspect, value, proofs, changed in (("on", "0", 1, ["transcription-2"]), ("on", "0", 0, []),
+                                            ("off", "1", 1, ["transcription-2"]), ("off", "1", 0, [])):
+        again = " again" if not changed else ""
+        t = servitor("invoke", "split-lock-mark-i", aspect)
+        entry = last_chronicle()
+        check(t.code == 0 and t.proofs == proofs and entry.get("verdict") == "triumph"
+              and entry.get("changed") == changed,
+              f"split-lock-mark-i {aspect}{again}: {proofs} proof(s), triumph, changing {changed or 'nothing'}",
+              t.text() + json.dumps(entry))
+        check(knob() == value and os.path.exists(KEPT) == (aspect == "on"),
+              f"split-lock-mark-i {aspect}{again}: split_lock_mitigate is {value}, {KEPT} "
+              f"{'written' if aspect == 'on' else 'struck'}", knob())
+        t = servitor("augury", "split-lock-mark-i")
+        a = json.loads(t.text() or "{}")
+        check(a.get("aspect") == aspect and a.get("standing") == "performed",
+              f"split-lock-mark-i {aspect}{again}: the augury reads it performed", t.text())
+    t = servitor("abjure", "split-lock-mark-i")
+    check(t.code == 0 and t.proofs == 1, "abjure split-lock-mark-i: one proof, exit 0", t.text())
+
+
 def main():
     say("# the driver begins, %s" % time.strftime("%FT%TZ", time.gmtime()))
     tell_the_machine()
@@ -548,6 +583,7 @@ def main():
     for tool in ("run0", "pkexec"):
         cogitator_through_an_agent(tool)
     abjure()
+    elder_split_lock()
     check(knob() == "1" and not os.path.exists(KEPT), "the machine ends as it began")
     t = servitor("augury", "trial-gaming")
     omen = next((o for o in json.loads(t.text() or "{}").get("omens", []) if o.get("subject") == "incantation-3"), {})
