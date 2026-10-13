@@ -1,0 +1,29 @@
+{
+  "pattern": "Mark I",
+  "purpose": "enable or disable gaming optimization",
+  "aspects": ["on", "off"],
+  "liturgy": [
+    {
+      "incantation": {
+        "on": "sysctl -wq kernel.split_lock_mitigate=0",
+        "*": "sysctl -wq kernel.split_lock_mitigate=1"
+      }
+    },
+    {"vox-cast": "progress"},
+    {
+      "incantation": {
+        "on": "scx_cosmos -p 0 -c 0 &> /dev/null",
+        "*": "killall scx_cosmos &> /dev/null || true"
+      }
+    },
+    {"vox-cast": "progress"},
+    {
+      "incantation": {
+        "on": "echo on | tee /sys/devices/system/cpu/smt/control &> /dev/null",
+        "*": "echo off | tee /sys/devices/system/cpu/smt/control &> /dev/null"
+      }
+    },
+    {"vox-cast": "progress"}
+  ]
+}
+

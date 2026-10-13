@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+
+	"github.com/tailscale/hujson"
 )
 
 // Marshal writes r as indented scripture of its pattern, Mark I or Mark II
@@ -31,6 +33,23 @@ type writer struct {
 	root  *node
 	stack []frame
 	err   error
+	// notes are lines of comment written before the value at each JSON
+	// pointer; scripture bearing them is JSONC.
+	notes map[string][]string
+}
+
+// valid reports whether text is scripture the codex can read: JSON, or
+// JSONC when the writer bears notes.
+func (w *writer) valid(text string) bool {
+	if w.notes == nil {
+		return jsontext.Value(text).IsValid()
+	}
+	v, err := hujson.Parse([]byte(text))
+	if err != nil {
+		return false
+	}
+	v.Standardize()
+	return jsontext.Value(v.Pack()).IsValid()
 }
 
 func (w *writer) str(s string) { w.tok(jsontext.String(s)) }

@@ -1,0 +1,27 @@
+{
+  "pattern": "Mark II",
+  "aspects": ["day", "night"],
+  "vox-cast": ["success"],
+  // pattern "Mark I" read the aspect of the whole rite by the auspex "cat ~/.cache/visage";
+  // it is struck, for it read the whole rite, and none of its 2 machine-spirits may bear it alone
+  "subjects": [
+    // pattern "Mark I" recited the scroll "scripts/visage" with its offerings;
+    // its enact words now call that scroll, spoken in the hall of the rite
+    {
+      "name": "litany-1",
+      "designation": "machine-spirit",
+      "enact": {
+        "*": "./scripts/visage {{aspect}} ~/'.config/visage of {{aspect}}'"
+      }
+    },
+    // pattern "Mark I" recited the scroll {"day": "/usr/bin/dawn", "night": "/usr/bin/dusk"} with its offerings;
+    // its enact words now call that scroll, spoken in the hall of the rite
+    // pattern "Mark I" spoke the reversion "true" should a later verse fall;
+    // it is struck, for a machine-spirit is restored by enacting the omen it showed before
+    {
+      "name": "litany-2",
+      "designation": "machine-spirit",
+      "enact": {"day": "/usr/bin/dawn", "night": "/usr/bin/dusk"}
+    }
+  ]
+}

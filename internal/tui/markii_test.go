@@ -16,9 +16,9 @@ import (
 // them answers without the cogitator falling; a state rite whose subject
 // names an observance is not performed (its edicts are proclaimed, see
 // edict_markii_test.go, and other state rites invoked, see
-// TestMarkII_TheCogitatorInvokesAStateRite), and the wizard, which knows not
-// yet their form, refuses to amend or replicate them rather than write them
-// anew as Mark I.
+// TestMarkII_TheCogitatorInvokesAStateRite). The wizard opens upon an
+// edict, and refuses to amend or replicate a rite of machine-spirits, whose
+// form it knows not yet, rather than lose it.
 func TestMarkII_TheCogitatorStandsFirmAndPerformsNothing(t *testing.T) {
 	h := newHarness(t)
 	gaming := h.writeRite("gaming", `{"pattern": "Mark II", "aspects": ["on", "off"], "subjects": [
@@ -30,14 +30,16 @@ func TestMarkII_TheCogitatorStandsFirmAndPerformsNothing(t *testing.T) {
 	scripture, _ := os.ReadFile(gaming)
 	h.keys("r", "g")
 	h.mustShow("Rites (3)", "capture", "gaming", "mouse")
-	for _, row := range []string{"edict capture", "rite gaming"} {
-		for _, key := range []string{"e", "c"} {
-			h.keys(key)
-			h.mustShow(`pattern "Mark II"`, row)
-			h.mustNotShow("Amendment of", "Consecrate a rite")
-			h.keys("esc")
-		}
-		h.keys("j")
+	h.keys("e")
+	h.mustShow("Amendment of the edict capture", `pattern Mark II`)
+	h.keys("esc", "c")
+	h.mustShow("Consecration of a new edict", "capture-copy")
+	h.keys("esc", "j")
+	for _, key := range []string{"e", "c"} {
+		h.keys(key)
+		h.mustShow(`machine-spirits and observances of pattern "Mark II"`, "rite gaming")
+		h.mustNotShow("Amendment of", "Consecration of")
+		h.keys("esc")
 	}
 	refused := func(keys ...string) {
 		t.Helper()

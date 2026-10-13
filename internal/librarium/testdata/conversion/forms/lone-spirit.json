@@ -1,0 +1,16 @@
+// one verse of speech beside a vox-cast: it becomes the only machine-spirit,
+// which bears the rite's auspex as its scan; its reversion is struck
+{
+  "pattern": "Mark I",
+  "purpose": "Lend the fans their voice",
+  "aspects": ["quiet", "loud"],
+  "auspex": {"rite": "cat ~/.cache/fans", "patience": "1s"},
+  "liturgy": [
+    {"vox-cast": "progress"},
+    {
+      "incantation": {"quiet": "echo quiet > ~/.cache/fans", "loud": "echo loud > ~/.cache/fans"},
+      "reversion": {"*": "rm -f ~/.cache/fans"},
+      "patience": "3s",
+    },
+  ],
+}

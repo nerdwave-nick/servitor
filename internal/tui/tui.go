@@ -19,10 +19,13 @@ import (
 
 // Options configure the TUI.
 type Options struct {
-	Dir    string
-	Runes  librarium.Runes // the servitor's runes that sway the settings
-	Input  io.Reader       // defaults to the terminal
-	Output io.Writer
+	Dir   string
+	Runes librarium.Runes // the servitor's runes that sway the settings
+	// Convert converts every scripture of pattern Mark I the cogitator
+	// reads to pattern Mark II, on disk, and tells it in a toast.
+	Convert bool
+	Input   io.Reader // defaults to the terminal
+	Output  io.Writer
 }
 
 // Run starts the TUI and blocks until it exits.
@@ -34,7 +37,7 @@ func Run(opt Options) error {
 	if opt.Output != nil {
 		popts = append(popts, tea.WithOutput(opt.Output))
 	}
-	m := newModel(opt.Dir, opt.Runes)
+	m := newModel(opt.Dir, opt.Runes, opt.Convert)
 	p := tea.NewProgram(m, popts...)
 	m.send = p.Send
 	_, err := p.Run()
@@ -91,6 +94,7 @@ type screen interface {
 type model struct {
 	dir     string
 	runes   librarium.Runes
+	convert bool // scripture of pattern Mark I is converted at every reading
 	t       *theme
 	s       *rituals.Servitor // the Librarium as last read
 	send    func(tea.Msg)     // delivers what a running invocation tells
@@ -112,17 +116,15 @@ type model struct {
 	exec func(tea.ExecCommand, tea.ExecCallback) tea.Cmd
 }
 
-func newModel(dir string, runes librarium.Runes) *model {
+func newModel(dir string, runes librarium.Runes, convert bool) *model {
 	f := textinput.New()
 	f.Prompt = "/ "
-	m := &model{dir: dir, runes: runes, t: newTheme(), filter: f, send: func(tea.Msg) {},
+	m := &model{dir: dir, runes: runes, convert: convert, t: newTheme(), filter: f, send: func(tea.Msg) {},
 		thought: int(time.Now().UnixNano() % int64(len(lexicon.Thoughts))), width: 100, height: 30,
 		gone: make(chan struct{}), exec: tea.Exec}
 	m.reload("")
 	return m
 }
-
-func (m *model) Init() tea.Cmd { return nil }
 
 // reload re-reads the configuration and keeps the selection on name.
 func (m *model) reload(selected string) {
@@ -131,7 +133,12 @@ func (m *model) reload(selected string) {
 			selected = r.name
 		}
 	}
-	m.s = rituals.Open(m.dir, m.runes)
+	if m.convert {
+		m.s = rituals.OpenConverting(m.dir, m.runes)
+		m.converted(m.s.Convert())
+	} else {
+		m.s = rituals.Open(m.dir, m.runes)
+	}
 	lib := m.s.Librarium
 	kept := map[string]*rituals.Sanctioned{}
 	list, _ := m.s.ListSanctions() // a sanction that cannot be read lapses its rite in the augury
@@ -181,7 +188,11 @@ func (m *model) current() *row {
 
 func (m *model) notify(kind toastKind, text string) tea.Cmd {
 	m.toast = toast{text: text, kind: kind, id: m.toast.id + 1}
-	id := m.toast.id
+	return fade(m.toast.id)
+}
+
+// fade lets the toast id fade after a while.
+func fade(id int) tea.Cmd {
 	return tea.Tick(6*time.Second, func(time.Time) tea.Msg { return toastExpiredMsg{id: id} })
 }
 

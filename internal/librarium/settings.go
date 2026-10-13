@@ -51,15 +51,26 @@ func SettingsPath(dir string) string { return filepath.Join(dir, SettingsName) }
 // LoadSettings reads and examines the settings of the Librarium dir. A
 // Librarium without settings yields unwritten settings and no finding.
 func LoadSettings(dir string) (*Settings, Findings) {
+	s, fs, _ := loadSettings(dir, false)
+	return s, fs
+}
+
+// loadSettings reads and examines the settings of the Librarium dir,
+// converting them in memory when convert (convertSettings).
+func loadSettings(dir string, convert bool) (*Settings, Findings, *Conversion) {
 	path := SettingsPath(dir)
 	data, err := os.ReadFile(path)
 	switch {
 	case errors.Is(err, fs.ErrNotExist):
-		return &Settings{Path: path}, nil
+		return &Settings{Path: path}, nil, nil
 	case err != nil:
-		return &Settings{Path: path}, Findings{readHeresy(path, "", err)}
+		return &Settings{Path: path}, Findings{readHeresy(path, "", err)}, nil
 	}
-	return ParseSettings(path, data)
+	s, found := ParseSettings(path, data)
+	if !convert {
+		return s, found, nil
+	}
+	return convertSettings(s, found, data)
 }
 
 // ParseSettings reads the settings' scripture data kept at path. The
