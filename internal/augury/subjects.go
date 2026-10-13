@@ -79,8 +79,10 @@ func (s *seer) invoked(opts Options) {
 
 // ReadSubject reads the subject at index i of the state rite r anew, as an
 // augury reads it, while it is invoked into opts.Target: what an invocation
-// proves a subject it set by. An exalted auspex is never spoken here, nor a
-// forgone one; a sanctum reads only the aspect its marker records.
+// proves a subject it set or restored by. A machine-spirit whose auspex
+// holds trials is proven by them, even beside a scan, which only reads.
+// An exalted auspex is never spoken here, nor a forgone one; a sanctum
+// reads only the aspect its marker records.
 func ReadSubject(ctx context.Context, r *librarium.Rite, i int, opts Options) invocation.Reading {
 	slate, _ := ReadSlate(opts.env(), r.Name)
 	s := newSeer(r, slate)
@@ -93,7 +95,7 @@ func ReadSubject(ctx context.Context, r *librarium.Rite, i int, opts Options) in
 		}
 	case *librarium.MachineSpirit:
 		if m.Auspex != nil && !m.Auspex.Exalted && !opts.ForgoAuspex {
-			read := s.spirit(sub, opts).hear(ctx, opts.Places)
+			read := s.spirit(sub, opts, true).hear(ctx, opts.Places)
 			return invocation.Reading{Omen: read.omen, Aspects: read.aspects}
 		}
 	default:
@@ -116,7 +118,7 @@ func Fitting(r *librarium.Rite, i int, opts Options, shown []string) invocation.
 	slate, _ := ReadSlate(opts.env(), r.Name)
 	s := newSeer(r, slate)
 	s.invoked(opts)
-	read := s.spirit(sub, opts).fits(shown)
+	read := s.spirit(sub, opts, false).fits(shown)
 	return invocation.Reading{Omen: read.omen, Aspects: read.aspects}
 }
 
@@ -138,7 +140,7 @@ func (a *Augury) hearSpirits(ctx context.Context, s *seer, opts Options, spirits
 	readings := make([]readSpirit, len(spirits))
 	var wg sync.WaitGroup
 	for n, i := range spirits {
-		hearing := s.spirit(s.rite.Subjects[i], opts) // prepared here: the seer is not shared
+		hearing := s.spirit(s.rite.Subjects[i], opts, false) // prepared here: the seer is not shared
 		wg.Go(func() { readings[n] = hearing.hear(ctx, opts.Places) })
 	}
 	wg.Wait()
@@ -183,7 +185,7 @@ func (s *seer) remembered(sub librarium.Subject, opts Options) *Omen {
 	if !ok || s.slate.Boot == "" || s.slate.Boot != s.boot() {
 		return nil
 	}
-	read := s.spirit(sub, opts).fits([]string{rec.Omen})
+	read := s.spirit(sub, opts, false).fits([]string{rec.Omen})
 	if len(read.aspects) == 0 {
 		return nil
 	}

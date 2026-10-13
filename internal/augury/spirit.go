@@ -27,7 +27,7 @@ type hearing struct {
 	aspects []string          // the rite's aspects
 	omens   map[string]string // the omen of each aspect, rendered and trimmed
 	named   bool              // the spirit declares no omens: it shows aspect names
-	scan    *speech           // nil when it is read by its trials
+	scan    *speech           // nil when it is read or proven by its trials
 	trials  map[string]speech // the trial of every declared omen bearing one
 	untried []string          // the declared omens bearing no trial
 	silent  bool              // its words could not be rendered: it is mute
@@ -38,8 +38,10 @@ type hearing struct {
 // decrees, and its words with the values of every auspex. It is spoken in
 // the subject's tongue, else the rite's, else the settings', else bash,
 // from the rite's hall, with the environment of the rite's commands; each
-// trial also hears its own omen as {{omen}} and SERVITOR_OMEN.
-func (s *seer) spirit(sub librarium.Subject, opts Options) hearing {
+// trial also hears its own omen as {{omen}} and SERVITOR_OMEN. Its scan
+// reads, when it has one; its trials read when it has none, and prove
+// what an invocation set or restored when it has them (proving).
+func (s *seer) spirit(sub librarium.Subject, opts Options, proving bool) hearing {
 	ms := sub.Matter.(*librarium.MachineSpirit)
 	h := hearing{aspects: s.rite.Aspects, omens: map[string]string{}, named: ms.Omens.IsZero()}
 	var declared []string
@@ -59,7 +61,7 @@ func (s *seer) spirit(sub librarium.Subject, opts Options) hearing {
 	v := s.auspexValues(opts)
 	base := speech{tongue: tongueOf(opts.Orders, ms.Tongue, s.rite.Tongue), hall: s.rite.Dir(),
 		env: withoutOmen(invocation.Environ(s.rite, v)), patience: ms.Auspex.Wait()}
-	if ms.Auspex.Scan != "" {
+	if ms.Auspex.Scan != "" && (!proving || ms.Auspex.Trials.IsZero()) {
 		sp := base
 		var ok bool
 		sp.words, ok = s.render(ms.Auspex.Scan, v)
