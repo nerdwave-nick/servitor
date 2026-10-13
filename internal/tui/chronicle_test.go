@@ -171,7 +171,7 @@ func TestChronicle_SilentAndPlacedByTheRune(t *testing.T) {
 
 	elsewhere := filepath.Join(t.TempDir(), "rites.jsonl")
 	seedChronicle(t, elsewhere, fallenTheme)
-	h.m = newModel(h.dir, librarium.Runes{Chronicle: elsewhere})
+	h.m = newModel(h.dir, librarium.Runes{Chronicle: elsewhere}, false)
 	h.send(tea.WindowSizeMsg{Width: 120, Height: 36})
 	h.keys("h", "/", "esc")
 	h.mustShow("Chronicle (1)", shortPath(elsewhere))
