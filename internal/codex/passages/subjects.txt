@@ -1,0 +1,37 @@
+What a rite of pattern Mark II reads and sets, each by itself
+
+A rite of pattern "Mark II" keeps no liturgy. Under "subjects" it declares,
+in written order, every thing of the machine it brings into its aspects: a
+sanctum in a vessel, a vessel transcribed whole, a tethered name, or a
+machine-spirit read by its auspex and set by its enact words. Each subject
+is named once under "name", takes its shape from its "designation", and
+declares under "omens" the mark each aspect leaves upon it.
+
+At invocation every subject is read; those already bearing the omen of the
+aspect invoked are passed over, and only those whose omen differs are set,
+each proven by a second reading, and restored to what was read should the
+invocation fall. A subject may name observances to be spoken before it
+changes ("introit") or after ("recessional").
+
+The list must hold at least one subject: a rite of aspects with nothing to
+read or set can bring the machine into no aspect, and is heresy. An edict
+bears no subjects. A subject may be exalted, set with the machine's own
+authority from a sanction; its words are then fixed at that sanction.
+
+This servitor reads and judges the subjects of pattern Mark II, yet the rite
+of performance that reads, sets and proves them is not yet forged within it:
+it refuses to invoke such a rite, and touches nothing of it.
+
+Kindred passages: designation, omens, machine-spirit, observances, introit,
+recessional, pattern
+
+Exempla:
+  "subjects": [
+    {"name": "visage", "designation": "tether",
+     "tether": "~/.local/share/nfluff/current-theme",
+     "omens": {"*": "~/.config/nfluff/themes/{{aspect}}"}},
+    {"name": "smt", "designation": "machine-spirit", "exalted": true,
+     "omens": {"on": "off", "*": "on"},
+     "auspex": {"scan": "cat /sys/devices/system/cpu/smt/control"},
+     "enact": {"*": "echo {{omen}} > /sys/devices/system/cpu/smt/control"}}
+  ]

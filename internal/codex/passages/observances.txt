@@ -1,0 +1,27 @@
+The named deeds a rite of pattern Mark II speaks when its subjects change
+
+Under "observances" a rite of aspects lists named deeds that change no
+subject of their own: the transition of a screen, the hooks of a theme, a
+missive to the desktop. Each observance bears a "name", unique among the
+observances, and a "designation": an "incantation" speaking its "words", or
+a "litany" reciting its "scroll" with its "offerings". It may bear a
+"tongue", a "patience", plain "reversion" words, "exalted" and "relics", and
+the guards "to" and "from".
+
+An observance is spoken only when a subject that names it changes: as the
+"introit" of subjects, once, before the first of them that changes; as the
+"recessional" of subjects, once, after the last. One observance is named in
+one of the two places, never both, which is heresy; an observance no subject
+names is never spoken, an impurity.
+
+Its words are written once for every aspect, never as an aspect map; words
+that differ by aspect are written as several observances guarded by "to".
+An edict bears no observances.
+
+Kindred passages: introit, recessional, to, from, words, scroll, subjects
+
+Exempla:
+  "observances": [
+    {"name": "herald-silence", "designation": "incantation", "to": ["on"],
+     "words": "notify-send -t 2000 'The heralds fall silent'"}
+  ]

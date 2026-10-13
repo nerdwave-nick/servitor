@@ -34,7 +34,7 @@ var heresyCases = []heresyCase{
 	{"pattern object", `{"pattern": {"mark": 1}}`, Heresy, "numerals of the old tongue", `{"mark"`, 0},
 	{"pattern list", `{"pattern": ["Mark I"]}`, Heresy, "numerals of the old tongue", `["Mark I"]`, 0},
 	{"pattern bare mark", `{"pattern": "Mark "}`, Heresy, "numerals of the old tongue", `"Mark "`, 0},
-	{"pattern unknown mark", `{"pattern": "Mark II"}`, Heresy, `forged to read only "Mark I"`, `"Mark II"`, 0},
+	{"pattern unknown mark", `{"pattern": "Mark III"}`, Heresy, `forged to read only "Mark I"`, `"Mark III"`, 0},
 	{"unknown key of rite", mark(`"files": [],`, ``), Heresy, `the key "files" is not written in the codex for a rite`, `"files"`, 0},
 	{"unknown key of step", mark(``, `{"tether": "t", "anchor": "a", "ward": "w"}`), Heresy,
 		`the key "ward" is not written in the codex for the tether of verse 1`, `"ward"`, 0},

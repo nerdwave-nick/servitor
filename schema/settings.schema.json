@@ -1,15 +1,15 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://raw.githubusercontent.com/nerdwave-nick/servitor/main/schema/settings.schema.json",
-  "title": "Settings of the servitor, pattern Mark I",
+  "title": "Settings of the servitor, pattern Mark I or Mark II",
   "description": "The servitor's standing orders, kept as servitor.json in the Librarium. A rune outranks the environment, the environment outranks these orders, and these orders outrank the defaults. Recite 'servitor expound <key>' for the lore of any key.",
   "type": "object",
   "required": ["pattern"],
   "additionalProperties": false,
   "properties": {
     "pattern": {
-      "description": "The Mark of the form in which these orders are written. This servitor reads only \"Mark I\"; orders of no pattern, or of another, are heresy and none of them is heeded.",
-      "const": "Mark I"
+      "description": "The Mark of the form in which these orders are written. This servitor reads \"Mark I\" and \"Mark II\", whose orders bear the same keys; orders of no pattern, or of another, are heresy and none of them is heeded.",
+      "enum": ["Mark I", "Mark II"]
     },
     "tongue": {
       "description": "The program in which incantations and litanies are spoken when neither their rite nor the step names one.",

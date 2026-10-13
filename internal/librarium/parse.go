@@ -63,13 +63,17 @@ func (d *decoder) decodeRite(root *hujson.Value) *Rite {
 		d.wrongForm(root, "a rite's scripture", "one object of keys between { and }")
 		return nil
 	}
-	if !d.decodePattern(root, obj) {
+	markII, ok := d.decodePattern(root, obj)
+	if !ok {
 		return nil
 	}
 	r := d.rite
 	if !ValidName(r.Name) {
 		d.heresy(root, "%q is no fit name for a rite: the name of its scripture must begin with a letter "+
 			"or digit and continue only with letters, digits, '.', '_' or '-'", r.Name)
+	}
+	if markII {
+		return d.decodeMarkII(root)
 	}
 	fs, _ := d.object(root, "a rite", RiteKeys)
 	if m, ok := fs.get(SchemaKey); ok {
@@ -102,8 +106,9 @@ func (d *decoder) decodeRite(root *hujson.Value) *Rite {
 	return r
 }
 
-// decodePattern reports whether the scripture is of pattern Mark I.
-func (d *decoder) decodePattern(root *hujson.Value, obj *hujson.Object) bool {
+// decodePattern reports whether the scripture is of a pattern this package
+// reads, and whether that pattern is Mark II.
+func (d *decoder) decodePattern(root *hujson.Value, obj *hujson.Object) (markII, ok bool) {
 	for i := range obj.Members {
 		m := &obj.Members[i]
 		if m.Name.Value.(hujson.Literal).String() != "pattern" {
@@ -118,19 +123,24 @@ func (d *decoder) decodePattern(root *hujson.Value, obj *hujson.Object) bool {
 			}
 			d.heresy(&m.Value, "the \"pattern\" must be \"Mark\" followed by numerals of the old tongue, such "+
 				"as \"Mark I\"; %s is no Mark the Adeptus Mechanicus recognises", written)
-			return false
-		case lit.String() != Pattern:
+			return false, false
+		case !slices.Contains(Patterns, lit.String()):
 			d.heresy(&m.Value, "this scripture is written in pattern %q, but this servitor was forged to read "+
-				"only %q; it will not attempt a form it does not know", lit.String(), Pattern)
-			return false
+				"only %s; it will not attempt a form it does not know", lit.String(), patternNames())
+			return false, false
 		}
-		return true
+		return lit.String() == PatternMarkII, true
 	}
 	d.heresy(root, "the scripture bears no \"pattern\"; every scripture of the Librarium must declare the "+
 		"Mark of its form, and "+
-		"this servitor reads only \"pattern\": %q — scripture of no pattern is heresy, and the servitor "+
-		"will not guess at its meaning%s", Pattern, elderLament(obj))
-	return false
+		"this servitor reads only \"pattern\": %s — scripture of no pattern is heresy, and the servitor "+
+		"will not guess at its meaning%s", patternNames(), elderLament(obj))
+	return false, false
+}
+
+// patternNames names the patterns this package reads: "Mark I" and "Mark II".
+func patternNames() string {
+	return fmt.Sprintf("%q and %q", Pattern, PatternMarkII)
 }
 
 // elderKeys are the keys by which a rite of the elder form, which knew no
@@ -238,9 +248,7 @@ func (d *decoder) decodeInscriptions(v *hujson.Value) {
 			in.Mandatory = d.boolean(f.val, `the "mandatory" of `+what)
 		}
 		if f, ok := decl.get("decrees"); ok {
-			in.Decrees = aspectMap(d, f.val, `the "decrees" of `+what, false, nil, func(v *hujson.Value, what string) (string, bool) {
-				return d.str(v, what)
-			})
+			in.Decrees = d.decrees(f.val, `the "decrees" of `+what)
 		}
 		if in.Mandatory {
 			d.unDecreed(m.key, in)

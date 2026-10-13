@@ -21,6 +21,11 @@ func keysOfTheLibrarium() []string {
 	for _, k := range librarium.Kinds {
 		keys = append(keys, librarium.StepKeys(k)...)
 	}
+	keys = slices.Concat(keys, librarium.MarkIIRiteKeys, librarium.SubjectKeys, librarium.SpiritAuspexKeys,
+		librarium.ObservanceKeys, librarium.SubjectDesignations, librarium.SpeechDesignations)
+	for _, d := range slices.Concat(librarium.SubjectDesignations, librarium.SpeechDesignations) {
+		keys = append(keys, librarium.DesignationKeys(d)...)
+	}
 	return keys
 }
 

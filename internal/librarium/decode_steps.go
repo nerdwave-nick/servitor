@@ -121,7 +121,8 @@ func keysOfKinds() []string {
 	return keys
 }
 
-// stepDecoder decodes the fields of one step.
+// stepDecoder decodes the fields of one step, or of a subject, observance
+// or edict entry of pattern Mark II.
 type stepDecoder struct {
 	d       *decoder
 	v       *hujson.Value
@@ -130,6 +131,17 @@ type stepDecoder struct {
 	kind    Kind
 	verse   int
 	exalted bool
+	// name and designation name a subject or observance of pattern Mark II;
+	// both are "" for a verse.
+	name, designation string
+}
+
+// exaltedTitle names the exalted verse, subject or observance decoded.
+func (s stepDecoder) exaltedTitle() string {
+	if s.designation != "" && s.name != "" {
+		return fmt.Sprintf("the exalted %s %q", s.designation, s.name)
+	}
+	return fmt.Sprintf("the exalted %s of verse %d", s.kind.Key(), s.verse)
 }
 
 func (s stepDecoder) field(key string) string { return fmt.Sprintf("the %q of %s", key, s.what) }
@@ -146,6 +158,16 @@ func (s stepDecoder) required(key, why string) (member, bool) {
 func (s stepDecoder) sanctum(own *hujson.Value) *Sanctum {
 	st := &Sanctum{Exalted: s.exalted}
 	st.Vessel, _ = s.d.templated(own, s.what+"'s vessel", false)
+	s.sanctumMarks(st)
+	if m, ok := s.required("scripture", "a sanctum must declare the scripture it keeps for each aspect"); ok {
+		st.Scripture = s.scripture(m.val, false)
+	}
+	return st
+}
+
+// sanctumMarks decodes how the sanctum st writes its markers: its ward,
+// glyphs, and whether it consecrates its vessel.
+func (s stepDecoder) sanctumMarks(st *Sanctum) {
 	if m, ok := s.fs.get("ward"); ok {
 		if st.Ward, ok = s.d.str(m.val, s.field("ward")); ok &&
 			(st.Ward == "" || strings.IndexFunc(st.Ward, unicode.IsSpace) >= 0) {
@@ -173,10 +195,6 @@ func (s stepDecoder) sanctum(own *hujson.Value) *Sanctum {
 	if m, ok := s.fs.get("consecrate"); ok {
 		st.Consecrate = s.d.boolean(m.val, s.field("consecrate"))
 	}
-	if m, ok := s.required("scripture", "a sanctum must declare the scripture it keeps for each aspect"); ok {
-		st.Scripture = s.scripture(m.val, false)
-	}
-	return st
 }
 
 func (s stepDecoder) transcription(own *hujson.Value) *Transcription {
@@ -197,15 +215,18 @@ func (s stepDecoder) tether(own *hujson.Value) *Tether {
 	st.Name, _ = s.d.templated(own, s.what+"'s bound name", false)
 	if m, ok := s.required("anchor", "a tether must declare where it leads for each aspect, or null where "+
 		"it shall be unbound"); ok {
-		st.Anchor = aspectMap(s.d, m.val, s.field("anchor"), true, nil, func(v *hujson.Value, what string) (Anchor, bool) {
-			if lit, ok := literal(v); ok && lit.Kind() == 'n' {
-				return Anchor{Null: true}, true
-			}
-			p, ok := s.d.templated(v, what, false)
-			return Anchor{Path: p}, ok
-		})
+		st.Anchor = aspectMap(s.d, m.val, s.field("anchor"), true, nil, s.d.anchor)
 	}
 	return st
+}
+
+// anchor decodes where a tether leads, or null where it is unbound.
+func (d *decoder) anchor(v *hujson.Value, what string) (Anchor, bool) {
+	if lit, ok := literal(v); ok && lit.Kind() == 'n' {
+		return Anchor{Null: true}, true
+	}
+	p, ok := d.templated(v, what, false)
+	return Anchor{Path: p}, ok
 }
 
 func (s stepDecoder) litany(own *hujson.Value) *Litany {

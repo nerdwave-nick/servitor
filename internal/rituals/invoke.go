@@ -68,7 +68,8 @@ type Result struct {
 }
 
 // Invoke performs the petition, or foresees it. The error tells why
-// nothing was performed: *Unrecorded, *Heretical, invocation.Heresies of
+// nothing was performed: *Unrecorded, *Heretical, *Unperformable for a rite
+// of pattern Mark II, invocation.Heresies of
 // the inscriptions or the pre-flight (the result's Foresight is filled for
 // the steps that passed) or of exalted verses that may not be performed
 // (see exaltation), *Forsaken, or a refusal before any exalted verse: no
@@ -96,6 +97,11 @@ func (s *Servitor) Invoke(ctx context.Context, p Petition) (Result, error) {
 	r, err := s.Rite(p.Rite)
 	if err != nil {
 		return Result{}, err
+	}
+	if r.MarkII {
+		// Nothing of pattern Mark II is performed until its rite of
+		// performance is forged: not even its subjects are read.
+		return Result{}, &Unperformable{Name: r.Name, Edict: r.Edict}
 	}
 	res := Result{Rite: r}
 	exalting, err := s.exaltation(r, p, &res)

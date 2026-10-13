@@ -156,13 +156,30 @@ func twice(name string, paths []string) Findings {
 	return fs
 }
 
-// claim is one sanctum keeping a ward in a vessel.
+// claim is one sanctum keeping a ward in a vessel: a verse of the liturgy,
+// or a subject of pattern Mark II.
 type claim struct {
-	rite  *Rite
-	index int // in the rite's liturgy
+	rite    *Rite
+	sanctum *Sanctum
+	by      string // the verse or subject, as a denunciation names it
+	ptr     string // the JSON pointer of the verse or subject
 }
 
-func (c claim) verse() int { return c.rite.verse(c.index) }
+// claims returns every sanctum of the rite r, verse or subject.
+func claims(r *Rite) []claim {
+	var cs []claim
+	for i, s := range r.Liturgy {
+		if s, ok := s.(*Sanctum); ok {
+			cs = append(cs, claim{r, s, fmt.Sprintf("verse %d", r.verse(i)), r.stepPointer(i)})
+		}
+	}
+	for i, s := range r.Subjects {
+		if st, ok := s.Matter.(*Sanctum); ok {
+			cs = append(cs, claim{r, st, fmt.Sprintf("the subject %q", s.Name), r.subjectPointer(i)})
+		}
+	}
+	return cs
+}
 
 // wardClashes denounces every sanctum whose ward another sanctum keeps in
 // the same vessel, across all rites.
@@ -170,14 +187,12 @@ func wardClashes(rites []*Rite) Findings {
 	seen := map[[2]string][]claim{}
 	var keys [][2]string
 	for _, r := range rites {
-		for i, s := range r.Liturgy {
-			if s, ok := s.(*Sanctum); ok {
-				key := [2]string{r.ResolvePath(s.Vessel), s.WardFor(r.Name)}
-				if seen[key] == nil {
-					keys = append(keys, key)
-				}
-				seen[key] = append(seen[key], claim{r, i})
+		for _, c := range claims(r) {
+			key := [2]string{r.ResolvePath(c.sanctum.Vessel), c.sanctum.WardFor(r.Name)}
+			if seen[key] == nil {
+				keys = append(keys, key)
 			}
+			seen[key] = append(seen[key], c)
 		}
 	}
 	var fs Findings
@@ -191,18 +206,25 @@ func wardClashes(rites []*Rite) Findings {
 			if i == 0 {
 				other = claims[1]
 			}
-			ptr := c.rite.stepPointer(c.index)
-			at := ptr + "/ward"
-			if c.rite.Liturgy[c.index].(*Sanctum).Ward == "" {
-				at = ptr + "/sanctum"
+			at := c.ptr + "/ward"
+			if c.sanctum.Ward == "" {
+				at = c.ptr + "/" + vesselKey(c.rite)
 			}
 			fs = append(fs, Finding{Severity: Heresy, Scripture: c.rite.Path, Rite: c.rite.Name,
 				Position: c.rite.Locate(at), Message: fmt.Sprintf("the ward %q in the vessel %s is claimed "+
-					"twice: by verse %d of the rite %q (%s) and by verse %d of the rite %q (%s); two sanctums "+
+					"twice: by %s of the rite %q (%s) and by %s of the rite %q (%s); two sanctums "+
 					"sharing one ward in one vessel would overwrite each other's scripture — give each its own "+
-					"\"ward\"", key[1], key[0], c.verse(), c.rite.Name, c.rite.Path, other.verse(), other.rite.Name,
+					"\"ward\"", key[1], key[0], c.by, c.rite.Name, c.rite.Path, other.by, other.rite.Name,
 					other.rite.Path)})
 		}
 	}
 	return fs
+}
+
+// vesselKey is the key a sanctum of the rite r names its vessel by.
+func vesselKey(r *Rite) string {
+	if r.MarkII {
+		return "vessel"
+	}
+	return "sanctum"
 }

@@ -40,6 +40,9 @@ type Settings struct {
 	// Intercessor is one of Intercessors, or "" when not written. It is
 	// judged, yet no invocation heeds it so far.
 	Intercessor string
+	// MarkII marks settings written in pattern Mark II; their keys are
+	// those of Mark I.
+	MarkII bool
 }
 
 // SettingsPath returns where the settings of the Librarium dir are kept.
@@ -86,9 +89,11 @@ func (d *decoder) decodeSettings(root *hujson.Value, s *Settings) {
 		d.wrongForm(root, "the settings", "one object of keys between { and }")
 		return
 	}
-	if !d.decodePattern(root, obj) {
+	markII, ok := d.decodePattern(root, obj)
+	if !ok {
 		return
 	}
+	s.MarkII = markII
 	fs, _ := d.object(root, "the settings", SettingsKeys)
 	if m, ok := fs.get(SchemaKey); ok {
 		// Only the faithful's editors heed the schema.

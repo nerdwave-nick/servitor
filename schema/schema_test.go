@@ -109,13 +109,14 @@ func TestSchemas_AreDraft2020AndNamedByTheirAddress(t *testing.T) {
 // TestRiteSchema_KnowsEveryKeyOfTheLibrarium: every key the librarium reads
 // stands in the schema, and the schema knows no key the librarium does not.
 func TestRiteSchema_KnowsEveryKeyOfTheLibrarium(t *testing.T) {
-	m := tree(t, Rite)
-	defs := obj(t, m, "$defs")
+	root := tree(t, Rite)
+	defs := obj(t, root, "$defs")
+	m := obj(t, defs, "mark-i")
 	sameKeys(t, "a rite", obj(t, m, "properties"), librarium.RiteKeys)
 	sameKeys(t, "an inscription", obj(t, defs, "inscription", "properties"), librarium.InscriptionKeys)
 	sameKeys(t, "the auspex", obj(t, defs, "auspex", "properties"), librarium.AuspexKeys)
 	sameKeys(t, "a tome", obj(t, defs, "tome", "properties"), librarium.TomeKeys)
-	objects := []string{"inscription", "auspex", "tome"}
+	objects := append([]string{"mark-i", "inscription", "auspex", "tome"}, markIIObjects(t, defs)...)
 	var refs []string
 	for _, k := range librarium.Kinds {
 		sameKeys(t, "the step "+k.Key(), obj(t, defs, k.Key(), "properties"), librarium.StepKeys(k))
@@ -145,6 +146,62 @@ func TestRiteSchema_KnowsEveryKeyOfTheLibrarium(t *testing.T) {
 	if got := obj(t, m, "properties", "pattern")["const"]; got != librarium.Pattern {
 		t.Errorf("pattern %v", got)
 	}
+	if got := strs(obj(t, root, "properties", "pattern")["enum"].([]any)); !slices.Equal(got, librarium.Patterns) {
+		t.Errorf("the patterns of a rite %v, want %v", got, librarium.Patterns)
+	}
+}
+
+// markIIObjects holds the definitions of pattern Mark II to the keys the
+// librarium reads, and returns the names of those that hold keys: each
+// union of a subject, an observance and an edict's entry is told apart by
+// its "designation" alone.
+func markIIObjects(t *testing.T, defs map[string]any) []string {
+	t.Helper()
+	m := obj(t, defs, "mark-ii")
+	sameKeys(t, "a rite of Mark II", obj(t, m, "properties"), librarium.MarkIIRiteKeys)
+	if got := obj(t, m, "properties", "pattern")["const"]; got != librarium.PatternMarkII {
+		t.Errorf("pattern %v", got)
+	}
+	if got := strs(obj(t, m, "properties", "vox-cast", "items")["enum"].([]any)); !slices.Equal(got,
+		[]string{librarium.VoxProgress, librarium.VoxSuccess}) {
+		t.Errorf("vox-cast tidings %v", got)
+	}
+	if reserved := obj(t, m, "properties", "inscriptions", "propertyNames", "not")["enum"].([]any); !slices.Equal(strs(reserved),
+		librarium.ReservedRunes) {
+		t.Errorf("reserved runes of Mark II %v, want %v", reserved, librarium.ReservedRunes)
+	}
+	sameKeys(t, "the auspex of a machine-spirit", obj(t, defs, "spiritAuspex", "properties"), librarium.SpiritAuspexKeys)
+	objects := []string{"mark-ii", "subject", "observance", "entry", "spiritAuspex", "exaltedRelics"}
+	unions := []struct {
+		union, prefix string
+		designations  []string
+		common        []string
+	}{
+		{"subject", "subject-", librarium.SubjectDesignations, librarium.SubjectKeys},
+		{"observance", "observance-", librarium.SpeechDesignations, librarium.ObservanceKeys},
+		{"entry", "entry-", librarium.SpeechDesignations, []string{"designation"}},
+	}
+	for _, u := range unions {
+		var refs, oneOf []string
+		for _, d := range u.designations {
+			name := u.prefix + d
+			sameKeys(t, name, obj(t, defs, name, "properties"), slices.Concat(u.common, librarium.DesignationKeys(d)))
+			if got := obj(t, defs, name, "properties", "designation")["const"]; got != d {
+				t.Errorf("%s is told by the designation %v, want %q", name, got, d)
+			}
+			refs, objects = append(refs, "#/$defs/"+name), append(objects, name)
+		}
+		for _, b := range obj(t, defs, u.union)["oneOf"].([]any) {
+			oneOf = append(oneOf, b.(map[string]any)["$ref"].(string))
+		}
+		if !slices.Equal(oneOf, refs) {
+			t.Errorf("%s is one of %v, want %v", u.union, oneOf, refs)
+		}
+		if got := strs(obj(t, defs, u.union, "properties", "designation")["enum"].([]any)); !slices.Equal(got, u.designations) {
+			t.Errorf("the designations of %s %v, want %v", u.union, got, u.designations)
+		}
+	}
+	return objects
 }
 
 func TestSettingsSchema_KnowsEveryKeyOfTheLibrarium(t *testing.T) {
@@ -156,8 +213,8 @@ func TestSettingsSchema_KnowsEveryKeyOfTheLibrarium(t *testing.T) {
 	if got := strs(obj(t, m, "properties", "intercessor")["enum"].([]any)); !slices.Equal(got, librarium.Intercessors) {
 		t.Errorf("intercessor %v, want %v", got, librarium.Intercessors)
 	}
-	if got := obj(t, m, "properties", "pattern")["const"]; got != librarium.Pattern {
-		t.Errorf("pattern %v", got)
+	if got := strs(obj(t, m, "properties", "pattern")["enum"].([]any)); !slices.Equal(got, librarium.Patterns) {
+		t.Errorf("pattern %v, want %v", got, librarium.Patterns)
 	}
 }
 

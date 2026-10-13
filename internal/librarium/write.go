@@ -7,7 +7,9 @@ import (
 	"strings"
 )
 
-// Marshal writes r as indented Mark I scripture. Keys follow the order of
+// Marshal writes r as indented scripture of its pattern, Mark I or Mark II
+// (where every map is an object and an edict's words are written once, as
+// riteII tells). Keys follow the order of
 // the codex (save "$schema", which is kept and written first), an edict is
 // written with "edict": true and no "aspects", defaults that
 // were never written stay unwritten, the alias "force" is written as "zeal",
@@ -15,7 +17,11 @@ import (
 // line when it fits in eighty columns, save scripture written as its lines.
 func Marshal(r *Rite) ([]byte, error) {
 	w := &writer{}
-	w.rite(r)
+	if r.MarkII {
+		w.riteII(r)
+	} else {
+		w.rite(r)
+	}
 	return w.layout()
 }
 

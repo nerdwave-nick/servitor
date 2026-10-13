@@ -1,0 +1,25 @@
+The words that set a machine-spirit into an omen
+
+Under "enact" a machine-spirit holds the words that set it, keyed by omen:
+each key is a declared omen of the subject, or "*" to serve every omen not
+named. The map is always an object, even when one value serves all, and an
+omen left without words and without "*" is heresy; so is a key that names
+no declared omen.
+
+The words hear the omen they set as {{omen}} and in the environment as
+SERVITOR_OMEN, beside every placeholder and variable of a rite's words.
+Where the omen holds an inscription, the codex counsels "$SERVITOR_OMEN"
+over {{omen}}, lest a spliced word carry the syntax of the tongue.
+
+At invocation only a machine-spirit whose omen differs from the one
+invoked is enacted, then proven by its auspex; should the invocation fall,
+it is enacted back into the omen it was read in. {{omen}} may be spoken in
+enact words and in trials alone.
+
+Kindred passages: machine-spirit, omens, trials, scan, placeholders
+
+Exempla:
+  "enact": {"*": "echo {{omen}} > /sys/devices/system/cpu/smt/control"}
+
+  "enact": {"cosmos": "systemd-run --unit=scx-cosmos --collect scx_cosmos",
+            "*":      "systemctl stop scx-cosmos"}

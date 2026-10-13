@@ -1,13 +1,16 @@
-// Package librarium reads, examines and writes rites of pattern Mark I kept
-// in a Librarium's rites/ directory, and reads the settings kept beside them
-// in servitor.json (LoadSettings; Settings.Resolve applies runes, the
-// environment and the defaults).
+// Package librarium reads, examines and writes rites of pattern Mark I and
+// of pattern Mark II kept in a Librarium's rites/ directory, and reads the
+// settings kept beside them in servitor.json (LoadSettings; Settings.Resolve
+// applies runes, the environment and the defaults). Both patterns are read
+// side by side until Mark I is retired; a rite of Mark II bears MarkII, its
+// Subjects and Observances, or an edict's Liturgy in the designation form.
 //
 // A rite's scripture is JSONC. Every key is examined: unknown keys, malformed
 // values, undeclared aspects, unknown placeholders and the other heresies of
 // the codex are reported as Findings with line and column. Parse reads one
 // scripture, Load the whole Librarium (where clashing wards and rites recorded
-// twice are found), and Marshal writes a rite back as Mark I scripture.
+// twice are found), and Marshal writes a rite back as scripture of its
+// pattern.
 //
 // These values may vary per aspect (an AspectMap): the scripture of sanctums
 // and transcriptions, a tether's anchor, an incantation's command, a litany's
@@ -37,14 +40,15 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/placeholder"
 )
 
-// Pattern is the only pattern this package reads and writes.
+// Pattern is the pattern of a liturgy of steps: Mark I. PatternMarkII is
+// read and written beside it.
 const Pattern = "Mark I"
 
 // DefaultAuspexPatience is how long an auspex may labour when its rite does
 // not say otherwise.
 const DefaultAuspexPatience = 2 * time.Second
 
-// Rite is one rite of pattern Mark I.
+// Rite is one rite of pattern Mark I, or of pattern Mark II (MarkII).
 type Rite struct {
 	Name string // the rite's name: its scripture's file name without extension
 	Path string // where the scripture was read from; "" when never read
@@ -63,8 +67,20 @@ type Rite struct {
 	Tongue       string        // "" when the rite names none
 	Liturgy      []Step
 
+	// MarkII marks scripture of pattern Mark II. A rite of aspects then
+	// holds Subjects and Observances and no Liturgy; an edict holds a
+	// Liturgy of incantations and litanies alone, every value of it written
+	// once. Both bear their vox-casts as VoxCasts, never as steps, and
+	// neither bears an Auspex.
+	MarkII      bool
+	Subjects    []Subject    // in written order
+	Observances []Observance // in written order
+	VoxCasts    []string     // VoxProgress and VoxSuccess; nil when unwritten
+
 	src    *source // the scripture as read, for locating its keys
 	verses []int   // verse of each step of Liturgy in the scripture, when read
+	// subjectAt is the index of each of Subjects in the scripture, when read.
+	subjectAt []int
 }
 
 // Inscription is one inscription declared by a rite.
@@ -188,6 +204,15 @@ func (r *Rite) verse(i int) int {
 	return i + 1
 }
 
+// subjectPointer is the JSON pointer of the subject at index i of
+// Subjects.
+func (r *Rite) subjectPointer(i int) string {
+	if i < len(r.subjectAt) {
+		return fmt.Sprintf("/subjects/%d", r.subjectAt[i])
+	}
+	return fmt.Sprintf("/subjects/%d", i)
+}
+
 // stepPointer is the JSON pointer of the step at index i of the liturgy.
 func (r *Rite) stepPointer(i int) string { return fmt.Sprintf("/liturgy/%d", r.verse(i)-1) }
 
@@ -198,7 +223,7 @@ func (r *Rite) Equal(o *Rite) bool {
 		return r == o
 	}
 	a, b := *r, *o
-	a.Path, a.src, a.verses = "", nil, nil
-	b.Path, b.src, b.verses = "", nil, nil
+	a.Path, a.src, a.verses, a.subjectAt = "", nil, nil, nil
+	b.Path, b.src, b.verses, b.subjectAt = "", nil, nil, nil
 	return reflect.DeepEqual(a, b)
 }

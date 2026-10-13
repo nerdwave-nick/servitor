@@ -60,6 +60,12 @@ func (m *model) amend(key string, r *row) tea.Cmd {
 		return m.notify(toastErr, "The consecration wizard cannot read a heretical rite; purify it with o ($EDITOR) "+
 			"or excommunicate it with d.")
 	}
+	if rite.MarkII {
+		// Sealing it here would write it anew as Mark I, and its subjects
+		// and observances would be lost.
+		return m.notify(toastErr, fmt.Sprintf("The consecration wizard knows not yet the form of pattern %q; "+
+			"amend the %s %s with o ($EDITOR).", librarium.PatternMarkII, riteNoun(rite.Edict), rite.Name))
+	}
 	d := riteDraftFrom(rite)
 	if key == "c" {
 		d.origName, d.origPath, d.name = "", "", r.name+"-copy"
