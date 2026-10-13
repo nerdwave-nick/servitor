@@ -1,0 +1,21 @@
+# +++ Vox-casts of the fall of a rite of subjects +++
+# One template per line; blank lines and lines starting with "#" are ignored.
+# Each names the subject of a rite of aspects of pattern Mark II that fell by
+# {{subject}}, once, and ends in ": {{heresy}}"; an aspect is written "the
+# aspect {{aspect}}". The herald adds how the reversion went.
+
+Heresy! The subject {{subject}} defies the rite: {{heresy}}
+The machine spirit of {{subject}} rejects its omen: {{heresy}}
+Woe! The rite breaks upon {{subject}}: {{heresy}}
+Sound the klaxons, for {{subject}} will not obey: {{heresy}}
+The auspex finds {{subject}} unworthy: {{heresy}}
+A blight upon {{subject}}: {{heresy}}
+The tech-priests weep; {{subject}} spurns its omen: {{heresy}}
+Scrapcode in {{subject}}! The rite falls: {{heresy}}
+The cogitator's lamps burn red over {{subject}}: {{heresy}}
+Corruption in {{subject}}: {{heresy}}
+The noosphere screams; {{subject}} is lost: {{heresy}}
+By the Omnissiah, {{subject}} has betrayed the rite: {{heresy}}
+The incense chokes; the rite fell at {{subject}}: {{heresy}}
+Sparks and smoke rise from {{subject}}: {{heresy}}
+Rust and ruin! {{subject}} withholds the aspect {{aspect}}: {{heresy}}

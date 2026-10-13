@@ -12,6 +12,7 @@ package rituals
 import (
 	"fmt"
 	"os"
+	"slices"
 	"strings"
 	"time"
 
@@ -83,18 +84,40 @@ func (e *Heretical) Error() string {
 	return b.String()
 }
 
-// Unperformable is the lament for a rite of aspects of pattern Mark II:
-// the servitor reads its scripture, yet cannot perform it until the rite of
-// performance of that pattern is forged. Its edicts are proclaimed.
+// Unperformable is the lament for a state rite of pattern Mark II that
+// holds what the servitor cannot yet perform: an exalted subject or
+// observance (a privileged auspex rides only upon an exalted subject), or a
+// subject naming an observance. Why tells what, in its own words.
 type Unperformable struct {
 	Name string
+	Why  string
 }
 
 func (e *Unperformable) Error() string {
-	return fmt.Sprintf("the rite %q is written in pattern %q, whose scripture this servitor reads, yet the rite of "+
-		"performance that reads, sets and proves its subjects is not yet forged within it: not one subject or "+
-		"observance is touched, nor foreseen — keep the rite in pattern %q until that rite is forged",
-		e.Name, librarium.PatternMarkII, librarium.Pattern)
+	return fmt.Sprintf("the rite %q is written in pattern %q, yet the rite of performance for what it holds is not "+
+		"yet forged within this servitor, for %s: not one subject or observance is read, touched or foreseen",
+		e.Name, librarium.PatternMarkII, e.Why)
+}
+
+// unperformable tells why the state rite r cannot yet be performed; "" when
+// it can.
+func unperformable(r *librarium.Rite) string {
+	for _, sub := range r.Subjects {
+		if sub.Exalted() {
+			return fmt.Sprintf("the subject %q is exalted", sub.Name)
+		}
+	}
+	for _, o := range r.Observances {
+		if o.Exalted() {
+			return fmt.Sprintf("the observance %q is exalted", o.Name)
+		}
+	}
+	for _, sub := range r.Subjects {
+		if named := slices.Concat(sub.Introit, sub.Recessional); len(named) > 0 {
+			return fmt.Sprintf("the subject %q names the observance %q", sub.Name, named[0])
+		}
+	}
+	return ""
 }
 
 // Rite returns the rite name, fit to be invoked; the error is *Unrecorded

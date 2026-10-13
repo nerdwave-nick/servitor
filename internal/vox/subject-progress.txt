@@ -1,0 +1,21 @@
+# +++ Vox-casts of the progress of a rite of subjects +++
+# One template per line; blank lines and lines starting with "#" are ignored.
+# Each names the subject of a rite of aspects of pattern Mark II set and proven
+# last by {{subject}}, once; the herald adds the count of changing subjects
+# itself. An aspect is written "the aspect {{aspect}}".
+
+The subject {{subject}} bears its new omen. The Omnissiah watches.
+Incense burns; {{subject}} is set and proven.
+The machine spirit of {{subject}} accepts its omen.
+{{subject}} is anointed with its omen; the machine obeys.
+Cogs turn: {{subject}} now bears the aspect {{aspect}}.
+The servo-skull records {{subject}} as set.
+Blessed be {{subject}}, set and proven true.
+The tech-priests nod; {{subject}} shows what was commanded.
+One more subject is sung: {{subject}} holds.
+The noosphere hums; {{subject}} is brought into line.
+Sacred unguents are applied; {{subject}} is sealed.
+With reverence, {{subject}} is made to obey.
+Mechadendrites withdraw; {{subject}} holds true.
+The auspex beholds {{subject}}, and finds it as commanded.
+Binharic cant hails {{subject}}; the rite advances.

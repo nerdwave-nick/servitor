@@ -180,7 +180,7 @@ func (c *crier) proclaim(t Tidings, step int, v Verse, heresy string, out *Outco
 	values.Inscriptions = maps.Clone(values.Inscriptions)
 	values.Tidings = placeholder.Tidings{
 		Heresy: heresy, Step: step, Steps: c.steps,
-		StepKind: v.Kind.Key(), StepTarget: v.Target,
+		StepKind: v.Kind.Key(), StepTarget: v.Target, Subject: v.Subject,
 	}
 	c.herald.Proclaim(Proclamation{Tidings: t, Edict: c.edict, Values: values, Verse: v, Outcome: out})
 }

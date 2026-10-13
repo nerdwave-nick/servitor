@@ -3,7 +3,8 @@
 //
 // In a rite (RiteMode) the marks are {{aspect}}, {{former}}, {{rite.name}}
 // and {{inscription.<key>}}. Vox-cast tidings (VoxCastMode) may additionally
-// speak {{heresy}}, {{step}}, {{steps}}, {{step.kind}} and {{step.target}}.
+// speak {{heresy}}, {{step}}, {{steps}}, {{step.kind}}, {{step.target}} and,
+// for a state rite of pattern Mark II, {{subject}}.
 // The words of an edict (Scope.Edict) bear no aspect: {{aspect}} and
 // {{former}} are heresy there.
 // The words of an exalted verse (Scope.Exalted) are fixed when its master
@@ -72,6 +73,9 @@ type Tidings struct {
 	Steps      int    // {{steps}}: number of real steps in the liturgy
 	StepKind   string // {{step.kind}}: the step's own key, e.g. "tether"
 	StepTarget string // {{step.target}}: what that key holds, e.g. a vessel
+	// Subject is {{subject}}: the subject of a state rite of pattern Mark II
+	// set last, or the one that fell.
+	Subject string
 }
 
 // Check reports every heresy in text without rendering it.
@@ -185,7 +189,7 @@ func (s Scope) resolve(name string, v Values) (string, Kind, bool) {
 }
 
 // voxMarks are the marks only vox-casts may speak, in the order of the codex.
-var voxMarks = []string{"heresy", "step", "steps", "step.kind", "step.target"}
+var voxMarks = []string{"heresy", "step", "steps", "step.kind", "step.target", "subject"}
 
 func (t Tidings) resolve(name string) (string, bool) {
 	switch name {
@@ -199,6 +203,8 @@ func (t Tidings) resolve(name string) (string, bool) {
 		return t.StepKind, true
 	case "step.target":
 		return t.StepTarget, true
+	case "subject":
+		return t.Subject, true
 	}
 	return "", false
 }

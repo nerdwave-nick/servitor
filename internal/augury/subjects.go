@@ -5,6 +5,7 @@ import (
 	"slices"
 	"sync"
 
+	"github.com/nerdwave-nick/servitor/internal/invocation"
 	"github.com/nerdwave-nick/servitor/internal/librarium"
 )
 
@@ -17,6 +18,7 @@ import (
 // no aspect yields no omen.
 func (a *Augury) readSubjects(ctx context.Context, s *seer, opts Options) {
 	omens := make([]*Omen, len(s.rite.Subjects))
+	a.Readings = make([]invocation.Reading, len(s.rite.Subjects))
 	var spirits []int // the subjects whose auspex is to be heard
 	for i, sub := range s.rite.Subjects {
 		var seen []sighting
@@ -31,17 +33,16 @@ func (a *Augury) readSubjects(ctx context.Context, s *seer, opts Options) {
 				taint.Number, taint.Subject = 0, sub.Name
 				a.Taint = append(a.Taint, *taint)
 			}
-		case *librarium.Transcription:
-			seen = s.transcribed(m)
-		case *librarium.Tether:
-			seen = s.bound(m)
 		case *librarium.MachineSpirit:
 			if m.Auspex != nil && !m.Auspex.Exalted {
 				spirits = append(spirits, i)
 			}
+		default:
+			seen = s.builtIn(sub)
 		}
 		if len(seen) > 0 {
 			omens[i] = subjectOmen(sub, readSpirit{}, aspectsOf(seen))
+			a.Readings[i].Aspects = aspectsOf(seen)
 		}
 	}
 	a.hearSpirits(ctx, s, opts, spirits, omens)
@@ -50,6 +51,48 @@ func (a *Augury) readSubjects(ctx context.Context, s *seer, opts Options) {
 			a.Omens = append(a.Omens, *o)
 		}
 	}
+}
+
+// builtIn returns every aspect a transcription or tether subject fits.
+func (s *seer) builtIn(sub librarium.Subject) []sighting {
+	switch m := sub.Matter.(type) {
+	case *librarium.Transcription:
+		return s.transcribed(m)
+	case *librarium.Tether:
+		return s.bound(m)
+	}
+	return nil
+}
+
+// invoked lets the seer render the omens of the aspect an invocation reads
+// a state rite for with the invocation's own inscriptions.
+func (s *seer) invoked(opts Options) {
+	s.target, s.inscriptions = opts.Target, opts.Inscriptions
+}
+
+// ReadSubject reads the subject at index i of the state rite r anew, as an
+// augury reads it, while it is invoked into opts.Target: what an invocation
+// proves a subject it set by. An exalted auspex is never spoken here, nor a
+// forgone one; a sanctum reads only the aspect its marker records.
+func ReadSubject(ctx context.Context, r *librarium.Rite, i int, opts Options) invocation.Reading {
+	slate, _ := ReadSlate(opts.env(), r.Name)
+	s := newSeer(r, slate)
+	s.invoked(opts)
+	sub := r.Subjects[i]
+	switch m := sub.Matter.(type) {
+	case *librarium.Sanctum:
+		if omen, _ := s.sanctum(i, m); omen != nil {
+			return invocation.Reading{Aspects: []string{omen.Aspect}}
+		}
+	case *librarium.MachineSpirit:
+		if m.Auspex != nil && !m.Auspex.Exalted && !opts.ForgoAuspex {
+			read := s.spirit(sub, opts).hear(ctx, opts.Places)
+			return invocation.Reading{Omen: read.omen, Aspects: read.aspects}
+		}
+	default:
+		return invocation.Reading{Aspects: aspectsOf(s.builtIn(sub))}
+	}
+	return invocation.Reading{}
 }
 
 // hearSpirits awakens the auspexes of the machine-spirits at the indices
@@ -73,6 +116,7 @@ func (a *Augury) hearSpirits(ctx context.Context, s *seer, opts Options, spirits
 	wg.Wait()
 	a.Auspex = Heeded
 	for n, i := range spirits {
+		a.Readings[i] = invocation.Reading{Omen: readings[n].omen, Aspects: readings[n].aspects}
 		if len(readings[n].aspects) == 0 {
 			a.Auspex = Mute
 			continue

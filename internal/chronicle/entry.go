@@ -5,6 +5,7 @@ import (
 	"encoding/json/v2"
 	"errors"
 	"maps"
+	"slices"
 	"time"
 
 	"github.com/nerdwave-nick/servitor/internal/invocation"
@@ -24,6 +25,10 @@ type Entry struct {
 	// Reversions are the steps undone, from the fallen step back to the
 	// first.
 	Reversions []Reversion `json:"reversions,omitempty"`
+	// Changed names, for a state rite of pattern Mark II alone, the
+	// subjects it set and proved, in written order; [] when it changed
+	// nothing, and absent for every other rite.
+	Changed []string `json:"changed,omitzero"`
 	// Intercessor and Sigil name, for an invocation with exalted verses
 	// alone, the intercessor that vouched for its master and the first
 	// twelve letters of the sigil of the plan the exalted servitor
@@ -33,17 +38,20 @@ type Entry struct {
 }
 
 // Verse names a step as the chronicle writes it: its verse and its own key
-// holding its target, e.g. {"verse": 3, "incantation": "source …/hooks"}.
+// holding its target, e.g. {"verse": 3, "incantation": "source …/hooks"};
+// or a subject of a state rite by its name alone, {"subject": "smt"}.
 type Verse struct {
-	Number int    // counted from one
-	Key    string // the step's own key, e.g. "tether"
-	Target string // what the step's own key held, rendered and resolved
+	Number  int    // counted from one; zero for a subject
+	Key     string // the step's own key, e.g. "tether"
+	Target  string // what the step's own key held, rendered and resolved
+	Subject string // the subject's name; "" for a step
 }
 
-// Reversion is the verdict upon undoing one step: triumph, or faltered when
-// the reversion fell.
+// Reversion is the verdict upon undoing one step, or one subject: triumph,
+// or faltered when the reversion fell.
 type Reversion struct {
-	Verse   int                `json:"verse"`
+	Verse   int                `json:"verse,omitzero"`
+	Subject string             `json:"subject,omitzero"`
 	Verdict invocation.Verdict `json:"verdict"`
 }
 
@@ -62,6 +70,9 @@ func New(at time.Time, rite string, opts invocation.Options, out invocation.Outc
 	maps.Copy(e.Inscriptions, opts.Inscriptions)
 	if f := out.Fell; f != nil {
 		e.FellAt = &Verse{Number: f.Number, Key: f.Kind.Key(), Target: f.Target}
+		if f.Subject != "" {
+			e.FellAt = &Verse{Subject: f.Subject}
+		}
 		if f.Heresy != nil {
 			e.Heresy = f.Heresy.Error()
 		}
@@ -71,19 +82,29 @@ func New(at time.Time, rite string, opts invocation.Options, out invocation.Outc
 		if r.Heresy != nil {
 			v = invocation.Faltered
 		}
-		e.Reversions = append(e.Reversions, Reversion{Verse: r.Number, Verdict: v})
+		e.Reversions = append(e.Reversions, Reversion{Verse: r.Number, Subject: r.Subject, Verdict: v})
 	}
+	e.Changed = slices.Clone(out.Changed)
 	return e
 }
 
-// MarshalJSONTo writes the verse first, then the step's own key.
+// subjectKey is the key naming a subject in place of a verse.
+const subjectKey = "subject"
+
+// MarshalJSONTo writes the verse first, then the step's own key; a subject
+// by its name alone.
 func (v Verse) MarshalJSONTo(enc *jsontext.Encoder) error {
-	for _, t := range []jsontext.Token{
+	tokens := []jsontext.Token{
 		jsontext.BeginObject,
 		jsontext.String("verse"), jsontext.Int(int64(v.Number)),
 		jsontext.String(v.Key), jsontext.String(v.Target),
 		jsontext.EndObject,
-	} {
+	}
+	if v.Subject != "" {
+		tokens = []jsontext.Token{jsontext.BeginObject, jsontext.String(subjectKey), jsontext.String(v.Subject),
+			jsontext.EndObject}
+	}
+	for _, t := range tokens {
 		if err := enc.WriteToken(t); err != nil {
 			return err
 		}
@@ -95,13 +116,20 @@ func (v Verse) MarshalJSONTo(enc *jsontext.Encoder) error {
 var errStrangeVerse = errors.New("the chronicle names no single step in this verse")
 
 // UnmarshalJSONFrom reads a verse and the one key beside it, whatever step
-// it names.
+// it names, or a subject named alone.
 func (v *Verse) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	var fields map[string]jsontext.Value
 	if err := json.UnmarshalDecode(dec, &fields); err != nil {
 		return err
 	}
 	var got Verse
+	if raw, ok := fields[subjectKey]; ok && len(fields) == 1 {
+		if err := json.Unmarshal(raw, &got.Subject); err != nil {
+			return err
+		}
+		*v = got
+		return nil
+	}
 	for k, raw := range fields {
 		if k == "verse" {
 			if err := json.Unmarshal(raw, &got.Number); err != nil {

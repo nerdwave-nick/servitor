@@ -15,10 +15,15 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/sanction"
 )
 
-// verseName names a verse of r as "verse 2 · tether <target>": the home of
-// the faithful is spoken as "~", and a litany's scroll beside the rite as
-// it is written.
+// verseName names a verse of r as "verse 2 · tether <target>", or a
+// subject of a state rite as "subject smt · machine-spirit", a built-in one
+// with its target: the home of the faithful is spoken as "~", and a
+// litany's scroll beside the rite as it is written.
 func verseName(r *librarium.Rite, v invocation.Verse) string {
+	if v.Subject != "" {
+		sub, _ := r.Subject(v.Subject)
+		return strings.TrimSpace(fmt.Sprintf("subject %s · %s %s", v.Subject, sub.Designation(), homeward(v.Target)))
+	}
 	target := homeward(v.Target)
 	if hall := r.Dir() + string(filepath.Separator); v.Kind == librarium.KindLitany && strings.HasPrefix(v.Target, hall) {
 		target = strings.TrimPrefix(v.Target, hall)
@@ -53,6 +58,10 @@ func printForesight(w io.Writer, res rituals.Result) {
 		if f.Exalted {
 			name += " ✠"
 		}
+		if f.Plan != nil {
+			sub, _ := res.Rite.Subject(f.Subject)
+			name += ": " + foreseenPlan(*f.Plan, sub.Designation() == librarium.DesignationMachineSpirit)
+		}
 		fmt.Fprintln(w, name)
 		switch {
 		case f.Vessel != nil:
@@ -64,6 +73,27 @@ func printForesight(w io.Writer, res rituals.Result) {
 		}
 	}
 	fmt.Fprintln(w, "Nothing was performed.")
+}
+
+// foreseenPlan tells what a subject was read to show and whether it
+// changes: a machine-spirit also the omen read and the omen commanded,
+// «"on" → "off", changing».
+func foreseenPlan(p invocation.SubjectPlan, spirit bool) string {
+	told := "unchanged"
+	if p.Changing {
+		told = "changing"
+	}
+	if !spirit {
+		return told
+	}
+	read := strconv.Quote(p.Read)
+	switch {
+	case p.Unread:
+		read = "(no auspex)"
+	case p.Mute:
+		read = "(mute)"
+	}
+	return fmt.Sprintf("%s → %q, %s", read, p.Target, told)
 }
 
 // foreseenSanction tells how the exalted verses of the foreseen plan stand
