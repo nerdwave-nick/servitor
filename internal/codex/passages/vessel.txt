@@ -4,8 +4,7 @@ A vessel is any scripture-file of the machine that a rite reshapes: a sanctum
 rewrites only its warded region within the vessel, a transcription writes
 the whole vessel anew or casts it out. The key "vessel" of a sanctum or
 transcription subject holds the vessel's path, and the path is one for every
-aspect, for omens and markers must know where to look. (In the elder pattern
-"Mark I" the step's own key held it; conversion moves it under "vessel".)
+aspect, for omens and markers must know where to look.
 
 A leading "~" and the $NAMES of the environment are expanded in the path,
 and placeholders are illuminated; a path that does not begin at the root is

@@ -23,13 +23,6 @@ the edict was proclaimed. A verse is named by its place, counted from one:
 "verse 2 · incantation …". The edict's "vox-cast" list tells of each verse
 performed and of the whole obeyed; it is no verse.
 
-In the elder pattern "Mark I" every rite kept a liturgy of steps — sanctums,
-transcriptions, tethers, incantations, litanies and vox-casts, each named by
-its own key — performed whole at every invocation. Conversion makes the
-sanctums, transcriptions and tethers subjects, the speech among them
-observances or machine-spirits, and the vox-casts the rite's list; an
-edict's liturgy takes the designation form (see conversion).
-
 Kindred passages: edict, incantation, litany, verse, vox-cast, pre-flight,
 reversion, subjects, conversion
 
@@ -42,10 +35,3 @@ Exempla:
      "words": "wl-copy --type image/png < ~/pictures/visage.png"}
   ]
 
-  // pattern Mark I, before conversion
-  "liturgy": [
-    {"tether": "~/.local/share/nfluff/current-theme",
-     "anchor": "~/.config/nfluff/themes/{{aspect}}"},
-    {"incantation": "makoctl reload"},
-    {"vox-cast": "success"}
-  ]

@@ -3,8 +3,7 @@ What a sanctum or transcription places into its vessel
 Scripture is the holy text a subject sets down: the region a sanctum keeps
 between its markers, or the whole of a vessel a transcription writes. It is
 the omen of such a subject, written under its "omens", one for each aspect
-with "*" serving every aspect not named; the key "scripture" itself is the
-elder pattern Mark I's, which conversion makes those omens. Each scripture
+with "*" serving every aspect not named. Each scripture
 may be written in three forms:
 
   - a string, the scripture itself, newlines as \n;
@@ -39,5 +38,3 @@ Exempla:
 
   "omens": {"*": {"tome": "visages/{{aspect}}.kdl", "illuminate": true}}
 
-  // pattern Mark I, before conversion
-  "scripture": {"tome": "visages/{{aspect}}.kdl", "illuminate": true}

@@ -53,10 +53,7 @@ on the data-slate.
 
 An edict may perform no transcription: a transcribed vessel bears the
 scripture of one aspect and reveals that aspect thereafter, and an edict
-bears none. In the elder pattern "Mark I" the transcription was a step of
-the liturgy, its own key holding the vessel and "scripture" what it should
-hold; conversion makes it a subject named "transcription-<verse>" whose
-omens are that scripture.
+bears none.
 
 Kindred passages: scripture, seal, zeal, tome, illuminate, vessel, omens,
 subjects, designation, edict, exalted

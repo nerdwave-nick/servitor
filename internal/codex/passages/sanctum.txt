@@ -65,10 +65,7 @@ tells its owner, seal and size, "contents hidden — change unknown". The
 exalted servitor reverts it should the invocation fall.
 
 An edict may keep no sanctum: a sanctum's marker records an aspect, and an
-edict bears none. In the elder pattern "Mark I" the sanctum was a step of
-the liturgy, its own key holding the vessel and "scripture" its scripture;
-conversion makes it a subject named "sanctum-<verse>" whose omens are that
-scripture, and leaves its markers as they stand.
+edict bears none.
 
 Kindred passages: ward, glyph, closing-glyph, consecrate, scripture, vessel,
 omens, standing, subjects, designation, edict, exalted

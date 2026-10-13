@@ -54,12 +54,6 @@ the SERVITOR_ variables above, nothing more. Children it sends into the
 background are slain when the invocation ends; a root process meant to last
 belongs in a unit of the machine ("systemd-run --unit=…").
 
-In the elder pattern "Mark I" the incantation was a step of the liturgy,
-its own key holding its words, which might differ per aspect. Conversion
-makes it an observance beside the subjects it was spoken among — one per
-distinct word, guarded by "to" — or, in a rite of speech alone, a
-machine-spirit enacting its words (see conversion).
-
 Kindred passages: words, tongue, patience, reversion, litany, observances,
 liturgy, placeholders, inscriptions, exalted, exalted-servitor
 

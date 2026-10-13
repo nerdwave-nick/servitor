@@ -46,11 +46,6 @@ vox-cast never fails an invocation. The settings' "vox" may send the tidings
 of a terminal's invocations to the desktop as well ("notify-send"), or silence
 the desktop altogether ("off"); when foreseeing, nothing is proclaimed at all.
 
-In the elder pattern "Mark I" a vox-cast was a step of the liturgy,
-{"vox-cast": "progress"} or {"vox-cast": "success"}, placed where its tidings
-were to be sent. Conversion gathers them into the rite's list (see
-conversion).
-
 Kindred passages: vox, invoke, verdicts, edict, subjects, conversion
 
 Exempla:

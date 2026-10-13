@@ -51,12 +51,6 @@ the locale and the SERVITOR_ variables alone. What it leaves behind is slain
 when the invocation ends; a root process meant to last belongs in a unit of
 the machine ("systemd-run --unit=…").
 
-In the elder pattern "Mark I" the litany was a step of the liturgy, its own
-key holding the scroll, which with its offerings might differ per aspect.
-Conversion makes it an observance — one per distinct scroll and offerings,
-guarded by "to" — or, in a rite of speech alone, a machine-spirit whose
-enact words call the scroll with its offerings (see conversion).
-
 Kindred passages: scroll, offerings, incantation, observances, liturgy,
 tongue, patience, reversion, placeholders, relics, exalted
 

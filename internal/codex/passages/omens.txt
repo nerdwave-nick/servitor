@@ -56,11 +56,6 @@ foresight speak an auspex marked exalted. An edict yields no omen at all:
 it reads and sets nothing, and its standing is judged from its data-slate
 alone.
 
-The elder pattern "Mark I" read an omen from each step of its liturgy — the
-marker of a sanctum, a tether's anchor, a transcribed vessel — and from the
-rite's own auspex, told as {"auspex": true}; every one had to name the same
-aspect. Conversion makes those steps subjects whose omens agree as above.
-
 Kindred passages: standing, auspex, scan, trials, augury, data-slate,
 subjects, machine-spirit, spare-auspex, vigil
 
