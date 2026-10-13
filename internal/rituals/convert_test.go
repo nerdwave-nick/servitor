@@ -22,7 +22,7 @@ func TestConvert_WritesEveryConversion(t *testing.T) {
 	original := fx.read(path)
 	settings := fx.write(fx.lib, librarium.SettingsName, "{\n  // kept\n  \"pattern\": \"Mark I\"\n}\n")
 	s := Open(fx.lib, librarium.Runes{})
-	if r := s.Librarium.Rites["mouse"]; r == nil || !r.MarkII {
+	if r := s.Librarium.Rites["mouse"]; r == nil || len(r.Subjects) == 0 {
 		t.Fatalf("the rite is not read converted: %v", s.Librarium.Findings)
 	}
 	told := s.Convert()
@@ -70,7 +70,7 @@ func TestConvert_AwaitsNoDominion(t *testing.T) {
 	if told := s.Convert(); len(told.Tidings)+len(told.Laments) != 0 {
 		t.Errorf("a rite under another's dominion was converted: %+v", told)
 	}
-	if fx.read(path) != original || !s.Librarium.Rites["mouse"].MarkII {
+	if fx.read(path) != original || len(s.Librarium.Rites["mouse"].Subjects) == 0 {
 		t.Error("the rite under another's dominion was written, or is not converted in memory")
 	}
 	held.Relinquish()

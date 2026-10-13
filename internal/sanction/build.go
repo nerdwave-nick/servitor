@@ -38,13 +38,8 @@ func (o Options) lookPath(name string) (string, error) {
 // reading its tomes, scrolls and relics afresh: the exalted subjects and
 // observances of a state rite, or the exalted verses of an edict. The
 // error is ErrUnexalted for a rite without exalted verses, else names what
-// cannot be drawn; a rite read as pattern Mark I, never converted, is drawn
-// into no unit.
+// cannot be drawn.
 func Build(r *librarium.Rite, o Options) (*Unit, error) {
-	if !r.MarkII {
-		return nil, fmt.Errorf("the rite %q is read as pattern %q, whose verses are drawn into no unit; it is "+
-			"sanctioned once converted to pattern %q", r.Name, PatternMarkI, Pattern)
-	}
 	if !r.Exalted() {
 		return nil, ErrUnexalted
 	}

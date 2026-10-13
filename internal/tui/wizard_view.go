@@ -67,7 +67,7 @@ func (w *wizard) formHeading(m *model) string {
 	t := m.t
 	switch w.page {
 	case pageRite:
-		pattern := "\n" + t.dim.Render("Its scripture is written in pattern "+librarium.PatternMarkII+".")
+		pattern := "\n" + t.dim.Render("Its scripture is written in pattern "+librarium.Pattern+".")
 		if w.d.edict {
 			return t.text.Render("Speak the name and purpose of the edict, the inscriptions it bears and its "+
 				"vox-casts.") + pattern

@@ -114,8 +114,7 @@ func (d *riteDraft) declare(keys []string) {
 func (d riteDraft) toRite(path string) *librarium.Rite {
 	aspects := d.aspectList()
 	r := &librarium.Rite{Name: d.name, Path: path, Schema: d.schema, Purpose: strings.TrimSpace(d.purpose),
-		Aspects: aspects, Edict: d.edict, Tongue: strings.TrimSpace(d.tongue), VoxCasts: d.voxCasts,
-		MarkII: true} // the pattern of every scripture written, until librarium knows no other
+		Aspects: aspects, Edict: d.edict, Tongue: strings.TrimSpace(d.tongue), VoxCasts: d.voxCasts}
 	for _, id := range d.inscriptions {
 		in := librarium.Inscription{Key: id.key, Purpose: strings.TrimSpace(id.purpose), Mandatory: id.mandatory}
 		v := newVaried[string](false)

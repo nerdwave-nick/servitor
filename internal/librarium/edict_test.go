@@ -85,12 +85,12 @@ var edictHeresyCases = []heresyCase{
 func init() { heresyCases = append(heresyCases, edictHeresyCases...) }
 
 func TestParse_EdictIsARiteWithoutAspects(t *testing.T) {
-	r, fs := Parse("visage", "/lib/rites/visage.json", []byte(visage))
+	r, fs := parse("visage", "/lib/rites/visage.json", []byte(visage))
 	if len(fs) != 0 {
 		t.Fatalf("unexpected findings:\n%v", fs)
 	}
 	want := &Rite{
-		Name: "visage", Path: "/lib/rites/visage.json", Purpose: "Capture the visage of the machine", Edict: true,
+		Name: "visage", Path: "/lib/rites/visage.json", Purpose: "Capture the visage of the machine", Edict: true, markI: true,
 		Inscriptions: []Inscription{
 			{Key: "region", Purpose: "the slurp geometry", Mandatory: true, Decrees: Uniform("full")},
 			{Key: "reason"},
@@ -99,11 +99,11 @@ func TestParse_EdictIsARiteWithoutAspects(t *testing.T) {
 		Liturgy: []Step{
 			&Incantation{Command: Uniform(`grim -g "$(slurp)" ~/pictures/{{inscription.region}}.png`),
 				Utterance: Utterance{Tongue: "bash", Patience: 2 * time.Minute, Reversion: Uniform("rm -f ~/pictures/{{inscription.region}}.png")}},
-			&VoxCast{Tidings: VoxProgress},
+			&voxCast{Tidings: VoxProgress},
 			&Litany{Scroll: Uniform("scripts/{{rite.name}}"),
 				Offerings: []AspectMap[string]{Uniform("~/pictures"), Uniform("{{inscription.reason}}")},
 				Utterance: Utterance{Reversion: Uniform("")}},
-			&VoxCast{Tidings: VoxSuccess},
+			&voxCast{Tidings: VoxSuccess},
 		},
 	}
 	if !r.Equal(want) {
@@ -122,7 +122,7 @@ func TestParse_EdictMarkerFalseIsUnwritten(t *testing.T) {
 	}
 	for name, scripture := range cases {
 		t.Run(name, func(t *testing.T) {
-			r, fs := Parse("rite", "/r.json", []byte(scripture))
+			r, fs := parse("rite", "/r.json", []byte(scripture))
 			if r == nil || len(fs) > 0 {
 				t.Fatalf("rite %v, findings:\n%v", r, fs)
 			}
@@ -147,7 +147,7 @@ func TestParse_EdictBearsEveryKeyItMay(t *testing.T) {
 	}
 	for name, scripture := range cases {
 		t.Run(name, func(t *testing.T) {
-			if r, fs := Parse("rite", "/r.json", []byte(scripture)); r == nil || len(fs) > 0 || !r.Edict {
+			if r, fs := parse("rite", "/r.json", []byte(scripture)); r == nil || len(fs) > 0 || !r.Edict {
 				t.Fatalf("rite %v, findings:\n%v", r, fs)
 			}
 		})
@@ -163,7 +163,7 @@ func TestParse_EdictHeresyStandsAlone(t *testing.T) {
 		`{"pattern": "Mark I", "edict": null}`,
 		`{"pattern": "Mark I", "aspects": ["on"], "edict": true}`,
 	} {
-		_, fs := Parse("rite", "/r.json", []byte(scripture))
+		_, fs := parse("rite", "/r.json", []byte(scripture))
 		if len(fs) != 1 {
 			t.Errorf("%s: want one finding, got\n%v", scripture, fs)
 		}
@@ -173,7 +173,7 @@ func TestParse_EdictHeresyStandsAlone(t *testing.T) {
 // TestParse_EdictAspectMapIsDenouncedOnce: an aspect map in an edict is one
 // heresy, never further laments of undeclared or unserved aspects.
 func TestParse_EdictAspectMapIsDenouncedOnce(t *testing.T) {
-	_, fs := Parse("rite", "/r.json", []byte(edict(``, `{"incantation": {"on": "a", "off": "b"}}`)))
+	_, fs := parse("rite", "/r.json", []byte(edict(``, `{"incantation": {"on": "a", "off": "b"}}`)))
 	if len(fs) != 1 || !strings.Contains(fs[0].Message, "aspect map") {
 		t.Fatalf("findings:\n%v", fs)
 	}
@@ -182,7 +182,7 @@ func TestParse_EdictAspectMapIsDenouncedOnce(t *testing.T) {
 // TestParse_NeitherNamesBothWays: a rite declaring neither aspects nor the
 // edict's marker is told of both ways to amend it.
 func TestParse_NeitherNamesBothWays(t *testing.T) {
-	_, fs := Parse("rite", "/r.json", []byte(`{"pattern": "Mark I", "liturgy": []}`))
+	_, fs := parse("rite", "/r.json", []byte(`{"pattern": "Mark I", "liturgy": []}`))
 	if len(fs) != 1 {
 		t.Fatalf("findings:\n%v", fs)
 	}
@@ -193,21 +193,16 @@ func TestParse_NeitherNamesBothWays(t *testing.T) {
 	}
 }
 
+// TestMarshal_EdictRoundTrips: an edict is written with "edict": true and
+// no "aspects", a rite of aspects with no "edict".
 func TestMarshal_EdictRoundTrips(t *testing.T) {
-	r, fs := Parse("visage", "/lib/rites/visage.json", []byte(visage))
-	if len(fs) != 0 {
-		t.Fatalf("findings: %v", fs)
-	}
-	data := string(roundTrip(t, r))
-	if !strings.Contains(data, "\n  \"purpose\": \"Capture the visage of the machine\",\n  \"edict\": true,\n") ||
-		strings.Contains(data, `"aspects"`) {
-		t.Fatalf("an edict must be written with \"edict\": true and no \"aspects\":\n%s", data)
-	}
 	forged := &Rite{Name: "reboot", Edict: true, Liturgy: []Step{&Incantation{Command: Uniform("systemctl reboot")}}}
 	if data := string(roundTrip(t, forged)); !strings.Contains(data, `"edict": true`) || strings.Contains(data, `"aspects"`) {
 		t.Fatalf("a forged edict is written otherwise:\n%s", data)
 	}
-	if data := string(roundTrip(t, &Rite{Name: "x", Aspects: []string{"on"}})); strings.Contains(data, `"edict"`) {
+	rite := &Rite{Name: "x", Aspects: []string{"on", "off"}, Subjects: []Subject{{Name: "s",
+		Matter: &MachineSpirit{Auspex: &SpiritAuspex{Scan: "cat s"}, Enact: PerAspect(Entry[string]{"*", "echo {{omen}} > s"})}}}}
+	if data := string(roundTrip(t, rite)); strings.Contains(data, `"edict"`) {
 		t.Fatalf("a rite of aspects must bear no \"edict\":\n%s", data)
 	}
 }

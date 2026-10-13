@@ -106,7 +106,7 @@ func TestWizard_ConsecrateASanctumRiteOfMarkII(t *testing.T) {
   ]
 }
 `)
-	if r := h.loadRite("cursor"); !r.MarkII || len(r.Subjects) != 1 || r.Subjects[0].Designation() != librarium.DesignationSanctum {
+	if r := h.loadRite("cursor"); len(r.Subjects) != 1 || r.Subjects[0].Designation() != librarium.DesignationSanctum {
 		t.Fatalf("the scripture does not load as a rite of Mark II: %+v", r)
 	}
 }

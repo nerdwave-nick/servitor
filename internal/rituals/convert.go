@@ -59,7 +59,7 @@ func (s *Servitor) holdForConversion(c *librarium.Conversion) (*dominion.Dominio
 	held, _, err := dominion.Try([]string{dominion.Rite(s.env(), c.Rite)})
 	if err != nil {
 		return nil, fmt.Errorf("the scripture %s stays of pattern %q, for the dominion over the rite %q cannot be "+
-			"held: %v", c.Path, librarium.Pattern, c.Rite, err)
+			"held: %v", c.Path, librarium.PatternMarkI, c.Rite, err)
 	}
 	return held, nil
 }

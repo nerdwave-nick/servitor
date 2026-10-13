@@ -27,7 +27,7 @@ const splitLock = `{
 }`
 
 func TestParse_ExaltedVersesAreRead(t *testing.T) {
-	r, fs := Parse("split-lock", "/lib/rites/split-lock.json", []byte(splitLock))
+	r, fs := parse("split-lock", "/lib/rites/split-lock.json", []byte(splitLock))
 	if len(fs) != 0 {
 		t.Fatalf("findings:\n%v", fs)
 	}
@@ -44,7 +44,7 @@ func TestParse_ExaltedVersesAreRead(t *testing.T) {
 	if got := r.ExaltedVerses(); len(got) != 4 || got[0] != 1 || got[3] != 5 || !r.Exalted() {
 		t.Fatalf("exalted verses %v", got)
 	}
-	if plain, _ := Parse("x", "/x.json", []byte(mark(``, `{"incantation": "a"}`))); plain.Exalted() || plain.ExaltedVerses() != nil {
+	if plain, _ := parse("x", "/x.json", []byte(mark(``, `{"incantation": "a"}`))); plain.Exalted() || plain.ExaltedVerses() != nil {
 		t.Fatal("a rite without exalted verses is told exalted")
 	}
 }
@@ -64,7 +64,7 @@ func equalBools(a, b []bool) bool {
 func TestParse_EdictMayExaltIncantationsAndLitanies(t *testing.T) {
 	scripture := edict(``, `{"incantation": "systemctl reboot", "exalted": true},
 		{"litany": "scripts/prune", "exalted": true, "relics": ["scripts/prune.list"]}`)
-	r, fs := Parse("reboot", "/lib/rites/reboot.json", []byte(scripture))
+	r, fs := parse("reboot", "/lib/rites/reboot.json", []byte(scripture))
 	if r == nil || len(fs) != 0 || !r.Edict || !r.Exalted() {
 		t.Fatalf("rite %v, findings:\n%v", r, fs)
 	}
@@ -183,7 +183,7 @@ func TestParse_ExaltedScriptureIsPure(t *testing.T) {
 	}
 	for name, scripture := range cases {
 		t.Run(name, func(t *testing.T) {
-			if r, fs := Parse("rite", "/lib/rites/rite.json", []byte(scripture)); r == nil || len(fs) > 0 {
+			if r, fs := parse("rite", "/lib/rites/rite.json", []byte(scripture)); r == nil || len(fs) > 0 {
 				t.Fatalf("rite %v, findings:\n%v", r, fs)
 			}
 		})
@@ -193,7 +193,7 @@ func TestParse_ExaltedScriptureIsPure(t *testing.T) {
 // TestParse_FleetingWordsStayInCommonVerses: words given only at invocation
 // may still be spliced into the verses that are not exalted.
 func TestParse_FleetingWordsStayInCommonVerses(t *testing.T) {
-	_, fs := Parse("rite", "/r.json", []byte(`{"pattern": "Mark I", "aspects": ["on", "off"],
+	_, fs := parse("rite", "/r.json", []byte(`{"pattern": "Mark I", "aspects": ["on", "off"],
 		"inscriptions": {"m": {"mandatory": true, "decrees": {"on": "a"}}},
 		"liturgy": [{"incantation": "x {{inscription.m}} {{former}}"}, {"incantation": "y", "exalted": true}]}`))
 	if fs.Heretical() {
@@ -204,22 +204,13 @@ func TestParse_FleetingWordsStayInCommonVerses(t *testing.T) {
 // TestParse_ExaltedHeresyStandsAlone: a vessel of the kernel is denounced
 // once, though it renders alike for every aspect.
 func TestParse_ExaltedHeresyStandsAlone(t *testing.T) {
-	_, fs := Parse("rite", "/r.json", []byte(mark(``, `{"transcription": "/sys/x", "scripture": "1", "exalted": true}`)))
+	_, fs := parse("rite", "/r.json", []byte(mark(``, `{"transcription": "/sys/x", "scripture": "1", "exalted": true}`)))
 	if len(fs) != 1 || !strings.Contains(fs[0].Message, "/sys") {
 		t.Fatalf("findings:\n%v", fs)
 	}
 }
 
 func TestMarshal_ExaltedRitesRoundTrip(t *testing.T) {
-	r, fs := Parse("split-lock", "/lib/rites/split-lock.json", []byte(splitLock))
-	if len(fs) != 0 {
-		t.Fatalf("findings: %v", fs)
-	}
-	data := string(roundTrip(t, r))
-	if strings.Count(data, `"exalted": true`) != 4 || strings.Contains(data, `"exalted": false`) ||
-		!strings.Contains(data, `"relics": ["scripts/governor.conf"]`) {
-		t.Fatalf("exalted verses are written otherwise:\n%s", data)
-	}
 	forged := &Rite{Name: "reboot", Edict: true, Liturgy: []Step{
 		&Incantation{Command: Uniform("systemctl reboot"), Utterance: Utterance{Exalted: true, Relics: []string{}}},
 		&Litany{Scroll: Uniform("s"), Utterance: Utterance{Exalted: true, Relics: []string{"a", "b"}}},

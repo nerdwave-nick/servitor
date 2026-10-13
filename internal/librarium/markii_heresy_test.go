@@ -264,7 +264,7 @@ var markIIHeresyCases = []heresyCase{
 func TestParse_MarkIIDenouncesWithPosition(t *testing.T) {
 	for _, c := range markIIHeresyCases {
 		t.Run(c.name, func(t *testing.T) {
-			_, fs := Parse("rite", "/lib/rites/rite.json", []byte(c.scripture))
+			_, fs := parse("rite", "/lib/rites/rite.json", []byte(c.scripture))
 			want := posOf(t, c.scripture, c.at, c.delta)
 			for _, f := range fs {
 				if strings.Contains(f.Message, c.message) {
@@ -281,7 +281,7 @@ func TestParse_MarkIIDenouncesWithPosition(t *testing.T) {
 
 func TestParse_MarkIIDenunciationsSpeakGrimdark(t *testing.T) {
 	for _, c := range markIIHeresyCases {
-		_, fs := Parse("rite", "/lib/rites/rite.json", []byte(c.scripture))
+		_, fs := parse("rite", "/lib/rites/rite.json", []byte(c.scripture))
 		for _, f := range fs {
 			if m := plainGlosses.FindString(f.Message); m != "" {
 				t.Errorf("%s: %q speaks the plain word %q", c.name, f.Message, m)
@@ -297,7 +297,7 @@ func TestParse_MarkIIImpuritiesAloneLeaveTheRiteFitToInvoke(t *testing.T) {
 		if c.sev != Impurity {
 			continue
 		}
-		if r, fs := Parse("rite", "/lib/rites/rite.json", []byte(c.scripture)); r == nil || fs.Heretical() {
+		if r, fs := parse("rite", "/lib/rites/rite.json", []byte(c.scripture)); r == nil || fs.Heretical() {
 			t.Errorf("%s: rite %v, findings:\n%v", c.name, r, fs)
 		}
 	}
@@ -308,10 +308,7 @@ func TestParseSettings_MarkIIIsRead(t *testing.T) {
 	if len(fs) != 0 {
 		t.Fatalf("findings:\n%v", fs)
 	}
-	if *s != (Settings{Path: settingsPath, Tongue: "fish", Vox: VoxOff, MarkII: true}) {
+	if *s != (Settings{Path: settingsPath, Tongue: "fish", Vox: VoxOff}) {
 		t.Fatalf("settings %+v", *s)
-	}
-	if s, _ := ParseSettings(settingsPath, []byte(`{"pattern": "Mark I"}`)); s.MarkII {
-		t.Fatal("settings of Mark I are told Mark II")
 	}
 }

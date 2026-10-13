@@ -18,7 +18,7 @@ var stepKeys = map[Kind][]string{
 	KindTether:        {"tether", "anchor", "zeal", "force", "exalted"},
 	KindIncantation:   {"incantation", "tongue", "patience", "reversion", "exalted", "relics"},
 	KindLitany:        {"litany", "offerings", "tongue", "patience", "reversion", "exalted", "relics"},
-	KindVoxCast:       {"vox-cast"},
+	kindVoxCast:       {"vox-cast"},
 }
 
 // edictForbids tells why an edict may not hold a step of each kind that
@@ -32,11 +32,8 @@ var edictForbids = map[Kind]string{
 		"machine stands in",
 }
 
-// StepKeys returns the keys a step of kind k may hold, its own key first.
-func StepKeys(k Kind) []string { return append([]string{}, stepKeys[k]...) }
-
 func kindOf(key string) Kind {
-	for _, k := range Kinds {
+	for _, k := range markIKinds {
 		if k.Key() == key {
 			return k
 		}
@@ -77,7 +74,7 @@ func (d *decoder) decodeStep(v *hujson.Value, verse int) Step {
 	}
 	what := fmt.Sprintf("the %s of verse %d", kind.Key(), verse)
 	known := stepKeys[kind]
-	if kind == KindVoxCast {
+	if kind == kindVoxCast {
 		known = append(slices.Clone(known), "exalted") // denounced in its own words below
 	}
 	fs, _ := d.object(v, what, known)
@@ -114,8 +111,8 @@ func (s stepDecoder) decode(own *hujson.Value) Step {
 }
 
 func keysOfKinds() []string {
-	keys := make([]string, len(Kinds))
-	for i, k := range Kinds {
+	keys := make([]string, len(markIKinds))
+	for i, k := range markIKinds {
 		keys[i] = k.Key()
 	}
 	return keys
@@ -248,13 +245,13 @@ func (s stepDecoder) litany(own *hujson.Value) *Litany {
 	return st
 }
 
-func (s stepDecoder) voxCast(own *hujson.Value) *VoxCast {
+func (s stepDecoder) voxCast(own *hujson.Value) *voxCast {
 	t, ok := s.d.str(own, s.what)
 	if ok && t != VoxProgress && t != VoxSuccess {
 		s.d.heresy(own, "a vox-cast proclaims only %q or %q; %q is no tiding the codex knows — tidings of "+
 			"failure need no step, for they are vox-cast unbidden", VoxProgress, VoxSuccess, t)
 	}
-	return &VoxCast{Tidings: t}
+	return &voxCast{Tidings: t}
 }
 
 // commands decodes the command of an incantation or the scroll of a litany.

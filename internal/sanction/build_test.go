@@ -143,17 +143,3 @@ func TestBuild_NothingToSanction(t *testing.T) {
 		t.Errorf("Build = %v, %v; want the lament of the tome", u, err)
 	}
 }
-
-// TestBuild_ARiteOfMarkIIsNeverDrawn: a rite read as pattern Mark I, before
-// its conversion, is drawn into no unit: its verses are no form the
-// exalted servitor performs.
-func TestBuild_ARiteOfMarkIIsNeverDrawn(t *testing.T) {
-	r, fs := librarium.Parse("tune", "/lib/rites/tune.json", []byte(`{"pattern": "Mark I", "aspects": ["on"],
-	  "liturgy": [{"incantation": "sysctl -wq kernel.split_lock_mitigate=0", "exalted": true}]}`))
-	if r == nil || fs.Heretical() || r.MarkII {
-		t.Fatalf("the rite of Mark I is not read as written: %v %v", r, fs)
-	}
-	if u, err := Build(r, options); u != nil || err == nil || !strings.Contains(err.Error(), `"Mark I"`) {
-		t.Errorf("Build = %v, %v; want a lament of its pattern", u, err)
-	}
-}

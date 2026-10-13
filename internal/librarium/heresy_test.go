@@ -112,7 +112,7 @@ func TestParse_DenouncesWithPosition(t *testing.T) {
 			continue
 		}
 		t.Run(c.name, func(t *testing.T) {
-			_, fs := Parse("rite", "/lib/rites/rite.json", []byte(c.scripture))
+			_, fs := parse("rite", "/lib/rites/rite.json", []byte(c.scripture))
 			want := posOf(t, c.scripture, c.at, c.delta)
 			for _, f := range fs {
 				if strings.Contains(f.Message, c.message) {
@@ -128,14 +128,14 @@ func TestParse_DenouncesWithPosition(t *testing.T) {
 }
 
 func TestParse_InvalidRiteName(t *testing.T) {
-	_, fs := Parse("bad name", "/lib/rites/bad name.json", []byte(mark(``, ``)))
+	_, fs := parse("bad name", "/lib/rites/bad name.json", []byte(mark(``, ``)))
 	if len(fs) != 1 || !strings.Contains(fs[0].Message, `"bad name" is no fit name for a rite`) || fs[0].Line != 1 {
 		t.Fatalf("findings: %v", fs)
 	}
 }
 
 func TestParse_PatternHeresyStandsAlone(t *testing.T) {
-	r, fs := Parse("v0", "/lib/rites/v0.json", []byte(`{"states": ["on"], "files": []}`))
+	r, fs := parse("v0", "/lib/rites/v0.json", []byte(`{"states": ["on"], "files": []}`))
 	if r != nil || len(fs) != 1 || !strings.Contains(fs[0].Message, `bears no "pattern"`) {
 		t.Fatalf("rite %v, findings %v", r, fs)
 	}
@@ -151,7 +151,7 @@ func TestParse_ElderScriptureIsNamedAsSuch(t *testing.T) {
 		{`{"aspects": ["on"], "liturgy": []}`, "", false},
 	}
 	for _, c := range cases {
-		_, fs := Parse("v0", "/lib/rites/v0.json", []byte(c.data))
+		_, fs := parse("v0", "/lib/rites/v0.json", []byte(c.data))
 		if len(fs) != 1 || !strings.Contains(fs[0].Message, `bears no "pattern"`) {
 			t.Fatalf("%s: findings %v", c.data, fs)
 		}
@@ -177,7 +177,7 @@ func TestParse_ValidScriptureIsPure(t *testing.T) {
 	}
 	for name, scripture := range cases {
 		t.Run(name, func(t *testing.T) {
-			if r, fs := Parse("rite", "/r.json", []byte(scripture)); r == nil || len(fs) > 0 {
+			if r, fs := parse("rite", "/r.json", []byte(scripture)); r == nil || len(fs) > 0 {
 				t.Fatalf("rite %v, findings:\n%v", r, fs)
 			}
 		})
@@ -189,7 +189,7 @@ var plainGlosses = regexp.MustCompile(`(?i)\b(error|warning|switch|states?|metad
 
 func TestParse_DenunciationsSpeakGrimdark(t *testing.T) {
 	for _, c := range heresyCases {
-		_, fs := Parse("rite", "/lib/rites/rite.json", []byte(c.scripture))
+		_, fs := parse("rite", "/lib/rites/rite.json", []byte(c.scripture))
 		for _, f := range fs {
 			if m := plainGlosses.FindString(f.Message); m != "" {
 				t.Errorf("%s: %q speaks the plain word %q", c.name, f.Message, m)

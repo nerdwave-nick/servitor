@@ -141,7 +141,7 @@ func (s stepDecoder) exaltation() bool {
 	switch {
 	case !ok:
 		return false
-	case s.kind == KindVoxCast:
+	case s.kind == kindVoxCast:
 		s.d.heresy(m.key, "a vox-cast is never exalted: it only sends word of the invocation, which needs no "+
 			"authority but its invoker's — strike \"exalted\" from verse %d", s.verse)
 		return false
@@ -258,7 +258,7 @@ func (s stepDecoder) rootedPath(path, noun string, own *hujson.Value) {
 // litany of the rite speaks: its commands and reversions.
 func (d *decoder) judgeSpeech() {
 	r := d.rite
-	if r.MarkII && !r.Edict {
+	if !r.markI && !r.Edict {
 		d.judgeSpeechII()
 		return
 	}
@@ -270,7 +270,7 @@ func (d *decoder) judgeSpeech() {
 		switch st := step.(type) {
 		case *Incantation:
 			u, words, keys = st.Utterance, []AspectMap[string]{st.Command}, []string{"incantation"}
-			if r.MarkII {
+			if !r.markI {
 				keys = []string{"words"}
 			}
 		case *Litany:

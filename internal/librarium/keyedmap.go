@@ -39,7 +39,7 @@ func keyedMap[T any](d *decoder, v *hujson.Value, what string, k keying, full bo
 	if _, isObj := v.Value.(*hujson.Object); !isObj {
 		d.heresy(v, "%s must be written as an object keyed by %s, with %q serving every %s it does not name, "+
 			"yet here stands %s; pattern %q knows no single value in its stead — write {%q: …} for one value "+
-			"that serves every %s", what, k.noun, Fallback, k.noun, formOf(v), PatternMarkII, Fallback, k.noun)
+			"that serves every %s", what, k.noun, Fallback, k.noun, formOf(v), Pattern, Fallback, k.noun)
 		return AspectMap[T]{}
 	}
 	m := AspectMap[T]{entries: []Entry[T]{}}

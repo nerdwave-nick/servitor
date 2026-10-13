@@ -14,22 +14,29 @@ const (
 	KindTether
 	KindIncantation
 	KindLitany
-	KindVoxCast
+	kindVoxCast
 )
 
-// Kinds lists every step kind in the order of the codex.
-var Kinds = []Kind{KindSanctum, KindTranscription, KindTether, KindIncantation, KindLitany, KindVoxCast}
+// Kinds lists the kinds of what a subject, observance or verse holds, in
+// the order of the codex: the matter of a sanctum, transcription or tether
+// subject, and the speech of an incantation or litany. A sanction names
+// each item by the key of its kind.
+var Kinds = []Kind{KindSanctum, KindTranscription, KindTether, KindIncantation, KindLitany}
+
+// markIKinds are the kinds of the steps of a liturgy of pattern Mark I,
+// vox-casts among them, read only to be converted.
+var markIKinds = append(Kinds[:len(Kinds):len(Kinds)], kindVoxCast)
 
 var kindKeys = map[Kind]string{
 	KindSanctum: "sanctum", KindTranscription: "transcription", KindTether: "tether",
-	KindIncantation: "incantation", KindLitany: "litany", KindVoxCast: "vox-cast",
+	KindIncantation: "incantation", KindLitany: "litany", kindVoxCast: "vox-cast",
 }
 
 // Key is the step's own key, e.g. "tether".
 func (k Kind) Key() string { return kindKeys[k] }
 
 // Step is one step of a liturgy: *Sanctum, *Transcription, *Tether,
-// *Incantation, *Litany or *VoxCast.
+// *Incantation, *Litany or *voxCast.
 type Step interface {
 	Kind() Kind
 }
@@ -98,8 +105,8 @@ const (
 	VoxSuccess  = "success"
 )
 
-// VoxCast sends word of progress or triumph.
-type VoxCast struct {
+// voxCast sends word of progress or triumph.
+type voxCast struct {
 	Tidings string // VoxProgress or VoxSuccess
 }
 
@@ -108,7 +115,7 @@ func (*Transcription) Kind() Kind { return KindTranscription }
 func (*Tether) Kind() Kind        { return KindTether }
 func (*Incantation) Kind() Kind   { return KindIncantation }
 func (*Litany) Kind() Kind        { return KindLitany }
-func (*VoxCast) Kind() Kind       { return KindVoxCast }
+func (*voxCast) Kind() Kind       { return kindVoxCast }
 
 // WardFor returns the sanctum's ward, defaulting to the rite's name.
 func (s *Sanctum) WardFor(rite string) string {

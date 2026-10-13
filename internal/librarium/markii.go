@@ -5,13 +5,14 @@ import (
 	"time"
 )
 
-// PatternMarkII is the pattern of rites that declare their subjects and
-// observances, and of edicts written in the designation form. It is read
-// and written beside Pattern until Mark I is retired.
-const PatternMarkII = "Mark II"
+// Pattern is the pattern of every rite this package yields and writes:
+// rites of aspects that declare their subjects and observances, and edicts
+// written in the designation form.
+const Pattern = "Mark II"
 
-// Patterns lists every pattern this package reads and writes.
-var Patterns = []string{Pattern, PatternMarkII}
+// patterns lists every pattern this package reads: PatternMarkI to convert
+// it, and Pattern.
+var patterns = []string{PatternMarkI, Pattern}
 
 // Designations of the subjects and observances of pattern Mark II, and of
 // an edict's entries: the key "designation" tells which shape each takes.
@@ -35,7 +36,7 @@ var (
 
 // Keys of the objects of a Mark II scripture, in the order of the codex.
 var (
-	MarkIIRiteKeys = []string{"pattern", "purpose", "aspects", "edict", "inscriptions", "tongue", "vox-cast",
+	RiteKeys = []string{"pattern", "purpose", "aspects", "edict", "inscriptions", "tongue", "vox-cast",
 		"subjects", "observances", "liturgy", SchemaKey}
 	// SubjectKeys are the keys every subject may hold, whatever its
 	// designation; DesignationKeys tells the keys of each designation.

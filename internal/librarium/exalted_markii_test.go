@@ -9,7 +9,7 @@ import (
 // pattern Mark II is exalted by its exalted subjects and observances, each
 // named with the place of its "exalted"; it holds no exalted verse.
 func TestRite_ExaltedSubjectsAndObservancesExaltTheRite(t *testing.T) {
-	r, fs := Parse("dnd", "/lib/rites/dnd.json", []byte(markII(``,
+	r, fs := parse("dnd", "/lib/rites/dnd.json", []byte(markII(``,
 		`{"name": "mako", "designation": "machine-spirit", "enact": {"*": "true"}, "recessional": ["herald"]},
 		 {"name": "conf", "designation": "transcription", "vessel": "/etc/dnd.conf", "omens": {"*": "x"},
 		  "exalted": true}`,
@@ -26,7 +26,7 @@ func TestRite_ExaltedSubjectsAndObservancesExaltTheRite(t *testing.T) {
 	if !slices.Equal(got, want) || !r.Exalted() || r.ExaltedVerses() != nil {
 		t.Fatalf("exalted items %q, want %q; exalted %v, verses %v", got, want, r.Exalted(), r.ExaltedVerses())
 	}
-	common, _ := Parse("dnd", "/lib/rites/dnd.json", []byte(dnd))
+	common, _ := parse("dnd", "/lib/rites/dnd.json", []byte(dnd))
 	if common.Exalted() || common.ExaltedItems() != nil {
 		t.Fatal("a state rite without exalted subjects or observances is told exalted")
 	}
@@ -35,7 +35,7 @@ func TestRite_ExaltedSubjectsAndObservancesExaltTheRite(t *testing.T) {
 // TestRite_ExaltedVersesAreItemsToo: the exalted verses of a liturgy are
 // its exalted items, named by their verse.
 func TestRite_ExaltedVersesAreItemsToo(t *testing.T) {
-	r, _ := Parse("split-lock", "/lib/rites/split-lock.json", []byte(splitLock))
+	r, _ := parse("split-lock", "/lib/rites/split-lock.json", []byte(splitLock))
 	var got []string
 	for _, item := range r.ExaltedItems() {
 		got = append(got, item.String()+" "+item.Pointer)
@@ -64,7 +64,7 @@ func TestRite_ExaltedNounNamesWhatIsExalted(t *testing.T) {
 		{`{"pattern": "Mark II", "edict": true, "liturgy": [{"designation": "incantation", "words": "true",
 		  "exalted": true}]}`, "exalted verses"},
 	} {
-		r, fs := Parse("r", "/lib/rites/r.json", []byte(c.scripture))
+		r, fs := parse("r", "/lib/rites/r.json", []byte(c.scripture))
 		if r == nil || fs.Heretical() {
 			t.Fatalf("heretical: %v", fs)
 		}

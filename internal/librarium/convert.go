@@ -24,11 +24,11 @@ type converting struct {
 func convert(r *Rite) *converting {
 	c := &converting{from: r, notes: map[string][]string{}, to: &Rite{Name: r.Name, Path: r.Path, Schema: r.Schema,
 		Purpose: r.Purpose, Aspects: r.Aspects, Edict: r.Edict, Inscriptions: r.Inscriptions, Tongue: r.Tongue,
-		MarkII: true, VoxCasts: voxCastsOf(r.Liturgy)}}
+		VoxCasts: voxCastsOf(r.Liturgy)}}
 	switch {
 	case r.Edict:
 		for _, s := range r.Liturgy {
-			if s.Kind() != KindVoxCast {
+			if s.Kind() != kindVoxCast {
 				c.to.Liturgy = append(c.to.Liturgy, s)
 			}
 		}
@@ -52,7 +52,7 @@ func builtIn(s Step) bool {
 func voxCastsOf(liturgy []Step) []string {
 	var out []string
 	for _, t := range []string{VoxProgress, VoxSuccess} {
-		if slices.ContainsFunc(liturgy, func(s Step) bool { v, ok := s.(*VoxCast); return ok && v.Tidings == t }) {
+		if slices.ContainsFunc(liturgy, func(s Step) bool { v, ok := s.(*voxCast); return ok && v.Tidings == t }) {
 			out = append(out, t)
 		}
 	}
@@ -91,7 +91,7 @@ func (c *converting) observed() {
 			}
 		}
 	}
-	if a := c.from.Auspex; a != nil {
+	if a := c.from.auspex; a != nil {
 		c.strikeAuspex(a, "each subject is read by itself, and no machine-spirit is left to bear it")
 	}
 }
@@ -188,12 +188,12 @@ func (u Utterance) spokenFor(aspect string) Utterance {
 
 // strikeAuspex notes the rite's auspex of pattern Mark I as struck, for
 // the reason given.
-func (c *converting) strikeAuspex(a *Auspex, reason string) {
+func (c *converting) strikeAuspex(a *riteAuspex, reason string) {
 	patience := ""
 	if a.Patience > 0 {
 		patience = fmt.Sprintf(" (patience %s)", a.Patience)
 	}
-	c.note("/subjects", fmt.Sprintf("pattern %q read the aspect of the whole rite by the auspex %q%s;", Pattern,
+	c.note("/subjects", fmt.Sprintf("pattern %q read the aspect of the whole rite by the auspex %q%s;", PatternMarkI,
 		a.Rite, patience), "it is struck, for "+reason)
 	c.changes = append(c.changes, "the auspex of the rite is struck")
 }
@@ -203,31 +203,32 @@ func (c *converting) note(ptr string, lines ...string) {
 	c.notes[ptr] = append(c.notes[ptr], lines...)
 }
 
-// ParseConverting reads the scripture data of the rite name kept at path
-// as Parse does and, when it is pure scripture of pattern Mark I, converts
-// it to pattern Mark II: the rite and findings returned are then those of
-// the scripture converted, which the Conversion holds to be written.
+// parseConverting reads the scripture data of the rite name kept at path
+// and, when it is pure scripture of pattern Mark I, converts it to pattern
+// Mark II: the rite and findings returned are then those of the scripture
+// converted, which the Conversion holds to be written.
 //
-// Heretical scripture of pattern Mark I is not converted: it stays as
-// read, and one more heresy tells that it is converted once its heresies
-// are purged. Scripture that would be heretical once converted is not
-// converted either, and its heresies are told upon its "pattern".
-func ParseConverting(name, path string, data []byte) (*Rite, Findings, *Conversion) {
-	r, fs := Parse(name, path, data)
-	if r == nil || r.MarkII {
+// Heretical scripture of pattern Mark I is not converted: no rite is
+// returned, only its findings, and one more heresy tells that it is
+// converted once its heresies are purged. Scripture that would be
+// heretical once converted is not converted either, and its heresies are
+// told upon its "pattern".
+func parseConverting(name, path string, data []byte) (*Rite, Findings, *Conversion) {
+	r, fs := parse(name, path, data)
+	if r == nil || !r.markI {
 		return r, fs, nil
 	}
 	if fs.Heretical() {
-		return r, append(fs, r.unconverted("its heresies are purged")), nil
+		return nil, append(fs, r.unconverted("its heresies are purged")), nil
 	}
 	c := convert(r)
 	w := &writer{notes: c.notes}
 	w.riteII(c.to)
 	converted, err := w.layout()
 	if err != nil {
-		return r, append(fs, r.unconverted(err.Error())), nil
+		return nil, append(fs, r.unconverted(err.Error())), nil
 	}
-	r2, fs2 := Parse(name, path, converted)
+	r2, fs2 := parse(name, path, converted)
 	if fs2.Heretical() {
 		for _, f := range fs2 {
 			if f.Severity == Heresy {
@@ -235,7 +236,7 @@ func ParseConverting(name, path string, data []byte) (*Rite, Findings, *Conversi
 					"become (at %d:%d): %s", f.Line, f.Column, f.Message)))
 			}
 		}
-		return r, fs, nil
+		return nil, fs, nil
 	}
 	return r2, fs2, &Conversion{Rite: name, Path: path, Original: data, Data: converted, Changes: c.changes,
 		Exalted: r.Exalted()}
@@ -246,5 +247,5 @@ func ParseConverting(name, path string, data []byte) (*Rite, Findings, *Conversi
 func (r *Rite) unconverted(until string) Finding {
 	return Finding{Severity: Heresy, Scripture: r.Path, Rite: r.Name, Position: r.Locate("/pattern"),
 		Message: fmt.Sprintf("the scripture of pattern %q is not converted to pattern %q, which this servitor reads "+
-			"in its stead, and so it cannot be invoked; it is converted once %s", Pattern, PatternMarkII, until)}
+			"in its stead, and so it cannot be invoked; it is converted once %s", PatternMarkI, Pattern, until)}
 }

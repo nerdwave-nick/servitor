@@ -48,7 +48,7 @@ func (fx fixture) riteWith(t *testing.T, keys, subjects string) *librarium.Rite 
 		t.Fatal(err)
 	}
 	r, findings := librarium.LoadFile(path)
-	if findings.Heretical() || !r.MarkII {
+	if findings.Heretical() {
 		t.Fatalf("rite is heretical:\n%v", findings)
 	}
 	return r

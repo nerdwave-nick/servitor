@@ -166,7 +166,7 @@ func TestDraft_NewEdictStepsHoldOneValue(t *testing.T) {
 	lit.fixed["patience"] = "5s"
 	d.steps = []stepDraft{inc, lit}
 	r := d.toRite("/lib/rites/capture.json")
-	want := &librarium.Rite{Name: "capture", Edict: true, MarkII: true, VoxCasts: []string{librarium.VoxProgress},
+	want := &librarium.Rite{Name: "capture", Edict: true, VoxCasts: []string{librarium.VoxProgress},
 		Inscriptions: []librarium.Inscription{{Key: "region", Decrees: librarium.Uniform("full")}},
 		Liturgy: []librarium.Step{
 			&librarium.Incantation{Command: librarium.Uniform("grim {{inscription.region}}")},

@@ -13,8 +13,8 @@ import (
 // becomes a pure rite of pattern Mark II.
 func converted(t *testing.T, scripture string) (*Rite, *Conversion) {
 	t.Helper()
-	r, fs, c := ParseConverting("rite", "/librarium/rites/rite.json", []byte(scripture))
-	if c == nil || fs.Heretical() || !r.MarkII {
+	r, fs, c := parseConverting("rite", "/librarium/rites/rite.json", []byte(scripture))
+	if c == nil || fs.Heretical() || r.markI {
 		t.Fatalf("not converted to a pure rite of Mark II: %v", fs)
 	}
 	return r, c
@@ -153,17 +153,17 @@ func TestConvert_Refused(t *testing.T) {
 		"heretical once":  `{"pattern": "Mark I", "aspects": ["on"], "liturgy": [{"vox-cast": "success"}]}`,
 		"pattern Mark II": `{"pattern": "Mark II", "edict": true, "liturgy": [{"designation": "incantation", "words": "x"}]}`,
 	} {
-		r, fs, c := ParseConverting("rite", "/librarium/rites/rite.json", []byte(scripture))
+		r, fs, c := parseConverting("rite", "/librarium/rites/rite.json", []byte(scripture))
 		if c != nil {
 			t.Errorf("%s: converted", name)
 		}
 		if name == "pattern Mark II" {
-			if fs.Heretical() || !r.MarkII {
+			if fs.Heretical() || r.markI {
 				t.Errorf("%s: not read as written: %v", name, fs)
 			}
 			continue
 		}
-		if r == nil || r.MarkII || !strings.Contains(fmt.Sprint(fs), "is converted once") {
+		if r != nil || !strings.Contains(fmt.Sprint(fs), "is converted once") {
 			t.Errorf("%s: the heresy does not tell the conversion awaited: %v", name, fs)
 		}
 	}

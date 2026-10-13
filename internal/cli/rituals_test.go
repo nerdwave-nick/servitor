@@ -196,7 +196,7 @@ func TestInquisition_ElderScriptureIsHeresy(t *testing.T) {
 	}
 	for _, want := range []string{
 		"elder.json:2:1: heresy: ", `bears no "pattern"`, `"files"`, `"states"`, "elder",
-		"nothing of it will be converted", `"Mark I"`, `"liturgy"`,
+		"nothing of it will be converted", `in pattern "Mark II"`, `"subjects"`,
 	} {
 		if !strings.Contains(out, want) {
 			t.Errorf("denunciation missing %q:\n%s", want, out)

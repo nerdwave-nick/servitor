@@ -113,12 +113,12 @@ func TestSchemas_AreDraft2020AndNamedByTheirAddress(t *testing.T) {
 func TestRiteSchema_KnowsEveryKeyOfTheLibrarium(t *testing.T) {
 	root := tree(t, Rite)
 	defs := obj(t, root, "$defs")
-	sameKeys(t, "a rite", obj(t, root, "properties"), librarium.MarkIIRiteKeys)
+	sameKeys(t, "a rite", obj(t, root, "properties"), librarium.RiteKeys)
 	sameKeys(t, "an inscription", obj(t, defs, "inscription", "properties"), librarium.InscriptionKeys)
 	sameKeys(t, "a tome", obj(t, defs, "tome", "properties"), librarium.TomeKeys)
 	sameKeys(t, "the auspex of a machine-spirit", obj(t, defs, "spiritAuspex", "properties"), librarium.SpiritAuspexKeys)
-	if got := obj(t, root, "properties", "pattern")["const"]; got != librarium.PatternMarkII {
-		t.Errorf("pattern %v, want %q", got, librarium.PatternMarkII)
+	if got := obj(t, root, "properties", "pattern")["const"]; got != librarium.Pattern {
+		t.Errorf("pattern %v, want %q", got, librarium.Pattern)
 	}
 	if got := strs(obj(t, root, "properties", "vox-cast", "items")["enum"].([]any)); !slices.Equal(got,
 		[]string{librarium.VoxProgress, librarium.VoxSuccess}) {
@@ -174,8 +174,8 @@ func TestSettingsSchema_KnowsEveryKeyOfTheLibrarium(t *testing.T) {
 	if got := strs(obj(t, m, "properties", "intercessor")["enum"].([]any)); !slices.Equal(got, librarium.Intercessors) {
 		t.Errorf("intercessor %v, want %v", got, librarium.Intercessors)
 	}
-	if got := obj(t, m, "properties", "pattern")["const"]; got != librarium.PatternMarkII {
-		t.Errorf("pattern %v, want %q", got, librarium.PatternMarkII)
+	if got := obj(t, m, "properties", "pattern")["const"]; got != librarium.Pattern {
+		t.Errorf("pattern %v, want %q", got, librarium.Pattern)
 	}
 }
 
