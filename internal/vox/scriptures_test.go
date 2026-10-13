@@ -17,13 +17,14 @@ func spoken(tmpl string) *regexp.Regexp {
 	re = strings.ReplaceAll(re, regexp.QuoteMeta("{{aspect}}"), "«[^»]+»")
 	re = strings.ReplaceAll(re, regexp.QuoteMeta("{{step.kind}}"), "(sanctum|transcription|tether|incantation|litany)")
 	re = strings.ReplaceAll(re, regexp.QuoteMeta("{{rite.name}}"), `[\w.-]+`)
+	re = strings.ReplaceAll(re, regexp.QuoteMeta("{{subject}}"), `[\w.-]+`)
 	re = strings.ReplaceAll(re, regexp.QuoteMeta("{{intercessor}}"), "(sudo|run0|pkexec)")
 	re = strings.ReplaceAll(re, regexp.QuoteMeta("{{sigil}}"), "[0-9a-f]{12}")
 	return regexp.MustCompile("^" + re + "$")
 }
 
 func drawn(tid invocation.Tidings, words string) bool {
-	for _, tmpl := range append(slices.Clone(templates[tid]), edictTemplates[tid]...) {
+	for _, tmpl := range slices.Concat(templates[tid], edictTemplates[tid], subjectTemplates[tid]) {
 		if spoken(tmpl).MatchString(words) {
 			return true
 		}

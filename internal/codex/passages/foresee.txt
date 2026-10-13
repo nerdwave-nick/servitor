@@ -34,6 +34,19 @@ Foresight is heeded even of a servitor roused as root, which refuses every
 true invocation; under sudo it foresees upon the Librarium and the vessels of
 the one who spoke sudo, and writes nothing.
 
+A rite of pattern Mark II cannot tell what it would do without reading its
+subjects, so its foresight awakens their auspexes, as an augury does, yet
+speaks no enact word. It tells each subject on a line of its own: a
+machine-spirit with the omen read and the omen commanded, "(mute)" when its
+auspex named no aspect and "(no auspex)" when it has none, and whether it is
+unchanged or changing; beneath a changing one, the words or the comparison of
+lines it would perform:
+
+  subject smt · machine-spirit: "on" → "off", changing
+    spoken in the tongue bash, with the patience of 30s: bash -c "echo off > …"
+  subject theme · tether ~/.local/share/nfluff/current-theme: unchanged
+    the tether stays bound to ~/.config/nfluff/themes/porpl
+
 Foresee before every invocation you are not certain of, and before invoking
 a rite whose scripture was newly amended.
 

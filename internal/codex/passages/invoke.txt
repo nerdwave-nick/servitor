@@ -32,6 +32,21 @@ invoked it is no command to undo, and a reader gone from stdout or stderr
 loses only the words, never a deed. Lesser machines that do not wait launch
 the servitor detached, as its own passage teaches.
 
+A rite of pattern Mark II keeps no liturgy, but subjects (see subjects). Its
+invocation reads every subject first, as the augury reads it; the former
+aspect is the one their omens agree upon. A subject already bearing the omen
+of the aspect invoked is passed over; every other — one whose omen differs,
+whose auspex is mute, or that has no auspex — is set, in written order: a
+sanctum, transcription or tether written as its step of Mark I would be, a
+machine-spirit by its enact words for the omen commanded. Each is proven at
+once by a second reading, which must show that omen; a machine-spirit
+without an auspex cannot be proven. A subject that shows another omen fells
+the invocation, and every subject set is restored, as the passage on
+reversion tells. When no subject differs, nothing is performed, and the
+invocation is still a triumph: the data-slate is written, the chronicle
+kept, and a "success" vox-cast still speaks. The report names each subject
+set, "✔ subject smt · machine-spirit".
+
 A rite or edict that holds exalted verses is performed alike, yet its
 exalted verses never with its invoker's authority. Its pre-flight also draws
 them for the aspect invoked into their unit and compares its sigil with the

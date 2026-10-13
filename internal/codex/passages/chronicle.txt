@@ -7,7 +7,10 @@ binharic to the chronicle: when it happened, the rite, the aspect invoked and
 the former aspect, the inscriptions it carried, its verdict, and for a fallen
 invocation the verse it fell at, the heresy that felled it and the verdict of
 every reversion. The line of an edict names no aspect and no former aspect; it
-bears "edict": true in their stead, and all else alike. The line of an
+bears "edict": true in their stead, and all else alike. The line of a rite of
+pattern Mark II names the subjects it set and proved under "changed" — []
+when it changed none — and names the subject that fell, and each subject
+reverted, by "subject" in place of a verse. The line of an
 invocation with exalted verses names, last, the intercessor that vouched for
 its master ("intercessor") and the first twelve letters of the sigil of the
 plan the exalted servitor performed ("sigil"); a proof dismissed performed
@@ -44,6 +47,14 @@ Exempla:
    "fell_at": {"verse": 3, "incantation": "source hooks"},
    "heresy": "it ended bearing the death-mark 1, …",
    "reversions": [{"verse": 2, "verdict": "triumph"}]}
+
+  {"at": "2026-10-13T20:00:00Z", "rite": "gaming", "aspect": "on",
+   "former": "off", "inscriptions": {}, "verdict": "reverted",
+   "fell_at": {"subject": "scheduler"},
+   "heresy": "the subject \"scheduler\" shows the omen \"eevdf\"; …",
+   "reversions": [{"subject": "scheduler", "verdict": "triumph"},
+                  {"subject": "smt", "verdict": "triumph"}],
+   "changed": ["smt"]}
 
   {"at": "2026-10-10T13:31:00Z", "rite": "screenshot", "edict": true,
    "inscriptions": {"region": "full"}, "verdict": "triumph"}
