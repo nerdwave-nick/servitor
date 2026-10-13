@@ -23,8 +23,9 @@ const captureIIJSON = `{"pattern": "Mark II", "edict": true, "vox-cast": ["succe
 
 // TestMarkII_IsReadByEveryRitualYetNeverInvoked: rites of pattern Mark II
 // stand in the Librarium beside those of Mark I; every reading ritual
-// heeds them, yet invoking or foreseeing one is refused before anything is
-// touched, naming the rite of performance not yet forged.
+// heeds them, yet invoking or foreseeing a rite of aspects of that pattern
+// is refused before anything is touched, naming the rite of performance
+// not yet forged. Its edicts are proclaimed (see edict_markii_test.go).
 func TestMarkII_IsReadByEveryRitualYetNeverInvoked(t *testing.T) {
 	e := newEnv(t)
 	e.addRite("rites/gaming.json", gamingIIJSON)
@@ -42,7 +43,7 @@ func TestMarkII_IsReadByEveryRitualYetNeverInvoked(t *testing.T) {
 		t.Errorf("the census does not list the rites of Mark II:\n%s", out)
 	}
 	for _, args := range [][]string{{"invoke", "gaming", "on"}, {"invoke", "gaming", "off", "--foresee"},
-		{"invoke", "gaming", "on", "--binharic"}, {"invoke", "capture"}, {"invoke", "capture", "-f"}} {
+		{"invoke", "gaming", "on", "--binharic"}} {
 		out, errOut, code := e.run(args...)
 		if code != markRefused {
 			t.Fatalf("servitor %v: exit %d, want %d\nstdout: %s\nstderr: %s", args, code, markRefused, out, errOut)
@@ -54,7 +55,7 @@ func TestMarkII_IsReadByEveryRitualYetNeverInvoked(t *testing.T) {
 		}
 		grimdark(t, errOut)
 	}
-	for _, mark := range []string{".smt", ".herald", ".edict"} {
+	for _, mark := range []string{".smt", ".herald"} {
 		if _, err := os.Stat(e.target + mark); err == nil {
 			t.Errorf("a refused invocation left %s", mark)
 		}
