@@ -44,3 +44,7 @@ servitor).
   Neither desecration nor a failed last invocation is an error.
 - Hand-converted rites need their sanctum markers rewritten too, because the marker
   text changed along with everything else.
+- *(Amended by ADR 0008: in pattern Mark II every omen belongs to a subject and there is
+  no rite-level auspex; an omen is the set of aspects it fits, and the omens agree by
+  intersection — an empty intersection is corrupted. The omens read at an invocation are
+  recorded on the data-slate and serve, stale, where no live omen is heard.)*
