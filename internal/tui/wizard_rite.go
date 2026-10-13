@@ -11,10 +11,9 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/librarium"
 )
 
-// ritePage writes the rite itself. An edict is asked no aspects; neither
-// an edict nor a rite of pattern Mark II is asked an auspex, and a rite of
-// Mark II is asked its vox-casts. A new rite chooses its pattern; one
-// amended or replicated keeps the pattern it was read in.
+// ritePage writes the rite itself: its name, purpose and nature, the
+// aspects of a rite of aspects (an edict is asked none), its inscriptions,
+// its vox-casts and its tongue.
 func (w *wizard) ritePage(m *model) tea.Cmd {
 	w.station = stationRite
 	d := w.d
@@ -48,29 +47,16 @@ func (w *wizard) ritePage(m *model) tea.Cmd {
 	f.addText("inscriptions", "Inscriptions", strings.Join(d.keys(), ", "), "reason, mode",
 		"Optional, separated by commas; each is spoken as a rune and illuminated as {{inscription.<name>}}.",
 		func(s string) error { _, err := parseKeys(s); return err })
-	switch {
-	case d.markII:
-		progress := "Tells of every subject that changed."
-		if d.edict {
-			progress = "Tells of every verse performed."
-		}
-		f.addToggle("vox:"+librarium.VoxProgress, "Vox-cast of progress",
-			slices.Contains(d.voxCasts, librarium.VoxProgress), progress+" space turns it.")
-		f.addToggle("vox:"+librarium.VoxSuccess, "Vox-cast of success",
-			slices.Contains(d.voxCasts, librarium.VoxSuccess), "Proclaims the triumph. A fall is proclaimed unbidden.")
-	case !d.edict:
-		f.addText("auspex", "Auspex", d.auspex, "makoctl mode | grep -q do-not-disturb && echo on || echo off",
-			"Optional. A command that speaks the aspect the machine stands in.", nil)
-		f.addText("patience", "Patience of the auspex", d.patience, "2s",
-			"How long the auspex may labour, such as 500ms or 5s.", validPatience)
+	progress := "Tells of every subject that changed."
+	if d.edict {
+		progress = "Tells of every verse performed."
 	}
+	f.addToggle("vox:"+librarium.VoxProgress, "Vox-cast of progress",
+		slices.Contains(d.voxCasts, librarium.VoxProgress), progress+" space turns it.")
+	f.addToggle("vox:"+librarium.VoxSuccess, "Vox-cast of success",
+		slices.Contains(d.voxCasts, librarium.VoxSuccess), "Proclaims the triumph. A fall is proclaimed unbidden.")
 	f.addText("tongue", "Tongue", d.tongue, "bash",
 		"The program that speaks the rite's commands; unspoken, the tongue of the settings, or bash.", validWord)
-	if !d.patternKept {
-		f.addChoice("pattern", "Pattern", librarium.Patterns, d.pattern(),
-			"Mark I writes a liturgy of steps; Mark II, subjects each read and set by itself, and the "+
-				"observances they name.")
-	}
 	return w.setForm(m, pageRite, 0, f)
 }
 
@@ -79,19 +65,11 @@ func (w *wizard) keepRite() {
 	f, d := w.form, &w.d
 	d.name, d.purpose, d.tongue = strings.TrimSpace(f.get("name")), f.get("purpose"), f.get("tongue")
 	d.edict = f.get("edict") == natureEdict
-	if f.has("pattern") {
-		d.markII = f.get("pattern") == librarium.PatternMarkII
-	}
 	if f.has("aspects") {
 		d.aspects = f.get("aspects")
 	}
-	if f.has("auspex") {
-		d.auspex, d.patience = f.get("auspex"), f.get("patience")
-	}
-	if f.has("vox:" + librarium.VoxProgress) {
-		d.voxCasts = voxCasts(f.get("vox:"+librarium.VoxProgress) == "true",
-			f.get("vox:"+librarium.VoxSuccess) == "true", d.voxCasts)
-	}
+	d.voxCasts = voxCasts(f.get("vox:"+librarium.VoxProgress) == "true",
+		f.get("vox:"+librarium.VoxSuccess) == "true", d.voxCasts)
 	if keys, err := parseKeys(f.get("inscriptions")); err == nil {
 		d.declare(keys)
 	}
@@ -115,21 +93,17 @@ func voxCasts(progress, success bool, before []string) []string {
 	return chosen
 }
 
-// riteTurned names the choice of the Rite page that turned its nature or
-// pattern; "" when neither turned.
+// riteTurned names the choice of the Rite page that turned its nature; ""
+// when it did not turn.
 func (w *wizard) riteTurned() string {
-	f := w.form
-	switch {
-	case (f.get("edict") == natureEdict) != w.d.edict:
+	if (w.form.get("edict") == natureEdict) != w.d.edict {
 		return "edict"
-	case f.has("pattern") && (f.get("pattern") == librarium.PatternMarkII) != w.d.markII:
-		return "pattern"
 	}
 	return ""
 }
 
-// turnRite turns the Rite page to the nature or pattern chosen by the field
-// key, keeping all that was written upon it.
+// turnRite turns the Rite page to the nature chosen by the field key,
+// keeping all that was written upon it.
 func (w *wizard) turnRite(m *model, key string) tea.Cmd {
 	old := w.form
 	w.keepRite()

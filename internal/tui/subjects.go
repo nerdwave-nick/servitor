@@ -9,7 +9,7 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/librarium"
 )
 
-// stateRite is the detail of a state rite of pattern Mark II below its
+// stateRite is the detail of a rite of aspects below its
 // inscriptions: its subjects in place of a liturgy, its observances, and
 // its vox-casts. It bears no auspex of its own: each subject bears its own.
 func (m *model) stateRite(rite *librarium.Rite, a augury.Augury, label func(string) string, w int) []string {
@@ -193,7 +193,7 @@ func guard(key string, aspects []string) string {
 	return " · " + key + " " + strings.Join(aspects, ", ")
 }
 
-// voxCasts tells the vox-casts a rite of pattern Mark II bears as its own
+// voxCasts tells the vox-casts a rite bears as its own
 // key.
 func (m *model) voxCasts(rite *librarium.Rite) string {
 	if len(rite.VoxCasts) == 0 {

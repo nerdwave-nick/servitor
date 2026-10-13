@@ -96,7 +96,7 @@ func (h *harness) beginMarkII(name, purpose string, progress, success bool) {
 	h.t.Helper()
 	h.keys("n")
 	h.typeText(name)
-	h.choosePatternMarkII()
+	h.beholdTheRitePage()
 	h.keys("down")
 	h.typeText(purpose)
 	h.focusOn("vox:progress")

@@ -387,12 +387,14 @@ func TestOverview_ShowsTheSanctionOfEveryRite(t *testing.T) {
 	h.keys("j")
 	h.mustShow("† forsaken", "abjure")
 	h.keys("j")
-	h.mustShow("○ unsanctioned", "s to sanction its exalted subjects")
+	h.mustShow("○ unsanctioned", "s to sanction its exalted observances")
 
-	// foresight marks the exalted verse and tells the standing
+	// foresight marks the exalted observance and tells the standing of what
+	// the rite holds exalted
 	h.keys("g", "enter", "p")
-	h.mustShow("Foresight of aspect", "stand sanctioned under the sigil", "observance hallowed · incantation",
-		"Nothing was performed.")
+	h.mustShow("Foresight of aspect", "✠ The exalted observances stand sanctioned under the sigil",
+		"observance hallowed · incantation ✠", "Nothing was performed.")
+	h.mustNotShow("exalted verses", "observance common · incantation ✠")
 	if len(s.called()) != 0 {
 		t.Errorf("the intercessor was called upon: %q", s.called())
 	}
@@ -411,7 +413,8 @@ func TestSanction_ShowsTheUnitThenAsksOneProof(t *testing.T) {
 	h.writeRite("hallow", hallowRite)
 	h.send(tea.WindowSizeMsg{Width: 160, Height: 70})
 	h.keys("r", "g", "s")
-	h.mustShow("Sanction of hallow", "offered for sanction under the sigil", "echo exalted on",
+	h.mustShow("Sanction of hallow", "The exalted observances of hallow, offered for sanction under the sigil",
+		"echo exalted on",
 		"The intercessor asks the master's proof")
 	h.send(tea.WindowSizeMsg{Width: 120, Height: 36}) // the list of rites as wide as listLine reads it
 	if len(s.called()) != 0 {
@@ -420,7 +423,7 @@ func TestSanction_ShowsTheUnitThenAsksOneProof(t *testing.T) {
 	h.keys("enter")
 	h.mustShow("awaits the master's proof")
 	h.awaitProven()
-	h.mustShow("stand sanctioned under the sigil")
+	h.mustShow("The exalted observances of hallow stand sanctioned under the sigil")
 	lib := librarium.Load(h.dir)
 	u, err := (&rituals.Servitor{Librarium: lib, Sanctions: &s.store}).Unit(lib.Rites["hallow"])
 	mustDo(t, err)
@@ -442,7 +445,8 @@ func TestSanction_ShowsTheUnitThenAsksOneProof(t *testing.T) {
 
 	// unchanged: told, and no proof is asked
 	h.keys("s")
-	h.mustShow("stand sanctioned already under the sigil "+short, "Nothing is to be sanctioned anew")
+	h.mustShow("The exalted observances of hallow stand sanctioned already under the sigil "+short,
+		"Nothing is to be sanctioned anew")
 	h.keys("enter")
 	if n := len(s.called()); n != 1 {
 		t.Fatalf("an unchanged unit asked a proof: %d calls", n)
@@ -452,7 +456,8 @@ func TestSanction_ShowsTheUnitThenAsksOneProof(t *testing.T) {
 	// changed: only the difference is shown, beneath both sigils
 	h.writeRite("hallow", strings.Replace(hallowRite, "echo spoken", "echo uttered", 1))
 	h.keys("r", "s")
-	h.mustShow("changed since they were sanctioned under the sigil "+short, "- ", "+ ", "uttered")
+	h.mustShow("The exalted observances of hallow changed since they were sanctioned under the sigil "+short,
+		"- ", "+ ", "uttered")
 	h.keys("enter")
 	h.awaitProven()
 	if n := len(s.called()); n != 2 {
@@ -465,7 +470,7 @@ func TestSanction_ShowsTheUnitThenAsksOneProof(t *testing.T) {
 	// abjure, with one proof
 	h.keys("s", "a")
 	h.awaitProven()
-	h.mustShow("The sanction of hallow is abjured")
+	h.mustShow("The sanction of hallow is abjured; its exalted observances")
 	calls := s.called()
 	if len(calls) != 3 || !slices.Equal(calls[2][len(calls[2])-3:], []string{exalted.Mode, exalted.AbjureWord, "hallow"}) {
 		t.Fatalf("abjured as %q", calls)

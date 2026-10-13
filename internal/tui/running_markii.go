@@ -11,7 +11,7 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/rituals"
 )
 
-// What an invocation of a state rite of pattern Mark II tells its running
+// What an invocation of a rite of aspects tells its running
 // panel beyond the steps begun.
 type (
 	// commencedMsg tells, once the pre-flight has passed, what the
@@ -31,10 +31,10 @@ func (h herald) Performed(v invocation.Verse, _, _ int) {
 	}
 }
 
-// commence tells the running panel of a state rite the plan of every
+// commence tells the running panel of a rite of aspects the plan of every
 // subject once the pre-flight has passed; nil for every other rite.
 func commence(r *librarium.Rite, send func(tea.Msg)) func(rituals.Result) {
-	if !r.MarkII || r.Edict {
+	if r.Edict {
 		return nil
 	}
 	return func(res rituals.Result) {
@@ -61,20 +61,29 @@ func changing(plans map[string]invocation.SubjectPlan) int {
 
 // named names a verse of the rite r as verseName does, a subject with its
 // designation ("subject smt · machine-spirit") and an observance with its
-// own ("observance veil · incantation").
+// own ("observance veil · incantation"), each marked ✠ when exalted.
 func named(r *librarium.Rite, v invocation.Verse) string {
 	switch {
 	case r == nil:
 	case v.Subject != "":
 		if sub, ok := r.Subject(v.Subject); ok {
-			return verseName(v) + " · " + sub.Designation()
+			return verseName(v) + " · " + sub.Designation() + exaltedMark(v)
 		}
 	case v.Observance != "":
 		if o, ok := r.Observance(v.Observance); ok {
-			return verseName(v) + " · " + o.Designation()
+			return verseName(v) + " · " + o.Designation() + exaltedMark(v)
 		}
 	}
 	return verseName(v)
+}
+
+// exaltedMark is " ✠" for an exalted subject or observance, as the
+// foresight of the command line marks it; "" otherwise.
+func exaltedMark(v invocation.Verse) string {
+	if v.Exalted {
+		return " ✠"
+	}
+	return ""
 }
 
 // spirit reports whether the subject a verse of r sets is a machine-spirit.

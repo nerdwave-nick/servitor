@@ -47,25 +47,38 @@ func TestProclaim_TheCogitatorRefusesAnExaltedEdict(t *testing.T) {
 	}
 }
 
-// exaltedKinds holds an exalted step of every kind that may be exalted.
+// exaltedKinds holds an exalted subject of every designation and an
+// exalted observance of both, beside common ones.
 const exaltedKinds = `{
-  "pattern": "Mark I",
+  "pattern": "Mark II",
   "aspects": ["on", "off"],
-  "liturgy": [
-    {"sanctum": "/etc/x.conf", "scripture": {"on": "a", "*": ""}, "exalted": true},
-    {"transcription": "/etc/whole.conf", "scripture": "whole {{aspect}}", "seal": "0600", "exalted": true},
-    {"tether": "/etc/current", "anchor": {"on": null, "*": "/usr/share/x"}, "exalted": true},
-    {"incantation": "sysctl -w x=1", "reversion": "sysctl -w x=0", "exalted": true, "relics": []},
-    {"litany": "scrolls/tune", "offerings": ["{{aspect}}"], "exalted": true, "relics": ["scrolls/tune.conf", "a"]},
-    {"incantation": "true"}
+  "subjects": [
+    {"name": "x", "designation": "sanctum", "vessel": "/etc/x.conf", "omens": {"on": "a", "*": ""}, "exalted": true,
+     "introit": ["sysctl"]},
+    {"name": "whole", "designation": "transcription", "vessel": "/etc/whole.conf", "omens": {"*": "whole {{aspect}}"},
+     "seal": "0600", "exalted": true},
+    {"name": "current", "designation": "tether", "tether": "/etc/current", "omens": {"on": null, "*": "/usr/share/x"},
+     "exalted": true, "recessional": ["tune", "plain"]},
+    {"name": "knob", "designation": "machine-spirit", "omens": {"on": "1", "*": "0"},
+     "auspex": {"scan": "cat /etc/knob", "exalted": true}, "enact": {"*": "echo {{omen}} > /etc/knob"},
+     "exalted": true, "relics": ["scrolls/tune.conf"]}
+  ],
+  "observances": [
+    {"name": "sysctl", "designation": "incantation", "words": "sysctl -w x=1", "reversion": "sysctl -w x=0",
+     "exalted": true, "relics": []},
+    {"name": "tune", "designation": "litany", "scroll": "scrolls/tune", "offerings": ["{{aspect}}"], "exalted": true,
+     "relics": ["scrolls/tune.conf", "a"]},
+    {"name": "plain", "designation": "incantation", "words": "true"}
   ]
 }`
 
-// TestDraft_ExaltedVersesRoundTrip: the wizard keeps what is exalted, and
-// the relics of exalted speech, when it amends a rite or an edict.
-func TestDraft_ExaltedVersesRoundTrip(t *testing.T) {
-	for name, scripture := range map[string]string{"rite": exaltedKinds, "edict": `{"pattern": "Mark I", "edict": true,
-		"liturgy": [{"incantation": "systemctl reboot", "exalted": true}, {"litany": "s", "exalted": true, "relics": ["s.list"]}]}`} {
+// TestDraft_ExaltedItemsRoundTrip: the wizard keeps what is exalted — and
+// the relics of exalted speech and enact words, and a privileged auspex —
+// when it amends a rite of aspects or an edict.
+func TestDraft_ExaltedItemsRoundTrip(t *testing.T) {
+	for name, scripture := range map[string]string{"rite": exaltedKinds, "edict": `{"pattern": "Mark II", "edict": true,
+		"liturgy": [{"designation": "incantation", "words": "systemctl reboot", "exalted": true},
+		{"designation": "litany", "scroll": "s", "exalted": true, "relics": ["s.list"]}]}`} {
 		t.Run(name, func(t *testing.T) {
 			want, found := librarium.Parse(name, "/lib/rites/"+name+".json", []byte(scripture))
 			if found.Heretical() || !want.Exalted() {

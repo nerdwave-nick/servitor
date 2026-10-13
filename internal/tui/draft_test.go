@@ -8,44 +8,56 @@ import (
 	"github.com/nerdwave-nick/servitor/internal/librarium"
 )
 
-// everyKind is a rite of pattern Mark I holding every kind of step, every
-// further rite and aspect maps of every shape the wizard must keep.
+// everyKind is a rite of aspects holding a subject of every designation the
+// wizard writes, observances of both designations with their guards, every
+// further rite and omens of every shape the wizard must keep.
 const everyKind = `{
-  "pattern": "Mark I",
+  "pattern": "Mark II",
   "purpose": "The visage of the machine",
   "aspects": ["dark", "finii", "porpl"],
   "inscriptions": {
     "reason": {"purpose": "why"},
     "mode": {"mandatory": true, "decrees": {"dark": "dim", "*": "bright"}},
-    "hue": {"decrees": "red"}
+    "hue": {"decrees": {"*": "red"}}
   },
-  "auspex": {"rite": "cat /tmp/aspect", "patience": "5s"},
   "tongue": "sh",
-  "liturgy": [
-    {"vox-cast": "progress"},
-    {"sanctum": "~/.config/x.kdl", "ward": "visage", "glyph": "/*", "closing-glyph": "*/", "consecrate": true,
-     "scripture": {"dark": ["a", "b"], "porpl": {"tome": "tomes/porpl", "illuminate": true}, "*": ""}},
-    {"transcription": "/tmp/whole.conf", "scripture": {"dark": null, "*": "whole {{aspect}}"}, "seal": "0600", "zeal": true},
-    {"tether": "/tmp/current", "anchor": {"finii": null, "*": "/tmp/themes/{{aspect}}"}, "zeal": true},
-    {"incantation": {"dark": "echo dark", "*": "echo light"}, "tongue": "zsh", "patience": "2m", "reversion": "echo {{former}}"},
-    {"litany": "scripts/hooks", "offerings": ["--to", {"porpl": "purple", "*": "{{aspect}}"}], "reversion": {"dark": "", "*": "undo"}},
-    {"incantation": "true"},
-    {"vox-cast": "success"}
+  "vox-cast": ["progress", "success"],
+  "subjects": [
+    {"name": "x", "designation": "sanctum", "purpose": "the visage", "vessel": "~/.config/x.kdl", "ward": "visage",
+     "glyph": "/*", "closing-glyph": "*/", "consecrate": true,
+     "omens": {"dark": ["a", "b"], "porpl": {"tome": "tomes/porpl", "illuminate": true}, "*": ""},
+     "introit": ["fade"]},
+    {"name": "whole", "designation": "transcription", "vessel": "/tmp/whole.conf",
+     "omens": {"dark": null, "*": "whole {{aspect}}"}, "seal": "0600", "zeal": true},
+    {"name": "current", "designation": "tether", "tether": "/tmp/current",
+     "omens": {"finii": null, "*": "/tmp/themes/{{aspect}}"}, "zeal": true, "recessional": ["hooks"]},
+    {"name": "lamp", "designation": "machine-spirit", "omens": {"dark": "off", "*": "on"},
+     "auspex": {"scan": "cat /tmp/lamp", "trials": {"on": "test -e /tmp/lamp"}, "patience": "1s"},
+     "enact": {"on": "touch /tmp/lamp", "*": "rm -f /tmp/lamp"}, "tongue": "zsh", "patience": "2m"}
+  ],
+  "observances": [
+    {"name": "fade", "designation": "incantation", "to": ["dark"], "words": "echo dark", "tongue": "zsh",
+     "patience": "2m", "reversion": "echo {{former}}"},
+    {"name": "hooks", "designation": "litany", "from": ["porpl"], "scroll": "scripts/hooks",
+     "offerings": ["--to", "{{aspect}}"], "reversion": "undo"}
   ]
 }`
 
-func TestDraft_EveryKindRoundTrips(t *testing.T) {
+// TestDraft_EveryFormRoundTrips: a rite of every form the wizard writes
+// reads back, through its draft, as the very rite it was.
+func TestDraft_EveryFormRoundTrips(t *testing.T) {
 	want, found := librarium.Parse("visage", "/lib/rites/visage.json", []byte(everyKind))
 	if found.Heretical() {
 		t.Fatalf("the fixture is heretical: %v", found)
 	}
 	d := riteDraftFrom(want)
-	if d.name != "visage" || d.aspects != "dark, finii, porpl" || len(d.steps) != 8 {
+	if d.name != "visage" || d.aspects != "dark, finii, porpl" || len(d.subjects) != 4 || len(d.observances) != 2 ||
+		len(d.steps) != 0 {
 		t.Fatalf("draft = %+v", d)
 	}
-	if !d.steps[4].further || d.steps[6].further || !d.steps[2].further || d.steps[1].further {
-		t.Fatalf("further rites unveiled wrongly: %v %v %v %v",
-			d.steps[1].further, d.steps[2].further, d.steps[4].further, d.steps[6].further)
+	if !d.subjects[1].step.further || d.subjects[0].step.further || !d.observances[0].step.further {
+		t.Fatalf("further rites unveiled wrongly: %v %v %v",
+			d.subjects[0].step.further, d.subjects[1].step.further, d.observances[0].step.further)
 	}
 	got := d.toRite("/lib/rites/visage.json")
 	if !got.Equal(want) {
@@ -79,30 +91,6 @@ func TestDraft_SameForEveryAspectWritesTheFallback(t *testing.T) {
 	}
 }
 
-func TestDraft_NewStepsAndUnwrittenRites(t *testing.T) {
-	d := newRiteDraft()
-	d.name, d.aspects = "theme", "dark, porpl"
-	inc := newStepDraft(librarium.KindIncantation)
-	inc.command.set("dark", "echo {{aspect}}", true)
-	lit := newStepDraft(librarium.KindLitany)
-	lit.command.set("dark", "scripts/hooks", true)
-	lit.offerings.set("dark", []string{"~/themes/{{aspect}}"}, true)
-	lit.reversion.set("dark", "", true)
-	lit.fixed["patience"] = "5s"
-	d.steps = []stepDraft{inc, lit}
-	r := d.toRite("/lib/rites/theme.json")
-	want := &librarium.Rite{Name: "theme", Aspects: []string{"dark", "porpl"}, Liturgy: []librarium.Step{
-		&librarium.Incantation{Command: librarium.Uniform("echo {{aspect}}")},
-		&librarium.Litany{Scroll: librarium.Uniform("scripts/hooks"),
-			Offerings: []librarium.AspectMap[string]{librarium.Uniform("~/themes/{{aspect}}")},
-			Utterance: librarium.Utterance{Patience: 5 * time.Second}},
-	}}
-	if !r.Equal(want) {
-		data, _ := librarium.Marshal(r)
-		t.Fatalf("rite =\n%s", data)
-	}
-}
-
 func TestParseAspectsAndInscriptionKeys(t *testing.T) {
 	if s, err := parseAspects(" on,off  auto "); err != nil || len(s) != 3 {
 		t.Fatalf("%v %v", s, err)
@@ -122,10 +110,10 @@ func TestParseAspectsAndInscriptionKeys(t *testing.T) {
 	}
 }
 
-// edictScripture is an edict holding every kind of step an edict may bear
+// edictScripture is an edict holding every kind of verse an edict may bear
 // and every further rite of them, each value written plainly.
 const edictScripture = `{
-  "pattern": "Mark I",
+  "pattern": "Mark II",
   "purpose": "Capture the visage",
   "edict": true,
   "inscriptions": {
@@ -133,11 +121,12 @@ const edictScripture = `{
     "name": {"mandatory": true}
   },
   "tongue": "sh",
+  "vox-cast": ["progress", "success"],
   "liturgy": [
-    {"vox-cast": "progress"},
-    {"incantation": "grim {{inscription.region}}", "tongue": "zsh", "patience": "2m", "reversion": "rm -f shot"},
-    {"litany": "scripts/shot", "offerings": ["--to", "~/{{inscription.name}}"], "patience": "5s"},
-    {"vox-cast": "success"}
+    {"designation": "incantation", "words": "grim {{inscription.region}}", "tongue": "zsh", "patience": "2m",
+     "reversion": "rm -f shot"},
+    {"designation": "litany", "scroll": "scripts/shot", "offerings": ["--to", "~/{{inscription.name}}"],
+     "patience": "5s"}
   ]
 }`
 
@@ -160,9 +149,12 @@ func TestDraft_AnEdictRoundTrips(t *testing.T) {
 	}
 }
 
+// TestDraft_NewEdictStepsHoldOneValue: the verses of a new edict are
+// written in the designation form, each value once, its vox-casts a list
+// of the rite.
 func TestDraft_NewEdictStepsHoldOneValue(t *testing.T) {
 	d := newRiteDraft()
-	d.name, d.edict, d.auspex, d.patience = "capture", true, "echo on", "2s"
+	d.name, d.edict, d.voxCasts = "capture", true, []string{librarium.VoxProgress}
 	d.declare([]string{"region"})
 	d.inscriptions[0].decrees[librarium.Fallback] = "full"
 	inc := newStepDraft(librarium.KindIncantation)
@@ -172,51 +164,23 @@ func TestDraft_NewEdictStepsHoldOneValue(t *testing.T) {
 	lit.command.setOnce("scripts/shot")
 	lit.offerings.setOnce([]string{"--to", "~/shots"})
 	lit.fixed["patience"] = "5s"
-	d.steps = []stepDraft{inc, lit, newStepDraft(librarium.KindVoxCast)}
+	d.steps = []stepDraft{inc, lit}
 	r := d.toRite("/lib/rites/capture.json")
-	want := &librarium.Rite{Name: "capture", Edict: true,
+	want := &librarium.Rite{Name: "capture", Edict: true, MarkII: true, VoxCasts: []string{librarium.VoxProgress},
 		Inscriptions: []librarium.Inscription{{Key: "region", Decrees: librarium.Uniform("full")}},
 		Liturgy: []librarium.Step{
 			&librarium.Incantation{Command: librarium.Uniform("grim {{inscription.region}}")},
 			&librarium.Litany{Scroll: librarium.Uniform("scripts/shot"),
 				Offerings: []librarium.AspectMap[string]{librarium.Uniform("--to"), librarium.Uniform("~/shots")},
 				Utterance: librarium.Utterance{Patience: 5 * time.Second}},
-			&librarium.VoxCast{Tidings: librarium.VoxProgress},
 		}}
 	if !r.Equal(want) {
 		data, _ := librarium.Marshal(r)
 		t.Fatalf("edict =\n%s", data)
 	}
-}
-
-// TestDraft_ARiteTurnedEdictKeepsWhatItsAspectsSpoke: a rite declared an
-// edict writes no aspects, yet a value its aspects spoke apart is kept as
-// written, for the Inquisition to denounce, never silently flattened.
-func TestDraft_ARiteTurnedEdictKeepsWhatItsAspectsSpoke(t *testing.T) {
-	rite, found := librarium.Parse("echo", "/lib/rites/echo.json", []byte(`{
-  "pattern": "Mark I", "aspects": ["on", "off"],
-  "liturgy": [{"incantation": {"on": "echo on", "*": "echo other"}}, {"incantation": "echo plain"}]
-}`))
-	if found.Heretical() {
-		t.Fatalf("the fixture is heretical: %v", found)
-	}
-	d := riteDraftFrom(rite)
-	d.edict = true
-	r := d.toRite("/lib/rites/echo.json")
-	if !r.Edict || r.Aspects != nil {
-		t.Fatalf("not an edict: %+v", r)
-	}
-	if c := r.Liturgy[0].(*librarium.Incantation).Command; c.IsUniform() || len(c.Entries()) != 2 {
-		t.Fatalf("the words of the aspects were lost: %+v", c.Entries())
-	}
-	if c := r.Liturgy[1].(*librarium.Incantation).Command; !c.IsUniform() {
-		t.Fatalf("a plain value became an aspect map: %+v", c.Entries())
-	}
 	data, err := librarium.Marshal(r)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, found := librarium.Parse("echo", "/lib/rites/echo.json", data); !found.Heretical() {
-		t.Fatalf("the Inquisition finds no heresy in:\n%s", data)
+	if err != nil || !strings.Contains(string(data), `"pattern": "Mark II"`) ||
+		!strings.Contains(string(data), `"designation": "incantation"`) {
+		t.Fatalf("the edict is not written in pattern Mark II (%v):\n%s", err, data)
 	}
 }

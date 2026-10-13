@@ -103,19 +103,22 @@ func (m *model) sanctionLine(r *row) string {
 	return head + t.dim.Render(" · no "+exaltedOf(r.rite(), false)+" — s, then a, to abjure")
 }
 
-// exaltedOf names what the rite holds exalted, as many or as one: the
-// subjects and observances of a state rite of pattern Mark II, else verses.
+// exaltedOf names what the rite holds exalted, as many or as one, as
+// librarium.Rite.ExaltedNoun does: the verses of an edict, else the
+// subjects, the observances, or both, of a rite of aspects (both for a
+// rite that cannot be read).
 func exaltedOf(rite *librarium.Rite, many bool) string {
-	switch {
-	case rite == nil || !rite.MarkII || rite.Edict:
-		if many {
-			return "exalted verses"
-		}
-		return "exalted verse"
-	case many:
-		return "exalted subjects and observances"
+	noun := "exalted subjects and observances"
+	if rite != nil {
+		noun = rite.ExaltedNoun()
 	}
-	return "exalted subject or observance"
+	switch {
+	case many:
+		return noun
+	case noun == "exalted subjects and observances":
+		return "exalted subject or observance"
+	}
+	return strings.TrimSuffix(noun, "s")
 }
 
 func (m *model) lastRite(lr *augury.LastRite) string {
@@ -182,9 +185,9 @@ func kindGlyph(k librarium.Kind) string {
 	return "✉"
 }
 
-// stepWords is what a step's own key holds as written: the vessel, the
-// tether and its anchor, the command, the scroll and its offerings, or the
-// tidings. A value written per aspect is shown for aspect.
+// stepWords is what a step holds as written: the vessel, the tether and
+// its anchor, the words, or the scroll and its offerings. A value written
+// per aspect is shown for aspect.
 func stepWords(step librarium.Step, aspect string) string {
 	switch s := step.(type) {
 	case *librarium.Sanctum:
@@ -208,8 +211,6 @@ func stepWords(step librarium.Step, aspect string) string {
 			words += " " + written(o, aspect)
 		}
 		return words
-	case *librarium.VoxCast:
-		return s.Tidings
 	}
 	return ""
 }

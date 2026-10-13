@@ -73,7 +73,7 @@ func TestWizard_AnEdictTurnedRiteAsksItsAspects(t *testing.T) {
 }
 
 // TestWizard_TheNatureKeepsWhatWasWritten: turning the Rite page to an
-// edict and back keeps the aspects and auspex once written.
+// edict and back keeps the aspects once written.
 func TestWizard_TheNatureKeepsWhatWasWritten(t *testing.T) {
 	h := newHarness(t)
 	h.keys("n")
