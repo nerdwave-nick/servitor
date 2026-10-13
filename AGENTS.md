@@ -25,6 +25,7 @@ domain and the code; never add plain words or plain glosses to anything a user r
 | config directory | Librarium | `--librarium` / `-l`, `SERVITOR_LIBRARIUM` |
 | user config file | settings | `<Librarium>/servitor.json` |
 | format version | pattern | `"pattern": "Mark I"` or `"Mark II"` (read side by side until Mark I is retired) |
+| format migration (Mark I → Mark II) | conversion | automatic, once, on first read by a ritual that may write; the original kept in `rites/.mark-i/` (settings: `.mark-i/servitor.json`); off on `mark-ii` until Mark I is retired |
 | switch / profile (named config) | rite | file in `rites/` |
 | state | aspect | `aspects` |
 | one-shot action (no state) | edict | `"edict": true` (instead of `aspects`) |

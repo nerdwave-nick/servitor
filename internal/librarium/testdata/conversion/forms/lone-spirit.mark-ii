@@ -1,0 +1,20 @@
+{
+  "pattern": "Mark II",
+  "purpose": "Lend the fans their voice",
+  "aspects": ["quiet", "loud"],
+  "vox-cast": ["progress"],
+  "subjects": [
+    // pattern "Mark I" spoke the reversion {"*": "rm -f ~/.cache/fans"} should a later verse fall;
+    // it is struck, for a machine-spirit is restored by enacting the omen it showed before
+    {
+      "name": "incantation-2",
+      "designation": "machine-spirit",
+      "auspex": {"scan": "cat ~/.cache/fans", "patience": "1s"},
+      "enact": {
+        "quiet": "echo quiet > ~/.cache/fans",
+        "loud": "echo loud > ~/.cache/fans"
+      },
+      "patience": "3s"
+    }
+  ]
+}

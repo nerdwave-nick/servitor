@@ -127,3 +127,27 @@ func TestSeize_AnUnraisablePlaceIsAnError(t *testing.T) {
 	}
 	seized(t, first).Relinquish() // what was seized before is relinquished
 }
+
+// TestTry_HeldDominionIsForgoneAtOnce: trying dominion holds every free
+// place at once, and forgoes them all, without waiting and leaving nothing
+// held, when another holds one; once relinquished, it is held at the next
+// try.
+func TestTry_HeldDominionIsForgoneAtOnce(t *testing.T) {
+	dir := t.TempDir()
+	free, taken := filepath.Join(dir, "free"), filepath.Join(dir, "rites", "taken")
+	other := seized(t, taken)
+	d, ok, err := Try([]string{free, taken})
+	if err != nil || ok || d != nil {
+		t.Fatalf("a held dominion was not forgone: %v %v %v", d, ok, err)
+	}
+	seized(t, free).Relinquish() // the free place was let go again
+	other.Relinquish()
+	d, ok, err = Try([]string{free, taken})
+	if err != nil || !ok {
+		t.Fatalf("a free dominion was not held: %v %v", ok, err)
+	}
+	d.Relinquish()
+	if _, _, err := Try([]string{filepath.Join(dir, "free", "beneath")}); err == nil {
+		t.Error("a place that cannot be raised was held")
+	}
+}

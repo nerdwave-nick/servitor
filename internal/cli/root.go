@@ -43,6 +43,9 @@ type app struct {
 	chronicle string // --chronicle and its hidden alias --log; read through runesOf
 	lib       *librarium.Librarium
 	invokeCmd *cobra.Command // parent of the per-rite rituals
+	// completing tells that the shell asks for completions: nothing is
+	// written.
+	completing bool
 	// relent lets go of the invocation's steadfastness once the servitor
 	// has spoken its last word; nil when nothing was invoked.
 	relent func()
@@ -73,16 +76,17 @@ func NewRootCmd(args []string, stdout, stderr io.Writer) *cobra.Command {
 
 // newRoot builds the command tree and the app its rituals serve.
 func newRoot(args []string, stdout, stderr io.Writer) (*cobra.Command, *app) {
-	a := &app{configDir: resolveConfigDir(args)}
-	a.lib = librarium.Load(a.configDir)
+	a := &app{configDir: resolveConfigDir(args), completing: isCompletionRequest(args)}
+	a.lib = loadLibrarium(a.configDir)
 
 	root := &cobra.Command{
-		Use:           "servitor",
-		Short:         "A thrall of the Adeptus Mechanicus that performs rites upon the machine",
-		Version:       version(),
-		Args:          unknownRitual,
-		SilenceUsage:  true,
-		SilenceErrors: true,
+		Use:               "servitor",
+		Short:             "A thrall of the Adeptus Mechanicus that performs rites upon the machine",
+		Version:           version(),
+		Args:              unknownRitual,
+		SilenceUsage:      true,
+		SilenceErrors:     true,
+		PersistentPreRunE: a.convert,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			if !isTerminal() {
 				return cmd.Help()
@@ -123,7 +127,7 @@ func (a *app) cogitator(cmd *cobra.Command) error {
 	if err := unexalted("the awakening of the cogitator"); err != nil {
 		return err
 	}
-	return runTUI(tui.Options{Dir: a.lib.Dir, Runes: runesOf(cmd)})
+	return runTUI(tui.Options{Dir: a.lib.Dir, Runes: runesOf(cmd), Convert: convertMarkI})
 }
 
 // unknownRitual rejects arguments to the servitor itself: whatever was

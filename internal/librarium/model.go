@@ -10,7 +10,9 @@
 // the codex are reported as Findings with line and column. Parse reads one
 // scripture, Load the whole Librarium (where clashing wards and rites recorded
 // twice are found), and Marshal writes a rite back as scripture of its
-// pattern.
+// pattern. LoadConverting reads the Librarium with every pure scripture of
+// pattern Mark I converted to pattern Mark II in memory; each Conversion is
+// written only when its Write is called.
 //
 // These values may vary per aspect (an AspectMap): the scripture of sanctums
 // and transcriptions, a tether's anchor, an incantation's command, a litany's
