@@ -97,11 +97,15 @@ func (w *wizard) update(m *model, msg tea.Msg) (screen, tea.Cmd) {
 		return w.updateLiturgy(m, msg)
 	}
 	res, cmd := w.form.update(msg)
-	if key := w.riteTurned(); w.page == pageRite && key != "" {
-		return w, w.turnRite(m, key)
-	}
-	if key := w.omensTurned(); w.page == pageOmens && key != "" {
-		return w, w.turnOmens(m, key)
+	switch w.page {
+	case pageRite:
+		if key := w.riteTurned(); key != "" {
+			return w, w.turnRite(m, key)
+		}
+	case pageOmens:
+		if key := w.omensTurned(); key != "" {
+			return w, w.turnOmens(m, key)
+		}
 	}
 	if w.page == pageEssence && bearsRelics(w.work.kind) && (w.form.get("exalted") == "true") != w.form.has("relics") {
 		return w, w.turnExaltation(m)
