@@ -30,7 +30,7 @@
     {
       "transcription": "/etc/sysctl.d/90-split-lock.conf",
       "exalted": true,
-      "scripture": {"on": "kernel.split_lock_mitigate = 0", "off": null},
+      "scripture": {"on": "kernel.split_lock_mitigate = 0\n", "off": null},
     },
     {"vox-cast": "success"},
   ],

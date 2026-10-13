@@ -119,11 +119,14 @@ Every key is optional except the pattern:
   "patience": "30s",         // how long a command may labour
   "vox": "auto",             // "notify-send": the desktop hears every invocation; "off": none
   "chronicle": "~/.local/state/servitor/chronicle.jsonl",
+  "intercessor": "auto",     // who asks the proof for exalted verses: "sudo", "run0" or "pkexec"
 }
 ```
 
 For each order the rune outranks the environment, the environment outranks
-the settings, and the settings outrank the servitor's own default.
+the settings, and the settings outrank the servitor's own default. The
+`intercessor` knows no rune and no environment: the settings alone name it
+(see [Exalted verses](#exalted-verses)).
 
 ## Anatomy of a rite
 
@@ -240,12 +243,16 @@ which holds its vessel, its bound name, its words or its scroll.
 
 | Step | Its key holds | Further keys |
 |---|---|---|
-| `sanctum` | the vessel whose warded region it keeps | `scripture`, `ward`, `glyph`, `closing-glyph`, `consecrate` |
-| `transcription` | the vessel it writes whole, or strikes | `scripture` (`null` strikes the vessel), `seal`, `zeal` |
-| `tether` | the name it binds | `anchor` (`null` unbinds), `zeal` |
-| `incantation` | one line of words for the tongue | `tongue`, `patience`, `reversion` |
-| `litany` | the scroll it recites | `offerings`, `tongue`, `patience`, `reversion` |
+| `sanctum` | the vessel whose warded region it keeps | `scripture`, `ward`, `glyph`, `closing-glyph`, `consecrate`, `exalted` |
+| `transcription` | the vessel it writes whole, or strikes | `scripture` (`null` strikes the vessel), `seal`, `zeal`, `exalted` |
+| `tether` | the name it binds | `anchor` (`null` unbinds), `zeal`, `exalted` |
+| `incantation` | one line of words for the tongue | `tongue`, `patience`, `reversion`, `exalted`, `relics` |
+| `litany` | the scroll it recites | `offerings`, `tongue`, `patience`, `reversion`, `exalted`, `relics` |
 | `vox-cast` | `"progress"` or `"success"` | none |
+
+`"exalted": true` bids the machine's own authority perform the step, as its
+master sanctioned it; `relics` names what exalted speech reads beside it.
+See [Exalted verses](#exalted-verses).
 
 An edict's liturgy holds only incantations, litanies and vox-casts:
 sanctums, transcriptions and tethers keep and reveal an aspect, and an edict
@@ -428,7 +435,7 @@ The death-mark tells how it ended, with or without `--binharic`:
 |---|---|
 | 0 | triumphed |
 | 1 | was reverted: a step fell and every deed was undone |
-| 2 | was refused before anything was touched: the pre-flight forbade it, the rite or aspect is unknown, words strayed after an edict, or a rune was malformed |
+| 2 | was refused before anything was touched: the pre-flight forbade it, the rite or aspect is unknown, words strayed after an edict, a rune was malformed, or — for [exalted verses](#exalted-verses) — the sanction lapsed or was never laid, no intercessor answered, or the master's proof was dismissed |
 | 3 | faltered: a step fell and a reversion fell too |
 
 ### Invoked by machines that do not wait
@@ -533,6 +540,185 @@ servitor ✠ the edict "screenshot" bears no aspect and is proclaimed by its nam
 
 `servitor expound edict` recites the rest.
 
+## Exalted verses
+
+> *+++ Thought for the day: The flesh may ask; only the sanctioned may command. +++*
+
+Some steps reach beyond what you may touch: the knobs of the kernel, the
+scriptures of `/etc`, the units of the machine itself. Write `"exalted": true`
+upon such a step, and it is performed not with your authority but with the
+machine's own, by an **exalted servitor** raised for that one invocation, and
+only as you **sanctioned** it. Every other verse is performed as ever. From
+[`examples/rites/split-lock.json`](examples/rites/split-lock.json), its
+remarks set aside:
+
+```jsonc
+{
+  "$schema": "https://raw.githubusercontent.com/nerdwave-nick/servitor/main/schema/rite.schema.json",
+  "pattern": "Mark I",
+  "purpose": "Lift the kernel's split-lock penance while the faithful play",
+  "aspects": ["on", "off"],
+  "auspex": "[ \"$(sysctl -n kernel.split_lock_mitigate)\" = 0 ] && echo on || echo off",
+  "liturgy": [
+    {
+      "incantation": {"on": "sysctl -wq kernel.split_lock_mitigate=0",
+                      "*":  "sysctl -wq kernel.split_lock_mitigate=1"},
+      "exalted": true,
+      "reversion": "if [ \"$SERVITOR_FORMER_ASPECT\" = on ]; then sysctl -wq kernel.split_lock_mitigate=0; else sysctl -wq kernel.split_lock_mitigate=1; fi",
+    },
+    {
+      "transcription": "/etc/sysctl.d/90-split-lock.conf",
+      "exalted": true,
+      "scripture": {"on": "kernel.split_lock_mitigate = 0\n", "off": null},
+    },
+    {"vox-cast": "success"},
+  ],
+}
+```
+
+Exalted verses need the servitor installed by pacman at `/usr/bin/servitor`
+(see [Installation](#installation)): it alone is ever raised, never the
+servitor that asks, and only while it and every hall above it are the root's
+and written by none but the root.
+
+### Writing exalted verses
+
+* Any step but a vox-cast may be exalted, in rites and edicts alike (an edict
+  exalts its incantations and litanies). `exalted` is true for every aspect or
+  for none, never an aspect map; `false` is as if unwritten.
+* The words of an exalted verse are fixed when you sanction them. They may
+  speak `{{aspect}}`, `{{rite.name}}` and `{{inscription.<key>}}`, the
+  inscription then taking its decree alone (its rune is refused for the
+  rite). `{{former}}` is heresy there: exalted speech hears the former aspect
+  and the words of runes from `"$SERVITOR_FORMER_ASPECT"` and
+  `"$SERVITOR_INSCRIPTION_<KEY>"`, each at most 4 KiB, without NUL or new
+  line.
+* An exalted vessel or bound name must begin at the root once rendered, may
+  not lie beneath `/proc`, `/sys` or `/dev` (their knobs are written by
+  exalted incantations), and every hall along it must be the root's alone. An
+  exalted tether's anchor too: a tether from `/etc` into your home is heresy,
+  and an exalted transcription is the remedy.
+* Exalted speech is spoken in a fresh hall of the root's own beneath
+  `/run/servitor`, with `HOME=/root`, the `PATH` of the machine, and nothing
+  of your environment but `LANG`, `LC_*` and the `SERVITOR_` variables. What
+  it reads beside its scroll it must name under `relics`, paths within the
+  rite's hall, laid beside it under the same names:
+  `{"litany": "scrolls/governor", "exalted": true, "relics": ["scrolls/governor.conf"]}`.
+* Its tongue must be bash, zsh, fish, sh or dash, the program the root's
+  alone, and bidden read nothing of its own. Processes it leaves behind are
+  slain when the invocation ends; a root process that must last belongs in a
+  unit: `systemd-run --unit=servitor-fan-curve fancontrol`.
+
+The Inquisition denounces what breaks these rules, and notes as impurities
+`sudo`, `run0`, `pkexec` or `doas` within words that are not exalted (write
+`"exalted": true` instead), exalted speech that reaches into your home, and a
+program that asks a proof of its own (`systemctl`, `hostnamectl`, …) in a
+verse that is not exalted beside exalted ones.
+
+### Sanction and abjure
+
+```sh
+servitor sanction split-lock      # behold the exalted verses, prove yourself once
+servitor sanction                 # every sanction, how it stands, its sigil
+servitor abjure split-lock        # withdraw it, with one proof (--all: every one)
+```
+
+`servitor sanction <rite>` first summons the Inquisition: a rite in heresy,
+or one holding no exalted verse, is refused. Then it shows you everything the
+exalted verses would do, for every aspect, each under its own **sigil** (the
+SHA-256 of the sanction, the first twelve letters naming it), or, when a
+sanction stands, only what changed since. You must behold it: without a
+terminal (or the cogitator) sanctioning is refused. The intercessor then asks
+your proof once, and that proof is the sanction; unchanged, nothing is asked.
+The exalted servitor lays it in `/var/lib/servitor/sanctions/<uid>/<rite>.json`,
+where only the root writes, and journals it.
+
+A sanction holds the exalted verses alone, with every word, path, tongue,
+patience, seal, scroll, relic, tome and spliced decree they hold. Changing a
+vox-cast or a common verse changes no sanction; changing an exalted verse, or
+a tome or relic it reads, lapses it. Each rite stands towards its sanction:
+
+| Sanction | Glyph | Meaning |
+|---|---|---|
+| `sanctioned` | `✠` | its exalted verses are those you sanctioned |
+| `lapsed` | `☓` | they changed since, and must be sanctioned anew |
+| `unsanctioned` | `○` | it holds exalted verses, yet no sanction |
+| `forsaken` | `†` | a sanction whose rite is gone, or holds no exalted verse |
+
+The census, the augury (`servitor augury split-lock sanction`) and the
+cogitator tell it; the Inquisition notes the lapsed, the unsanctioned and the
+forsaken as impurities.
+
+### Invoking exalted verses
+
+```console
+❯ servitor invoke split-lock on
+⋯ sudo demands the master's proof before the exalted verses of split-lock are performed, as sanctioned under the sigil 3893911c6eed.
+servitor: authenticate to perform split-lock (sigil 3893911c6eed):
++++ split-lock · off → on +++
+  ✔ verse 1 · incantation sysctl -wq kernel.split_lock_mitigate=0
+  ✔ verse 2 · transcription /etc/sysctl.d/90-split-lock.conf
+✠ The machine spirit is appeased; it bears the aspect «on».
+```
+
+1. **Pre-flight**, with your authority as ever: the exalted verses of the
+   aspect are drawn anew and their sigil compared with the sanction. Lapsed
+   or unsanctioned, the invocation is refused with the death-mark 2 before
+   any proof is asked, and the words name `servitor sanction <rite>`. So is
+   a rite whose dominion cannot be held, or whose intercessor or installed
+   servitor is missing.
+2. **One proof.** The intercessor asks it once and raises one exalted
+   servitor; a proof dismissed touches nothing (2, and no chronicle line).
+   On a terminal one line of tidings (`⋯`) tells it first, naming the
+   intercessor and the sigil; `--silence` withholds it.
+3. **Performance.** The verses run in the order written; each exalted verse
+   is performed by the exalted servitor from the sanction alone, never from
+   the scripture as it stands now. Of a vessel it tells only sizes and
+   SHA-256 sums; the words of exalted speech return, at most 64 KiB, for the
+   lament and the cogitator's `O`.
+4. **Reversion.** Should a verse fall, the exalted verses are reverted among
+   the common ones without a second proof. Should the invoking servitor be
+   slain, the exalted servitor reverts what it performed by itself, and
+   journals it.
+
+Every invocation asks anew: sudo is told `-k`, and the cogitator speaks
+`run0 -k` after each act through run0. `--foresee` never exalts: it tells the
+sanction standing and marks each exalted verse `✠`, and a vessel you may not
+read is foreseen as "contents hidden — change unknown". The chronicle names
+the intercessor and the sigil. What the exalted servitor did is in the
+machine's journal: `journalctl -t servitor`.
+
+### The intercessor
+
+The settings' `intercessor` names who asks the proof: `"auto"` (the
+default), `"sudo"`, `"run0"` or `"pkexec"`. `auto` chooses sudo, else run0,
+else pkexec at a terminal, and run0, else pkexec without one (sudo then asks
+only through a helper you laid outside the servitor). An intercessor named
+but missing refuses the invocation; doas is never called upon. sudo is
+called upon thus:
+
+```sh
+sudo -k -p "servitor: authenticate to perform <rite> (sigil <sigil>): " \
+  -- /usr/bin/servitor __exalt <rite> <sigil> <aspect>
+```
+
+In the cogitator, sudo is lent the terminal while it asks; run0 and pkexec
+are called upon apart from it, so the graphical agent of the desktop asks,
+and without one they cannot ask at all. pkexec asks through the agent of the
+session too: at a bare terminal, polkit 127 refuses pkexec's own agent
+("No session for cookie"), whatever it is bidden run.
+
+### Roused as root
+
+The servitor performs nothing as root: `sudo servitor invoke …`, sanction,
+abjure and the cogitator are refused with 2. The reading rituals still serve
+under sudo — `sudo servitor census`, augury, inquisition, `--foresee`,
+expound — and read the Librarium, the sanctions and the data-slates of the
+one who spoke sudo, writing nothing.
+
+`servitor expound exalted`, `sanction`, `abjure`, `sigil`, `relics` and
+`intercessor` recite the rest.
+
 ## Rituals and runes
 
 | Ritual | What it does |
@@ -542,6 +728,8 @@ servitor ✠ the edict "screenshot" bears no aspect and is proclaimed by its nam
 | `servitor augury <rite> [key] [--is <aspect>] [--spare-auspex]` | Read how a rite stands, the aspect it bears (an edict bears none) and its inscriptions. |
 | `servitor census [--binharic] [--spare-auspex] [--vigil]` | Every rite with its aspect, standing, aspects, last rite and purpose. |
 | `servitor inquisition [rite…] [--binharic] [--spare-vessels]` | Denounce heresy in rites, settings and vessels. |
+| `servitor sanction [<rite>] [--binharic]` | Sanction a rite's exalted verses with one proof, or list every sanction and how it stands. |
+| `servitor abjure <rite> \| --all` | Withdraw a sanction, or every sanction, with one proof. |
 | `servitor cogitator` | Awaken the interactive shrine; `servitor` alone does so at a terminal. |
 | `servitor expound [topic] [--schema [rite\|settings]]` | Recite a passage of the codex, or its index. |
 | `servitor completion bash\|zsh\|fish\|powershell` | Engrave the completion litanies. |
@@ -568,7 +756,10 @@ Without a key the augury speaks one binharic object:
 ```
 
 With a key it speaks one value: `aspect`, `standing`, `desecrated`, `former`,
-or any inscription the rite declares (an empty line when uninscribed).
+`sanction`, or any inscription the rite declares (an empty line when
+uninscribed). `sanction` tells how a rite stands towards the sanction of its
+[exalted verses](#exalted-verses): `sanctioned`, `lapsed`, `unsanctioned`, or
+`""` when it holds none.
 `--is <aspect>` answers by exit alone. The augury exits 0 when it was read,
 1 when `--is` did not match, and 2 when it could not be read.
 
@@ -632,10 +823,12 @@ servitor census --binharic | jq -r '.[] | select(.standing | IN("performed", "pr
 ```
 
 In binharic every rite bears `rite`, `edict`, `aspect`, `standing`,
-`auspex`, `aspects`, `purpose`, `desecrated`, `last_rite`, `recorded_in`
+`sanction`, `auspex`, `aspects`, `purpose`, `desecrated`, `last_rite`, `recorded_in`
 (the scripture it was read from) and `canon`, as the augury speaks it, so
 one census tells what every rite may be inscribed with. An edict bears
-`"edict": true`, an empty `aspect` and `"aspects": []`.
+`"edict": true`, an empty `aspect` and `"aspects": []`. The table marks a
+rite with exalted verses by the glyph of its sanction: `✠` sanctioned, `☓`
+lapsed, `○` unsanctioned; a forsaken sanction is lamented apart.
 
 `auspex`, in the census and the augury alike, tells what the rite's auspex
 gave: `""` when it keeps none (an edict or a heretical rite neither),
@@ -724,6 +917,11 @@ The line of an edict names no aspect and no former aspect, and bears
 {"at": "2026-10-11T01:42:00Z", "rite": "screenshot", "edict": true,
  "inscriptions": {"region": "whole"}, "verdict": "triumph"}
 ```
+
+The line of an invocation with exalted verses names last the intercessor
+that asked the proof and the first twelve letters of the sigil performed,
+`"intercessor": "sudo", "sigil": "4f0c2a9e1b7d"`; a proof dismissed performed
+nothing, and is not chronicled.
 
 It is kept at the first of: the rune `--chronicle`, `SERVITOR_CHRONICLE`, the
 settings' `chronicle`, `$XDG_STATE_HOME/servitor/chronicle.jsonl`. Past one
@@ -831,11 +1029,15 @@ the codex's own lore:
   it captures the visage of the machine through grim, the region marked by
   slurp unless `--region whole` is inscribed, and lays it upon the
   clipboard, striking the visage should that fall.
+* [`rites/split-lock.json`](examples/rites/split-lock.json) holds exalted
+  verses: it lifts the kernel's split-lock penance through `sysctl` and keeps
+  that aspect in `/etc/sysctl.d`, once its master has sanctioned it.
 
 ```sh
 servitor --librarium examples inquisition --spare-vessels
 servitor --librarium examples invoke theme porpl --foresee
 servitor --librarium examples invoke screenshot --foresee
+servitor --librarium examples invoke split-lock on --foresee
 ```
 
 ## For Tech-Priests
@@ -845,6 +1047,13 @@ go test -race ./...
 go vet ./...
 golangci-lint run ./...
 ```
+
+Exalted verses are judged upon the real intercessors only inside a
+disposable Arch VM (KVM/QEMU and cloud-init): `test/vm/run.sh [<rev>]`
+installs the commit through its PKGBUILD, sanctions, invokes through sudo,
+run0 and pkexec with one proof each, and tells its verdict. Nothing is
+exalted upon the forge itself; the trials of `go test` raise the exalted
+servitor in-process, its authority feigned.
 
 Commits follow the [Liturgy of Commits](CONTRIBUTING.md): Conventional
 Commits spoken in the tongue of the Mechanicus (`consecrate`, `purge`,
@@ -857,6 +1066,11 @@ the decisions are recorded in [`docs/adr/`](docs/adr/).
 | `internal/placeholder` | illuminating and judging the `{{…}}` marks |
 | `internal/sanctum` | finding and rewriting sanctums within a vessel |
 | `internal/invocation` | the pre-flight, the performance and the reversion |
+| `internal/dominion` | the dominions that keep two invocations apart |
+| `internal/sanction` | the exalted unit, its sigils, the store of sanctions and their standing |
+| `internal/hallowed` | the trusted path and the acts upon vessels the root may perform |
+| `internal/exalted` | the exalted servitor: its session, its acts and its exalted speech |
+| `internal/intercessor` | finding sudo, run0 or pkexec and the installed servitor |
 | `internal/augury` | omens, standing and the data-slates |
 | `internal/chronicle` | the chronicle |
 | `internal/vox` | the herald of vox-casts |
