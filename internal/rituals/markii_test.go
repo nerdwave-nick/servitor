@@ -8,21 +8,20 @@ import (
 	"testing"
 )
 
-// TestInvoke_RefusesEveryRiteOfMarkII: the servitor reads scripture of
-// pattern Mark II, yet performs none of it, nor foresees it: no subject,
-// observance or verse is touched, and nothing is kept on the data-slate or
-// in the chronicle.
-func TestInvoke_RefusesEveryRiteOfMarkII(t *testing.T) {
+// TestInvoke_RefusesEveryStateRiteOfMarkII: the servitor reads scripture
+// of pattern Mark II, yet performs no rite of aspects of it, nor foresees
+// it: no subject or observance is touched, and nothing is kept on the
+// data-slate or in the chronicle. Edicts of Mark II are proclaimed (see
+// edict_markii_test.go).
+func TestInvoke_RefusesEveryStateRiteOfMarkII(t *testing.T) {
 	fx := newFixture(t)
 	marker := fx.vessel("marker", "")
 	fx.rite("gaming", `{"pattern": "Mark II", "aspects": ["on", "off"], "subjects": [
 	  {"name": "m", "designation": "machine-spirit", "auspex": {"scan": "echo touched >> $DATA/marker; cat $DATA/m"},
-	   "enact": {"*": "echo {{omen}} >> $DATA/marker"}}]}`)
-	fx.rite("capture", `{"pattern": "Mark II", "edict": true, "liturgy": [
-	  {"designation": "incantation", "words": "echo proclaimed >> $DATA/marker"}]}`)
+	   "enact": {"*": "echo {{omen}} >> $DATA/marker"}, "introit": ["herald"]}],
+	  "observances": [{"name": "herald", "designation": "incantation", "words": "echo heard >> $DATA/marker"}]}`)
 	s := fx.servitor()
-	for _, p := range []Petition{{Rite: "gaming", Aspect: "on"}, {Rite: "gaming", Aspect: "off", Foresee: true},
-		{Rite: "capture"}, {Rite: "capture", Foresee: true}} {
+	for _, p := range []Petition{{Rite: "gaming", Aspect: "on"}, {Rite: "gaming", Aspect: "off", Foresee: true}} {
 		res, err := s.Invoke(context.Background(), p)
 		var refused *Unperformable
 		if !errors.As(err, &refused) || refused.Name != p.Rite {

@@ -83,21 +83,14 @@ func (e *Heretical) Error() string {
 	return b.String()
 }
 
-// Unperformable is the lament for a rite of pattern Mark II: the servitor
-// reads its scripture, yet cannot perform it until the rite of performance
-// of that pattern is forged.
+// Unperformable is the lament for a rite of aspects of pattern Mark II:
+// the servitor reads its scripture, yet cannot perform it until the rite of
+// performance of that pattern is forged. Its edicts are proclaimed.
 type Unperformable struct {
-	Name  string
-	Edict bool
+	Name string
 }
 
 func (e *Unperformable) Error() string {
-	if e.Edict {
-		return fmt.Sprintf("the edict %q is written in pattern %q, whose scripture this servitor reads, yet the rite "+
-			"of performance that proclaims an edict of that pattern is not yet forged within it: not one verse is "+
-			"performed, nor foreseen — keep the edict in pattern %q until that rite is forged",
-			e.Name, librarium.PatternMarkII, librarium.Pattern)
-	}
 	return fmt.Sprintf("the rite %q is written in pattern %q, whose scripture this servitor reads, yet the rite of "+
 		"performance that reads, sets and proves its subjects is not yet forged within it: not one subject or "+
 		"observance is touched, nor foreseen — keep the rite in pattern %q until that rite is forged",

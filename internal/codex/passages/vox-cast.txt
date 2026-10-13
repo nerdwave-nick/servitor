@@ -46,7 +46,13 @@ the desktop altogether ("off"); when foreseeing, nothing is proclaimed at all.
 A "success" vox-cast that is not the last step is an impurity, for it would
 proclaim a triumph not yet won. Any other value is heresy.
 
-Kindred passages: vox, liturgy, verdicts, invoke
+In pattern "Mark II" a vox-cast is no step but a key of the rite: a list of
+"progress" and "success", each at most once, in any order. An edict so
+marked proclaims progress once each verse of its liturgy is performed, and
+success once the whole of it is and nothing fell; its words are drawn from
+the same litanies of the edict. Without the key, only a fall is proclaimed.
+
+Kindred passages: vox, liturgy, verdicts, invoke, edict
 
 Exempla:
   "liturgy": [
@@ -57,3 +63,6 @@ Exempla:
     {"litany": "scripts/reload-theme"},
     {"vox-cast": "success"}
   ]
+
+  // pattern Mark II: a key of the rite, beside its liturgy
+  "vox-cast": ["progress", "success"]

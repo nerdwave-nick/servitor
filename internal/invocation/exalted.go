@@ -98,7 +98,7 @@ func (inv *Invocation) PerformExalted(ctx context.Context, x Exalter) (Outcome, 
 			}
 		}
 	}
-	c := newCrier(inv.opts.Herald, inv.rite.Edict, values(inv.rite, inv.opts, inv.opts.Inscriptions), inv.steps)
+	c := newCrier(inv.opts.Herald, inv.rite, values(inv.rite, inv.opts, inv.opts.Inscriptions), inv.steps)
 	return performAll(ctx, inv.steps, c, finish), nil
 }
 

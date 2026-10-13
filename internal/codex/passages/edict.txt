@@ -27,6 +27,17 @@ a decree of one plain word, "tongue", and the reversion, patience, tongue and
 offerings of its incantations and litanies. Should the servitor write an
 edict's scripture anew, it keeps "edict": true and never writes "aspects".
 
+In pattern "Mark II" an edict keeps "edict": true and its "liturgy", yet each
+entry takes the designation form: "designation": "incantation" with its
+"words", or "designation": "litany" with its "scroll" and "offerings", each
+with its "tongue", "patience", "reversion", "exalted" and "relics". Entries
+bear no name; they are named by their verse, counted from one as written.
+Its vox-casts are no entries but a list of the rite's own under "vox-cast":
+"progress" tells of each verse once performed, "success" of the whole edict
+obeyed. All else is as above: it is proclaimed whole, reverted verse by
+verse in reverse order should one fall, and stands dormant, proclaimed or
+corrupted.
+
 An edict may exalt its incantations and litanies: the exalted servitor,
 roused with no aspect, performs them from the sanction of its master, one
 proof asked at every proclaiming, as the passage on exaltation tells. Its
@@ -57,3 +68,16 @@ Exempla:
   }
 
   servitor invoke screenshot --region full
+
+  // the same edict in pattern Mark II
+  {
+    "pattern": "Mark II",
+    "purpose": "Capture the visage of the machine",
+    "edict": true,
+    "inscriptions": {"region": {"purpose": "the slurp geometry", "decrees": "full"}},
+    "vox-cast": ["success"],
+    "liturgy": [
+      {"designation": "incantation", "patience": "2m",
+       "words": "grim -g \"$(slurp)\" ~/pictures/{{inscription.region}}.png"},
+    ],
+  }
