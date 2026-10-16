@@ -21,6 +21,8 @@ optdepends=('sudo: an intercessor for exalted verses'
 prepare() {
 	cd "$_forge"
 	export GOPATH="$srcdir/gopath" GOTOOLCHAIN=local
+	# A writable module cache, else makepkg cannot clean src/ afterwards.
+	export GOFLAGS='-modcacherw'
 	go mod download -x
 }
 
